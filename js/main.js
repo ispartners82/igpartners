@@ -34,10 +34,12 @@ function selectLanguage(langCode) {
   // 로컬 스토리지에 언어 설정 기록 (추후 진료 예약 폼 등에서 활용)
   localStorage.setItem('selected_lang', langCode);
 
-  // 사용자에게 피드백을 전달하기 위해 일시적으로 카드를 반짝이는 효과 등 적용 가능
-  // 예: alert(langCode + " 언어가 선택되었습니다. 다음 단계로 이동합니다.");
-
-  // 다음 예약 단계 페이지로 이동 (예: location.href = 'form.html')
+  if (langCode === 'vi') {
+    // 베트남어 선택 시 병원 목록 선택 페이지로 리다이렉트
+    location.href = 'vi/index.html';
+  } else {
+    alert("Dịch vụ này hiện đang được chuẩn bị cho các ngôn ngữ khác. (본 서비스는 다른 언어로 제공될 예정입니다.)");
+  }
 }
 
 // 모듈 스코프 함수를 전역 window 객체에 등록하여 HTML의 onclick 이벤트가 접근할 수 있도록 함
