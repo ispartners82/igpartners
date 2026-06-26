@@ -530,47 +530,39 @@ body {
   }
 }
 
-/* 언어선택 돌아가기 버튼 */
+/* 언어선택 돌아가기 버튼 (그라데이션 및 3D 호버 디자인) */
 .back-to-lang {
   position: absolute;
   left: 0;
   top: 3rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  justify-content: center;
+  padding: 0.7rem 1.6rem;
+  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-blue) 100%);
+  border: none;
   border-radius: 100px;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  color: #ffffff;
+  font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;
   transition: var(--transition-smooth);
   cursor: pointer;
   z-index: 10;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .back-to-lang:hover {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: var(--text-primary);
-}
-
-.back-icon {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-  transition: transform 0.3s ease;
-}
-
-.back-to-lang:hover .back-icon {
-  transform: translateX(-4px);
+  background: linear-gradient(135deg, #7477f3 0%, #4f8ff7 100%);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px);
+  color: #ffffff;
 }
 
 @media (max-width: 768px) {
   .back-to-lang {
     position: static;
+    margin-top: 1rem;
     margin-bottom: 2rem;
     align-self: flex-start;
   }
