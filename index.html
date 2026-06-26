@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGPartners - Select Language</title>
+
+  <!-- 폰트 불러오기 (Outfit & Noto Sans KR) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- 외부 분리된 스타일시트 연동 -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <!-- 백그라운드 오로라 빛 장식 -->
+  <div class=" bg-decorations">
+    <div class="aurora-1"></div>
+    <div class="aurora-2"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <span class="brand-badge"><img src="logo.png" alt="Logo" class="brand-logo">IGPartners Reservation</span>
+      <h1 class="title">Select Language</h1>
+      <p class="subtitle">예약을 진행하기 위해 편리한 언어를 선택해 주세요.</p>
+    </header>
+
+    <!-- 4열 반응형 언어 그리드 영역 -->
+    <main class="grid-container">
+
+      <!-- 1. 베트남 -->
+      <button class="lang-card" onclick="selectLanguage('vi')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/vn.png" alt="Vietnam Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">Tiếng Việt</span>
+          <span class="lang-ko">베트남어</span>
+        </div>
+      </button>
+
+      <!-- 2. 러시아 -->
+      <button class="lang-card" onclick="selectLanguage('ru')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/ru.png" alt="Russia Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">Русский</span>
+          <span class="lang-ko">러시아어</span>
+        </div>
+      </button>
+
+      <!-- 3. 미얀마 -->
+      <button class="lang-card" onclick="selectLanguage('my')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/mm.png" alt="Myanmar Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">မြန်မာစာ</span>
+          <span class="lang-ko">미얀마어</span>
+        </div>
+      </button>
+
+      <!-- 4. 캄보디아 -->
+      <button class="lang-card" onclick="selectLanguage('km')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/kh.png" alt="Cambodia Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">ភាសាខ្មែរ</span>
+          <span class="lang-ko">캄보디아어</span>
+        </div>
+      </button>
+
+      <!-- 5. 몽골 -->
+      <button class="lang-card" onclick="selectLanguage('mn')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/mn.png" alt="Mongolia Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">Монгол хэл</span>
+          <span class="lang-ko">몽골어</span>
+        </div>
+      </button>
+
+      <!-- 6. 태국 -->
+      <button class="lang-card" onclick="selectLanguage('th')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/th.png" alt="Thailand Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">ภาษาไทย</span>
+          <span class="lang-ko">태국어</span>
+        </div>
+      </button>
+
+      <!-- 7. 라오스 -->
+      <button class="lang-card" onclick="selectLanguage('lo')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/la.png" alt="Laos Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">ພາສາລາວ</span>
+          <span class="lang-ko">라오스어</span>
+        </div>
+      </button>
+
+      <!-- 8. 네팔 -->
+      <button class="lang-card" onclick="selectLanguage('ne')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/np.png" alt="Nepal Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">नेपाली</span>
+          <span class="lang-ko">네팔어</span>
+        </div>
+      </button>
+
+      <!-- 9. 중국 -->
+      <button class="lang-card" onclick="selectLanguage('zh')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/cn.png" alt="China Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">中文 (简体)</span>
+          <span class="lang-ko">중국어</span>
+        </div>
+      </button>
+
+      <!-- 10. 인도네시아 -->
+      <button class="lang-card" onclick="selectLanguage('id')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/id.png" alt="Indonesia Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">Bahasa Indonesia</span>
+          <span class="lang-ko">인도네시아어</span>
+        </div>
+      </button>
+
+      <!-- 11. 스리랑카 -->
+      <button class="lang-card" onclick="selectLanguage('si')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/lk.png" alt="Sri Lanka Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">සිංහල</span>
+          <span class="lang-ko">스리랑카어</span>
+        </div>
+      </button>
+
+      <!-- 12. 방글라데시 -->
+      <button class="lang-card" onclick="selectLanguage('bn')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/bd.png" alt="Bangladesh Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">বাংলা</span>
+          <span class="lang-ko">방글라데시어</span>
+        </div>
+      </button>
+
+      <!-- 13. 영어 -->
+      <button class="lang-card" onclick="selectLanguage('en')">
+        <div class="flag-wrapper">
+          <img class="flag" src="https://flagcdn.com/w80/gb.png" alt="English Flag">
+        </div>
+        <div class="lang-info">
+          <span class="lang-native">English</span>
+          <span class="lang-ko">영어</span>
+        </div>
+      </button>
+
+    </main>
+  </div>
+
+  <!-- Firebase 및 메인 로직 로드 (ES Module) -->
+  <script type="module" src="js/main.js"></script>
+</body>
+
+</html>

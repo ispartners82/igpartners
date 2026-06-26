@@ -1,0 +1,375 @@
+/* ==========================================================================
+   IGPartners - Clinic Reservation System
+   Language Selection Screen Stylesheet (Dark Theme)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design Tokens & Variables (수정하기 쉽도록 변수화)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Color Palette */
+  --bg-main: #060913;
+  /* 베이스 딥 다크 네이비 */
+  --bg-surface: #0c1020;
+  /* 카드 및 섹션 표면 색상 */
+  --bg-glow: rgba(99, 102, 241, 0.12);
+  /* 백그라운드 오로라 빛 */
+
+  --text-primary: #f3f4f6;
+  /* 메인 텍스트 (화이트에 가까운 회색) */
+  --text-secondary: #9ca3af;
+  /* 보조 설명용 텍스트 (연회색) */
+
+  /* Brand Accent Colors */
+  --accent-blue: #3b82f6;
+  /* 포인트 블루 */
+  --accent-indigo: #6366f1;
+  /* 포인트 인디고 */
+  --accent-purple: #8b5cf6;
+  /* 포인트 퍼플 */
+
+
+  /* Glassmorphism settings */
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(99, 102, 241, 0.4);
+
+  /* Fonts */
+  --font-display: 'Outfit', 'Noto Sans KR', sans-serif;
+
+  /* Animations */
+  --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset & Global Styles
+   -------------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   3. Aesthetic Backdrops (백그라운드 빛 퍼짐 데코레이션)
+   -------------------------------------------------------------------------- */
+.bg-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.aurora-1 {
+  position: absolute;
+  top: -10%;
+  right: -5%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(6, 9, 19, 0) 70%);
+  filter: blur(40px);
+}
+
+.aurora-2 {
+  position: absolute;
+  bottom: -15%;
+  left: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, rgba(6, 9, 19, 0) 70%);
+  filter: blur(60px);
+}
+
+/* --------------------------------------------------------------------------
+   4. Layout Container
+   -------------------------------------------------------------------------- */
+.container {
+  position: relative;
+  z-index: 2;
+  width: 90%;
+  max-width: 1200px;
+  padding: 3rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header Section */
+.header {
+  text-align: center;
+  margin-bottom: 4rem;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.8rem 2rem;
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 100px;
+  color: var(--bg-main);
+  font-size: 4.25rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.brand-logo {
+  height: 0.9em;
+  width: auto;
+  display: block;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.75rem;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1.15rem;
+  font-weight: 300;
+}
+
+/* --------------------------------------------------------------------------
+   5. Grid Grid-template (4열 반응형 그리드)
+   -------------------------------------------------------------------------- */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  opacity: 0;
+}
+
+/* --------------------------------------------------------------------------
+   6. Language Card Component (Glassmorphism & Micro-animations)
+   -------------------------------------------------------------------------- */
+.lang-card {
+  background: #1e254a;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover 효과 시 내부 은은한 카드 그라데이션 빛 생성 */
+.lang-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+  opacity: 0;
+  transition: var(--transition-smooth);
+}
+
+/* 국기 이미지 */
+.flag-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+  z-index: 2;
+}
+
+.flag {
+  width: 90px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transition: var(--transition-smooth);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* 국기 위에 은은한 그라데이션 반사광 입히기 */
+.flag-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+}
+
+/* 언어명 텍스트 */
+.lang-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  z-index: 2;
+}
+
+.lang-native {
+  color: var(--text-primary);
+  font-size: 1.45rem;
+  font-weight: 700;
+  transition: var(--transition-smooth);
+}
+
+.lang-ko {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  font-weight: 400;
+  transition: var(--transition-smooth);
+}
+
+/* --------------------------------------------------------------------------
+   7. Card Interactions (Hover & Click)
+   -------------------------------------------------------------------------- */
+.lang-card:hover {
+  transform: translateY(-8px);
+  background: #2b3361;
+  border-color: #6366f1;
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25);
+}
+
+.lang-card:hover::before {
+  opacity: 1;
+}
+
+.lang-card:hover .flag {
+  transform: scale(1.1) rotate(2deg);
+  box-shadow: 0 12px 25px rgba(99, 102, 241, 0.3);
+}
+
+.lang-card:hover .lang-native {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.lang-card:active {
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   8. Keyframes Animations
+   -------------------------------------------------------------------------- */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   9. Media Queries (반응형 중단점 - 4열 -> 3열 -> 2열)
+   -------------------------------------------------------------------------- */
+
+/* 중형 화면 (태블릿 가로 / 소형 데스크톱): 3열 */
+@media (max-width: 1024px) {
+  .grid-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  .title {
+    font-size: 2.5rem;
+  }
+}
+
+/* 태블릿 세로 및 소형 태블릿: 2열 */
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .lang-card {
+    padding: 2.25rem 1rem;
+    border-radius: 20px;
+  }
+
+  .flag {
+    width: 56px;
+    height: 42px;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+}
+
+/* 초소형 모바일 화면: 2열 유지하지만 좀 더 타이트하게 */
+@media (max-width: 480px) {
+  .container {
+    padding: 2rem 0;
+  }
+
+  .header {
+    margin-bottom: 2.5rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    word-break: keep-all;
+  }
+
+  .lang-native {
+    font-size: 1rem;
+  }
+
+  .lang-ko {
+    font-size: 0.75rem;
+  }
+
+  .flag {
+    width: 48px;
+    height: 36px;
+  }
+}

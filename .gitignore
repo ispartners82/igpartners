@@ -1,0 +1,11 @@
+# MinGit 바이너리 폴더 제외
+git/
+
+# Firebase 캐시 및 파일 제외
+.firebase/
+firebase-debug.log
+firebase.exe
+
+# OS generated files
+.DS_Store
+Thumbs.db
