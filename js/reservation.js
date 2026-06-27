@@ -75,13 +75,9 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("local_reservations", JSON.stringify(localData));
     }
 
-    // 5초 타임아웃 프로미스
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Timeout")), 5000)
-    );
-
-    const saveDataPromise = (async () => {
-      return await addDoc(collection(db, "reservations"), {
+    try {
+      // Firestore에 예약 데이터 저장
+      const docRef = await addDoc(collection(db, "reservations"), {
         uid: userUid, // 예약 신청 유저 식별자 추가
         clinic: selectedClinic,
         name: name,
@@ -97,11 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         status: "pending",
         createdAt: new Date() // 실시간 포맷 호환을 위해 일반 Date 객체 사용
       });
-    })();
 
-    try {
-      // 5초 이내에 Firestore 저장이 안 되면 reject
-      const docRef = await Promise.race([saveDataPromise, timeoutPromise]);
       console.log("Document written with ID: ", docRef.id);
 
       // 백업용으로 로컬스토리지에도 동시에 씀 (클라우드 데이터와 병합 목적)
@@ -128,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       location.href = "./index.html";
 
     } catch (error) {
-      console.warn("Firestore save failed or timed out. Falling back to local storage.", error);
+      console.error("Firestore save failed:", error);
 
       // Firestore 저장 실패 시 로컬스토리지에만 저장 후 사용자에게 완료 응답 제공
       const localId = "local_" + Date.now();

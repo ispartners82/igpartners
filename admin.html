@@ -25,6 +25,15 @@
   </div>
 
   <div class="container admin-container">
+    <!-- 상단 로그인/사용자 정보 영역 -->
+    <div class="auth-bar">
+      <div id="auth-user" class="auth-user" style="display: none;">
+        <img id="user-photo" src="" alt="Profile" class="user-photo">
+        <span id="user-name" class="user-name"></span>
+        <button id="btn-logout" class="btn-auth logout">로그아웃 (Logout)</button>
+      </div>
+      <button id="btn-login" class="btn-auth login" style="display: none;">로그인</button>
+    </div>
     <header class="header">
       <span class="brand-badge">
         <img src="img/logo.png" alt="Logo" class="brand-logo">IGPartners Admin
@@ -36,7 +45,7 @@
     <!-- 관리자 메뉴 탭 -->
     <div class="admin-tabs">
       <button id="tab-reservations" class="tab-btn active">예약 내역 관리</button>
-      <button id="tab-users" class="tab-btn">회원 등급 관리</button>
+      <button id="tab-users" class="tab-btn" style="display: none;">회원 등급 관리</button>
     </div>
 
     <!-- 예약 내역 관리 탭 콘텐츠 -->
@@ -139,6 +148,7 @@
 
   <!-- Firebase 및 관리 로직 로드 (ES Module) -->
   <script type="module" src="/js/admin.js?v=2.0.7"></script>
+  <script type="module" src="/js/auth.js?v=2.0.7"></script>
 </body>
 
 </html>

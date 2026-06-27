@@ -845,6 +845,55 @@ body {
   }
 }
 
+/* date input 관련 커스텀 스타일링 (yyyy-mm-dd 표시 및 달력 아이콘 흰색 변경) */
+.form-group input[type="date"] {
+  position: relative;
+}
+
+/* Chrome, Edge 등 Webkit 브라우저용 달력 아이콘 색상 흰색 변경 */
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(100%);
+  cursor: pointer;
+}
+
+/* 기본 '연도-월-일' 글자 투명화하여 가려둠 */
+.form-group input[type="date"]::-webkit-datetime-edit-text,
+.form-group input[type="date"]::-webkit-datetime-edit-month-field,
+.form-group input[type="date"]::-webkit-datetime-edit-day-field,
+.form-group input[type="date"]::-webkit-datetime-edit-year-field {
+  color: transparent;
+}
+
+/* 포커스를 받았거나 유효한 값이 입력되면 원래 흰색으로 표시 */
+.form-group input[type="date"]:focus::-webkit-datetime-edit-text,
+.form-group input[type="date"]:focus::-webkit-datetime-edit-month-field,
+.form-group input[type="date"]:focus::-webkit-datetime-edit-day-field,
+.form-group input[type="date"]:focus::-webkit-datetime-edit-year-field,
+.form-group input[type="date"]:valid::-webkit-datetime-edit-text,
+.form-group input[type="date"]:valid::-webkit-datetime-edit-month-field,
+.form-group input[type="date"]:valid::-webkit-datetime-edit-day-field,
+.form-group input[type="date"]:valid::-webkit-datetime-edit-year-field {
+  color: #ffffff;
+}
+
+/* yyyy-mm-dd 영문 텍스트 플레이스홀더를 가상 요소로 띄움 */
+.form-group input[type="date"]::before {
+  content: "yyyy-mm-dd";
+  color: rgba(255, 255, 255, 0.3);
+  position: absolute;
+  left: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-family: var(--font-display);
+}
+
+/* 포커스를 받거나 유효한 값이 입력되면 가상 플레이스홀더를 가림 */
+.form-group input[type="date"]:focus::before,
+.form-group input[type="date"]:valid::before {
+  display: none;
+}
+
 /* ==========================================================================
    12. Admin Dashboard Styles (관리자 대시보드 스타일)
    ========================================================================== */

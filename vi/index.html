@@ -25,6 +25,16 @@
   </div>
 
   <div class="container">
+    <!-- 상단 로그인/사용자 정보 영역 -->
+    <div class="auth-bar">
+      <div id="auth-user" class="auth-user" style="display: none;">
+        <img id="user-photo" src="" alt="Profile" class="user-photo">
+        <span id="user-name" class="user-name"></span>
+        <button id="btn-logout" class="btn-auth logout">로그아웃 (Logout)</button>
+      </div>
+      <button id="btn-login" class="btn-auth login">로그인</button>
+    </div>
+
     <!-- 언어선택 돌아가기 버튼 -->
     <a href="../index.html" class="back-to-lang">언어선택</a>
 
@@ -194,6 +204,7 @@
       location.href = './reservation.html';
     }
   </script>
+  <script type="module" src="/js/auth.js?v=2.0.7"></script>
 </body>
 
 </html>

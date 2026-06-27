@@ -132,8 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       }
 
-      // 삭제 버튼 추가
-      actionButtons += `<button class="btn-action delete" data-id="${docId}" data-action="delete">삭제</button>`;
+      // 삭제 버튼 추가 (최고 관리자 전용)
+      if (currentLoginUserRole === "super_admin") {
+        actionButtons += `<button class="btn-action delete" data-id="${docId}" data-action="delete">삭제</button>`;
+      }
 
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
@@ -353,6 +355,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (allowedRoles.includes(userData.role)) {
           console.log(`Access granted for role: ${userData.role}`);
           currentLoginUserRole = userData.role; // 등급 캐싱
+          
+          // 최고 관리자(super_admin)인 경우에만 회원 등급 관리 탭 노출
+          const tabUsers = document.getElementById("tab-users");
+          if (tabUsers) {
+            if (currentLoginUserRole === "super_admin") {
+              tabUsers.style.display = "inline-block";
+            } else {
+              tabUsers.style.display = "none";
+            }
+          }
+          
           // 권한 획득 성공 시 예약 정보 로드 진행
           loadReservations();
           return;
