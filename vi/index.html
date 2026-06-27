@@ -39,172 +39,18 @@
     <a href="../index.html" class="back-to-lang">언어선택</a>
 
     <header class="header">
-      <span class="brand-badge">
-        <img src="../img/logo.png" alt="Logo" class="brand-logo">IGPartners
-      </span>
+      <div id="brand-logo-container" data-text="IGPartners Medical Appointment"></div>
       <h1 class="title">Chọn Bệnh Viện</h1>
       <p class="subtitle">Vui lòng chọn bệnh viện mong muốn để tiến hành đặt lịch hẹn.</p>
     </header>
-
-    <!-- 3열 반응형 병원 그리드 영역 -->
-    <main class="clinic-grid">
-
-      <!-- 1. 서울 가온 피부과 -->
-      <article class="clinic-card">
-        <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="../img/clinic_1_dermatology.png" alt="Khoa Da Liễu Gaon Seoul">
-        </div>
-        <div class="clinic-content">
-          <h2 class="clinic-title">Khoa Da Liễu Gaon Seoul</h2>
-          <div class="clinic-depts">
-            <span class="dept-badge">Thẩm mỹ da</span>
-            <span class="dept-badge">Laser nâng cơ</span>
-            <span class="dept-badge">Petit</span>
-          </div>
-          <p class="clinic-desc">Cung cấp dịch vụ điều trị da liễu 1:1 cá nhân hóa chuyên sâu bởi các bác sĩ chuyên khoa da liễu giàu kinh nghiệm cùng hệ thống trang thiết bị Laser hiện đại nhất hiện nay.</p>
-          <div class="clinic-address">
-            <svg class="address-icon" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>123 Teheran-ro, Gangnam-gu, Seoul</span>
-          </div>
-          <button class="clinic-select-btn" onclick="selectClinic('Gaon Seoul Dermatology')">Đặt lịch ngay</button>
-        </div>
-      </article>
-
-      <!-- 2. 튼튼치과 -->
-      <article class="clinic-card">
-        <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="../img/clinic_2_dental.png" alt="Nha Khoa Teun Teun">
-        </div>
-        <div class="clinic-content">
-          <h2 class="clinic-title">Nha Khoa Teun Teun</h2>
-          <div class="clinic-depts">
-            <span class="dept-badge">Implant</span>
-            <span class="dept-badge">Niềng răng</span>
-            <span class="dept-badge">Tổng quát</span>
-          </div>
-          <p class="clinic-desc">Hướng tới điều trị an toàn, không đau đớn và ưu tiên hàng đầu việc bảo tồn tối đa răng tự nhiên cho khách hàng. Đội ngũ bác sĩ tận tâm với công nghệ chẩn đoán 3D tiên tiến.</p>
-          <div class="clinic-address">
-            <svg class="address-icon" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>45 Dongmak-ro, Mapo-gu, Seoul</span>
-          </div>
-          <button class="clinic-select-btn" onclick="selectClinic('Teun Teun Dental')">Đặt lịch ngay</button>
-        </div>
-      </article>
-
-      <!-- 3. 바로본정형외과 -->
-      <article class="clinic-card">
-        <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="../img/clinic_3_ortho.png" alt="Khoa Chỉnh Hình Barobon">
-        </div>
-        <div class="clinic-content">
-          <h2 class="clinic-title">Khoa Chỉnh Hình Barobon</h2>
-          <div class="clinic-depts">
-            <span class="dept-badge">Cột sống & Khớp</span>
-            <span class="dept-badge">Trị liệu bằng tay</span>
-            <span class="dept-badge">Không phẫu thuật</span>
-          </div>
-          <p class="clinic-desc">Cam kết chẩn đoán chính xác tuyệt đối và điều trị phục hồi chức năng chuyên sâu, bài bản theo phác đồ cá nhân bởi đội ngũ bác sĩ chỉnh hình chuyên khoa giàu kinh nghiệm.</p>
-          <div class="clinic-address">
-            <svg class="address-icon" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>78 Seocho-daero, Seocho-gu, Seoul</span>
-          </div>
-          <button class="clinic-select-btn" onclick="selectClinic('Barobon Orthopedics')">Đặt lịch ngay</button>
-        </div>
-      </article>
-
-      <!-- 4. 경희한의원 -->
-      <article class="clinic-card">
-        <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="../img/clinic_4_oriental.png" alt="Phòng Khám Y Học Cổ Truyền Kyunghee">
-        </div>
-        <div class="clinic-content">
-          <h2 class="clinic-title">Y Học Cổ Truyền Kyunghee</h2>
-          <div class="clinic-depts">
-            <span class="dept-badge">Châm cứu</span>
-            <span class="dept-badge">Thuốc thảo dược</span>
-            <span class="dept-badge">Trị liệu Chuna</span>
-          </div>
-          <p class="clinic-desc">Sự kết hợp hoàn hảo giữa tinh hoa y học cổ truyền truyền thống và phương pháp chăm sóc sức khỏe hiện đại giúp cải thiện thể trạng toàn diện, an toàn và lành tính.</p>
-          <div class="clinic-address">
-            <svg class="address-icon" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>26 Kyungheedae-ro, Dongdaemun-gu, Seoul</span>
-          </div>
-          <button class="clinic-select-btn" onclick="selectClinic('Kyunghee Oriental Medicine')">Đặt lịch ngay</button>
-        </div>
-      </article>
-
-      <!-- 5. 밝은나라안과 -->
-      <article class="clinic-card">
-        <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="../img/clinic_5_eye.png" alt="Nhãn Khoa Bright World">
-        </div>
-        <div class="clinic-content">
-          <h2 class="clinic-title">Nhãn Khoa Bright World</h2>
-          <div class="clinic-depts">
-            <span class="dept-badge">Mổ cận Lasik</span>
-            <span class="dept-badge">Đục thủy tinh thể</span>
-            <span class="dept-badge">Khô mắt</span>
-          </div>
-          <p class="clinic-desc">Trang bị đầy đủ máy móc phẫu thuật nhãn khoa hiện đại nhất và quy trình kiểm tra chi tiết 50 bước nghiêm ngặt nhằm bảo vệ tối đa sức khỏe đôi mắt quý giá của bạn.</p>
-          <div class="clinic-address">
-            <svg class="address-icon" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>50 Namdaemun-ro, Jung-gu, Seoul</span>
-          </div>
-          <button class="clinic-select-btn" onclick="selectClinic('Bright World Eye Clinic')">Đặt lịch ngay</button>
-        </div>
-      </article>
-
-      <!-- 6. 이화종합검진내과 -->
-      <article class="clinic-card">
-        <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="../img/clinic_6_internal.png" alt="Khoa Nội & Khám Sức Khỏe Tổng Quát Ewha">
-        </div>
-        <div class="clinic-content">
-          <h2 class="clinic-title">Khoa Nội Tổng Quát Ewha</h2>
-          <div class="clinic-depts">
-            <span class="dept-badge">Nội soi dạ dày</span>
-            <span class="dept-badge">Bệnh mãn tính</span>
-            <span class="dept-badge">Tầm soát bệnh</span>
-          </div>
-          <p class="clinic-desc">Trung tâm khám sức khỏe định kỳ khép kín, tiện nghi, sang trọng cùng đội ngũ bác sĩ chuyên khoa giàu kinh nghiệm giúp bạn tầm soát sớm mọi nguy cơ và bảo vệ sức khỏe trọn đời.</p>
-          <div class="clinic-address">
-            <svg class="address-icon" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>11 Yeouidong-ro, Yeongdeungpo-gu, Seoul</span>
-          </div>
-          <button class="clinic-select-btn" onclick="selectClinic('Ewha Internal Medicine')">Đặt lịch ngay</button>
-        </div>
-      </article>
-
+    <!-- 3열 반응형 병원 그리드 영역 (Firestore에서 동적 로드) -->
+    <main class="clinic-grid" id="clinic-list-container">
     </main>
   </div>
 
-  <script>
-    /**
-     * 병원 선택 시 동작하는 함수
-     */
-    function selectClinic(clinicName) {
-      console.log("Selected Clinic:", clinicName);
-      
-      // 로컬 스토리지에 선택된 병원명 기록
-      localStorage.setItem('selected_clinic', clinicName);
-      
-      // 예약 정보 입력 폼으로 이동 처리
-      location.href = './reservation.html';
-    }
-  </script>
+  <script type="module" src="/js/clinic-loader.js?v=2.0.7"></script>
   <script type="module" src="/js/auth.js?v=2.0.7"></script>
+  <script type="module" src="/js/logo.js?v=2.0.7"></script>
 </body>
 
 </html>
