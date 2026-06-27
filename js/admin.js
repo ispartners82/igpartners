@@ -6,6 +6,7 @@ import {
   onSnapshot, 
   doc, 
   getDoc,
+  getDocs,
   updateDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -14,6 +15,16 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/f
 document.addEventListener("DOMContentLoaded", () => {
   const reservationList = document.getElementById("reservation-list");
   const btnRefresh = document.getElementById("btn-refresh");
+
+  const tabReservations = document.getElementById("tab-reservations");
+  const tabUsers = document.getElementById("tab-users");
+  const contentReservations = document.getElementById("content-reservations");
+  const contentUsers = document.getElementById("content-users");
+
+  const userList = document.getElementById("user-list");
+  const btnRefreshUsers = document.getElementById("btn-refresh-users");
+
+  let currentLoginUserRole = "user"; // 현재 로그인한 사용자의 등급 저장
 
   const statTotal = document.getElementById("stat-total");
   const statPending = document.getElementById("stat-pending");
@@ -338,8 +349,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
-        if (userData.role === "admin" || userData.role === "super_admin") {
+        const allowedRoles = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"];
+        if (allowedRoles.includes(userData.role)) {
           console.log(`Access granted for role: ${userData.role}`);
+          currentLoginUserRole = userData.role; // 등급 캐싱
           // 권한 획득 성공 시 예약 정보 로드 진행
           loadReservations();
           return;
@@ -356,5 +369,158 @@ document.addEventListener("DOMContentLoaded", () => {
       location.href = "./index.html";
     }
   });
+
+  // 탭 전환 이벤트 리스너
+  if (tabReservations && tabUsers) {
+    tabReservations.addEventListener("click", () => {
+      tabReservations.classList.add("active");
+      tabUsers.classList.remove("active");
+      contentReservations.style.display = "block";
+      contentUsers.style.display = "none";
+    });
+
+    tabUsers.addEventListener("click", () => {
+      tabUsers.classList.add("active");
+      tabReservations.classList.remove("active");
+      contentReservations.style.display = "none";
+      contentUsers.style.display = "block";
+      loadUsers(); // 회원 목록 불러오기
+    });
+  }
+
+  // 회원 목록 데이터 가져오기 및 렌더링
+  async function loadUsers() {
+    if (!userList) return;
+    
+    userList.innerHTML = `<tr><td colspan="5" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
+
+    try {
+      const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      userList.innerHTML = "";
+
+      if (querySnapshot.empty) {
+        userList.innerHTML = `<tr><td colspan="5" class="table-empty">가입된 회원이 없습니다.</td></tr>`;
+        return;
+      }
+
+      querySnapshot.forEach((docSnap) => {
+        const userData = docSnap.data();
+        const userId = docSnap.id;
+        const tr = document.createElement("tr");
+
+        // 가입 날짜 포맷팅
+        let registerDate = "-";
+        if (userData.createdAt) {
+          const dateObj = new Date(userData.createdAt);
+          registerDate = isNaN(dateObj) ? "-" : dateObj.toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+          });
+        }
+
+        // 등급 표시 한글 라벨 매핑 및 뱃지 클래스
+        const roleLabels = {
+          "super_admin": "최고 관리자",
+          "admin": "일반 관리자",
+          "partner": "제휴 병원",
+          "vip": "VIP 회원",
+          "user": "일반 회원",
+          "admin_user": "관리자",
+          "top_manager": "최고 매니저",
+          "res_manager": "예약 매니저",
+          "general": "일반"
+        };
+        const currentRoleLabel = roleLabels[userData.role] || userData.role || "일반";
+
+        // 최고 관리자(super_admin)만 등급 수정 폼 활성화, 본인 계정은 변경 불가 처리
+        const isSuperAdmin = currentLoginUserRole === "super_admin";
+        const isSelf = auth.currentUser && auth.currentUser.uid === userId;
+        const isDisabled = (!isSuperAdmin || isSelf) ? "disabled" : "";
+
+        // 변경 컨트롤 HTML
+        const roleControlHTML = `
+          <div class="role-control-wrapper">
+            <select class="select-role" id="select-role-${userId}" ${isDisabled}>
+              <option value="user" ${userData.role === 'user' ? 'selected' : ''}>일반 회원</option>
+              <option value="general" ${userData.role === 'general' ? 'selected' : ''}>일반</option>
+              <option value="vip" ${userData.role === 'vip' ? 'selected' : ''}>VIP 회원</option>
+              <option value="partner" ${userData.role === 'partner' ? 'selected' : ''}>제휴 병원</option>
+              <option value="res_manager" ${userData.role === 'res_manager' ? 'selected' : ''}>예약 매니저</option>
+              <option value="top_manager" ${userData.role === 'top_manager' ? 'selected' : ''}>최고 매니저</option>
+              <option value="admin" ${userData.role === 'admin' ? 'selected' : ''}>일반 관리자</option>
+              <option value="admin_user" ${userData.role === 'admin_user' ? 'selected' : ''}>관리자</option>
+              <option value="super_admin" ${userData.role === 'super_admin' ? 'selected' : ''}>최고 관리자</option>
+            </select>
+            <button class="btn-action confirm btn-update-role" data-uid="${userId}" ${isDisabled}>변경</button>
+          </div>
+        `;
+
+        tr.innerHTML = `
+          <td class="font-bold">${userData.name || "-"}</td>
+          <td>${userData.email || "-"}</td>
+          <td>${registerDate}</td>
+          <td><span class="role-badge ${userData.role || 'user'}">${currentRoleLabel}</span></td>
+          <td>${roleControlHTML}</td>
+        `;
+
+        userList.appendChild(tr);
+      });
+
+    } catch (error) {
+      console.error("Load users failed:", error);
+      userList.innerHTML = `<tr><td colspan="5" class="table-empty">회원 데이터를 로드하지 못했습니다. (권한 오류 등)</td></tr>`;
+    }
+  }
+
+  // 회원 등급 업데이트
+  async function updateUserRole(targetUid, newRole) {
+    if (currentLoginUserRole !== "super_admin") {
+      alert("회원 등급 변경 권한이 없습니다. (최고 관리자 전용 기능)");
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, "users", targetUid);
+      await updateDoc(userDocRef, {
+        role: newRole
+      });
+      alert("회원 등급이 정상적으로 수정되었습니다.");
+      loadUsers(); // 목록 새로고침
+    } catch (error) {
+      console.error("Update user role failed:", error);
+      alert("등급 수정 중 오류가 발생했습니다. (권한 만료 또는 데이터 오류)");
+    }
+  }
+
+  // 회원 테이블 이벤트 바인딩 (위임 처리)
+  if (userList) {
+    userList.addEventListener("click", async (e) => {
+      if (e.target.classList.contains("btn-update-role")) {
+        const targetUid = e.target.getAttribute("data-uid");
+        const selectBox = document.getElementById(`select-role-${targetUid}`);
+        if (selectBox) {
+          const newRole = selectBox.value;
+          if (confirm("해당 회원의 등급을 변경하시겠습니까?")) {
+            const originalText = e.target.textContent;
+            e.target.disabled = true;
+            e.target.textContent = "처리중...";
+            await updateUserRole(targetUid, newRole);
+            e.target.disabled = false;
+            e.target.textContent = originalText;
+          }
+        }
+      }
+    });
+  }
+
+  // 회원 새로고침 버튼 이벤트
+  if (btnRefreshUsers) {
+    btnRefreshUsers.addEventListener("click", () => {
+      loadUsers();
+    });
+  }
 });
 // Build cache bust: 2026-06-27T16:30:00
