@@ -14,7 +14,7 @@
     rel="stylesheet">
 
   <!-- 외부 분리된 스타일시트 연동 -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.0.7">
 </head>
 
 <body>
@@ -25,6 +25,15 @@
   </div>
 
   <div class="container">
+    <!-- 상단 로그인/사용자 정보 영역 -->
+    <div class="auth-bar">
+      <div id="auth-user" class="auth-user" style="display: none;">
+        <img id="user-photo" src="" alt="Profile" class="user-photo">
+        <span id="user-name" class="user-name"></span>
+        <button id="btn-logout" class="btn-auth logout">로그아웃 (Logout)</button>
+      </div>
+      <button id="btn-login" class="btn-auth login">로그인</button>
+    </div>
     <header class="header">
       <span class="brand-badge"><img src="img/logo.png" alt="Logo" class="brand-logo">IGPartners Reservation</span>
       <h1 class="title">Select Language</h1>
@@ -181,7 +190,8 @@
   </div>
 
   <!-- Firebase 및 메인 로직 로드 (ES Module) -->
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js?v=2.0.7"></script>
+  <script type="module" src="js/auth.js?v=2.0.7"></script>
 </body>
 
 </html>

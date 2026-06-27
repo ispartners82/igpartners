@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGPartners - Đặt Lịch Hẹn (예약하기)</title>
+
+  <!-- 폰트 불러오기 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- 메인 스타일시트 연동 -->
+  <link rel="stylesheet" href="/css/style.css?v=2.0.7">
+</head>
+
+<body>
+  <!-- 백그라운드 오로라 빛 장식 -->
+  <div class="bg-decorations">
+    <div class="aurora-1"></div>
+    <div class="aurora-2"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <span class="brand-badge">
+        <img src="/img/logo.png" alt="Logo" class="brand-logo">IGPartners
+      </span>
+      <h1 class="title">Nhập Thông Tin Đặt Lịch</h1>
+      <p class="subtitle">Vui lòng điền đầy đủ thông tin bên dưới để tiến hành đặt lịch hẹn.</p>
+      <div id="selected-clinic-badge" class="selected-clinic-badge">
+        Đang đặt lịch tại: <span id="clinic-name-text">Chưa chọn bệnh viện</span>
+      </div>
+    </header>
+
+    <main class="form-container">
+      <form id="reservation-form" class="reservation-form">
+        <!-- 2열 그리드 레이아웃 -->
+        <div class="form-grid">
+          
+          <!-- 이름 -->
+          <div class="form-group">
+            <label for="input-name">Họ và tên / 이름 <span class="required">*</span></label>
+            <input type="text" id="input-name" required placeholder="Ví dụ: NGUYEN VAN A">
+          </div>
+
+          <!-- 성별 -->
+          <div class="form-group">
+            <label for="input-gender">Giới tính / 성별 <span class="required">*</span></label>
+            <select id="input-gender" required>
+              <option value="" disabled selected>Chọn giới tính / 성별 선택</option>
+              <option value="Nam">Nam / 남성</option>
+              <option value="Nữ">Nữ / 여성</option>
+              <option value="Khác">Khác / 기타</option>
+            </select>
+          </div>
+
+          <!-- 외국인등록번호 -->
+          <div class="form-group">
+            <label for="input-alien-no">Số đăng ký người nước ngoài / 외국인등록번호</label>
+            <input type="text" id="input-alien-no" placeholder="Ví dụ: 950101-2******">
+          </div>
+
+          <!-- 여권번호 -->
+          <div class="form-group">
+            <label for="input-passport-no">Số hộ chiếu / 여권번호 <span class="required">*</span></label>
+            <input type="text" id="input-passport-no" required placeholder="Ví dụ: M12345678">
+          </div>
+
+          <!-- 생년월일 -->
+          <div class="form-group">
+            <label for="input-dob">Ngày sinh / 생년월일 <span class="required">*</span></label>
+            <input type="date" id="input-dob" required>
+          </div>
+
+          <!-- 예약날짜 -->
+          <div class="form-group">
+            <label for="input-date">Ngày đặt lịch / 예약날짜 <span class="required">*</span></label>
+            <input type="date" id="input-date" required>
+          </div>
+
+          <!-- 주소 (2열 병합) -->
+          <div class="form-group full-width">
+            <label for="input-address">Địa chỉ hiện tại / 현재 주소 <span class="required">*</span></label>
+            <input type="text" id="input-address" required placeholder="Ví dụ: Seoul, Gangnam-gu, Teheran-ro 123">
+          </div>
+
+          <!-- 현재증상 (2열 병합) -->
+          <div class="form-group full-width">
+            <label for="input-symptoms">Triệu chứng hiện tại / 현재 증상 <span class="required">*</span></label>
+            <textarea id="input-symptoms" rows="4" required placeholder="Vui lòng mô tả chi tiết các triệu chứng của bạn (ví dụ: đau răng, ngứa da,...)"></textarea>
+          </div>
+
+          <!-- 연락처 (2열 병합) -->
+          <div class="form-group full-width">
+            <label for="input-phone">Số điện thoại / 연락처 <span class="required">*</span></label>
+            <input type="tel" id="input-phone" required placeholder="Ví dụ: 010-1234-5678">
+          </div>
+
+        </div>
+
+        <!-- 개인정보 동의 체크박스 -->
+        <div class="form-agreement">
+          <label class="checkbox-container">
+            <input type="checkbox" id="agreement-check" required>
+            <span class="checkmark"></span>
+            <span class="agreement-text">
+              Tôi đồng ý với việc thu thập và sử dụng thông tin cá nhân cho mục đích đặt lịch khám bệnh. (개인정보 수집 및 이용에 동의합니다.) <span class="required">*</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- 하단 버튼 영역 -->
+        <div class="form-actions">
+          <button type="button" id="btn-back" class="btn btn-secondary">Quay lại (돌아가기)</button>
+          <button type="submit" id="btn-submit" class="btn btn-primary">Đặt lịch (예약하기)</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <!-- Firebase 및 예약 로직 로드 (ES Module) -->
+  <script type="module" src="/js/reservation.js?v=2.0.7"></script>
+</body>
+
+</html>

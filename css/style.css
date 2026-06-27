@@ -587,3 +587,730 @@ body {
     align-self: flex-start;
   }
 }
+
+/* ==========================================================================
+   11. Reservation Form Page Styles (예약 입력 폼 스타일)
+   ========================================================================== */
+
+.selected-clinic-badge {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding: 0.6rem 1.5rem;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 100px;
+  color: #a5b4fc;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#clinic-name-text {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 800px;
+  background: #111632;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+.reservation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.form-group label .required {
+  color: #ef4444;
+}
+
+/* 폼 인풋 기본 디자인 (Glassmorphism + Dark) */
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+  background: #181d3a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.9rem 1.2rem;
+  font-size: 1rem;
+  color: #ffffff;
+  font-family: var(--font-display);
+  outline: none;
+  transition: var(--transition-smooth);
+  width: 100%;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: #1c2244;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent-indigo);
+  background: #1c2244;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+}
+
+/* 성별 셀렉트 커스텀 스타일링 대비 */
+.form-group select option {
+  background: #111632;
+  color: #ffffff;
+}
+
+/* 개인정보 수집 동의 커스텀 체크박스 */
+.form-agreement {
+  padding: 1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  padding-left: 2.25rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  user-select: none;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #181d3a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  transition: var(--transition-smooth);
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: var(--accent-indigo);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--accent-indigo);
+  border-color: var(--accent-indigo);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 11px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.agreement-text .required {
+  color: #ef4444;
+}
+
+/* 버튼 액션 스타일 */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  border: none;
+  outline: none;
+  flex: 1;
+  text-align: center;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-blue) 100%);
+  color: #ffffff;
+  box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #7477f3 0%, #4f8ff7 100%);
+  box-shadow: 0 8px 22px rgba(99, 102, 241, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+  background: #3b3f5c;
+  color: #8a8f9c;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+  .form-container {
+    padding: 1.75rem;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-group.full-width {
+    grid-column: span 1;
+  }
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+}
+
+/* ==========================================================================
+   12. Admin Dashboard Styles (관리자 대시보드 스타일)
+   ========================================================================== */
+
+.admin-container {
+  max-width: 1400px;
+  width: 95%;
+}
+
+/* 대시보드 통계 카드 */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 2.5rem;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  opacity: 0;
+}
+
+.stat-card {
+  background: #111632;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 통계 카드 왼쪽 컬러 바 지시자 */
+.stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background-color: var(--accent-indigo);
+}
+
+.stat-card.pending::before {
+  background-color: #f59e0b; /* 주황색 */
+}
+
+.stat-card.confirmed::before {
+  background-color: #10b981; /* 녹색 */
+}
+
+.stat-card.cancelled::before {
+  background-color: #ef4444; /* 빨간색 */
+}
+
+.stat-title {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* 대시보드 메인 영역 */
+.admin-main {
+  width: 100%;
+  background: #111632;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1rem;
+}
+
+.table-controls h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-refresh svg {
+  transition: transform 0.6s ease;
+}
+
+.btn-refresh:hover svg {
+  transform: rotate(180deg);
+}
+
+/* 관리 테이블 반응형 */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 1.1rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.admin-table th {
+  background-color: rgba(255, 255, 255, 0.02);
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-table tbody tr {
+  transition: var(--transition-smooth);
+}
+
+.admin-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* 테이블 각 컬럼 너비 조정 대비 및 스타일 */
+.col-date {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.table-clinic-name {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 6px;
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+.col-id {
+  min-width: 150px;
+}
+
+.id-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+  width: fit-content;
+}
+
+.id-badge.alien {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.id-badge.passport {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c7d2fe;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.col-dob, .col-res-date, .col-phone {
+  white-space: nowrap;
+}
+
+.col-address, .col-symptoms {
+  max-width: 180px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+  white-space: normal;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-accent {
+  color: #818cf8;
+}
+
+/* 상태 배지 */
+.badge {
+  display: inline-flex;
+  padding: 0.35rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-confirmed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* 액션 버튼 관리 */
+.action-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.btn-action {
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition-smooth);
+}
+
+.btn-action.confirm {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.btn-action.confirm:hover {
+  background-color: #059669;
+}
+
+.btn-action.cancel {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+.btn-action.cancel:hover {
+  background-color: #dc2626;
+}
+
+.btn-action.pending {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-action.pending:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-action.delete {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-action.delete:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* 로딩, 에러, 공백 행 처리 */
+.table-loading,
+.table-empty,
+.table-error {
+  text-align: center;
+  padding: 3rem !important;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.table-error {
+  color: #f87171;
+}
+
+/* 미디어 쿼리 조율 */
+@media (max-width: 1024px) {
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+  .admin-main {
+    padding: 1rem;
+  }
+  .table-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+/* ==========================================================================
+   13. Top Navigation & Google Auth Styles (상단 로그인 영역 스타일)
+   ========================================================================== */
+
+.auth-bar {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* 인증 관련 버튼 공통 */
+.btn-auth {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.25rem;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  outline: none;
+  font-family: var(--font-display);
+}
+
+/* 로그인 버튼 (Indigo/Blue Gradient) */
+.btn-auth.login {
+  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-blue) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+}
+
+.btn-auth.login:hover {
+  background: linear-gradient(135deg, #7477f3 0%, #4f8ff7 100%);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-auth.login:active {
+  transform: translateY(-1px);
+}
+
+/* 사용자 정보 노출 영역 (로그인 완료 시) */
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(17, 22, 50, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.4rem 0.5rem 0.4rem 1rem;
+  border-radius: 100px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 프로필 사진 */
+.user-photo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #111632;
+}
+
+/* 닉네임 */
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 로그아웃 버튼 (Flat/Dark) */
+.btn-auth.logout {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.btn-auth.logout:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  transform: none;
+}
+
+/* 태블릿 및 모바일 화면 최적화 (1024px 이하에서 수직 배치하여 겹침 방지) */
+@media (max-width: 1024px) {
+  .auth-bar {
+    position: static;
+    margin-top: 1rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .btn-auth {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  .auth-user {
+    padding: 0.35rem 0.4rem 0.35rem 0.8rem;
+  }
+  .user-photo {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* 선택언어 뱃지 스타일 */
+.lang-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 50px;
+  color: #a5b4fc;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}

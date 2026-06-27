@@ -1,34 +1,18 @@
-// Firebase App SDK CDN import
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+// Firebase App 및 Analytics 로드 (공통 DB 모듈 실행)
+import { app, analytics } from "./firebase-db.js?v=2.0.7";
 
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyD8V6mVYsjHsw8Gcuv909d7bppo1DQNX1M",
-  authDomain: "igpartners-ddbf9.firebaseapp.com",
-  projectId: "igpartners-ddbf9",
-  storageBucket: "igpartners-ddbf9.firebasestorage.app",
-  messagingSenderId: "217909826370",
-  appId: "1:217909826370:web:69e559a57b2d8a70bd6edb",
-  measurementId: "G-2RG951Y39M"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-let analytics;
-try {
-  analytics = getAnalytics(app);
-  console.log("Firebase Analytics initialized.");
-} catch (error) {
-  console.warn("Firebase Analytics failed to initialize:", error);
-}
-
-console.log("Firebase App initialized successfully.");
+console.log("Firebase App initialized successfully via common module.");
 
 /**
  * 언어 선택 시 호출되는 액션 함수
  */
 function selectLanguage(langCode) {
+  // 로그인 검증 로직 추가
+  if (!window.isLoggedIn) {
+    alert("로그인을 먼저 해주세요.\n(Please log in first.)");
+    return;
+  }
+
   console.log("Selected Language:", langCode);
 
   // 로컬 스토리지에 언어 설정 기록 (추후 진료 예약 폼 등에서 활용)
@@ -44,3 +28,4 @@ function selectLanguage(langCode) {
 
 // 모듈 스코프 함수를 전역 window 객체에 등록하여 HTML의 onclick 이벤트가 접근할 수 있도록 함
 window.selectLanguage = selectLanguage;
+// Build cache bust: 2026-06-27T16:30:00

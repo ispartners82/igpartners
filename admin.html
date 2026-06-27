@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGPartners - 관리자 예약 내역 조회</title>
+
+  <!-- 폰트 불러오기 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- 메인 스타일시트 연동 -->
+  <link rel="stylesheet" href="/css/style.css?v=2.0.7">
+</head>
+
+<body>
+  <!-- 백그라운드 오로라 빛 장식 -->
+  <div class="bg-decorations">
+    <div class="aurora-1"></div>
+    <div class="aurora-2"></div>
+  </div>
+
+  <div class="container admin-container">
+    <header class="header">
+      <span class="brand-badge">
+        <img src="img/logo.png" alt="Logo" class="brand-logo">IGPartners Admin
+      </span>
+      <h1 class="title">예약 현황 관리 대시보드</h1>
+      <p class="subtitle">환자들의 예약 정보를 실시간으로 확인하고 예약을 확정하거나 취소할 수 있습니다.</p>
+    </header>
+
+    <!-- 대시보드 통계 카드 영역 -->
+    <div class="admin-stats">
+      <div class="stat-card">
+        <span class="stat-title">전체 예약</span>
+        <span id="stat-total" class="stat-value">0</span>
+      </div>
+      <div class="stat-card pending">
+        <span class="stat-title">대기 중</span>
+        <span id="stat-pending" class="stat-value">0</span>
+      </div>
+      <div class="stat-card confirmed">
+        <span class="stat-title">예약 확정</span>
+        <span id="stat-confirmed" class="stat-value">0</span>
+      </div>
+      <div class="stat-card cancelled">
+        <span class="stat-title">예약 취소</span>
+        <span id="stat-cancelled" class="stat-value">0</span>
+      </div>
+    </div>
+
+    <!-- 예약 목록 테이블 영역 -->
+    <main class="admin-main">
+      <div class="table-controls">
+        <h2>예약 상세 목록</h2>
+        <button id="btn-refresh" class="btn-refresh">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          새로고침
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>선택언어</th>
+              <th>이름</th>
+              <th>선택 병원</th>
+              <th>성별</th>
+              <th>생년월일</th>
+              <th>신원정보 (외국인/여권)</th>
+              <th>연락처</th>
+              <th>접수시간</th>
+              <th>예약 희망일</th>
+              <th>주소</th>
+              <th>증상</th>
+              <th>상태</th>
+              <th>상태 관리</th>
+            </tr>
+          </thead>
+          <tbody id="reservation-list">
+            <tr>
+              <td colspan="13" class="table-loading">데이터를 불러오는 중입니다...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase 및 관리 로직 로드 (ES Module) -->
+  <script type="module" src="/js/admin.js?v=2.0.7"></script>
+</body>
+
+</html>

@@ -14,7 +14,7 @@
     rel="stylesheet">
 
   <!-- 메인 스타일시트 연동 -->
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=2.0.7">
 </head>
 
 <body>
@@ -190,10 +190,8 @@
       // 로컬 스토리지에 선택된 병원명 기록
       localStorage.setItem('selected_clinic', clinicName);
       
-      // 사용자 완료 알림 및 피드백 제공 (베트남어)
-      alert("Bạn đã chọn: " + clinicName + "\nChúng tôi sẽ chuyển bạn đến trang điền thông tin đặt lịch.");
-      
-      // 다음 예약 정보 입력 폼이 생기면 이동 처리 (예: location.href = '../form.html')
+      // 예약 정보 입력 폼으로 이동 처리
+      location.href = './reservation.html';
     }
   </script>
 </body>
