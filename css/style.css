@@ -1615,3 +1615,407 @@ body {
     gap: 1.5rem;
   }
 }
+
+/* ==========================================================================
+   14. Admin Dashboard Responsive Extensions (추가 관리자 반응형 확장)
+   ========================================================================== */
+
+/* 1024px 이하 해상도 (태블릿 및 모바일) */
+@media (max-width: 1024px) {
+  /* 예약 상세 목록 테이블 반응형 카드 뷰 전환 */
+  #content-reservations .admin-table,
+  #content-reservations .admin-table thead,
+  #content-reservations .admin-table tbody,
+  #content-reservations .admin-table tr,
+  #content-reservations .admin-table td {
+    display: block;
+  }
+
+  #content-reservations .admin-table thead {
+    display: none; /* 헤더 숨김 */
+  }
+
+  #content-reservations .admin-table tr {
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(0, 243, 255, 0.2);
+    border-radius: 16px;
+    background: rgba(17, 22, 50, 0.85);
+    padding: 1.25rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: var(--transition-smooth);
+  }
+
+  #content-reservations .admin-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 243, 255, 0.5);
+    transform: translateY(-2px);
+  }
+
+  #content-reservations .admin-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.8rem 0.5rem;
+    text-align: right;
+    white-space: normal;
+  }
+
+  #content-reservations .admin-table td:last-child {
+    border-bottom: none;
+    padding-top: 1.25rem;
+    justify-content: center;
+  }
+
+  #content-reservations .admin-table td.table-loading,
+  #content-reservations .admin-table td.table-empty,
+  #content-reservations .admin-table td.table-error {
+    display: block;
+    text-align: center;
+    border: none;
+    padding: 3rem 0;
+  }
+
+  /* 각 td 항목의 라벨을 ::before로 노출 */
+  #reservation-list td::before {
+    font-weight: 700;
+    color: #a5b4fc;
+    text-align: left;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  #reservation-list td.col-lang::before { content: "선택언어"; }
+  #reservation-list td.col-name::before { content: "이름"; }
+  #reservation-list td.col-clinic::before { content: "선택 병원"; }
+  #reservation-list td.col-gender::before { content: "성별"; }
+  #reservation-list td.col-dob::before { content: "생년월일"; }
+  #reservation-list td.col-id::before { content: "신원정보(외국인/여권)"; }
+  #reservation-list td.col-phone::before { content: "연락처"; }
+  #reservation-list td.col-date::before { content: "접수시간"; }
+  #reservation-list td.col-res-date::before { content: "예약 희망일"; }
+  #reservation-list td.col-address::before { content: "주소"; }
+  #reservation-list td.col-symptoms::before { content: "증상"; }
+  #reservation-list td.col-status::before { content: "상태"; }
+  #reservation-list td.col-actions::before { content: "상태 관리"; }
+
+  /* 주소나 증상 등 긴 텍스트는 모바일에서 우측 정렬 및 단어 줄바꿈 처리 */
+  #reservation-list td.col-address,
+  #reservation-list td.col-symptoms {
+    word-break: break-all;
+    max-width: 65%;
+  }
+
+  /* 상태관리 버튼 영역 스타일 */
+  .action-wrapper {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* 768px 이하 해상도 (소형 태블릿 및 모바일) */
+@media (max-width: 768px) {
+  /* 회원 등급 관리 및 병원 목록 테이블 반응형 카드 뷰 전환 */
+  #content-users .admin-table,
+  #content-users .admin-table thead,
+  #content-users .admin-table tbody,
+  #content-users .admin-table tr,
+  #content-users .admin-table td,
+  #content-clinics .clinic-list-section .admin-table,
+  #content-clinics .clinic-list-section .admin-table thead,
+  #content-clinics .clinic-list-section .admin-table tbody,
+  #content-clinics .clinic-list-section .admin-table tr,
+  #content-clinics .clinic-list-section .admin-table td {
+    display: block;
+  }
+
+  #content-users .admin-table thead,
+  #content-clinics .clinic-list-section .admin-table thead {
+    display: none;
+  }
+
+  #content-users .admin-table tr,
+  #content-clinics .clinic-list-section .admin-table tr {
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(0, 243, 255, 0.2);
+    border-radius: 16px;
+    background: rgba(17, 22, 50, 0.85);
+    padding: 1.25rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: var(--transition-smooth);
+  }
+
+  #content-users .admin-table tr:hover,
+  #content-clinics .clinic-list-section .admin-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 243, 255, 0.5);
+    transform: translateY(-2px);
+  }
+
+  #content-users .admin-table td,
+  #content-clinics .clinic-list-section .admin-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.8rem 0.5rem;
+    text-align: right;
+    white-space: normal;
+  }
+
+  #content-users .admin-table td:last-child,
+  #content-clinics .clinic-list-section .admin-table td:last-child {
+    border-bottom: none;
+    padding-top: 1.25rem;
+    justify-content: center;
+  }
+
+  #content-users .admin-table td.table-loading,
+  #content-users .admin-table td.table-empty,
+  #content-clinics .clinic-list-section .admin-table td.table-loading,
+  #content-clinics .clinic-list-section .admin-table td.table-empty {
+    display: block;
+    text-align: center;
+    border: none;
+    padding: 3rem 0;
+  }
+
+  /* 회원 목록 라벨 ::before 설정 */
+  #user-list td::before {
+    font-weight: 700;
+    color: #a5b4fc;
+    text-align: left;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  #user-list td:nth-child(1)::before { content: "이름"; }
+  #user-list td:nth-child(2)::before { content: "이메일"; }
+  #user-list td:nth-child(3)::before { content: "가입일"; }
+  #user-list td:nth-child(4)::before { content: "현재 등급"; }
+  #user-list td:nth-child(5)::before { content: "등급 관리"; }
+
+  /* 병원 목록 라벨 ::before 설정 */
+  #admin-clinic-list td::before {
+    font-weight: 700;
+    color: #a5b4fc;
+    text-align: left;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  #admin-clinic-list td:nth-child(1)::before { content: "사진"; }
+  #admin-clinic-list td:nth-child(2)::before { content: "병원이름"; }
+  #admin-clinic-list td:nth-child(3)::before { content: "진료과목"; }
+  #admin-clinic-list td:nth-child(4)::before { content: "주소"; }
+  #admin-clinic-list td:nth-child(5)::before { content: "관리"; }
+  
+  /* 병원 리스트 이미지 모바일 크기 조정 */
+  #admin-clinic-list img {
+    width: 60px !important;
+    height: 42px !important;
+  }
+}
+
+/* 640px 이하 해상도 (모바일 전용 최적화) */
+@media (max-width: 640px) {
+  /* 통계 카드 2열 배치로 정보 밀도 향상 */
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+  
+  .stat-card {
+    padding: 1rem !important;
+    border-radius: 12px !important;
+  }
+  
+  .stat-title {
+    font-size: 0.8rem !important;
+  }
+  
+  .stat-value {
+    font-size: 1.6rem !important;
+  }
+
+  /* 관리 탭 리스트 세로 정렬 및 터치 크기 최적화 */
+  .admin-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+    border-bottom: none;
+    padding-bottom: 0;
+    width: 100%;
+  }
+
+  .tab-btn {
+    width: 100%;
+    text-align: center;
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  /* 테이블 상단 컨트롤 가로 정렬 고수 (세로 비대화 방지) */
+  .table-controls {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+  
+  .table-controls h2 {
+    font-size: 1.05rem !important;
+  }
+
+  .btn-refresh {
+    padding: 0.5rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* 병원 등록 폼 내부 인풋 요소 */
+  .admin-clinic-form .form-group input,
+  .admin-clinic-form .form-group textarea {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  /* 회원 등급 관리 드롭다운 */
+  .role-control-wrapper {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .select-role {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.5rem;
+  }
+}
+
+/* ==========================================================================
+   15. User My-Reservations Page Specific Styles (사용자 예약내역 전용 스타일)
+   ========================================================================== */
+
+/* 예약내역 서브 버튼 스타일 (유저 정보 뱃지 내부 장착) */
+.btn-auth-sub {
+  text-decoration: none;
+  color: #a5b4fc;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-left: 0.5rem;
+  margin-right: 0.25rem;
+  transition: var(--transition-smooth);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.btn-auth-sub:hover {
+  background: rgba(99, 102, 241, 0.25) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+}
+
+/* 태블릿 및 모바일 화면에서 auth-user 뱃지 내부 폰트/간격 조율 */
+@media (max-width: 768px) {
+  .auth-user {
+    padding: 0.3rem 0.4rem 0.3rem 0.7rem;
+    gap: 0.5rem;
+  }
+  .btn-auth-sub {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.25rem;
+  }
+  .user-name {
+    font-size: 0.8rem;
+    max-width: 90px;
+  }
+}
+
+/* 1024px 이하 해상도 예약내역 테이블 반응형 뷰 연동 */
+@media (max-width: 1024px) {
+  #content-my-reservations .admin-table,
+  #content-my-reservations .admin-table thead,
+  #content-my-reservations .admin-table tbody,
+  #content-my-reservations .admin-table tr,
+  #content-my-reservations .admin-table td {
+    display: block;
+  }
+
+  #content-my-reservations .admin-table thead {
+    display: none;
+  }
+
+  #content-my-reservations .admin-table tr {
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(0, 243, 255, 0.2);
+    border-radius: 16px;
+    background: rgba(17, 22, 50, 0.85);
+    padding: 1.25rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: var(--transition-smooth);
+  }
+
+  #content-my-reservations .admin-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 243, 255, 0.5);
+    transform: translateY(-2px);
+  }
+
+  #content-my-reservations .admin-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.8rem 0.5rem;
+    text-align: right;
+    white-space: normal;
+  }
+
+  #content-my-reservations .admin-table td:last-child {
+    border-bottom: none;
+    padding-top: 1.25rem;
+    justify-content: center;
+  }
+
+  #content-my-reservations .admin-table td.table-loading,
+  #content-my-reservations .admin-table td.table-empty,
+  #content-my-reservations .admin-table td.table-error {
+    display: block;
+    text-align: center;
+    border: none;
+    padding: 3rem 0;
+  }
+
+  #my-reservation-list td::before {
+    font-weight: 700;
+    color: #a5b4fc;
+    text-align: left;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  #my-reservation-list td.col-lang::before { content: "선택언어"; }
+  #my-reservation-list td.col-name::before { content: "이름"; }
+  #my-reservation-list td.col-clinic::before { content: "선택 병원"; }
+  #my-reservation-list td.col-gender::before { content: "성별"; }
+  #my-reservation-list td.col-dob::before { content: "생년월일"; }
+  #my-reservation-list td.col-id::before { content: "신원정보(외국인/여권)"; }
+  #my-reservation-list td.col-phone::before { content: "연락처"; }
+  #my-reservation-list td.col-date::before { content: "접수시간"; }
+  #my-reservation-list td.col-res-date::before { content: "예약 희망일"; }
+  #my-reservation-list td.col-address::before { content: "주소"; }
+  #my-reservation-list td.col-symptoms::before { content: "증상"; }
+  #my-reservation-list td.col-status::before { content: "상태"; }
+  #my-reservation-list td.col-actions::before { content: "예약 관리"; }
+
+  #my-reservation-list td.col-address,
+  #my-reservation-list td.col-symptoms {
+    word-break: break-all;
+    max-width: 65%;
+  }
+}

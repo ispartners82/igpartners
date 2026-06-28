@@ -14,7 +14,7 @@
     rel="stylesheet">
 
   <!-- 메인 스타일시트 연동 -->
-  <link rel="stylesheet" href="/css/style.css?v=2.0.7">
+  <link rel="stylesheet" href="/css/style.css?v=2.1.1">
 </head>
 
 <body>
@@ -30,6 +30,8 @@
       <div id="auth-user" class="auth-user" style="display: none;">
         <img id="user-photo" src="" alt="Profile" class="user-photo">
         <span id="user-name" class="user-name"></span>
+        <!-- 예약내역 버튼을 뱃지 내부에 유기적 통합 -->
+        <a href="/my-reservations.html" id="btn-my-reservations" class="btn-auth-sub">📅 예약내역</a>
         <button id="btn-logout" class="btn-auth logout">로그아웃 (Logout)</button>
       </div>
       <button id="btn-login" class="btn-auth login" style="display: none;">로그인</button>
@@ -221,9 +223,9 @@
   </div>
 
   <!-- Firebase 및 관리 로직 로드 (ES Module) -->
-  <script type="module" src="/js/admin.js?v=2.0.7"></script>
-  <script type="module" src="/js/auth.js?v=2.0.7"></script>
-  <script type="module" src="/js/logo.js?v=2.0.7"></script>
+  <script type="module" src="/js/admin.js?v=2.1.1"></script>
+  <script type="module" src="/js/auth.js?v=2.1.1"></script>
+  <script type="module" src="/js/logo.js?v=2.1.1"></script>
 </body>
 
 </html>
