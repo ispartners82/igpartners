@@ -57,6 +57,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 전역 selectClinic 선언 (HTML inline onclick 대응)
 window.selectClinic = function(clinicName) {
+  if (!window.isLoggedIn) {
+    if (typeof window.showLoginModal === "function") {
+      window.showLoginModal();
+    } else {
+      alert("Vui lòng đăng nhập trước khi đặt lịch. (예약을 진행하려면 먼저 로그인해 주세요.)");
+    }
+    return;
+  }
   console.log("Selected Clinic:", clinicName);
   localStorage.setItem('selected_clinic', clinicName);
   location.href = './reservation.html';

@@ -29,8 +29,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const currentUser = auth.currentUser;
     if (!currentUser) {
-      alert("Vui lòng đăng nhập trước khi đặt lịch. (예약을 진행하려면 먼저 로그인해 주세요.)");
-      location.href = "../index.html";
+      if (typeof window.showLoginModal === "function") {
+        window.showLoginModal();
+      } else {
+        alert("Vui lòng đăng nhập trước khi đặt lịch. (예약을 진행하려면 먼저 로그인해 주세요.)");
+        location.href = "../index.html";
+      }
       return;
     }
     const userUid = currentUser.uid;
@@ -51,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedLang = localStorage.getItem("selected_lang") || "unknown";
 
     if (!agreementCheck) {
-       alert("Bạn phải đồng ý với điều khoản bảo mật để tiếp tục. (개인정보 수집 및 이용에 동의합니다를 체크해주세요)");
+       showAgreeModal();
        return;
     }
 
@@ -142,9 +146,100 @@ document.addEventListener("DOMContentLoaded", () => {
         createdAt: new Date().toISOString()
       });
 
-      alert("Đặt lịch thành công! Cảm ơn bạn.\n(예약이 완료되었습니다! 감사합니다.)");
-      localStorage.removeItem("selected_clinic");
-      location.href = "./index.html";
+      // 성공 모달 팝업 호출
+      showSuccessModal();
     }
   });
+
+  // --- 개인정보 처리방침 모달 여닫기 제어 로직 ---
+  const privacyModal = document.getElementById("privacy-modal");
+  const openPrivacyModal = document.getElementById("open-privacy-modal");
+  const btnCloseModal = document.getElementById("btn-close-modal");
+  const btnCloseModalX = document.getElementById("btn-close-modal-x");
+
+  function showModal(e) {
+    if (e) e.preventDefault();
+    privacyModal.style.display = "flex";
+    document.body.classList.add("modal-open");
+  }
+
+  function hideModal() {
+    privacyModal.style.display = "none";
+    document.body.classList.remove("modal-open");
+  }
+
+  if (openPrivacyModal) {
+    openPrivacyModal.addEventListener("click", showModal);
+  }
+  if (btnCloseModal) {
+    btnCloseModal.addEventListener("click", hideModal);
+  }
+  if (btnCloseModalX) {
+    btnCloseModalX.addEventListener("click", hideModal);
+  }
+
+  // 모달 영역 밖(백드롭) 클릭 시 닫기
+  window.addEventListener("click", (e) => {
+    if (e.target === privacyModal) {
+      hideModal();
+    }
+  });
+
+  // --- 개인정보 미체크 경고 모달 여닫기 제어 로직 ---
+  const agreementRequiredModal = document.getElementById("agreement-required-modal");
+  const btnCloseAgreeModal = document.getElementById("btn-close-agree-modal");
+  const btnCloseAgreeModalX = document.getElementById("btn-close-agree-modal-x");
+
+  function showAgreeModal() {
+    if (agreementRequiredModal) {
+      agreementRequiredModal.style.display = "flex";
+      document.body.classList.add("modal-open");
+    }
+  }
+  window.showAgreeModal = showAgreeModal;
+
+  function hideAgreeModal() {
+    if (agreementRequiredModal) {
+      agreementRequiredModal.style.display = "none";
+      document.body.classList.remove("modal-open");
+    }
+  }
+
+  if (btnCloseAgreeModal) btnCloseAgreeModal.addEventListener("click", hideAgreeModal);
+  if (btnCloseAgreeModalX) btnCloseAgreeModalX.addEventListener("click", hideAgreeModal);
+  if (agreementRequiredModal) {
+    window.addEventListener("click", (e) => {
+      if (e.target === agreementRequiredModal) {
+        hideAgreeModal();
+      }
+    });
+  }
+
+  // --- 예약 성공 알림 모달 여닫기 제어 로직 ---
+  const successModal = document.getElementById("success-modal");
+  const btnCloseSuccessModal = document.getElementById("btn-close-success-modal");
+  const btnCloseSuccessModalX = document.getElementById("btn-close-success-modal-x");
+
+  function showSuccessModal() {
+    if (successModal) {
+      successModal.style.display = "flex";
+      document.body.classList.add("modal-open");
+    }
+  }
+  window.showSuccessModal = showSuccessModal;
+
+  function handleSuccessConfirm() {
+    localStorage.removeItem("selected_clinic");
+    location.href = "./index.html";
+  }
+
+  if (btnCloseSuccessModal) btnCloseSuccessModal.addEventListener("click", handleSuccessConfirm);
+  if (btnCloseSuccessModalX) btnCloseSuccessModalX.addEventListener("click", handleSuccessConfirm);
+  if (successModal) {
+    window.addEventListener("click", (e) => {
+      if (e.target === successModal) {
+        handleSuccessConfirm();
+      }
+    });
+  }
 });

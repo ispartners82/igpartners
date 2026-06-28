@@ -14,7 +14,7 @@
     rel="stylesheet">
 
   <!-- 외부 분리된 스타일시트 연동 -->
-  <link rel="stylesheet" href="css/style.css?v=2.1.1">
+  <link rel="stylesheet" href="css/style.css?v=2.1.7">
 </head>
 
 <body>
@@ -191,9 +191,33 @@
   </div>
 
   <!-- Firebase 및 메인 로직 로드 (ES Module) -->
-  <script type="module" src="js/main.js?v=2.1.1"></script>
-  <script type="module" src="/js/auth.js?v=2.1.1"></script>
-  <script type="module" src="/js/logo.js?v=2.1.1"></script>
+  <script type="module" src="js/main.js?v=2.1.7"></script>
+  <script type="module" src="/js/auth.js?v=2.1.7"></script>
+  <script type="module" src="/js/logo.js?v=2.1.7"></script>
+
+  <!-- 로그인 안내 모달 팝업 -->
+  <div id="login-required-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2>🔒 Yêu cầu đăng nhập (로그인 필요)</h2>
+        <button id="btn-close-login-modal-x" class="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 2rem; text-align: center;">
+        <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.5;">
+          Dịch vụ này yêu cầu đăng nhập bằng tài khoản Google.<br>
+          (이 서비스는 구글 로그인이 필요합니다.)
+        </p>
+        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0;">
+          Vui lòng đăng nhập để tiếp tục đặt lịch hẹn và xem lịch sử đặt hẹn của bạn.<br>
+          (예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.)
+        </p>
+      </div>
+      <div class="modal-footer" style="gap: 0.75rem; justify-content: center; padding: 1.2rem 2rem;">
+        <button id="btn-close-login-modal" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 90px;">Đóng (닫기)</button>
+        <button id="btn-trigger-login" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 110px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">Đăng nhập (로그인)</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

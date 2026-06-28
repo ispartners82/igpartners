@@ -14,7 +14,7 @@
     rel="stylesheet">
 
   <!-- 메인 스타일시트 연동 -->
-  <link rel="stylesheet" href="/css/style.css?v=2.1.1">
+  <link rel="stylesheet" href="/css/style.css?v=2.1.7">
 </head>
 
 <body>
@@ -49,7 +49,7 @@
       <form id="reservation-form" class="reservation-form">
         <!-- 2열 그리드 레이아웃 -->
         <div class="form-grid">
-          
+
           <!-- 이름 -->
           <div class="form-group">
             <label for="input-name">Họ và tên / 이름 <span class="required">*</span></label>
@@ -63,7 +63,6 @@
               <option value="" disabled selected>Chọn giới tính / 성별 선택</option>
               <option value="Nam">Nam / 남성</option>
               <option value="Nữ">Nữ / 여성</option>
-              <option value="Khác">Khác / 기타</option>
             </select>
           </div>
 
@@ -100,7 +99,8 @@
           <!-- 현재증상 (2열 병합) -->
           <div class="form-group full-width">
             <label for="input-symptoms">Triệu chứng hiện tại / 현재 증상 <span class="required">*</span></label>
-            <textarea id="input-symptoms" rows="4" required placeholder="Vui lòng mô tả chi tiết các triệu chứng của bạn (ví dụ: đau răng, ngứa da,...)"></textarea>
+            <textarea id="input-symptoms" rows="4" required
+              placeholder="Vui lòng mô tả chi tiết các triệu chứng của bạn (ví dụ: đau răng, ngứa da,...)"></textarea>
           </div>
 
           <!-- 연락처 (2열 병합) -->
@@ -114,10 +114,15 @@
         <!-- 개인정보 동의 체크박스 -->
         <div class="form-agreement">
           <label class="checkbox-container">
-            <input type="checkbox" id="agreement-check" required>
+            <input type="checkbox" id="agreement-check">
             <span class="checkmark"></span>
             <span class="agreement-text">
-              Tôi đồng ý với việc thu thập và sử dụng thông tin cá nhân cho mục đích đặt lịch khám bệnh. (개인정보 수집 및 이용에 동의합니다.) <span class="required">*</span>
+              Tôi đồng ý với việc thu thập và sử dụng thông tin cá nhân cho mục đích đặt lịch khám bệnh. (개인정보 수집 및 이용에
+              동의합니다.)
+              <a href="#" id="open-privacy-modal"
+                style="color: #a5b4fc; text-decoration: underline; margin-left: 5px; font-weight: 700;">[Xem chi tiết /
+                상세보기]</a>
+              <span class="required">*</span>
             </span>
           </label>
         </div>
@@ -132,9 +137,137 @@
   </div>
 
   <!-- Firebase 및 예약 로직 로드 (ES Module) -->
-  <script type="module" src="/js/reservation.js?v=2.1.1"></script>
-  <script type="module" src="/js/auth.js?v=2.1.1"></script>
-  <script type="module" src="/js/logo.js?v=2.1.1"></script>
+  <script type="module" src="/js/reservation.js?v=2.1.7"></script>
+  <script type="module" src="/js/auth.js?v=2.1.7"></script>
+  <script type="module" src="/js/logo.js?v=2.1.7"></script>
+
+  <!-- 개인정보 처리방침 모달 팝업 -->
+  <div id="privacy-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔒 Chính sách bảo mật (개인정보 처리방침)</h2>
+        <button id="btn-close-modal-x" class="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="privacy-section">
+          <h3>📌 Mục đích và Tầm quan trọng của việc thu thập thông tin<br>(정보 수집의 목적 및 중요성 분석)</h3>
+          <p>Để đảm bảo an toàn y tế và thực hiện đúng thủ tục tiếp nhận tại bệnh viện Hàn Quốc, các thông tin bạn cung
+            cấp có vai trò đặc biệt quan trọng như sau:</p>
+          <p>의료 안전 확보 및 한국 병원에서의 정확한 진료 접수 절차 이행을 위해 귀하가 제공하는 정보는 다음과 같은 중대한 가치를 지닙니다:</p>
+
+          <ul class="privacy-list">
+            <li>
+              <strong>1. Họ và tên, Giới tính (성명, 성별):</strong>
+              <span>Xác định chính xác danh tính bệnh nhân, ngăn ngừa nhầm lẫn hồ sơ bệnh án (EMR) và liên kết hồ sơ
+                khám bệnh chính xác.</span>
+              <br><span class="desc-ko">환자의 신원을 정확히 식별하고, 병원 전자의무기록(EMR)의 중복이나 접수 오류를 예방하는 가장 기본적인 필수 정보입니다.</span>
+            </li>
+            <li>
+              <strong>2. Ngày sinh, Số hộ chiếu / Số đăng ký người nước ngoài (생년월일, 여권번호 / 외국인등록번호):</strong>
+              <span>Đây là phương thức xác thực danh tính bắt buộc theo Luật Y tế Hàn Quốc dành cho bệnh nhân nước
+                ngoài. Thông tin này được mã hóa bảo mật tuyệt đối để bảo vệ bạn khỏi các hành vi mạo danh y tế.</span>
+              <br><span class="desc-ko">한국 의료법 및 출입국관리법에 따라 외국인 환자 진료 접수 시 필수적인 법적 본인 식별 정보입니다. 의료 도용 방지를 위해 수집 단계부터
+                강력하게 암호화되어 보호됩니다.</span>
+            </li>
+            <li>
+              <strong>3. Số điện thoại, Địa chỉ hiện tại (연락처, 현재 주소):</strong>
+              <span>Dùng để gửi thông báo xác nhận lịch hẹn, liên lạc khẩn cấp khi có thay đổi từ phía bệnh viện và hỗ
+                trợ kết nối với cơ sở y tế phù hợp.</span>
+              <br><span class="desc-ko">예약 확정 안내 송신, 병원 사정으로 인한 진료 일정 긴급 변동 상황 통보, 그리고 비상 연락을 위한 필수 소통 경로입니다.</span>
+            </li>
+            <li>
+              <strong>4. Triệu chứng hiện tại (현재 증상):</strong>
+              <span>Là thông tin y tế nhạy cảm đặc biệt quan trọng giúp đội ngũ y tế đánh giá sơ bộ mức độ nghiêm trọng
+                và phân bổ phòng khám, bác sĩ chuyên khoa phù hợp nhất trước khi bạn đến bệnh viện. Thông tin này chỉ
+                được cung cấp giới hạn cho bác sĩ phụ trách trực tiếp.</span>
+              <br><span class="desc-ko">사전 진료 분과 배정 및 맞춤형 진료 준비를 위한 매우 민감한 의료 정보입니다. 수집된 증상은 오직 진료를 매칭받은 의료기관의 담당 의료진
+                외에는 누구도 열람할 수 없도록 제한 관리됩니다.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="privacy-section">
+          <h3>🛡️ Cam kết bảo mật dữ liệu (데이터 안전 보장 약속)</h3>
+          <p>Tất cả dữ liệu cá nhân của bạn được truyền đi dưới dạng mã hóa an toàn (SSL/TLS) và bảo vệ nghiêm ngặt dưới
+            các quy tắc bảo mật của hệ thống Firestore. Chúng tôi cam kết tuyệt đối không chia sẻ thông tin cho bất kỳ
+            bên thứ ba nào ngoài bệnh viện được chỉ định tiếp nhận lịch hẹn của bạn. Thông tin sẽ tự động hủy sau khi
+            hoàn thành mục đích khám bệnh hoặc khi hết thời hạn lưu trữ theo luật định.</p>
+          <p class="desc-ko">제공해주신 모든 개인정보는 안전하게 암호화(SSL/TLS) 전송되며 Firestore 보안 시스템 하에 철저히 통제됩니다. 지정된 병원 접수 목적 외 제3자에게
+            절대 제공되지 않으며, 진료 목적 달성 또는 법적 보유 기간 만료 시 복구 불가능한 방법으로 즉시 파기됩니다.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-close-modal" class="btn btn-primary"
+          style="min-width: 120px; font-size: 1rem; padding: 0.6rem 1.5rem;">Đóng (닫기)</button>
+      </div>
+    </div>
+  </div>
+  <!-- 로그인 안내 모달 팝업 -->
+  <div id="login-required-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2>🔒 Yêu cầu đăng nhập (로그인 필요)</h2>
+        <button id="btn-close-login-modal-x" class="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 2rem; text-align: center;">
+        <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.5;">
+          Dịch vụ này yêu cầu đăng nhập bằng tài khoản Google.<br>
+          (이 서비스는 구글 로그인이 필요합니다.)
+        </p>
+        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0;">
+          Vui lòng đăng nhập để tiếp tục đặt lịch hẹn và xem lịch sử đặt hẹn của bạn.<br>
+          (예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.)
+        </p>
+      </div>
+      <div class="modal-footer" style="gap: 0.75rem; justify-content: center; padding: 1.2rem 2rem;">
+        <button id="btn-close-login-modal" class="btn btn-secondary"
+          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 90px;">Đóng (닫기)</button>
+        <button id="btn-trigger-login" class="btn btn-primary"
+          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 110px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">Đăng
+          nhập (로그인)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 동의 필수 경고 모달 팝업 -->
+  <div id="agreement-required-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2 style="color: #ff4a4a;">⚠️ Yêu cầu đồng ý (동의 필요)</h2>
+        <button id="btn-close-agree-modal-x" class="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 2rem; text-align: center;">
+        <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.6;">
+          Vui lòng xem chi tiết chính sách bảo mật thông tin cá nhân và tích chọn đồng ý.<br>
+          (개인정보 수집 및 이용에 관한 상세보기 내용을 확인해 주시고 체크해 주세요.)
+        </p>
+      </div>
+      <div class="modal-footer" style="justify-content: center; padding: 1.2rem 2rem;">
+        <button id="btn-close-agree-modal" class="btn btn-primary"
+          style="font-size: 0.9rem; padding: 0.5rem 2.2rem; min-width: 100px; background: linear-gradient(135deg, #ff4a4a 0%, #ff8c00 100%); border: none; box-shadow: 0 4px 15px rgba(255, 74, 74, 0.35);">Đóng
+          (닫기)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 예약 완료 안내 모달 팝업 -->
+  <div id="success-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2 style="color: #4ade80;">🎉 Đặt lịch thành công (예약 완료)</h2>
+        <button id="btn-close-success-modal-x" class="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 2rem; text-align: center;">
+        <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.6;">
+          Lịch hẹn của bạn đã được đặt thành công! Cảm ơn bạn.<br>
+          (예약이 성공적으로 완료되었습니다! 감사합니다.)
+        </p>
+      </div>
+      <div class="modal-footer" style="justify-content: center; padding: 1.2rem 2rem;">
+        <button id="btn-close-success-modal" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 2.2rem; min-width: 100px; background: linear-gradient(135deg, #4ade80 0%, #3b82f6 100%); border: none; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.35);">Xác nhận (확인)</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

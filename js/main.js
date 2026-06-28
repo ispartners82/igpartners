@@ -9,7 +9,11 @@ console.log("Firebase App initialized successfully via common module.");
 function selectLanguage(langCode) {
   // 로그인 검증 로직 추가
   if (!window.isLoggedIn) {
-    alert("로그인을 먼저 해주세요.\n(Please log in first.)");
+    if (typeof window.showLoginModal === "function") {
+      window.showLoginModal();
+    } else {
+      alert("로그인을 먼저 해주세요.\n(Please log in first.)");
+    }
     return;
   }
 

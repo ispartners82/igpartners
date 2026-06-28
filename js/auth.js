@@ -93,6 +93,9 @@ document.addEventListener("DOMContentLoaded", () => {
       
       btnLogin.disabled = false;
       btnLogin.textContent = "로그인";
+
+      // 로그인 성공 시 로그인 요구 모달 자동 닫기
+      hideLoginModal();
     } else {
       // 로그아웃 상태인 경우
       window.isLoggedIn = false;
@@ -107,5 +110,46 @@ document.addEventListener("DOMContentLoaded", () => {
       btnLogin.textContent = "로그인";
     }
   });
+
+  // --- 공통 로그인 요구 모달 제어 로직 ---
+  const loginRequiredModal = document.getElementById("login-required-modal");
+  const btnCloseLoginModal = document.getElementById("btn-close-login-modal");
+  const btnCloseLoginModalX = document.getElementById("btn-close-login-modal-x");
+  const btnTriggerLogin = document.getElementById("btn-trigger-login");
+
+  function showLoginModal() {
+    if (loginRequiredModal) {
+      loginRequiredModal.style.display = "flex";
+      document.body.classList.add("modal-open");
+    }
+  }
+  window.showLoginModal = showLoginModal;
+
+  function hideLoginModal() {
+    if (loginRequiredModal) {
+      loginRequiredModal.style.display = "none";
+      document.body.classList.remove("modal-open");
+    }
+  }
+  window.hideLoginModal = hideLoginModal;
+
+  if (btnCloseLoginModal) btnCloseLoginModal.addEventListener("click", hideLoginModal);
+  if (btnCloseLoginModalX) btnCloseLoginModalX.addEventListener("click", hideLoginModal);
+  if (loginRequiredModal) {
+    window.addEventListener("click", (e) => {
+      if (e.target === loginRequiredModal) {
+        hideLoginModal();
+      }
+    });
+  }
+
+  // 모달 내부 로그인 버튼 클릭 시 헤더 로그인 액션 트리거
+  if (btnTriggerLogin) {
+    btnTriggerLogin.addEventListener("click", () => {
+      if (btnLogin) {
+        btnLogin.click();
+      }
+    });
+  }
 });
 // Build cache bust: 2026-06-27T16:30:00
