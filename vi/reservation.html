@@ -50,15 +50,15 @@
         <!-- 2열 그리드 레이아웃 -->
         <div class="form-grid">
 
-          <!-- 이름 -->
-          <div class="form-group">
-            <label for="input-name">Họ và tên / 이름 <span class="required">*</span></label>
+          <!-- 이름 (전체 너비로 레이아웃 병합) -->
+          <div class="form-group full-width">
+            <label for="input-name">Họ và tên / 이 름 <span class="required">*</span></label>
             <input type="text" id="input-name" required placeholder="Ví dụ: NGUYEN VAN A">
           </div>
 
-          <!-- 성별 -->
+          <!-- 성별 (왼쪽 열 배치) -->
           <div class="form-group">
-            <label for="input-gender">Giới tính / 성별 <span class="required">*</span></label>
+            <label for="input-gender">Giới tính / 성 별 <span class="required">*</span></label>
             <select id="input-gender" required>
               <option value="" disabled selected>Chọn giới tính / 성별 선택</option>
               <option value="Nam">Nam / 남성</option>
@@ -66,16 +66,22 @@
             </select>
           </div>
 
-          <!-- 외국인등록번호 -->
+          <!-- 비자타입 (성별 오른쪽 열 배치) -->
+          <div class="form-group">
+            <label for="input-visa-type">Loại Visa / 비자타입 <span class="required">*</span></label>
+            <input type="text" id="input-visa-type" required placeholder="Ví dụ: C-3-9">
+          </div>
+
+          <!-- 외국인등록번호 (왼쪽 열 배치) -->
           <div class="form-group">
             <label for="input-alien-no">Số đăng ký người nước ngoài / 외국인등록번호</label>
             <input type="text" id="input-alien-no" placeholder="Ví dụ: 950101-2******">
           </div>
 
-          <!-- 여권번호 -->
+          <!-- 체류만료일 (외국인등록번호 오른쪽 열 배치, 여권번호 대체, 날짜 입력 형식) -->
           <div class="form-group">
-            <label for="input-passport-no">Số hộ chiếu / 여권번호 <span class="required">*</span></label>
-            <input type="text" id="input-passport-no" required placeholder="Ví dụ: M12345678">
+            <label for="input-visa-expiry">Ngày hết hạn lưu trú / 체류 만료일 <span class="required">*</span></label>
+            <input type="date" id="input-visa-expiry" required>
           </div>
 
           <!-- 생년월일 -->
@@ -86,7 +92,7 @@
 
           <!-- 예약날짜 -->
           <div class="form-group">
-            <label for="input-date">Ngày đặt lịch / 예약날짜 <span class="required">*</span></label>
+            <label for="input-date">Ngày đặt lịch / 진료 예약날짜 <span class="required">*</span></label>
             <input type="date" id="input-date" required>
           </div>
 
@@ -264,7 +270,9 @@
         </p>
       </div>
       <div class="modal-footer" style="justify-content: center; padding: 1.2rem 2rem;">
-        <button id="btn-close-success-modal" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 2.2rem; min-width: 100px; background: linear-gradient(135deg, #4ade80 0%, #3b82f6 100%); border: none; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.35);">Xác nhận (확인)</button>
+        <button id="btn-close-success-modal" class="btn btn-primary"
+          style="font-size: 0.9rem; padding: 0.5rem 2.2rem; min-width: 100px; background: linear-gradient(135deg, #4ade80 0%, #3b82f6 100%); border: none; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.35);">Xác
+          nhận (확인)</button>
       </div>
     </div>
   </div>

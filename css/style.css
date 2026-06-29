@@ -1122,12 +1122,21 @@ body {
   border: 1px solid rgba(139, 92, 246, 0.25);
 }
 
+.id-badge.visa {
+  /* 비자 뱃지는 초록색 계열로 은은한 광원 효과를 부여합니다. */
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
 .col-dob,
 .col-res-date,
 .col-phone,
 .col-address,
 .col-symptoms,
-.col-name {
+.col-name,
+.col-visa-type,
+.col-visa-expiry {
   white-space: nowrap;
 }
 
@@ -1685,19 +1694,22 @@ body {
     flex-shrink: 0;
   }
 
+  /* 모바일 대시보드 각 td의 컬럼 제목 라벨 적용 (신규 컬럼 비자타입 및 체류만료일 추가) */
   #reservation-list td.col-lang::before { content: "선택언어"; }
-  #reservation-list td.col-name::before { content: "이름"; }
+  #reservation-list td.col-name::before { content: "이 름"; }
   #reservation-list td.col-clinic::before { content: "선택 병원"; }
-  #reservation-list td.col-gender::before { content: "성별"; }
+  #reservation-list td.col-gender::before { content: "성 별"; }
+  #reservation-list td.col-visa-type::before { content: "비자타입"; }
   #reservation-list td.col-dob::before { content: "생년월일"; }
-  #reservation-list td.col-id::before { content: "신원정보(외국인/여권)"; }
+  #reservation-list td.col-id::before { content: "신원정보(외국인등록번호)"; }
+  #reservation-list td.col-visa-expiry::before { content: "체류만료일"; }
   #reservation-list td.col-phone::before { content: "연락처"; }
   #reservation-list td.col-date::before { content: "접수시간"; }
   #reservation-list td.col-res-date::before { content: "예약 희망일"; }
-  #reservation-list td.col-address::before { content: "주소"; }
-  #reservation-list td.col-symptoms::before { content: "증상"; }
-  #reservation-list td.col-status::before { content: "상태"; }
-  #reservation-list td.col-actions::before { content: "상태 관리"; }
+  #reservation-list td.col-address::before { content: "주 소"; }
+  #reservation-list td.col-symptoms::before { content: "증 상"; }
+  #reservation-list td.col-status::before { content: "상 태"; }
+  #reservation-list td.col-actions::before { content: "예약 상태 관리"; }
 
   /* 주소나 증상 등 긴 텍스트는 모바일에서 우측 정렬 및 단어 줄바꿈 처리 */
   #reservation-list td.col-address,
@@ -1999,18 +2011,21 @@ body {
     flex-shrink: 0;
   }
 
+  /* 모바일 내 예약내역 각 td의 컬럼 제목 라벨 적용 (신규 컬럼 비자타입 및 체류만료일 추가) */
   #my-reservation-list td.col-lang::before { content: "선택언어"; }
-  #my-reservation-list td.col-name::before { content: "이름"; }
+  #my-reservation-list td.col-name::before { content: "이 름"; }
   #my-reservation-list td.col-clinic::before { content: "선택 병원"; }
-  #my-reservation-list td.col-gender::before { content: "성별"; }
+  #my-reservation-list td.col-gender::before { content: "성 별"; }
+  #my-reservation-list td.col-visa-type::before { content: "비자타입"; }
   #my-reservation-list td.col-dob::before { content: "생년월일"; }
-  #my-reservation-list td.col-id::before { content: "신원정보(외국인/여권)"; }
+  #my-reservation-list td.col-id::before { content: "신원정보(외국인등록번호)"; }
+  #my-reservation-list td.col-visa-expiry::before { content: "체류만료일"; }
   #my-reservation-list td.col-phone::before { content: "연락처"; }
   #my-reservation-list td.col-date::before { content: "접수시간"; }
   #my-reservation-list td.col-res-date::before { content: "예약 희망일"; }
-  #my-reservation-list td.col-address::before { content: "주소"; }
-  #my-reservation-list td.col-symptoms::before { content: "증상"; }
-  #my-reservation-list td.col-status::before { content: "상태"; }
+  #my-reservation-list td.col-address::before { content: "주 소"; }
+  #my-reservation-list td.col-symptoms::before { content: "증 상"; }
+  #my-reservation-list td.col-status::before { content: "상 태"; }
   #my-reservation-list td.col-actions::before { content: "예약 관리"; }
 
   #my-reservation-list td.col-address,

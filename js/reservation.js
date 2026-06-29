@@ -43,7 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("input-name").value.trim();
     const gender = document.getElementById("input-gender").value;
     const alienNo = document.getElementById("input-alien-no").value.trim();
-    const passportNo = document.getElementById("input-passport-no").value.trim();
+    // 신규 추가된 비자타입(visaType) 및 체류만료일(visaExpiry) 정보 추출
+    const visaType = document.getElementById("input-visa-type").value.trim();
+    const visaExpiry = document.getElementById("input-visa-expiry").value;
     const dob = document.getElementById("input-dob").value;
     const reservationDate = document.getElementById("input-date").value;
     const address = document.getElementById("input-address").value.trim();
@@ -80,14 +82,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // Firestore에 예약 데이터 저장
+      // Firestore에 예약 데이터 저장 (기존 passportNo 대신 visaType, visaExpiry 적용)
       const docRef = await addDoc(collection(db, "reservations"), {
         uid: userUid, // 예약 신청 유저 식별자 추가
         clinic: selectedClinic,
         name: name,
         gender: gender,
         alienNo: alienNo || "",
-        passportNo: passportNo,
+        visaType: visaType,
+        visaExpiry: visaExpiry,
         dob: dob,
         reservationDate: reservationDate,
         address: address,
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("Document written with ID: ", docRef.id);
 
-      // 백업용으로 로컬스토리지에도 동시에 씀 (클라우드 데이터와 병합 목적)
+      // 백업용으로 로컬스토리지에도 동시에 씀 (클라우드 데이터와 병합 목적, 신규 필드 반영)
       saveToLocalBackup({
         id: docRef.id,
         uid: userUid,
@@ -108,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
         name: name,
         gender: gender,
         alienNo: alienNo || "",
-        passportNo: passportNo,
+        visaType: visaType,
+        visaExpiry: visaExpiry,
         dob: dob,
         reservationDate: reservationDate,
         address: address,
@@ -126,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Firestore save failed:", error);
 
-      // Firestore 저장 실패 시 로컬스토리지에만 저장 후 사용자에게 완료 응답 제공
+      // Firestore 저장 실패 시 로컬스토리지에만 저장 후 사용자에게 완료 응답 제공 (신규 필드 반영)
       const localId = "local_" + Date.now();
       saveToLocalBackup({
         id: localId,
@@ -135,7 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
         name: name,
         gender: gender,
         alienNo: alienNo || "",
-        passportNo: passportNo,
+        visaType: visaType,
+        visaExpiry: visaExpiry,
         dob: dob,
         reservationDate: reservationDate,
         address: address,

@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let cancelledCount = 0;
 
     if (items.length === 0) {
-      reservationList.innerHTML = `<tr><td colspan="13" class="table-empty">신청하신 예약 내역이 없습니다.</td></tr>`;
+      reservationList.innerHTML = `<tr><td colspan="15" class="table-empty">신청하신 예약 내역이 없습니다.</td></tr>`;
       updateStats(0, 0, 0, 0);
       return;
     }
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       const displayLang = langLabels[data.lang] || (data.lang ? `🌐 ${data.lang}` : "-");
 
-      // 신원 정보
+      // 신원 정보 (외국인번호/여권번호만 노출하며, 비자타입/체류만료는 독립 열로 렌더링되므로 제외)
       const idInfo = [];
       if (data.alienNo) idInfo.push(`<div class="id-badge alien">외국인: ${data.alienNo}</div>`);
       if (data.passportNo) idInfo.push(`<div class="id-badge passport">여권: ${data.passportNo}</div>`);
@@ -110,13 +110,17 @@ document.addEventListener("DOMContentLoaded", () => {
         actionButtons = `<small style="color:#ef4444;">취소됨</small>`;
       }
 
+      // 테이블 행 내부 HTML 조립
+      // 성별-생년월일 사이에 비자타입(col-visa-type)을 넣고, 신원정보-연락처 사이에 체류만료일(col-visa-expiry)을 순서대로 추가하여 렌더링합니다.
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
         <td class="col-name font-bold">${data.name || "-"}</td>
         <td class="col-clinic"><span class="table-clinic-name">${data.clinic || "-"}</span></td>
         <td class="col-gender">${data.gender || "-"}</td>
+        <td class="col-visa-type font-bold" style="color: #34d399;">${data.visaType || "-"}</td>
         <td class="col-dob">${data.dob || "-"}</td>
         <td class="col-id">${idInfoHTML}</td>
+        <td class="col-visa-expiry text-accent">${data.visaExpiry || "-"}</td>
         <td class="col-phone">${data.phone || "-"}</td>
         <td class="col-date">${dateStr}</td>
         <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
@@ -140,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 인덱스 생성 오류를 방지하기 위해 query 정렬(orderBy)을 제외하고, where로 본인 데이터만 쿼리합니다.
     const q = query(collection(db, "reservations"), where("uid", "==", user.uid));
-    reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">예약 내역을 실시간으로 가져오는 중입니다...</td></tr>`;
+    reservationList.innerHTML = `<tr><td colspan="15" class="table-loading">예약 내역을 실시간으로 가져오는 중입니다...</td></tr>`;
 
     // 1단계: 로컬스토리지 백업 데이터 선제 렌더링
     let initialLocalItems = [];

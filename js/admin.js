@@ -97,7 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       const displayLang = langLabels[data.lang] || (data.lang ? `🌐 ${data.lang}` : "-");
 
-      // 신원 정보 라벨
+      // 신원 정보 라벨 (하위 호환성 유지)
+      // 기존에 저장된 alienNo(외국인번호) 및 passportNo(여권번호) 데이터만 신원정보 뱃지 형태로 묶어 노출시킵니다.
+      // 새로 추가된 비자타입 및 체류만료일은 테이블 내 별도 독립 컬럼으로 렌더링하므로 뱃지 목록에서 제외합니다.
       const idInfo = [];
       if (data.alienNo) idInfo.push(`<div class="id-badge alien">외국인: ${data.alienNo}</div>`);
       if (data.passportNo) idInfo.push(`<div class="id-badge passport">여권: ${data.passportNo}</div>`);
@@ -138,13 +140,17 @@ document.addEventListener("DOMContentLoaded", () => {
         actionButtons += `<button class="btn-action delete" data-id="${docId}" data-action="delete">삭제</button>`;
       }
 
+      // 테이블 렌더링 처리
+      // 성별-생년월일 사이에 비자타입(col-visa-type) 컬럼을 추가하고, 신원정보-연락처 사이에 체류만료일(col-visa-expiry) 컬럼을 각각 신설하여 출력합니다.
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
         <td class="col-name font-bold">${data.name || "-"}</td>
         <td class="col-clinic"><span class="table-clinic-name">${data.clinic || "-"}</span></td>
         <td class="col-gender">${data.gender || "-"}</td>
+        <td class="col-visa-type font-bold" style="color: #34d399;">${data.visaType || "-"}</td>
         <td class="col-dob">${data.dob || "-"}</td>
         <td class="col-id">${idInfoHTML}</td>
+        <td class="col-visa-expiry text-accent">${data.visaExpiry || "-"}</td>
         <td class="col-phone">${data.phone || "-"}</td>
         <td class="col-date">${dateStr}</td>
         <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
@@ -367,10 +373,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
           
-          // 최고 관리자(super_admin)인 경우에만 '병원 관리' 탭 노출
+          // 최고 관리자(super_admin), 일반 관리자(admin), 관리자(admin_user) 등급인 경우에 '병원 관리' 탭 노출
+          // 기존 super_admin 단독 노출 조건에서 관리자 등급군 전체로 권한 범위가 확장되었습니다.
           const tabClinics = document.getElementById("tab-clinics");
           if (tabClinics) {
-            if (currentLoginUserRole === "super_admin") {
+            if (["super_admin", "admin", "admin_user"].includes(currentLoginUserRole)) {
               tabClinics.style.display = "inline-block";
             } else {
               tabClinics.style.display = "none";
