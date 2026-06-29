@@ -78,6 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 3. Auth 상태 변화 모니터링 (실시간 세션 감지 및 UI 바인딩)
   onAuthStateChanged(auth, (user) => {
+    const btnAdminDashboard = document.getElementById("btn-admin-dashboard");
+
     if (user) {
       // 로그인된 경우
       window.isLoggedIn = true;
@@ -94,6 +96,27 @@ document.addEventListener("DOMContentLoaded", () => {
       btnLogin.disabled = false;
       btnLogin.textContent = "로그인";
 
+      // [신규 기능] 로그인한 사용자의 등급을 Firestore에서 조회하여 관리자 버튼 노출 제어
+      if (btnAdminDashboard) {
+        // 데이터 로드 전까지는 기본적으로 숨김 처리
+        btnAdminDashboard.style.display = "none";
+
+        const userDocRef = doc(db, "users", user.uid);
+        getDoc(userDocRef).then((userDocSnap) => {
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            // 관리자 대시보드 바로가기 버튼을 보일 수 있는 등급 정의 (최고관리자, 일반관리자, 관리자)
+            const allowedRoles = ["super_admin", "admin", "admin_user"];
+            // 사용자의 역할이 허용된 권한 그룹에 포함되면 관리자 대시보드 바로가기 활성화
+            if (allowedRoles.includes(userData.role)) {
+              btnAdminDashboard.style.display = "inline-flex";
+            }
+          }
+        }).catch((error) => {
+          console.error("사용자 권한 등급 확인 실패 (Admin button check failed):", error);
+        });
+      }
+
       // 로그인 성공 시 로그인 요구 모달 자동 닫기
       hideLoginModal();
     } else {
@@ -108,6 +131,11 @@ document.addEventListener("DOMContentLoaded", () => {
       
       btnLogin.disabled = false;
       btnLogin.textContent = "로그인";
+
+      // 로그아웃 상태인 경우 관리자 버튼은 항상 숨김 처리
+      if (btnAdminDashboard) {
+        btnAdminDashboard.style.display = "none";
+      }
     }
   });
 

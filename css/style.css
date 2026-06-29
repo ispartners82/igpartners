@@ -103,7 +103,9 @@ body {
   position: relative;
   z-index: 2;
   width: 90%;
-  max-width: 1200px;
+  max-width: 100%; /* 부모 flex 컨테이너(body) 너비를 강제로 뚫고 늘어나지 못하도록 최대 크기를 100%로 보증합니다. */
+  min-width: 0; /* flex 아이템으로서 수축이 원활하게 작동하도록 기본 min-content 제약을 해제합니다. */
+  box-sizing: border-box; /* 패딩 영역이 너비 계산에 포함되어 레이아웃이 깨지지 않도록 방지합니다. */
   padding: 3rem 0;
   display: flex;
   flex-direction: column;
@@ -915,9 +917,19 @@ body {
    12. Admin Dashboard Styles (관리자 대시보드 스타일)
    ========================================================================== */
 
+.admin-tab-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0; /* 내부 대형 테이블이 탭 콘텐츠 레이아웃 영역을 강제로 늘리는 flex 팽창 버그를 해결하여 수축을 보장합니다. */
+  box-sizing: border-box;
+}
+
 .admin-container {
   max-width: 1400px;
   width: 95%;
+  max-width: 95%; /* 뷰포트 대비 최대 너비 95%를 초과하여 flex 아이템이 강제 팽창하지 않도록 방지합니다. */
+  min-width: 0; /* 수축이 올바르게 작용하도록 최소 너비 제약을 해제합니다. */
+  box-sizing: border-box; /* 크기 계산 시 패딩과 보더를 통합합니다. */
 }
 
 /* 대시보드 통계 카드 */
@@ -991,6 +1003,9 @@ body {
 /* 대시보드 메인 영역 */
 .admin-main {
   width: 100%;
+  max-width: 100%;
+  min-width: 0; /* 자식 요소(테이블)의 최소 너비가 부모 flex 컨테이너 너비를 강제로 팽창시키는 버그를 원천적으로 방지합니다. */
+  overflow: hidden; /* 영역을 벗어나는 요소가 있을 경우 스크롤 유도를 위해 경계를 차단합니다. */
   background: #111632;
   border: 2px solid rgba(0, 243, 255, 0.4);
   border-radius: 20px;
@@ -1045,12 +1060,16 @@ body {
 
 /* 관리 테이블 반응형 */
 .table-responsive {
+  display: block; /* 블록 속성을 강제로 명시하여 테이블 크기에 관계없이 부모 너비(100%) 이하로 확실하게 수축되도록 보장합니다. */
   width: 100%;
-  overflow-x: auto;
+  max-width: 100%; /* 부모 너비를 절대 초과하지 못하도록 제한합니다. */
+  overflow-x: auto; /* 내부 테이블이 100% 너비를 넘어갈 경우에 한해서 정상적으로 가로 스크롤바를 생성합니다. */
+  -webkit-overflow-scrolling: touch; /* 모바일 및 태블릿 스크롤 촉감 최적화 */
 }
 
 .admin-table {
   width: 100%;
+  min-width: 1300px; /* 창 크기를 강제로 줄였을 때 텍스트나 버튼이 잘리는 현상을 막기 위해 최소 너비를 지정하여 가로 스크롤을 유도합니다. */
   border-collapse: collapse;
   text-align: left;
   font-size: 0.9rem;
@@ -1631,6 +1650,10 @@ body {
 
 /* 1024px 이하 해상도 (태블릿 및 모바일) */
 @media (max-width: 1024px) {
+  .admin-table {
+    min-width: auto !important; /* 모바일 카드뷰 변환 시에는 가로 스크롤 최소 너비 제한을 해제하여 카드 영역이 화면 가로폭에 딱 맞도록 유연하게 설정합니다. */
+  }
+
   /* 예약 상세 목록 테이블 반응형 카드 뷰 전환 */
   #content-reservations .admin-table,
   #content-reservations .admin-table thead,
