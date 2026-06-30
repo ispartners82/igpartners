@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGPartners - Book Appointment</title>
+
+  <!-- 폰트 불러오기 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- 메인 스타일시트 연동 -->
+  <link rel="stylesheet" href="/css/style.css?v=2.1.7">
+</head>
+
+<body>
+  <!-- 백그라운드 오로라 빛 장식 -->
+  <div class="bg-decorations">
+    <div class="aurora-1"></div>
+    <div class="aurora-2"></div>
+  </div>
+
+  <!-- 공통 상단 네비게이션 바 컴포넌트 동적 주입 -->
+  <header id="global-header"></header>
+
+  <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 container 영역 -->
+  <div class="container" style="margin-top: 100px;">
+
+    <!-- 폼 페이지 헤더 영역 (동적으로 타이틀 및 안내 뱃지 텍스트를 치환하기 위해 ID 부여) -->
+    <header class="header">
+      <h1 class="title" id="form-page-title"></h1>
+      <p class="subtitle" id="form-page-subtitle"></p>
+
+      <!-- 선택된 병원 표기 배지 -->
+      <div id="selected-clinic-badge" class="selected-clinic-badge">
+        <span id="booking-badge-label"></span> <span id="clinic-name-text"></span>
+      </div>
+    </header>
+
+    <main class="form-container">
+      <form id="reservation-form" class="reservation-form">
+        <!-- 2열 그리드 레이아웃 -->
+        <div class="form-grid">
+
+          <!-- 이름 (전체 너비) -->
+          <div class="form-group full-width">
+            <label for="input-name" id="label-name">이 름 <span class="required">*</span></label>
+            <input type="text" id="input-name" required placeholder="예: 홍길동">
+          </div>
+
+          <!-- 성별 (왼쪽 열 배치) -->
+          <div class="form-group">
+            <label for="input-gender" id="label-gender">성 별 <span class="required">*</span></label>
+            <select id="input-gender" required>
+              <option value="" disabled selected id="gender-placeholder">성별 선택</option>
+              <option value="남성" id="gender-male"> 남성</option>
+              <option value="여성" id="gender-female"> 여성</option>
+            </select>
+          </div>
+
+          <!-- 비자타입 (오른쪽 열 배치) -->
+          <div class="form-group">
+            <label for="input-visa-type" id="label-visa-type">비자타입 <span class="required">*</span></label>
+            <input type="text" id="input-visa-type" required placeholder="예시: C-3-9">
+          </div>
+
+          <!-- 외국인등록번호 (왼쪽 열 배치) -->
+          <div class="form-group">
+            <label for="input-alien-no" id="label-alien-no">외국인등록번호</label>
+            <input type="text" id="input-alien-no" placeholder="예: 950101-2******">
+          </div>
+
+          <!-- 체류만료일 (오른쪽 열 배치) -->
+          <div class="form-group">
+            <label for="input-visa-expiry" id="label-visa-expiry">체류 만료일 <span class="required">*</span></label>
+            <input type="date" id="input-visa-expiry" required>
+          </div>
+
+          <!-- 생년월일 (왼쪽 열 배치) -->
+          <div class="form-group">
+            <label for="input-dob" id="label-dob">생년월일 <span class="required">*</span></label>
+            <input type="date" id="input-dob" required>
+          </div>
+
+          <!-- 예약날짜 (오른쪽 열 배치) -->
+          <div class="form-group">
+            <label for="input-date" id="label-date">진료 예약날짜 <span class="required">*</span></label>
+            <input type="date" id="input-date" required>
+          </div>
+
+          <!-- 주소 (전체 너비) -->
+          <div class="form-group full-width">
+            <label for="input-address" id="label-address">현재 주소 <span class="required">*</span></label>
+            <input type="text" id="input-address" required placeholder="">
+          </div>
+
+          <!-- 현재증상 (전체 너비) -->
+          <div class="form-group full-width">
+            <label for="input-symptoms" id="label-symptoms">현재 증상 <span class="required">*</span></label>
+            <textarea id="input-symptoms" rows="4" required
+              placeholder=""></textarea>
+          </div>
+
+          <!-- 연락처 (전체 너비) -->
+          <div class="form-group full-width">
+            <label for="input-phone" id="label-phone">연락처 <span class="required">*</span></label>
+            <input type="tel" id="input-phone" required placeholder="예: 010-1234-5678">
+          </div>
+
+        </div>
+
+        <!-- 개인정보 동의 체크박스 영역 -->
+        <div class="form-agreement">
+          <label class="checkbox-container">
+            <input type="checkbox" id="agreement-check">
+            <span class="checkmark"></span>
+            <span class="agreement-text" id="agreement-label-text"></span>
+          </label>
+        </div>
+
+        <!-- 하단 액션 버튼 영역 -->
+        <div class="form-actions">
+          <button type="button" id="btn-back" class="btn btn-secondary"></button>
+          <button type="submit" id="btn-submit" class="btn btn-primary"></button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <!-- 공통 기능 처리를 위한 모듈형 자바스크립트 로드 -->
+  <script type="module" src="/js/navigation.js?v=2.1.7"></script>
+  <script type="module" src="/js/reservation.js?v=2.1.7"></script>
+  <script type="module" src="/js/auth.js?v=2.1.7"></script>
+
+  <!-- 개인정보 처리방침 모달 팝업 (reservation.js에서 언어에 맞게 콘텐츠 주입) -->
+  <div id="privacy-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="privacy-modal-title">🔒 개인정보 처리방침</h2>
+        <button id="btn-close-modal-x" class="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body" id="privacy-modal-body-content">
+        <!-- 스크립트에서 동적 로딩되어 들어갑니다 -->
+      </div>
+      <div class="modal-footer" style="padding: 1.2rem 2rem;">
+        <button id="btn-close-modal" class="btn btn-secondary"
+          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 90px; margin: 0 auto;">확인</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

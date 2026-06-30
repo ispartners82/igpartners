@@ -22,10 +22,14 @@ function selectLanguage(langCode) {
   // 로컬 스토리지에 언어 설정 기록 (추후 진료 예약 폼 등에서 활용)
   localStorage.setItem('selected_lang', langCode);
 
-  if (langCode === 'vi') {
-    // 베트남어 선택 시 병원 목록 선택 페이지로 리다이렉트
-    location.href = 'vi/index.html';
+  // 지원 가능한 핵심 4개국어(한국어, 일본어, 영어, 베트남어)에 대해서만 공통 예약 루트 허용
+  const supportedLanguages = ['vi', 'ko', 'ja', 'en'];
+
+  if (supportedLanguages.includes(langCode)) {
+    // 지정한 언어 선택 시 단일화된 공통 병원 목록 선택 화면으로 다이렉트 이동
+    location.href = '/booking-clinic.html';
   } else {
+    // 그 외 아직 미탑재된 다국어 클릭 시 예비 팝업 안내창 출력
     alert("Dịch vụ này hiện đang được chuẩn bị cho các ngôn ngữ khác. (본 서비스는 다른 언어로 제공될 예정입니다.)");
   }
 }

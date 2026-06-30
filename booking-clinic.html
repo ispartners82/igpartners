@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGPartners - Select Clinic</title>
+
+  <!-- 폰트 불러오기 (Outfit & Noto Sans KR) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- 메인 스타일시트 연동 -->
+  <link rel="stylesheet" href="/css/style.css?v=2.1.7">
+</head>
+
+<body>
+  <!-- 백그라운드 오로라 빛 장식 -->
+  <div class="bg-decorations">
+    <div class="aurora-1"></div>
+    <div class="aurora-2"></div>
+  </div>
+
+  <!-- 공통 상단 네비게이션 바 컴포넌트 동적 주입 -->
+  <header id="global-header"></header>
+
+  <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 container 영역 -->
+  <div class="container" style="margin-top: 100px;">
+    
+    <!-- 페이지 다국어 타이틀 영역 (clinic-loader.js에서 selected_lang에 맞춰 실시간 텍스트 치환) -->
+    <header class="header">
+      <h1 class="title" id="clinic-page-title">Select Clinic</h1>
+      <p class="subtitle" id="clinic-page-subtitle">Please select a clinic to proceed with your booking.</p>
+      
+      <!-- 신규 추가: 언어 선택 화면으로 돌아갈 수 있는 언어 변경 버튼 (hover 애니메이션 적용) -->
+      <div class="lang-change-wrapper" style="margin-top: 1.5rem; display: flex; justify-content: center;">
+        <a href="/booking-lang.html" id="btn-change-lang" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem; padding: 0.65rem 1.6rem; border-radius: 100px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(0, 150, 255, 0.18) 100%); border: 1.5px solid rgba(0, 220, 255, 0.55); color: #00e5ff; font-weight: 700; letter-spacing: 0.03em; box-shadow: 0 0 14px rgba(0, 220, 255, 0.25); transition: all 0.25s ease; cursor: pointer;">
+          🌐 <span id="text-change-lang">언어 변경 (Change Language)</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- 3열 반응형 병원 그리드 영역 (clinic-loader.js에서 Firestore 데이터를 읽어와 동적 생성) -->
+    <main class="clinic-grid" id="clinic-list-container">
+    </main>
+  </div>
+
+  <!-- 공통 기능 처리를 위한 모듈형 자바스크립트 로드 -->
+  <script type="module" src="/js/navigation.js?v=2.1.7"></script>
+  <script type="module" src="/js/clinic-loader.js?v=2.1.7"></script>
+  <script type="module" src="/js/auth.js?v=2.1.7"></script>
+
+  <!-- 로그인 안내 모달 팝업 (언어 설정에 매칭되어 동적으로 타이틀 및 본문 텍스트 변경) -->
+  <div id="login-required-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h2 id="modal-title-text">🔒 로그인 필요</h2>
+        <button id="btn-close-login-modal-x" class="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 2rem; text-align: center;">
+        <p id="modal-desc-main" style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.5;">
+          로그인이 필요한 서비스입니다.
+        </p>
+        <p id="modal-desc-sub" style="font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0;">
+          구글 로그인을 진행해 주세요.
+        </p>
+      </div>
+      <div class="modal-footer" style="gap: 0.75rem; justify-content: center; padding: 1.2rem 2rem;">
+        <button id="btn-close-login-modal" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 90px;">닫기</button>
+        <button id="btn-trigger-login" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 110px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">로그인</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

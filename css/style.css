@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 /* ==========================================================================
    IGPartners - Clinic Reservation System
    Language Selection Screen Stylesheet (Dark Theme)
@@ -2230,4 +2232,1149 @@ body {
 /* 모달이 활성화되었을 때 body 스크롤 차단용 클래스 */
 body.modal-open {
   overflow: hidden;
+}
+
+/* ==========================================================================
+   7. 공통 상단 네비게이션 바 (Common Navigation Bar) 스타일 정의
+   ========================================================================== */
+
+/* 네비게이션 바 기본 스타일 (밝고 부드러운 글래스모피즘 효과 및 프리미엄 폰트 교체) */
+.common-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  z-index: 1000;
+  background: rgba(22, 31, 64, 0.55); /* 좀 더 밝고 부드러운 다크블루 톤 반투명 배경 */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.45); /* 조금 더 밝고 선명한 형광 인디고 블루 실선 */
+  display: flex;
+  align-items: center;
+  transition: var(--transition-smooth);
+  font-family: 'Plus Jakarta Sans', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; /* 부드럽고 세련된 프리미엄 서체 적용 */
+}
+
+/* 스크롤하여 내려갔을 때 변화할 디자인 (더 묵직하고 은은한 네온 글로우 테두리) */
+.common-navbar.navbar-scrolled {
+  height: 70px;
+  background: rgba(22, 31, 64, 0.85); /* 묵직하면서 투명감을 유지하는 스크롤 배경 */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.1);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.6); /* 밝고 신비로운 형광 퍼플 네온 실선 */
+}
+
+/* 중앙 정렬용 내부 컨테이너 (여백 가용 확보를 위한 gap 추가) */
+.nav-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem; /* 요소들 간의 겹침 방지용 안전 여백 설정 */
+}
+
+/* 브랜드 로고 링크 (폰트 크기 확대: 1.5rem -> 1.75rem, 강제 축소 방지) */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 1.75rem; /* 브랜드 로고 폰트 확대 */
+  letter-spacing: -0.5px;
+  transition: var(--transition-smooth);
+  white-space: nowrap; /* 글씨 줄바꿈 방지 */
+  flex-shrink: 0; /* 우측 영역 공간에 밀려 찌부러지는 것 차단 */
+}
+
+.nav-brand:hover {
+  opacity: 0.9;
+}
+
+.nav-logo {
+  height: 36px; /* 로고 이미지 높이도 폰트 확대에 맞춰 32px -> 36px로 최적화 */
+  width: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+}
+
+.nav-brand-text {
+  background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 중앙 네비게이션 메뉴 목록 (글자 확대로 인한 좁은 영역 대응 마진 튜닝 및 축소 방지) */
+.nav-menu {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem; /* 글자가 커짐에 따라 반응형 대응을 위해 자간 간격 소폭 최적화 */
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  transition: var(--transition-smooth);
+  flex-shrink: 0; /* 강제 축소 방지 */
+}
+
+/* 메뉴 링크 스타일 (폰트 크기 확대: 0.95rem -> 1.1rem, 줄바꿈 금지) */
+.nav-link {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 1.1rem; /* 메뉴 링크 폰트 확대 */
+  font-weight: 600; /* 가독성을 위해 굵기를 500 -> 600으로 보완 */
+  transition: var(--transition-smooth);
+  position: relative;
+  padding: 0.5rem 0;
+  white-space: nowrap; /* 글자 줄바꿈 강제 차단 */
+}
+
+/* 호버 시 폰트 컬러 변경 및 하단 라인 효과 */
+.nav-link:hover,
+.nav-link.active {
+  color: var(--text-primary);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-indigo), var(--accent-purple));
+  transition: var(--transition-smooth);
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* 진료 예약 강조용 버튼 링크 스타일 (줄바꿈 방지) */
+.btn-nav-booking {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 100px;
+  color: #a5b4fc !important;
+  white-space: nowrap; /* 줄바꿈 금지 */
+}
+
+.btn-nav-booking:hover {
+  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  border-color: transparent;
+}
+
+.btn-nav-booking::after {
+  display: none !important; /* 언더라인 비활성화 */
+}
+
+/* 우측 로그인/로그아웃/뱃지 영역 (축소 방지) */
+.nav-auth-area {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0; /* 강제 축소 방지 */
+}
+
+/* 로그인하지 않은 기본 상태 버튼 (브랜드 로고 비례에 맞춰 컴팩트하게 축소) */
+.btn-nav-login {
+  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 1.1rem; /* 세로/가로 패딩 축소 */
+  border-radius: 10px; /* 더 단정한 라운드 */
+  font-size: 0.85rem; /* 글자 크기 축소 */
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  transition: var(--transition-smooth);
+  white-space: nowrap; /* 줄바꿈 금지 */
+}
+
+.btn-nav-login:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 5px 15px rgba(99, 102, 241, 0.35);
+}
+
+.btn-nav-login:active {
+  transform: translateY(0);
+}
+
+/* 로그인 유저 정보 뱃지 래퍼 (축소 방지, 갭 축소) */
+.auth-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem; /* 버튼 간격 소폭 긴밀하게 축소 */
+  flex-shrink: 0; /* 강제 축소 방지 */
+}
+
+/* 프로필 이미지와 이름이 포함된 둥근 캡슐 (세로 높이 대폭 슬림화) */
+.user-capsule {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.3rem 0.75rem 0.3rem 0.3rem; /* 상하좌우 여백 긴밀화 */
+  border-radius: 100px;
+  transition: var(--transition-smooth);
+  white-space: nowrap; /* 줄바꿈 금지 */
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  width: 24px; /* 아바타 크기 축소: 28px -> 24px */
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  object-fit: cover;
+}
+
+.user-nickname {
+  font-size: 0.8rem; /* 닉네임 크기 소폭 축소 */
+  color: var(--text-primary);
+  font-weight: 600;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 네비게이션 우측 상태 제어 액션 버튼들 (컴팩트 튜닝) */
+.btn-nav-action {
+  text-decoration: none;
+  font-size: 0.8rem; /* 폰트 축소 */
+  font-weight: 600;
+  padding: 0.35rem 0.75rem; /* 세로/가로 패딩 축소로 브랜드 로고와 높이 균형 일치 */
+  border-radius: 8px; /* 아담한 라운드 */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: var(--transition-smooth);
+  white-space: nowrap; /* 줄바꿈 금지 */
+  flex-shrink: 0; /* 강제 축소 방지 */
+}
+
+/* 예약내역 서브 버튼 */
+.btn-my-res {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+}
+
+.btn-my-res:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 관리자 뱃지/버튼 */
+.btn-admin {
+  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 10px rgba(236, 72, 153, 0.2);
+}
+
+.btn-admin:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(236, 72, 153, 0.35);
+}
+
+/* 로그아웃 텍스트형 링크 버튼 (아담한 텍스트 링크로 보완) */
+.btn-nav-logout {
+  background: transparent;
+  border: none;
+  color: #f43f5e;
+  cursor: pointer;
+  font-size: 0.8rem; /* 폰트 축소 */
+  font-weight: 600;
+  padding: 0.35rem 0.5rem; /* 패딩 축소 */
+  transition: var(--transition-smooth);
+}
+
+.btn-nav-logout:hover {
+  color: #fda4af;
+  text-decoration: underline;
+}
+
+/* 모바일 화면 햄버거 토글 버튼 */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.nav-toggle .bar {
+  width: 100%;
+  height: 2px;
+  background-color: var(--text-primary);
+  border-radius: 10px;
+  transition: var(--transition-smooth);
+}
+
+/* 햄버거 활성화 애니메이션 */
+.nav-toggle.active .bar:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.nav-toggle.active .bar:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle.active .bar:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+
+/* ==========================================================================
+   8. 홈페이지(랜딩페이지) 리네이밍 및 전용 레이아웃 스타일
+   ========================================================================== */
+
+/* 랜딩페이지용 바디 기본화 */
+body.home-page {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* 웰컴 히어로 섹션 (웅장한 다크 오로라) */
+.hero-section {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8rem 2rem 4rem;
+  overflow: hidden;
+}
+
+/* 히어로 내부 빛 확산 */
+.hero-glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 40%, rgba(6, 9, 19, 0) 70%);
+  filter: blur(50px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-tag {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 100px;
+  color: #a5b4fc;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  letter-spacing: 0.5px;
+}
+
+.hero-title {
+  font-size: 4.25rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -2px;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 60%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-weight: 300;
+  margin-bottom: 3rem;
+  word-break: keep-all;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* 메인 예약 액션 큰 버튼 */
+.btn-hero-primary {
+  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 1.1rem 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  transition: var(--transition-smooth);
+}
+
+.btn-hero-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(99, 102, 241, 0.5);
+}
+
+.btn-hero-secondary {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 1.1rem 2.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: var(--transition-smooth);
+}
+
+.btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 웹사이트 일반 소개 공통 레이아웃 */
+.content-section {
+  padding: 8rem 2rem;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.section-container {
+  width: 100%;
+  max-width: 1100px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.section-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-indigo);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.section-title {
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 1.25rem;
+}
+
+.section-desc {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+  font-weight: 300;
+  word-break: keep-all;
+}
+
+/* 회사소개 (About) 그리드 그리드 */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.about-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.about-text h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.about-text p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  font-weight: 300;
+  word-break: keep-all;
+}
+
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.about-stat-item {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 1.5rem;
+  border-radius: 16px;
+}
+
+.stat-num {
+  font-size: 2.25rem;
+  font-weight: 800;
+  display: block;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #a5b4fc 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-lbl {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* 소개 일러스트 대안 카드 */
+.about-card-deco {
+  position: relative;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 28px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.about-card-deco::before {
+  content: '';
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, rgba(6, 9, 19, 0) 70%);
+  filter: blur(20px);
+  animation: pulse 6s infinite alternate;
+}
+
+.about-deco-content {
+  z-index: 2;
+  text-align: center;
+}
+
+.about-deco-logo {
+  height: 80px;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.5));
+}
+
+.about-deco-title {
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 2px;
+  color: #ffffff;
+}
+
+/* 제공 서비스 (Services) 카드 레이아웃 */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.service-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  transition: var(--transition-smooth);
+  position: relative;
+}
+
+.service-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.service-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: rgba(99, 102, 241, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a5b4fc;
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+  transition: var(--transition-smooth);
+}
+
+.service-card:hover .service-icon {
+  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.service-card h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.service-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-weight: 300;
+  word-break: keep-all;
+}
+
+/* 협력 회사 (Partners) 로고 그리드 */
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.partner-card {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: var(--transition-smooth);
+  height: 140px;
+}
+
+.partner-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.03);
+}
+
+.partner-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.partner-type {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 공통 하단 푸터 (Footer) */
+.global-footer {
+  background: #04060d;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 3rem;
+}
+
+.footer-brand {
+  max-width: 320px;
+}
+
+.footer-logo-txt {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.footer-brand-desc {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.footer-links {
+  display: flex;
+  gap: 4rem;
+}
+
+.footer-link-group h4 {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer-link-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-link-group a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  transition: var(--transition-smooth);
+}
+
+.footer-link-group a:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 3rem auto 0;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+
+/* ==========================================================================
+   9. 반응형 미디어 쿼리 (Responsive Styles)
+   ========================================================================== */
+
+@media (max-width: 991px) {
+  .hero-title {
+    font-size: 3.5rem;
+  }
+  
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .about-card-deco {
+    height: 300px;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .partners-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  /* ==========================================================================
+     모바일 및 태블릿 통합 대응 (1024px 이하)
+     ========================================================================== */
+
+  /* 햄버거 토글 단추 노출 */
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* 세로형 슬라이딩 서랍 메뉴 디자인 정의 (가로 사이즈를 브랜드 로고 비례인 260px로 축소하고 우측 슬라이드로 최적화) */
+  .nav-menu {
+    position: fixed;
+    top: 80px;
+    right: -260px; /* 기존 left: -100% 대신 우측 숨김 상태로 레이아웃 이동 */
+    left: auto; /* 좌측 정렬 초기화 */
+    width: 260px; /* 브랜드 로고 가로 영역 비례에 맞춰 컴팩트하게 260px로 고정 */
+    height: calc(100vh - 80px);
+    background: rgba(12, 16, 32, 0.96); /* 일관된 프리미엄 다크 네이비 투명 광택 배경 적용 */
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    flex-direction: column;
+    padding: 2.5rem 1.5rem; /* 좁아진 가로폭에 대비해 조밀한 안쪽 패딩 설정 */
+    gap: 1.25rem;
+    align-items: center; /* 메뉴 및 모든 구성 요소를 가로 정중앙 정렬 */
+    border-left: 1px solid rgba(99, 102, 241, 0.25); /* 프리미엄 우측 드로어 경계 실선 추가 */
+    border-top: none;
+    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto; /* 스크롤 활성화 */
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.45); /* 서랍장 입체감을 높이기 위한 부유 그림자 추가 */
+  }
+
+  /* 스크롤 시 서랍 상단 위치 조율 */
+  .common-navbar.navbar-scrolled .nav-menu {
+    top: 70px;
+    height: calc(100vh - 70px);
+  }
+
+  /* 햄버거 클릭 시 우측에서 등장하는 활성화 클래스 */
+  .nav-menu.active {
+    right: 0;
+    left: auto;
+  }
+
+  /* 서랍 내부 메뉴 링크 확대 및 가운데 정렬 */
+  .nav-link {
+    font-size: 1.15rem; /* 서랍 크기에 맞춰 폰트 소폭 조정 */
+    width: 100%;
+    text-align: center; /* 메뉴 텍스트 정중앙 배치 */
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .nav-link::after {
+    display: none; /* 모바일 모드에선 하단 밑줄 장식 비활성화 */
+  }
+
+  /* 예약 및 의료통역 버튼 가로 가득 채우기 (드로어 크기 260px 내에서 180px 크기로 아담하게 통일) */
+  .btn-nav-booking {
+    width: 100%;
+    max-width: 180px; /* 로고 사이즈에 맞춰 180px로 한계 설정 */
+    text-align: center;
+    border-radius: 10px !important;
+    padding: 0.75rem !important;
+    box-sizing: border-box;
+  }
+
+  /* 서랍 내 삽입되는 동적 로그인 영역 컨테이너 (가운데 정렬) */
+  .nav-auth-area {
+    margin-left: 0;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08); /* 구분 실선 추가 */
+    width: 100%;
+    display: flex;
+    justify-content: center; /* 로고 너비에 맞춰 정중앙 정렬 */
+  }
+
+  /* 로그인 유저 뱃지 세로 배열 정의 (가로 폭 고정 제한 및 중앙 배치 - 로고 사이즈에 맞춰 180px로 대폭 축소) */
+  .auth-user-badge {
+    flex-direction: column;
+    align-items: center; /* 로고와 균형을 위해 세로 정중앙 배치 */
+    width: 100%;
+    max-width: 180px; /* 로고의 실질 가로 너비 비율에 맞춰 최대 크기를 180px로 대폭 축소 */
+    margin: 0 auto;
+    gap: 0.6rem; /* 세로 정렬 시 버튼 간 간격을 콤팩트하게 튜닝 */
+  }
+
+  /* 프로필 캡슐 가로폭 제한 정렬 */
+  .user-capsule {
+    width: 100%;
+    justify-content: center; /* 캡슐 내부 이름 정중앙 정렬 */
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.06);
+    box-sizing: border-box;
+    border-radius: 12px;
+  }
+
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .user-nickname {
+    font-size: 0.9rem;
+    max-width: none;
+  }
+
+  /* 서랍용 예약내역 및 관리자 버튼 터치 영역 보정 (로고 비례 아담화) */
+  .btn-nav-action {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  /* 서랍용 로그아웃 버튼 디자인 보정 (가독성을 위한 배경 톤 및 크기 제한) */
+  .btn-nav-logout {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    background: rgba(244, 63, 94, 0.08);
+    color: #fda4af;
+    border-radius: 10px;
+    margin-top: 0.25rem;
+  }
+
+  .btn-nav-logout:hover {
+    background: rgba(244, 63, 94, 0.12);
+    text-decoration: none;
+  }
+
+  /* 서랍용 로그인 유도 버튼 최적화 (가로 폭 똑같이 180px로 제한) */
+  .btn-nav-login {
+    width: 100%;
+    max-width: 180px; /* 로그인 유도 버튼 가로 폭도 똑같이 180px로 제한 */
+    margin: 0 auto;
+    text-align: center;
+    padding: 0.85rem;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 768px) {
+  /* ==========================================================================
+     본문 섹션 및 레이아웃 모바일 대응 (768px 이하)
+     ========================================================================== */
+
+  .hero-title {
+    font-size: 2.75rem;
+  }
+
+  .hero-desc {
+    font-size: 1.1rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .content-section {
+    padding: 5rem 1.5rem;
+  }
+
+  .services-grid,
+  .partners-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* 펄스 애니메이션 정의 */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 0.9; }
+}
+
+/* ==========================================================================
+   17. 어드민 대시보드 - 회원 등급 동적 관리 전용 반응형 레이아웃
+   ========================================================================== */
+.admin-users-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr; /* 좌측 등급설정 영역은 380px 고정, 우측 회원테이블은 남은공간 전부 차지 */
+  gap: 2rem;
+  align-items: start;
+  width: 100%;
+}
+
+/* 등급 키 등 입력폼 디자인 세련되게 다듬기 */
+.admin-users-layout .form-group input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(165, 180, 252, 0.15);
+  border-radius: 10px;
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  transition: var(--transition-smooth);
+}
+
+.admin-users-layout .form-group input:focus {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+  outline: none;
+}
+
+/* 등급 종류 테이블 헤더/셀 조밀화 */
+.admin-users-layout #role-list td {
+  padding: 0.8rem 0.6rem;
+  font-size: 0.88rem;
+  vertical-align: middle;
+}
+
+/* 회원등급 변경 셀렉트 박스 스타일 세련화 */
+.role-control-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.select-role {
+  background: rgba(12, 16, 32, 0.9);
+  border: 1px solid rgba(165, 180, 252, 0.2);
+  color: var(--text-primary);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.select-role:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* 회원 테이블 가독성/줄바꿈 방지 */
+.admin-users-layout .clinic-list-section .admin-table th,
+.admin-users-layout .clinic-list-section .admin-table td {
+  white-space: nowrap;
+}
+
+/* 등록된 등급 종류 테이블 (우측 상단) 찌러짐 및 잘림 방지를 위해 가로폭을 가입 회원 목록처럼 100%로 확장 */
+.admin-users-layout .clinic-list-section .table-responsive:first-of-type {
+  width: 100%;
+}
+
+.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table th,
+.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table td {
+  padding: 0.75rem 0.8rem;
+  font-size: 0.88rem;
+  text-align: center; /* 8열 데이터 중앙 정렬로 시인성 증대 */
+}
+
+/* 등급 종류 테이블 헤더/셀 개별 조율 */
+.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(1),
+.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(1) {
+  text-align: left;
+  font-weight: 700;
+}
+.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(2),
+.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(2) {
+  text-align: left;
+}
+
+/* ==========================================================================
+   18. 권한 설정용 글래스모피즘 토글 스위치 (Aesthetic Switch)
+   ========================================================================== */
+.switch-container {
+  display: inline-block;
+  position: relative;
+  width: 48px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+.switch-container input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 34px;
+}
+
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #6b7280;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.switch-container input:checked + .switch-slider {
+  background-color: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.6);
+}
+
+.switch-container input:checked + .switch-slider:before {
+  transform: translateX(24px);
+  background-color: #a5b4fc;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+}
+
+/* 마우스 호버 시 글로우 효과 */
+.switch-container:hover .switch-slider {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* 시스템 등급 잠금 제어(비활성) */
+.switch-container input:disabled + .switch-slider {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* 반응형 대응 (태블릿 및 모바일: 1200px 이하) */
+@media (max-width: 1200px) {
+  .admin-users-layout {
+    grid-template-columns: 1fr; /* 상하 1열로 떨어지게 하여 찌러짐 차단 */
+    gap: 2.5rem;
+  }
+
+  .admin-users-layout .clinic-form-section,
+  .admin-users-layout .clinic-list-section {
+    width: 100%;
+  }
+}
+
+/* 100% 가로 폭 풀 레이아웃 스타일 정의 */
+.admin-users-full-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* 모바일 디바이스 (768px 이하) 대응을 위한 3단 폼 1열 수직 정렬 전환 */
+@media (max-width: 768px) {
+  .admin-users-full-layout #role-register-form {
+    grid-template-columns: 1fr !important; /* 모바일에서는 세로 1줄로 정렬 */
+  }
 }

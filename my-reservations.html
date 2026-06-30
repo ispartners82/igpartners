@@ -24,26 +24,15 @@
     <div class="aurora-2"></div>
   </div>
 
-  <div class="container admin-container">
-    <!-- 상단 로그인/사용자 정보 영역 -->
-    <div class="auth-bar">
-      <div id="auth-user" class="auth-user" style="display: none;">
-        <img id="user-photo" src="" alt="Profile" class="user-photo">
-        <span id="user-name" class="user-name"></span>
-        <!-- 예약내역 버튼을 뱃지 내부에 유기적 통합 -->
-        <a href="/my-reservations.html" id="btn-my-reservations" class="btn-auth-sub">📅 예약내역</a>
-        <!-- 관리자 등급 전용 대시보드 바로가기 버튼 (통합형으로 중간에 배치) -->
-        <a href="/admin.html" id="btn-admin-dashboard" class="btn-auth-sub" style="display: none;">⚙️ 관리자</a>
-        <button id="btn-logout" class="btn-auth logout">로그아웃 (Logout)</button>
-      </div>
-      <button id="btn-login" class="btn-auth login" style="display: none;">로그인</button>
-    </div>
+  <!-- 공통 상단 네비게이션 바 컴포넌트 동적 주입 -->
+  <header id="global-header"></header>
 
-    <!-- 언어선택 돌아가기 버튼 -->
-    <a href="index.html" class="back-to-lang">언어선택</a>
+  <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 인라인 스타일 추가 -->
+  <div class="container admin-container" style="margin-top: 100px;">
+    <!-- 기존 auth-bar 및 언어선택 이동 링크는 공통 네비게이션 바 내부로 완벽히 통합되어 제거되었습니다 -->
 
     <header class="header">
-      <div id="brand-logo-container" data-text="IGPartners Medical Appointment"></div>
+      <!-- 기존 브랜딩 로고(logo.js 제어)는 공통 네비게이션으로 이전되어 중복 제거되었습니다 -->
       <h1 class="title">내 예약 내역 조회</h1>
       <p class="subtitle">신청하신 예약의 실시간 처리 현황을 확인하고 필요시 예약을 취소할 수 있습니다.</p>
     </header>
@@ -116,9 +105,9 @@
   </div>
 
   <!-- Firebase 및 사용자 로직 로드 (ES Module) -->
+  <script type="module" src="/js/navigation.js?v=2.1.7"></script>
   <script type="module" src="/js/my-reservations.js?v=2.1.7"></script>
   <script type="module" src="/js/auth.js?v=2.1.7"></script>
-  <script type="module" src="/js/logo.js?v=2.1.7"></script>
 </body>
 
 </html>

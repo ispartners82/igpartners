@@ -24,22 +24,15 @@
     <div class="aurora-2"></div>
   </div>
 
-  <div class="container admin-container">
-    <!-- 상단 로그인/사용자 정보 영역 -->
-    <div class="auth-bar">
-      <div id="auth-user" class="auth-user" style="display: none;">
-        <img id="user-photo" src="" alt="Profile" class="user-photo">
-        <span id="user-name" class="user-name"></span>
-        <!-- 예약내역 버튼을 뱃지 내부에 유기적 통합 -->
-        <a href="/my-reservations.html" id="btn-my-reservations" class="btn-auth-sub">📅 예약내역</a>
-        <!-- 관리자 등급 전용 대시보드 바로가기 버튼 (통합형으로 중간에 배치) -->
-        <a href="/admin.html" id="btn-admin-dashboard" class="btn-auth-sub" style="display: none;">⚙️ 관리자</a>
-        <button id="btn-logout" class="btn-auth logout">로그아웃 (Logout)</button>
-      </div>
-      <button id="btn-login" class="btn-auth login" style="display: none;">로그인</button>
-    </div>
+  <!-- 공통 상단 네비게이션 바 컴포넌트 동적 주입 -->
+  <header id="global-header"></header>
+
+  <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 인라인 스타일 추가 -->
+  <div class="container admin-container" style="margin-top: 100px;">
+    <!-- 기존 auth-bar 하드코딩 영역은 공통 네비게이션(global-header) 내부로 통합되어 완전히 제거되었습니다 -->
+
     <header class="header">
-      <div id="brand-logo-container" data-text="IGPartners Medical Appointment"></div>
+      <!-- 기존 브랜딩 로고(logo.js 제어)는 공통 네비게이션 상단으로 이전되어 중복 제거되었습니다 -->
       <h1 class="title">예약 현황 관리 대시보드</h1>
       <p class="subtitle">환자들의 예약 정보를 실시간으로 확인하고 예약을 확정하거나 취소할 수 있습니다.</p>
     </header>
@@ -47,8 +40,10 @@
     <!-- 관리자 메뉴 탭 -->
     <div class="admin-tabs">
       <button id="tab-reservations" class="tab-btn active">예약 내역 관리</button>
-      <button id="tab-users" class="tab-btn" style="display: none;">회원 등급 관리</button>
       <button id="tab-clinics" class="tab-btn" style="display: none;">병원 관리</button>
+      <button id="tab-users" class="tab-btn" style="display: none;">등급,권한 관리</button>
+      <button id="tab-permissions" class="tab-btn" style="display: none;">회원 리스트</button>
+
     </div>
 
     <!-- 예약 내역 관리 탭 콘텐츠 -->
@@ -117,11 +112,63 @@
       </main>
     </div>
 
-    <!-- 회원 등급 관리 탭 콘텐츠 -->
+    <!-- 회원 등급 관리 탭 콘텐츠 (동적 등급 설정 - 100% 풀 레이아웃 반응형) -->
     <div id="content-users" class="admin-tab-content" style="display: none;">
       <main class="admin-main">
-        <div class="table-controls">
-          <h2>회원 등급 관리</h2>
+        <div class="admin-users-full-layout">
+ 
+          <!-- 1. 회원 등급 종류 추가 폼 (상단 - 넓고 단정한 1줄 가로 정렬 구성) -->
+          <section class="clinic-form-section" style="max-width: 680px; margin-bottom: 2rem;">
+            <h2>회원 등급 종류 추가</h2>
+            <form id="role-register-form" class="admin-clinic-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="reg-role-key" style="margin-bottom: 4px;">등급 키 (영문 식별자) <span class="required">*</span></label>
+                <input type="text" id="reg-role-key" required placeholder="예: vip, res_manager" style="padding: 0.6rem 0.8rem; font-size: 0.88rem;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="reg-role-label" style="margin-bottom: 4px;">등급 표시이름 (한글 라벨) <span class="required">*</span></label>
+                <input type="text" id="reg-role-label" required placeholder="예: VIP 회원, 예약 매니저" style="padding: 0.6rem 0.8rem; font-size: 0.88rem;">
+              </div>
+              <button type="submit" class="btn btn-primary" style="height: 38px; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap;">등급 추가</button>
+            </form>
+          </section>
+ 
+          <!-- 2. 등록된 등급 종류 목록 (하단 - 가로폭 100% 8열 넉넉한 공간) -->
+          <section class="clinic-list-section" style="width: 100%;">
+            <h2>등록된 등급 종류 및 세부 기능 권한 설정</h2>
+            <div class="table-responsive" style="margin-top: 1rem;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>등급 키</th>
+                    <th>표시이름</th>
+                    <th>관리자</th>
+                    <th>예약내역</th>
+                    <th>병원관리</th>
+                    <th>등급권한관리</th>
+                    <th>회원리스트</th>
+                    <th>등급변경</th>
+                  </tr>
+                </thead>
+                <tbody id="role-list">
+                  <tr>
+                    <td colspan="8" class="table-loading">등급 데이터를 불러오는 중입니다...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+ 
+        </div>
+      </main>
+    </div>
+
+    <!-- 회원 권한 관리 탭 콘텐츠 (가입 회원 목록 및 등급 변경 테이블) -->
+    <div id="content-permissions" class="admin-tab-content" style="display: none;">
+      <main class="admin-main">
+        <div class="table-controls"
+          style="margin-bottom: 1.5rem; justify-content: space-between; align-items: center; display: flex;">
+          <h2>가입 회원 목록 및 권한 변경</h2>
           <button id="btn-refresh-users" class="btn-refresh">
             <svg viewBox="0 0 24 24" width="16" height="16">
               <path fill="currentColor"
@@ -130,7 +177,6 @@
             새로고침
           </button>
         </div>
-
         <div class="table-responsive">
           <table class="admin-table">
             <thead>
@@ -162,7 +208,7 @@
             <form id="clinic-register-form" class="admin-clinic-form">
               <div class="form-group">
                 <label for="reg-clinic-name">병원이름 (표시용) <span class="required">*</span></label>
-                <input type="text" id="reg-clinic-name" required placeholder="예: Nha Khoa Teun Teun">
+                <input type="text" id="reg-clinic-name" required placeholder="예: 튼튼 치과">
               </div>
               <div class="form-group">
                 <label for="reg-clinic-eng-name">병원이름 (영어/예약용) <span class="required">*</span></label>
@@ -180,12 +226,12 @@
               </div>
               <div class="form-group">
                 <label for="reg-clinic-depts">진료과목 (쉼표로 구분) <span class="required">*</span></label>
-                <input type="text" id="reg-clinic-depts" required placeholder="예: Thẩm mỹ da, Laser, Petit">
+                <input type="text" id="reg-clinic-depts" required placeholder="예: 미용 피부, 레이저, 임플란트">
               </div>
               <div class="form-group">
                 <label for="reg-clinic-address">병원주소 <span class="required">*</span></label>
                 <div style="display: flex; gap: 0.5rem;">
-                  <input type="text" id="reg-clinic-address" required placeholder="예: 45 Dongmak-ro, Mapo-gu, Seoul"
+                  <input type="text" id="reg-clinic-address" required placeholder="예: 서울특별시 마포구 동막로 45"
                     style="flex-grow: 1;">
                   <button type="button" id="btn-search-maps" class="btn btn-secondary btn-sm"
                     style="flex-shrink: 0; padding: 0.8rem 1rem; font-size: 0.85rem; border-radius: 8px;">구글지도
@@ -237,9 +283,9 @@
   </div>
 
   <!-- Firebase 및 관리 로직 로드 (ES Module) -->
+  <script type="module" src="/js/navigation.js?v=2.1.7"></script>
   <script type="module" src="/js/admin.js?v=2.1.7"></script>
   <script type="module" src="/js/auth.js?v=2.1.7"></script>
-  <script type="module" src="/js/logo.js?v=2.1.7"></script>
 </body>
 
 </html>

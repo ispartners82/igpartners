@@ -9,7 +9,8 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
-  addDoc
+  addDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -353,35 +354,112 @@ document.addEventListener("DOMContentLoaded", () => {
       // 데이터 로딩 인디케이터 표시
       reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
 
+      // [최우선 조치] 최초 진입 시점에도 역할을 온전히 매핑하기 위해 권한 시딩/마이그레이션을 즉각 실행합니다.
+      const rolesCol = collection(db, "roles");
+      try {
+        const snap = await getDocs(rolesCol);
+        let needsMigration = snap.empty;
+        if (!snap.empty) {
+          const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
+          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined) {
+            needsMigration = true;
+          }
+        }
+
+        if (needsMigration) {
+          console.log("[Auth State] Migrating database roles table immediately...");
+          for (const r of defaultRoles) {
+            const roleDocRef = doc(db, "roles", r.key);
+            const roleDoc = await getDoc(roleDocRef);
+            if (!roleDoc.exists()) {
+              await setDoc(roleDocRef, {
+                label: r.label,
+                isSystem: r.isSystem,
+                isAdmin: r.isAdmin,
+                hasReservations: r.hasReservations,
+                hasClinics: r.hasClinics,
+                hasRoles: r.hasRoles,
+                hasPermissions: r.hasPermissions,
+                createdAt: new Date().toISOString()
+              });
+            } else {
+              const existingData = roleDoc.data();
+              await updateDoc(roleDocRef, {
+                isAdmin: existingData.isAdmin !== undefined ? existingData.isAdmin : r.isAdmin,
+                hasReservations: existingData.hasReservations !== undefined ? existingData.hasReservations : r.hasReservations,
+                hasClinics: existingData.hasClinics !== undefined ? existingData.hasClinics : r.hasClinics,
+                hasRoles: existingData.hasRoles !== undefined ? existingData.hasRoles : r.hasRoles,
+                hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions
+              });
+            }
+          }
+          console.log("[Auth State] Roles database migration completed.");
+        }
+      } catch (errSeeding) {
+        console.error("Critical fallback seeding failed:", errSeeding);
+      }
+
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
-        const allowedRoles = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"];
-        if (allowedRoles.includes(userData.role)) {
-          console.log(`Access granted for role: ${userData.role}`);
-          currentLoginUserRole = userData.role; // 등급 캐싱
-          
-          // 최고 관리자(super_admin)인 경우에만 회원 등급 관리 탭 노출
-          const tabUsers = document.getElementById("tab-users");
-          if (tabUsers) {
-            if (currentLoginUserRole === "super_admin") {
-              tabUsers.style.display = "inline-block";
-            } else {
-              tabUsers.style.display = "none";
-            }
+        const userRole = userData.role || "user";
+        
+        // 등급 문서로부터 5가지 권한 로드
+        const roleDocRef = doc(db, "roles", userRole);
+        const roleDocSnap = await getDoc(roleDocRef);
+        
+        let permissions = {
+          isAdmin: false,
+          hasReservations: false,
+          hasClinics: false,
+          hasRoles: false,
+          hasPermissions: false
+        };
+
+        if (roleDocSnap.exists()) {
+          const roleData = roleDocSnap.data();
+          // DB 로드 데이터 바인딩 + 누락 필드가 있을 경우 등급키 성격에 따라 하위 호환 롤백 가드 적용 (100% 진입 성공 보장)
+          permissions = {
+            isAdmin: roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+            hasReservations: roleData.hasReservations !== undefined ? roleData.hasReservations : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+            hasClinics: roleData.hasClinics !== undefined ? roleData.hasClinics : ["super_admin", "admin", "admin_user"].includes(userRole),
+            hasRoles: roleData.hasRoles !== undefined ? roleData.hasRoles : (userRole === "super_admin"),
+            hasPermissions: roleData.hasPermissions !== undefined ? roleData.hasPermissions : (userRole === "super_admin")
+          };
+        } else {
+          // 예외 상황: roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
+          if (userRole === "super_admin") {
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true };
+          } else if (["admin", "admin_user"].includes(userRole)) {
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false };
+          } else if (["top_manager", "res_manager"].includes(userRole)) {
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false };
           }
+        }
+
+        if (permissions.isAdmin === true) {
+          console.log(`Access granted for role: ${userRole}`);
+          currentLoginUserRole = userRole; // 등급 캐싱
           
-          // 최고 관리자(super_admin), 일반 관리자(admin), 관리자(admin_user) 등급인 경우에 '병원 관리' 탭 노출
-          // 기존 super_admin 단독 노출 조건에서 관리자 등급군 전체로 권한 범위가 확장되었습니다.
+          // 동적으로 탭 노출 여부 온오프 스위칭
+          const tabReservations = document.getElementById("tab-reservations");
+          const tabUsers = document.getElementById("tab-users");
+          const tabPermissions = document.getElementById("tab-permissions");
           const tabClinics = document.getElementById("tab-clinics");
+
+          if (tabReservations) {
+            tabReservations.style.display = permissions.hasReservations ? "inline-block" : "none";
+          }
+          if (tabUsers) {
+            tabUsers.style.display = permissions.hasRoles ? "inline-block" : "none";
+          }
+          if (tabPermissions) {
+            tabPermissions.style.display = permissions.hasPermissions ? "inline-block" : "none";
+          }
           if (tabClinics) {
-            if (["super_admin", "admin", "admin_user"].includes(currentLoginUserRole)) {
-              tabClinics.style.display = "inline-block";
-            } else {
-              tabClinics.style.display = "none";
-            }
+            tabClinics.style.display = permissions.hasClinics ? "inline-block" : "none";
           }
           
           // 권한 획득 성공 시 예약 정보 로드 진행
@@ -404,39 +482,210 @@ document.addEventListener("DOMContentLoaded", () => {
   // 탭 전환 이벤트 리스너
   const tabClinics = document.getElementById("tab-clinics");
   const contentClinics = document.getElementById("content-clinics");
+  const tabPermissions = document.getElementById("tab-permissions");
+  const contentPermissions = document.getElementById("content-permissions");
 
   if (tabReservations && tabUsers && tabClinics) {
     tabReservations.addEventListener("click", () => {
       tabReservations.classList.add("active");
       tabUsers.classList.remove("active");
+      if (tabPermissions) tabPermissions.classList.remove("active");
       tabClinics.classList.remove("active");
       contentReservations.style.display = "block";
       contentUsers.style.display = "none";
+      if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "none";
     });
 
     tabUsers.addEventListener("click", () => {
       tabUsers.classList.add("active");
       tabReservations.classList.remove("active");
+      if (tabPermissions) tabPermissions.classList.remove("active");
       tabClinics.classList.remove("active");
       contentReservations.style.display = "none";
       contentUsers.style.display = "block";
+      if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "none";
-      loadUsers(); // 회원 목록 불러오기
+      initRolesAndListen(); // 회원 등급 실시간 로드 시작
     });
+
+    if (tabPermissions) {
+      tabPermissions.addEventListener("click", () => {
+        tabPermissions.classList.add("active");
+        tabReservations.classList.remove("active");
+        tabUsers.classList.remove("active");
+        tabClinics.classList.remove("active");
+        contentReservations.style.display = "none";
+        contentUsers.style.display = "none";
+        if (contentPermissions) contentPermissions.style.display = "block";
+        contentClinics.style.display = "none";
+        initRolesAndListen(); // 등급 캐시 및 데이터 연동
+        loadUsers(); // 가입 회원 목록 즉시 로드
+      });
+    }
 
     tabClinics.addEventListener("click", () => {
       tabClinics.classList.add("active");
       tabReservations.classList.remove("active");
       tabUsers.classList.remove("active");
+      if (tabPermissions) tabPermissions.classList.remove("active");
       contentReservations.style.display = "none";
       contentUsers.style.display = "none";
+      if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "block";
       loadClinics(); // 병원 목록 불러오기
     });
   }
 
-  // 회원 목록 데이터 가져오기 및 렌더링
+  // --- 회원 등급(역할) 동적 관리 기능 구현 ---
+  let unsubscribeRoles = null;
+  let rolesCache = {}; // { super_admin: "최고 관리자", ... }
+
+  const defaultRoles = [
+    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true },
+    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false },
+    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false },
+    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false },
+    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false },
+    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false },
+    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false },
+    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false },
+    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false }
+  ];
+
+  // 회원 등급 로드 및 초기 시드 처리
+  async function initRolesAndListen() {
+    if (unsubscribeRoles) {
+      loadUsers(); // 이미 리스닝 중인 경우, 중복 리스너 등록은 방지하고 회원 목록은 즉시 로드
+      return; 
+    }
+
+    const rolesCol = collection(db, "roles");
+
+    // 1. 초기 시드 등급 적재 검사는 백그라운드 비동기로 실행하여 메인 흐름을 블로킹하지 않게 처리
+    (async () => {
+      try {
+        const snap = await getDocs(rolesCol);
+        
+        // 1. roles 컬렉션이 아예 비어있거나, 기존 데이터에 권한 필드(isAdmin)가 누락된 경우 마이그레이션 필요로 판정
+        let needsMigration = snap.empty;
+        if (!snap.empty) {
+          const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
+          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined) {
+            needsMigration = true;
+          }
+        }
+
+        if (needsMigration) {
+          console.log("Database Migration: Seeding or updating default roles permissions...");
+          for (const r of defaultRoles) {
+            const roleDocRef = doc(db, "roles", r.key);
+            const roleDoc = await getDoc(roleDocRef);
+
+            if (!roleDoc.exists()) {
+              // 문서 자체가 없으면 새로 생성
+              await setDoc(roleDocRef, {
+                label: r.label,
+                isSystem: r.isSystem,
+                isAdmin: r.isAdmin,
+                hasReservations: r.hasReservations,
+                hasClinics: r.hasClinics,
+                hasRoles: r.hasRoles,
+                hasPermissions: r.hasPermissions,
+                createdAt: new Date().toISOString()
+              });
+            } else {
+              // 기존 문서가 존재하면 누락된 신규 권한 필드만 안전하게 머지 업데이트
+              const existingData = roleDoc.data();
+              await updateDoc(roleDocRef, {
+                isAdmin: existingData.isAdmin !== undefined ? existingData.isAdmin : r.isAdmin,
+                hasReservations: existingData.hasReservations !== undefined ? existingData.hasReservations : r.hasReservations,
+                hasClinics: existingData.hasClinics !== undefined ? existingData.hasClinics : r.hasClinics,
+                hasRoles: existingData.hasRoles !== undefined ? existingData.hasRoles : r.hasRoles,
+                hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions
+              });
+            }
+          }
+          console.log("Database Migration: Completed successfully.");
+        }
+      } catch (e) {
+        console.error("Failed to seed or migrate default roles:", e);
+      }
+    })();
+
+    // 2. 최초 탭 클릭 시 대기 현상 방지를 위해 가입 회원 목록 즉시 선제 로드
+    loadUsers();
+
+    // 3. roles 실시간 감시는 동기적으로 즉시 시작하여 회원 목록 로드가 지연되지 않도록 함
+    const q = query(rolesCol, orderBy("createdAt", "asc"));
+    const roleList = document.getElementById("role-list");
+
+    unsubscribeRoles = onSnapshot(q, (querySnapshot) => {
+      rolesCache = {};
+      if (roleList) roleList.innerHTML = "";
+
+      // 동적 스위치 렌더링 헬퍼 함수
+      const makeToggleHTML = (roleKey, fieldName, value, isDisabled) => {
+        const isChecked = value === true ? "checked" : "";
+        const isOptDisabled = isDisabled ? "disabled" : "";
+        return `
+          <label class="switch-container">
+            <input type="checkbox" class="role-perm-toggle" 
+              data-key="${roleKey}" data-field="${fieldName}" 
+              ${isChecked} ${isOptDisabled}>
+            <span class="switch-slider"></span>
+          </label>
+        `;
+      };
+
+      querySnapshot.forEach((docSnap) => {
+        const roleKey = docSnap.id;
+        const roleData = docSnap.data();
+        rolesCache[roleKey] = roleData.label;
+
+        if (roleList) {
+          const tr = document.createElement("tr");
+          const isSystem = roleData.isSystem === true;
+          
+          // 최고 관리자 super_admin의 핵심 권한(대시보드진입, 등급설정)은 해제되지 않도록 강제 락
+          const lockAdmin = roleKey === "super_admin";
+          
+          const deleteBtn = isSystem 
+            ? `<span style="color:var(--text-secondary); font-size:0.8rem;">시스템 등급</span>`
+            : `<button class="btn-action delete btn-delete-role" data-key="${roleKey}">삭제</button>`;
+
+          tr.innerHTML = `
+            <td class="font-bold" style="color:#a5b4fc;">${roleKey}</td>
+            <td id="role-label-text-${roleKey}">
+              <span class="role-badge ${roleKey}">${roleData.label}</span>
+            </td>
+            <td>${makeToggleHTML(roleKey, "isAdmin", roleData.isAdmin, lockAdmin)}</td>
+            <td>${makeToggleHTML(roleKey, "hasReservations", roleData.hasReservations, false)}</td>
+            <td>${makeToggleHTML(roleKey, "hasClinics", roleData.hasClinics, false)}</td>
+            <td>${makeToggleHTML(roleKey, "hasRoles", roleData.hasRoles, lockAdmin)}</td>
+            <td>${makeToggleHTML(roleKey, "hasPermissions", roleData.hasPermissions, false)}</td>
+            <td>
+              <div style="display:flex; gap:6px; align-items:center; justify-content:center;">
+                <button class="btn-action confirm btn-edit-role" data-key="${roleKey}" data-label="${roleData.label.replace(/"/g, '&quot;')}">수정</button>
+                ${deleteBtn}
+              </div>
+            </td>
+          `;
+          roleList.appendChild(tr);
+        }
+      });
+
+      // 등급 종류가 최초 로드되거나 변경되면 가입 유저 테이블 실시간 갱신
+      loadUsers();
+    }, (error) => {
+      console.error("Roles subscription error:", error);
+      if (roleList) {
+        roleList.innerHTML = `<tr><td colspan="8" class="table-error" style="color:#fda4af; text-align:center; padding:1.5rem; background:rgba(244,63,94,0.05); border-radius:8px;">등급 정보를 불러올 수 없습니다. (Firestore 보안 규칙 배포 확인 필요)</td></tr>`;
+      }
+    });
+  }
+
+  // 가입 회원 목록 로드 및 동적 옵션 바인딩
   async function loadUsers() {
     if (!userList) return;
     
@@ -469,38 +718,35 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
 
-        // 등급 표시 한글 라벨 매핑 및 뱃지 클래스
-        const roleLabels = {
-          "super_admin": "최고 관리자",
-          "admin": "일반 관리자",
-          "partner": "제휴 병원",
-          "vip": "VIP 회원",
-          "user": "일반 회원",
-          "admin_user": "관리자",
-          "top_manager": "최고 매니저",
-          "res_manager": "예약 매니저",
-          "general": "일반"
-        };
-        const currentRoleLabel = roleLabels[userData.role] || userData.role || "일반";
+        // 캐시된 역할을 기반으로 라벨 매핑 및 동적 select 옵션 생성
+        const currentRoleLabel = rolesCache[userData.role] || userData.role || "일반 회원";
 
-        // 최고 관리자(super_admin)만 등급 수정 폼 활성화, 본인 계정은 변경 불가 처리
         const isSuperAdmin = currentLoginUserRole === "super_admin";
         const isSelf = auth.currentUser && auth.currentUser.uid === userId;
         const isDisabled = (!isSuperAdmin || isSelf) ? "disabled" : "";
+
+        // 동적으로 rolesCache 기준 select options 생성
+        let selectOptionsHTML = "";
+        let roleExistsInCache = false;
+
+        Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
+          const isSelected = userData.role === roleKey ? "selected" : "";
+          if (userData.role === roleKey) {
+            roleExistsInCache = true;
+          }
+          selectOptionsHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel}</option>`;
+        });
+
+        // 만약 기존 사용자가 가졌던 등급이 rolesCache에 등록되어 있지 않은 경우, 기존 등급 유실 방지를 위해 임시 옵션 추가
+        if (userData.role && !roleExistsInCache) {
+          selectOptionsHTML += `<option value="${userData.role}" selected>${userData.role} (미등록)</option>`;
+        }
 
         // 변경 컨트롤 HTML
         const roleControlHTML = `
           <div class="role-control-wrapper">
             <select class="select-role" id="select-role-${userId}" ${isDisabled}>
-              <option value="user" ${userData.role === 'user' ? 'selected' : ''}>일반 회원</option>
-              <option value="general" ${userData.role === 'general' ? 'selected' : ''}>일반</option>
-              <option value="vip" ${userData.role === 'vip' ? 'selected' : ''}>VIP 회원</option>
-              <option value="partner" ${userData.role === 'partner' ? 'selected' : ''}>제휴 병원</option>
-              <option value="res_manager" ${userData.role === 'res_manager' ? 'selected' : ''}>예약 매니저</option>
-              <option value="top_manager" ${userData.role === 'top_manager' ? 'selected' : ''}>최고 매니저</option>
-              <option value="admin" ${userData.role === 'admin' ? 'selected' : ''}>일반 관리자</option>
-              <option value="admin_user" ${userData.role === 'admin_user' ? 'selected' : ''}>관리자</option>
-              <option value="super_admin" ${userData.role === 'super_admin' ? 'selected' : ''}>최고 관리자</option>
+              ${selectOptionsHTML}
             </select>
             <button class="btn-action confirm btn-update-role" data-uid="${userId}" ${isDisabled}>변경</button>
           </div>
@@ -523,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 회원 등급 업데이트
+  // 회원 등급 변경 처리
   async function updateUserRole(targetUid, newRole) {
     if (currentLoginUserRole !== "super_admin") {
       alert("회원 등급 변경 권한이 없습니다. (최고 관리자 전용 기능)");
@@ -543,7 +789,221 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 회원 테이블 이벤트 바인딩 (위임 처리)
+  // 회원 목록 새로고침 버튼 이벤트
+  if (btnRefreshUsers) {
+    btnRefreshUsers.addEventListener("click", () => {
+      loadUsers();
+    });
+  }
+
+  // 신규 등급 등록 처리
+  const roleRegisterForm = document.getElementById("role-register-form");
+  if (roleRegisterForm) {
+    roleRegisterForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      if (currentLoginUserRole !== "super_admin") {
+        alert("등급 생성 권한이 없습니다. 최고 관리자 권한이 필요합니다.");
+        return;
+      }
+
+      const roleKey = document.getElementById("reg-role-key").value.trim().toLowerCase();
+      const roleLabel = document.getElementById("reg-role-label").value.trim();
+
+      if (!roleKey || !roleLabel) {
+        alert("등급 키와 표시이름은 필수 항목입니다.");
+        return;
+      }
+
+      // 영문 소문자와 언더스코어만 허용 검사
+      if (!/^[a-z0-9_]+$/.test(roleKey)) {
+        alert("등급 키는 영문 소문자, 숫자, 언더바(_)만 사용 가능합니다.");
+        return;
+      }
+
+      const btnSubmit = roleRegisterForm.querySelector("button[type='submit']");
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "추가 중...";
+
+      try {
+        await setDoc(doc(db, "roles", roleKey), {
+          label: roleLabel,
+          isSystem: false,
+          createdAt: new Date().toISOString()
+        });
+        alert("새 회원 등급이 등록되었습니다.");
+        roleRegisterForm.reset();
+      } catch (error) {
+        console.error("Register role failed:", error);
+        alert("등급 등록에 실패했습니다: " + error.message);
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "등급 추가하기";
+      }
+    });
+  }
+
+  // 등급 목록 테이블 내 이벤트 바인딩 (수정 및 삭제 처리)
+  const roleListContainer = document.getElementById("role-list");
+  if (roleListContainer) {
+    roleListContainer.addEventListener("click", async (e) => {
+      const roleKey = e.target.getAttribute("data-key");
+      if (!roleKey) return;
+
+      if (currentLoginUserRole !== "super_admin") {
+        alert("등급 수정/삭제 권한이 없습니다.");
+        return;
+      }
+
+      // ── 등급 수정 (세련된 다크 글래스모피즘 모달 적용) ──
+      if (e.target.classList.contains("btn-edit-role")) {
+        const curLabel = e.target.getAttribute("data-label");
+        
+        let editModal = document.getElementById("role-edit-modal");
+        if (editModal) editModal.remove();
+
+        editModal = document.createElement("div");
+        editModal.id = "role-edit-modal";
+        editModal.style.cssText = [
+          "position:fixed", "inset:0", "z-index:9999",
+          "background:rgba(0,0,0,0.75)", "display:flex",
+          "align-items:center", "justify-content:center",
+          "backdrop-filter:blur(6px)", "-webkit-backdrop-filter:blur(6px)"
+        ].join(";");
+        
+        editModal.innerHTML = `
+          <div style="background:#0c1020; border:1px solid rgba(99,102,241,0.25); border-radius:18px;
+                      padding:2.2rem; width:min(420px,92vw); box-shadow:0 24px 80px rgba(0,0,0,0.75);
+                      font-family:'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;">
+            <h3 style="margin:0 0 1.2rem; color:#a5b4fc; font-size:1.15rem; font-weight:700;">🏷️ 등급 표시이름 수정</h3>
+            <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1.2rem;">
+              등급 키 (ID): <strong style="color:#ffffff; font-family:monospace; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">${roleKey}</strong>
+            </p>
+            <label style="display:block; color:#c7d2fe; font-size:0.82rem; margin-bottom:6px; font-weight:600;">새로운 표시 이름 *</label>
+            <input id="edit-role-label-input" type="text" value="${curLabel}"
+              style="width:100%; padding:0.75rem 0.9rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
+                     background:rgba(255,255,255,0.03); color:#e2e8f0; margin-bottom:1.6rem; box-sizing:border-box; font-size:0.95rem; outline:none; transition:all 0.3s;">
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+              <button id="btn-edit-role-cancel" class="btn btn-secondary" style="padding:0.55rem 1.4rem; font-size:0.85rem; border-radius:8px;">취소</button>
+              <button id="btn-edit-role-save" class="btn btn-primary" style="padding:0.55rem 1.4rem; font-size:0.85rem; border-radius:8px; background:linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%); border:none; color:#fff;">저장하기</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(editModal);
+
+        // 입력창 오토 포커스 및 전체 선택
+        const inputEl = document.getElementById("edit-role-label-input");
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.select();
+        }
+
+        // 취소 단추
+        document.getElementById("btn-edit-role-cancel").addEventListener("click", () => {
+          editModal.remove();
+        });
+        
+        // 팝업 오버레이 바깥 클릭 시 자동 닫힘
+        editModal.addEventListener("click", (ev) => {
+          if (ev.target === editModal) editModal.remove();
+        });
+
+        // 저장 처리 바인딩
+        document.getElementById("btn-edit-role-save").addEventListener("click", async () => {
+          const newLabel = inputEl.value.trim();
+          if (!newLabel) {
+            alert("표시 이름은 필수입니다.");
+            return;
+          }
+
+          const saveBtn = document.getElementById("btn-edit-role-save");
+          saveBtn.disabled = true;
+          saveBtn.textContent = "저장 중...";
+
+          try {
+            await updateDoc(doc(db, "roles", roleKey), {
+              label: newLabel
+            });
+            alert("등급 표시이름이 수정되었습니다.");
+            editModal.remove();
+          } catch (err) {
+            console.error("Edit role failed:", err);
+            alert("수정 오류: " + err.message);
+            saveBtn.disabled = false;
+            saveBtn.textContent = "저장하기";
+          }
+        });
+      }
+
+      // ── 등급 삭제 ──
+      if (e.target.classList.contains("btn-delete-role")) {
+        if (!confirm(`정말 [${roleKey}] 등급을 삭제하시겠습니까?\n이 등급을 가진 가입 회원들은 자동으로 '일반 회원(user)' 등급으로 변경됩니다.`)) {
+          return;
+        }
+
+        e.target.disabled = true;
+        e.target.textContent = "...";
+
+        try {
+          // 1. 해당 등급을 소유한 가입 회원 목록 로드 및 일괄 등급 강등 처리
+          const usersCol = collection(db, "users");
+          const q = query(usersCol);
+          const usersSnap = await getDocs(q);
+
+          let updatePromises = [];
+          usersSnap.forEach((userSnap) => {
+            const userData = userSnap.data();
+            if (userData.role === roleKey) {
+              updatePromises.push(updateDoc(doc(db, "users", userSnap.id), {
+                role: "user"
+              }));
+            }
+          });
+
+          await Promise.all(updatePromises);
+          
+          // 2. 등급 삭제
+          await deleteDoc(doc(db, "roles", roleKey));
+          alert("등급이 정상적으로 삭제 처리되었습니다.");
+        } catch (err) {
+          console.error("Delete role failed:", err);
+          alert("삭제 오류: " + err.message);
+          e.target.disabled = false;
+          e.target.textContent = "삭제";
+        }
+      }
+    });
+
+    // ── 등급별 세부 권한 토글 (체크박스 체인지 핸들러) ──
+    roleListContainer.addEventListener("change", async (e) => {
+      if (e.target.classList.contains("role-perm-toggle")) {
+        if (currentLoginUserRole !== "super_admin") {
+          alert("권한을 변경할 권한이 없습니다. (최고 관리자 전용 기능)");
+          e.target.checked = !e.target.checked; // 롤백
+          return;
+        }
+
+        const roleKey = e.target.getAttribute("data-key");
+        const fieldName = e.target.getAttribute("data-field");
+        const isChecked = e.target.checked;
+
+        if (!roleKey || !fieldName) return;
+
+        try {
+          await updateDoc(doc(db, "roles", roleKey), {
+            [fieldName]: isChecked
+          });
+          console.log(`Updated permissions for ${roleKey}: ${fieldName} -> ${isChecked}`);
+        } catch (error) {
+          console.error("Toggle permission update failed:", error);
+          alert("권한 설정을 업데이트하지 못했습니다: " + error.message);
+          e.target.checked = !isChecked; // 원래 상태로 롤백
+        }
+      }
+    });
+  }
+
+  // 회원 테이블 이벤트 바인딩 (등급 변경 버튼 클릭 위임 처리)
   if (userList) {
     userList.addEventListener("click", async (e) => {
       if (e.target.classList.contains("btn-update-role")) {
@@ -561,13 +1021,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       }
-    });
-  }
-
-  // 회원 새로고침 버튼 이벤트
-  if (btnRefreshUsers) {
-    btnRefreshUsers.addEventListener("click", () => {
-      loadUsers();
     });
   }
 
@@ -674,7 +1127,18 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="font-bold">${clinic.name || '-'} <br><small style="color:var(--text-secondary);">${clinic.englishName || '-'}</small></td>
           <td>${deptsHTML}</td>
           <td>${clinic.address || '-'}</td>
-          <td>
+          <td style="vertical-align: middle; white-space: nowrap;">
+            <!-- 수정 버튼: 해당 병원 정보를 불러와 수정 모달을 팝업 -->
+            <button class="btn-action confirm btn-edit-clinic"
+              data-id="${docId}"
+              data-name="${(clinic.name || '').replace(/"/g, '&quot;')}"
+              data-engname="${(clinic.englishName || '').replace(/"/g, '&quot;')}"
+              data-desc="${(clinic.desc || '').replace(/"/g, '&quot;')}"
+              data-address="${(clinic.address || '').replace(/"/g, '&quot;')}"
+              data-depts="${(clinic.depts || []).join(',').replace(/"/g, '&quot;')}"
+              style="margin-right: 6px;"
+            >수정</button>
+            <!-- 삭제 버튼 -->
             <button class="btn-action delete btn-delete-clinic" data-id="${docId}">삭제</button>
           </td>
         `;
@@ -828,10 +1292,124 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 병원 삭제 버튼 클릭 핸들러
+  // =========================================================================
+  // 병원 수정/삭제 버튼 클릭 핸들러 (이벤트 위임 방식)
+  // =========================================================================
   const adminClinicList = document.getElementById("admin-clinic-list");
   if (adminClinicList) {
     adminClinicList.addEventListener("click", async (e) => {
+
+      // ── 수정 버튼 처리 ──
+      if (e.target.classList.contains("btn-edit-clinic")) {
+        const btn = e.target;
+        const docId       = btn.getAttribute("data-id");
+        const curName     = btn.getAttribute("data-name");
+        const curEngName  = btn.getAttribute("data-engname");
+        const curDesc     = btn.getAttribute("data-desc");
+        const curAddress  = btn.getAttribute("data-address");
+        const curDepts    = btn.getAttribute("data-depts");
+
+        // 인라인 수정 모달 동적 생성 (기존 모달 재사용 방지를 위해 매번 새로 생성)
+        let editModal = document.getElementById("clinic-edit-modal");
+        if (editModal) editModal.remove();
+
+        editModal = document.createElement("div");
+        editModal.id = "clinic-edit-modal";
+        editModal.style.cssText = [
+          "position:fixed", "inset:0", "z-index:9999",
+          "background:rgba(0,0,0,0.7)", "display:flex",
+          "align-items:center", "justify-content:center"
+        ].join(";");
+        editModal.innerHTML = `
+          <div style="background:#1e1b4b; border:1px solid rgba(165,180,252,0.25); border-radius:16px;
+                      padding:2rem; width:min(520px,92vw); max-height:90vh; overflow-y:auto;
+                      box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+            <h3 style="margin:0 0 1.4rem; color:#a5b4fc; font-size:1.15rem;">✏️ 병원 정보 수정</h3>
+            <!-- 병원명 -->
+            <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">병원명 *</label>
+            <input id="edit-clinic-name" type="text" value="${curName}"
+              style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
+                     background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1rem; box-sizing:border-box;">
+            <!-- 영문 식별명 -->
+            <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">영문 식별명 (English Name) *</label>
+            <input id="edit-clinic-engname" type="text" value="${curEngName}"
+              style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
+                     background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1rem; box-sizing:border-box;">
+            <!-- 진료과목 -->
+            <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">진료과목 (쉼표로 구분)</label>
+            <input id="edit-clinic-depts" type="text" value="${curDepts}"
+              style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
+                     background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1rem; box-sizing:border-box;">
+            <!-- 주소 -->
+            <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">주소 *</label>
+            <input id="edit-clinic-address" type="text" value="${curAddress}"
+              style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
+                     background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1rem; box-sizing:border-box;">
+            <!-- 병원 설명 -->
+            <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">병원 설명</label>
+            <textarea id="edit-clinic-desc" rows="4"
+              style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
+                     background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1.4rem; box-sizing:border-box; resize:vertical;">${curDesc}</textarea>
+            <!-- 버튼 영역 -->
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+              <button id="btn-edit-clinic-cancel" class="btn btn-secondary"
+                style="padding:0.55rem 1.4rem; font-size:0.9rem;">취소</button>
+              <button id="btn-edit-clinic-save" class="btn btn-primary"
+                style="padding:0.55rem 1.4rem; font-size:0.9rem;"
+                data-id="${docId}">저장하기</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(editModal);
+
+        // 취소 버튼
+        document.getElementById("btn-edit-clinic-cancel").addEventListener("click", () => {
+          editModal.remove();
+        });
+        // 모달 바깥 클릭 시 닫기
+        editModal.addEventListener("click", (ev) => {
+          if (ev.target === editModal) editModal.remove();
+        });
+
+        // 저장 버튼 - Firestore 업데이트
+        document.getElementById("btn-edit-clinic-save").addEventListener("click", async () => {
+          const newName    = document.getElementById("edit-clinic-name").value.trim();
+          const newEngName = document.getElementById("edit-clinic-engname").value.trim();
+          const newDepts   = document.getElementById("edit-clinic-depts").value.trim()
+                              .split(",").map(d => d.trim()).filter(d => d.length > 0);
+          const newAddress = document.getElementById("edit-clinic-address").value.trim();
+          const newDesc    = document.getElementById("edit-clinic-desc").value.trim();
+
+          if (!newName || !newEngName || !newAddress) {
+            alert("병원명, 영문 식별명, 주소는 필수 항목입니다.");
+            return;
+          }
+
+          const saveBtn = document.getElementById("btn-edit-clinic-save");
+          saveBtn.disabled = true;
+          saveBtn.textContent = "저장 중...";
+
+          try {
+            // Firestore 문서 업데이트
+            await updateDoc(doc(db, "clinics", docId), {
+              name: newName,
+              englishName: newEngName,
+              depts: newDepts,
+              address: newAddress,
+              desc: newDesc
+            });
+            alert("병원 정보가 성공적으로 수정되었습니다.");
+            editModal.remove();
+          } catch (error) {
+            console.error("Update clinic failed:", error);
+            alert("수정 중 오류가 발생했습니다: " + error.message);
+            saveBtn.disabled = false;
+            saveBtn.textContent = "저장하기";
+          }
+        });
+      }
+
+      // ── 삭제 버튼 처리 ──
       if (e.target.classList.contains("btn-delete-clinic")) {
         const docId = e.target.getAttribute("data-id");
         if (confirm("정말 이 병원을 삭제하시겠습니까? 관련 데이터 및 정보가 더 이상 대시보드와 예약 화면에 표시되지 않습니다.")) {
