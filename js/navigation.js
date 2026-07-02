@@ -67,6 +67,28 @@ document.addEventListener("DOMContentLoaded", () => {
           <button id="btn-login" class="btn-nav-login">로그인</button>
         </div>
 
+        <!-- 신규 추가: 모바일 전용 상단 퀵 메뉴 영역 (데스크톱 모드에서는 CSS로 비노출 제어) -->
+        <div class="nav-mobile-quick" id="nav-mobile-quick">
+          <!-- 홈 바로가기 버튼 (집 아이콘) -->
+          <a href="/index.html" class="quick-icon-btn ${currentPath === "/" || currentPath.endsWith("index.html") ? "active" : ""}" title="홈">🏠</a>
+          <!-- 회사소개 바로가기 버튼 (빌딩 아이콘) -->
+          <a href="/index.html#about" class="quick-icon-btn" title="회사소개">🏢</a>
+          <!-- 제공서비스 바로가기 버튼 (도구 아이콘) -->
+          <a href="/index.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
+          <!-- 협력업체 바로가기 버튼 (악수 아이콘) -->
+          <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
+          <!-- 진료 예약 바로가기 버튼 (달력 아이콘) -->
+          <a href="/booking-lang.html" class="quick-icon-btn ${currentPath.endsWith("booking-lang.html") ? "active" : ""}" title="진료 예약">📅</a>
+          <!-- 의료통역 바로가기 버튼 (지구본 아이콘) -->
+          <a href="/index.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
+          <!-- 예약 내역 바로가기 버튼 (로그인 상태에 따라 auth.js에서 동적 표시) -->
+          <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn ${currentPath.endsWith("my-reservations.html") ? "active" : ""}" style="display: none;" title="예약내역">📋</a>
+          <!-- 관리자 대시보드 바로가기 버튼 (권한 등급에 따라 auth.js에서 동적 표시) -->
+          <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn ${currentPath.endsWith("admin.html") ? "active" : ""}" style="display: none;" title="관리자">👑</a>
+          <!-- 퀵 로그인 버튼 (로그아웃 상태에 따라 auth.js에서 동적 표시) -->
+          <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
+        </div>
+
         <!-- 모바일 화면용 햄버거 토글 버튼 -->
         <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
           <span class="bar"></span>

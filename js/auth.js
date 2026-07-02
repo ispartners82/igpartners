@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const target = e.target;
     if (!target) return;
 
-    // A. 로그인 버튼 클릭 핸들러 (동적 생성되는 네비게이션 로그인 버튼 대응)
-    if (target.id === "btn-login" || target.closest("#btn-login")) {
+    // A. 로그인 버튼 클릭 핸들러 (동적 생성되는 네비게이션 로그인 및 모바일 퀵 로그인 버튼 대응)
+    if (target.id === "btn-login" || target.closest("#btn-login") || target.id === "quick-btn-login" || target.closest("#quick-btn-login")) {
       const btnLogin = document.getElementById("btn-login");
       try {
         if (btnLogin) {
@@ -99,6 +99,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const userName = document.getElementById("user-name");
     const btnAdminDashboard = document.getElementById("btn-admin-dashboard");
 
+    // 신규 추가: 모바일 전용 퀵 버튼 요소들 캐싱
+    const quickBtnMyReservations = document.getElementById("quick-btn-my-reservations");
+    const quickBtnAdminDashboard = document.getElementById("quick-btn-admin-dashboard");
+    const quickBtnLogin = document.getElementById("quick-btn-login");
+
     if (user) {
       // 1) 로그인된 상태 처리
       window.isLoggedIn = true;
@@ -123,6 +128,14 @@ document.addEventListener("DOMContentLoaded", () => {
         btnLogin.textContent = "로그인";
       }
 
+      // 신규 추가: 로그인 세션 유효 시 모바일용 퀵 버튼 표시 상태 최적화
+      if (quickBtnMyReservations) {
+        quickBtnMyReservations.style.display = "inline-flex";
+      }
+      if (quickBtnLogin) {
+        quickBtnLogin.style.display = "none";
+      }
+
       // Firestore에서 사용자의 권한을 쿼리하여 관리자 전용 대시보드 버튼의 노출 여부 제어
       const userDocRef = doc(db, "users", user.uid);
       getDoc(userDocRef).then((userDocSnap) => {
@@ -131,11 +144,23 @@ document.addEventListener("DOMContentLoaded", () => {
           const allowedRoles = ["super_admin", "admin", "admin_user"];
           const currentAdminBtn = document.getElementById("btn-admin-dashboard");
           
+          // 신규 추가: 모바일용 퀵 관리자 버튼 캐싱
+          const currentQuickAdminBtn = document.getElementById("quick-btn-admin-dashboard");
+          
           if (currentAdminBtn) {
             if (allowedRoles.includes(userData.role)) {
               currentAdminBtn.style.display = "inline-flex";
             } else {
               currentAdminBtn.style.display = "none";
+            }
+          }
+
+          // 신규 추가: 모바일용 퀵 관리자 버튼도 권한에 맞춰 동시 노출 제어
+          if (currentQuickAdminBtn) {
+            if (allowedRoles.includes(userData.role)) {
+              currentQuickAdminBtn.style.display = "inline-flex";
+            } else {
+              currentQuickAdminBtn.style.display = "none";
             }
           }
         }
@@ -157,6 +182,17 @@ document.addEventListener("DOMContentLoaded", () => {
         btnLogin.style.display = "block";
         btnLogin.disabled = false;
         btnLogin.textContent = "로그인";
+      }
+
+      // 신규 추가: 로그아웃 상태일 때 모바일 퀵 예약 및 관리자 버튼 숨기고 로그인 아이콘 노출
+      if (quickBtnMyReservations) {
+        quickBtnMyReservations.style.display = "none";
+      }
+      if (quickBtnAdminDashboard) {
+        quickBtnAdminDashboard.style.display = "none";
+      }
+      if (quickBtnLogin) {
+        quickBtnLogin.style.display = "inline-flex";
       }
 
       // 로그아웃 시 관리자 버튼 즉시 숨김
