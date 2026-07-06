@@ -9,6 +9,10 @@
    1. Design Tokens & Variables (수정하기 쉽도록 변수화)
    -------------------------------------------------------------------------- */
 :root {
+  /* [디자인 시스템] 전역 스크롤바 세련된 다크 스타일링 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.4) rgba(6, 9, 19, 0.6);
+
   /* Color Palette */
   --bg-main: #060913;
   /* 베이스 딥 다크 네이비 */
@@ -62,6 +66,28 @@ body {
   align-items: center;
   overflow-x: hidden;
   position: relative;
+}
+
+/* [디자인 시스템] Webkit 브라우저용 세련된 커스텀 스크롤바 */
+::-webkit-scrollbar {
+  width: 8px; /* 세로 스크롤바 폭 */
+  height: 8px; /* 가로 스크롤바 높이 */
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(6, 9, 19, 0.6); /* 딥 다크 배경 반투명 처리 */
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%); /* 네온 시안 & 인디고 그라데이션 */
+  border: 1px solid rgba(6, 9, 19, 0.8);
+  border-radius: 8px;
+  transition: background 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.6) 0%, rgba(99, 102, 241, 0.6) 100%); /* 호버 시 네온 강화 */
 }
 
 /* --------------------------------------------------------------------------
@@ -1592,6 +1618,10 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
+.clinic-list-section {
+  min-width: 0; /* [레이아웃 버그 수정] Grid 컨테이너 내부에서 자식 너비가 부풀어 오르는 현상 방지하여 가로스크롤 정상 유도 */
+}
+
 .admin-clinic-form {
   display: flex;
   flex-direction: column;
@@ -3029,10 +3059,6 @@ body.home-page {
     display: flex;
   }
 
-  /* 신규 추가: 모바일 환경에서 브랜드 로고 텍스트(IGPartners) 숨김 (퀵 아이콘 배치 공간 확보) */
-  .nav-brand-text {
-    display: none;
-  }
 
   /* 신규 추가: 모바일 및 태블릿(1024px 이하) 환경에서 상단 퀵 메뉴 바 활성화 및 정렬 여백 최적화 */
   .nav-mobile-quick {
@@ -3214,6 +3240,7 @@ body.home-page {
   /* ==========================================================================
      본문 섹션 및 레이아웃 모바일 대응 (768px 이하)
      ========================================================================== */
+
 
   .hero-title {
     font-size: 2.75rem;
@@ -3424,5 +3451,12 @@ body.home-page {
 @media (max-width: 768px) {
   .admin-users-full-layout #role-register-form {
     grid-template-columns: 1fr !important; /* 모바일에서는 세로 1줄로 정렬 */
+  }
+}
+
+/* [반응형 최적화] 가로폭이 매우 좁아져(600px 이하) 퀵 메뉴 아이콘들이 브랜드 로고 텍스트를 침범하기 직전에만 숨깁니다 */
+@media (max-width: 600px) {
+  .nav-brand-text {
+    display: none;
   }
 }

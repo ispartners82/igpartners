@@ -1,5 +1,7 @@
 import { db } from "./firebase-db.js?v=2.0.7";
-import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// [성능 최적화] 병원 목록은 관리자가 수정할 때만 변경되므로 실시간 리스너(onSnapshot) 대신
+// getDocs 일회성 조회를 사용하여 불필요한 Firestore 연결 유지와 비용을 제거합니다.
+import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /**
  * UI 정적 문자열 및 오류 알림을 관리하기 위한 다국어(I18n) 사전 정의
@@ -96,57 +98,66 @@ document.addEventListener("DOMContentLoaded", () => {
   container.innerHTML = `<div class="table-loading" style="grid-column: span 3; text-align: center; padding: 3rem; color: #a5b4fc;">${dict.loading}</div>`;
 
   // 3. Firestore에서 병원 데이터 로드 시작
+  // [성능 최적화] onSnapshot 실시간 리스너 대신 getDocs 일회성 조회 사용
+  // - 병원 목록은 관리자가 수정할 때만 바뀌므로 실시간 감시가 필요 없습니다.
+  // - onSnapshot은 탭을 열어 두는 동안 지속적으로 Firestore 연결을 유지하며 읽기 과금이 발생합니다.
   const q = query(collection(db, "clinics"), orderBy("createdAt", "asc"));
 
-  onSnapshot(q, (querySnapshot) => {
-    container.innerHTML = "";
+  (async () => {
+    try {
+      const querySnapshot = await getDocs(q);
+      container.innerHTML = "";
 
-    if (querySnapshot.empty) {
-      container.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dict.empty}</div>`;
-      return;
-    }
+      if (querySnapshot.empty) {
+        container.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dict.empty}</div>`;
+        return;
+      }
 
-    querySnapshot.forEach((docSnap) => {
-      const clinic = docSnap.data();
-      
-      // 언어에 맞는 병원 필드 동적 매핑 (만약 전용 다국어 필드가 없으면 하위 호환을 위해 기본값 fallback)
-      const clinicName = clinic[`name_${currentLang}`] || clinic.name || "";
-      const clinicDesc = clinic[`desc_${currentLang}`] || clinic.desc || "";
-      const clinicAddress = clinic[`address_${currentLang}`] || clinic.address || "";
+      querySnapshot.forEach((docSnap) => {
+        const clinic = docSnap.data();
+        
+        // 언어에 맞는 병원 필드 동적 매핑 (만약 전용 다국어 필드가 없으면 하위 호환을 위해 기본값 fallback)
+        const clinicName = clinic[`name_${currentLang}`] || clinic.name || "";
+        const clinicDesc = clinic[`desc_${currentLang}`] || clinic.desc || "";
+        const clinicAddress = clinic[`address_${currentLang}`] || clinic.address || "";
 
-      // 진료과목 배지 HTML 구성
-      const deptBadges = (clinic.depts || [])
-        .map(dept => `<span class="dept-badge">${dept}</span>`)
-        .join("");
+        // 진료과목 배지 HTML 구성
+        const deptBadges = (clinic.depts || [])
+          .map(dept => `<span class="dept-badge">${dept}</span>`)
+          .join("");
 
-      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinicAddress)}`;
+        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinicAddress)}`;
 
-      const card = document.createElement("article");
-      card.className = "clinic-card";
-      card.innerHTML = `
-        <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="${clinic.image || '/img/clinic_1_dermatology.png'}" alt="${clinicName}" onerror="this.src='/img/clinic_1_dermatology.png'">
-        </div>
-        <div class="clinic-content">
-          <h2 class="clinic-title">${clinicName}</h2>
-          <div class="clinic-depts">
-            ${deptBadges}
+        const card = document.createElement("article");
+        card.className = "clinic-card";
+        card.innerHTML = `
+          <div class="clinic-img-wrapper">
+            <img class="clinic-img" src="${clinic.image || '/img/clinic_1_dermatology.png'}" alt="${clinicName}" onerror="this.src='/img/clinic_1_dermatology.png'">
           </div>
-          <p class="clinic-desc">${clinicDesc}</p>
-          <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="clinic-address-link" style="text-decoration: none; color: inherit; display: block; margin-top: auto;">
-            <div class="clinic-address">
-              <svg class="address-icon" viewBox="0 0 24 24" width="14" height="14">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              <span style="display:inline-block; margin-left: 4px;">${clinicAddress}</span>
+          <div class="clinic-content">
+            <h2 class="clinic-title">${clinicName}</h2>
+            <div class="clinic-depts">
+              ${deptBadges}
             </div>
-          </a>
-          <button class="clinic-select-btn" onclick="selectClinic('${clinic.englishName || clinic.name}', '${clinicName.replace(/'/g, "\\'")}')">${dict.selectBtn}</button>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  });
+            <p class="clinic-desc">${clinicDesc}</p>
+            <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="clinic-address-link" style="text-decoration: none; color: inherit; display: block; margin-top: auto;">
+              <div class="clinic-address">
+                <svg class="address-icon" viewBox="0 0 24 24" width="14" height="14">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                <span style="display:inline-block; margin-left: 4px;">${clinicAddress}</span>
+              </div>
+            </a>
+            <button class="clinic-select-btn" onclick="selectClinic('${clinic.englishName || clinic.name}', '${clinicName.replace(/'/g, "\\'")}')">${dict.selectBtn}</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    } catch (err) {
+      console.error("병원 목록 로드 실패:", err);
+      container.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dict.empty}</div>`;
+    }
+  })();
 });
 
 /**

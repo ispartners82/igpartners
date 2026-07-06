@@ -91,7 +91,52 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   // 2. Auth 상태 변화 모니터링 (실시간 세션 감지 및 UI 바인딩)
   // =========================================================================
-  onAuthStateChanged(auth, (user) => {
+
+  /**
+   * [성능 최적화] 사용자 역할(role) 캐시 함수
+   * - 동일 세션 내에서 중복 Firestore 읽기를 방지하기 위해 sessionStorage에 역할을 캐싱합니다.
+   * - 로그아웃 시 캐시를 무효화하여 항상 최신 권한이 반영되도록 합니다.
+   * @param {string} uid - 사용자 UID
+   * @returns {Promise<string|null>} 역할 문자열 또는 null
+   */
+  async function getCachedUserRole(uid) {
+    // 1. 세션스토리지 캐시 확인 (이미 조회한 경우 Firestore 재조회 생략)
+    const cacheKey = `user_role_cache_${uid}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
+    // 2. 캐시 없음 → Firestore에서 1회만 조회 후 캐시 저장
+    try {
+      const userDocRef = doc(db, "users", uid);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        const role = userDocSnap.data().role || "user";
+        sessionStorage.setItem(cacheKey, role);
+        return role;
+      }
+    } catch (e) {
+      console.error("사용자 역할 조회 실패:", e);
+    }
+    return null;
+  }
+
+  /**
+   * [성능 최적화] 역할 캐시 무효화 함수
+   * 로그아웃 또는 역할 변경 시 호출하여 캐시를 삭제합니다.
+   */
+  function clearUserRoleCache(uid) {
+    if (uid) {
+      sessionStorage.removeItem(`user_role_cache_${uid}`);
+      sessionStorage.removeItem(`admin_permissions_cache_${uid}`);
+    }
+  }
+
+  // 역할 캐시 무효화 함수를 전역으로 노출 (admin.js에서 역할 변경 후 캐시 초기화에 활용)
+  window.clearUserRoleCache = clearUserRoleCache;
+
+  onAuthStateChanged(auth, async (user) => {
     // 상태 감지 순간에 화면에 렌더링된 요소들을 실시간 쿼리하여 에러 차단
     const btnLogin = document.getElementById("btn-login");
     const authUserArea = document.getElementById("auth-user");
@@ -136,37 +181,27 @@ document.addEventListener("DOMContentLoaded", () => {
         quickBtnLogin.style.display = "none";
       }
 
-      // Firestore에서 사용자의 권한을 쿼리하여 관리자 전용 대시보드 버튼의 노출 여부 제어
-      const userDocRef = doc(db, "users", user.uid);
-      getDoc(userDocRef).then((userDocSnap) => {
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
-          const allowedRoles = ["super_admin", "admin", "admin_user"];
-          const currentAdminBtn = document.getElementById("btn-admin-dashboard");
-          
-          // 신규 추가: 모바일용 퀵 관리자 버튼 캐싱
-          const currentQuickAdminBtn = document.getElementById("quick-btn-admin-dashboard");
-          
-          if (currentAdminBtn) {
-            if (allowedRoles.includes(userData.role)) {
-              currentAdminBtn.style.display = "inline-flex";
-            } else {
-              currentAdminBtn.style.display = "none";
-            }
-          }
+      // [성능 최적화] sessionStorage 캐싱된 역할을 우선 사용하여 Firestore 재조회 방지
+      // 동일 세션 내 최초 1회만 Firestore에서 읽고 이후에는 캐시에서 역할을 반환합니다.
+      try {
+        const userRole = await getCachedUserRole(user.uid);
+        const allowedRoles = ["super_admin", "admin", "admin_user"];
+        const isAdmin = userRole && allowedRoles.includes(userRole);
 
-          // 신규 추가: 모바일용 퀵 관리자 버튼도 권한에 맞춰 동시 노출 제어
-          if (currentQuickAdminBtn) {
-            if (allowedRoles.includes(userData.role)) {
-              currentQuickAdminBtn.style.display = "inline-flex";
-            } else {
-              currentQuickAdminBtn.style.display = "none";
-            }
-          }
+        const currentAdminBtn = document.getElementById("btn-admin-dashboard");
+        // 신규 추가: 모바일용 퀵 관리자 버튼 캐싱
+        const currentQuickAdminBtn = document.getElementById("quick-btn-admin-dashboard");
+        
+        if (currentAdminBtn) {
+          currentAdminBtn.style.display = isAdmin ? "inline-flex" : "none";
         }
-      }).catch((error) => {
+        // 신규 추가: 모바일용 퀵 관리자 버튼도 권한에 맞춰 동시 노출 제어
+        if (currentQuickAdminBtn) {
+          currentQuickAdminBtn.style.display = isAdmin ? "inline-flex" : "none";
+        }
+      } catch (error) {
         console.error("사용자 권한 등급 확인 실패 (Admin button check failed):", error);
-      });
+      }
 
       // 로그인 성공 시 로그인 요구 안내 모달 팝업 자동 숨김
       hideLoginModal();
@@ -199,6 +234,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btnAdminDashboard) {
         btnAdminDashboard.style.display = "none";
       }
+      
+      // [성능 최적화] 로그아웃 시 이전 사용자 역할 캐시 및 관리자 권한 캐시를 전체 정리
+      // sessionStorage에 남아있는 모든 역할 캐시 키를 순회하여 삭제
+      Object.keys(sessionStorage)
+        .filter(key => key.startsWith("user_role_cache_") || key.startsWith("admin_permissions_cache_"))
+        .forEach(key => sessionStorage.removeItem(key));
     }
   });
 

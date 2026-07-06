@@ -234,9 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       localStorage.setItem("local_reservations", JSON.stringify(localData));
-      if (currentUser) {
-        loadMyReservations(currentUser);
-      }
+      // [성능 최적화] loadMyReservations() 재호출 제거
+      // onSnapshot 리스너가 이미 Firestore 변경사항을 실시간으로 수신하여 자동 렌더링합니다.
+      // 재호출 시 기존 리스너를 해제하고 새 리스너를 등록하는 불필요한 Firestore 재구독이 발생합니다.
     } catch (e) {
       console.error("Local status update failed:", e);
     }

@@ -28,4 +28,4 @@ try {
 }
 
 export { app, db, auth, analytics };
-// Build cache bust: 2026-06-27T16:30:00
+// Build cache bust: 2026-07-06T14:11:00

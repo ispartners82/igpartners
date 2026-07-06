@@ -2,6 +2,7 @@ import { db, auth } from "./firebase-db.js?v=2.0.7";
 import { 
   collection, 
   query, 
+  where,
   orderBy, 
   onSnapshot, 
   doc, 
@@ -276,8 +277,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       localStorage.setItem("local_reservations", JSON.stringify(localData));
-      // 로컬 갱신 후 화면 강제 재랜더링
-      loadReservations();
+      // [성능 최적화] loadReservations() 재호출 제거
+      // onSnapshot 리스너가 이미 Firestore 변경사항을 실시간으로 수신하여 자동 렌더링합니다.
+      // 불필요하게 리스너를 해제하고 재연결하면 Firestore 읽기 비용이 중복 발생합니다.
     } catch (e) {
       console.error("Local data update error:", e);
     }
@@ -342,75 +344,50 @@ document.addEventListener("DOMContentLoaded", () => {
     loadReservations();
   });
 
-  // Firebase Auth 상태 감지 및 관리자 권한 검증
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      alert("로그인이 필요합니다. (Login is required.)");
-      location.href = "./index.html";
-      return;
+  // [성능 및 정합성 최적화] 관리자 권한을 파악하고 UI를 제어하는 함수
+  async function verifyAndApplyPermissions(user, forceRefresh = false) {
+    if (!user) return false;
+
+    const cacheKey = `admin_permissions_cache_${user.uid}`;
+    
+    // 강제 새로고침 플래그가 참인 경우 세션스토리지 캐시 무효화
+    if (forceRefresh) {
+      sessionStorage.removeItem(cacheKey);
+      if (typeof window.clearUserRoleCache === "function") {
+        window.clearUserRoleCache(user.uid);
+      }
     }
 
+    let cachedData = null;
     try {
-      // 데이터 로딩 인디케이터 표시
-      reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
-
-      // [최우선 조치] 최초 진입 시점에도 역할을 온전히 매핑하기 위해 권한 시딩/마이그레이션을 즉각 실행합니다.
-      const rolesCol = collection(db, "roles");
-      try {
-        const snap = await getDocs(rolesCol);
-        let needsMigration = snap.empty;
-        if (!snap.empty) {
-          const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
-          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined) {
-            needsMigration = true;
-          }
-        }
-
-        if (needsMigration) {
-          console.log("[Auth State] Migrating database roles table immediately...");
-          for (const r of defaultRoles) {
-            const roleDocRef = doc(db, "roles", r.key);
-            const roleDoc = await getDoc(roleDocRef);
-            if (!roleDoc.exists()) {
-              await setDoc(roleDocRef, {
-                label: r.label,
-                isSystem: r.isSystem,
-                isAdmin: r.isAdmin,
-                hasReservations: r.hasReservations,
-                hasClinics: r.hasClinics,
-                hasRoles: r.hasRoles,
-                hasPermissions: r.hasPermissions,
-                createdAt: new Date().toISOString()
-              });
-            } else {
-              const existingData = roleDoc.data();
-              await updateDoc(roleDocRef, {
-                isAdmin: existingData.isAdmin !== undefined ? existingData.isAdmin : r.isAdmin,
-                hasReservations: existingData.hasReservations !== undefined ? existingData.hasReservations : r.hasReservations,
-                hasClinics: existingData.hasClinics !== undefined ? existingData.hasClinics : r.hasClinics,
-                hasRoles: existingData.hasRoles !== undefined ? existingData.hasRoles : r.hasRoles,
-                hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions
-              });
-            }
-          }
-          console.log("[Auth State] Roles database migration completed.");
-        }
-      } catch (errSeeding) {
-        console.error("Critical fallback seeding failed:", errSeeding);
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        cachedData = JSON.parse(cached);
       }
+    } catch (e) {
+      console.error("Failed to parse cached admin permissions:", e);
+    }
 
+    let permissions = null;
+    let userRole = null;
+
+    if (cachedData) {
+      userRole = cachedData.role;
+      permissions = cachedData.permissions;
+      console.log("Cached admin role and permissions loaded:", userRole);
+    } else {
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
-        const userRole = userData.role || "user";
+        userRole = userData.role || "user";
         
         // 등급 문서로부터 5가지 권한 로드
         const roleDocRef = doc(db, "roles", userRole);
         const roleDocSnap = await getDoc(roleDocRef);
         
-        let permissions = {
+        permissions = {
           isAdmin: false,
           hasReservations: false,
           hasClinics: false,
@@ -439,39 +416,73 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        if (permissions.isAdmin === true) {
-          console.log(`Access granted for role: ${userRole}`);
-          currentLoginUserRole = userRole; // 등급 캐싱
-          
-          // 동적으로 탭 노출 여부 온오프 스위칭
-          const tabReservations = document.getElementById("tab-reservations");
-          const tabUsers = document.getElementById("tab-users");
-          const tabPermissions = document.getElementById("tab-permissions");
-          const tabClinics = document.getElementById("tab-clinics");
+        // 세션 캐시에 보관
+        sessionStorage.setItem(cacheKey, JSON.stringify({ role: userRole, permissions }));
+      }
+    }
 
-          if (tabReservations) {
-            tabReservations.style.display = permissions.hasReservations ? "inline-block" : "none";
-          }
-          if (tabUsers) {
-            tabUsers.style.display = permissions.hasRoles ? "inline-block" : "none";
-          }
-          if (tabPermissions) {
-            tabPermissions.style.display = permissions.hasPermissions ? "inline-block" : "none";
-          }
-          if (tabClinics) {
-            tabClinics.style.display = permissions.hasClinics ? "inline-block" : "none";
-          }
-          
-          // 권한 획득 성공 시 예약 정보 로드 진행
-          loadReservations();
-          return;
+    if (permissions && permissions.isAdmin === true) {
+      console.log(`Access granted for role: ${userRole}`);
+      currentLoginUserRole = userRole; // 등급 캐싱
+      
+      // 동적으로 탭 노출 여부 온오프 스위칭
+      const tabReservations = document.getElementById("tab-reservations");
+      const tabUsers = document.getElementById("tab-users");
+      const tabPermissions = document.getElementById("tab-permissions");
+      const tabClinics = document.getElementById("tab-clinics");
+
+      if (tabReservations) {
+        tabReservations.style.display = permissions.hasReservations ? "inline-block" : "none";
+      }
+      if (tabUsers) {
+        tabUsers.style.display = permissions.hasRoles ? "inline-block" : "none";
+      }
+      if (tabPermissions) {
+        tabPermissions.style.display = permissions.hasPermissions ? "inline-block" : "none";
+      }
+      if (tabClinics) {
+        tabClinics.style.display = permissions.hasClinics ? "inline-block" : "none";
+      }
+      
+      // 만약 권한 변경 후 강제 고침 시, 더이상 권한이 없는 탭이 활성화되어 있다면 예약 탭으로 자동 이동
+      const activeTab = document.querySelector(".tab-btn.active");
+      if (activeTab) {
+        if (activeTab.id === "tab-clinics" && !permissions.hasClinics) {
+          if (tabReservations) tabReservations.click();
+        } else if (activeTab.id === "tab-users" && !permissions.hasRoles) {
+          if (tabReservations) tabReservations.click();
+        } else if (activeTab.id === "tab-permissions" && !permissions.hasPermissions) {
+          if (tabReservations) tabReservations.click();
         }
       }
 
-      // 권한 없음 처리
-      alert("관리자 권한이 없습니다. (Access Denied: No Admin Role)");
-      location.href = "./index.html";
+      return true;
+    }
 
+    // 권한이 해제된 경우 로그인 메인으로 차단
+    alert("관리자 권한이 없습니다. (Access Denied: No Admin Role)");
+    location.href = "./index.html";
+    return false;
+  }
+
+  // Firebase Auth 상태 감지 및 관리자 권한 검증
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      alert("로그인이 필요합니다. (Login is required.)");
+      location.href = "./index.html";
+      return;
+    }
+
+    try {
+      // 최초 진입 시 데이터 로딩 인디케이터 표시
+      reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
+      
+      // 권한 검증 및 UI 갱신 함수 실행
+      const isApproved = await verifyAndApplyPermissions(user);
+      if (isApproved) {
+        // 성공 시 예약 정보 최초 로드
+        loadReservations();
+      }
     } catch (error) {
       console.error("Auth role check failed:", error);
       alert("권한 검증 오류가 발생했습니다. (Authorization Error)");
@@ -519,8 +530,9 @@ document.addEventListener("DOMContentLoaded", () => {
         contentUsers.style.display = "none";
         if (contentPermissions) contentPermissions.style.display = "block";
         contentClinics.style.display = "none";
-        initRolesAndListen(); // 등급 캐시 및 데이터 연동
-        loadUsers(); // 가입 회원 목록 즉시 로드
+        // [성능 최적화] initRolesAndListen() 내부에서 loadUsers()를 이미 호출하므로 중복 호출 제거
+        // initRolesAndListen()가 최초 진입 시 loadUsers()를 포함하여 처리합니다.
+        initRolesAndListen();
       });
     }
 
@@ -562,12 +574,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const rolesCol = collection(db, "roles");
 
-    // 1. 초기 시드 등급 적재 검사는 백그라운드 비동기로 실행하여 메인 흐름을 블로킹하지 않게 처리
+    // [성능 최적화] 초기 시드 등급 적재 검사는 백그라운드 비동기로 실행
+    // 마이그레이션은 roles 컬렉션이 비어있거나 isAdmin 필드 누락 시에만 1회 실행됩니다.
     (async () => {
       try {
         const snap = await getDocs(rolesCol);
         
-        // 1. roles 컬렉션이 아예 비어있거나, 기존 데이터에 권한 필드(isAdmin)가 누락된 경우 마이그레이션 필요로 판정
+        // roles 컬렉션이 아예 비어있거나, 기존 데이터에 권한 필드(isAdmin)가 누락된 경우 마이그레이션 필요로 판정
         let needsMigration = snap.empty;
         if (!snap.empty) {
           const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
@@ -616,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. 최초 탭 클릭 시 대기 현상 방지를 위해 가입 회원 목록 즉시 선제 로드
     loadUsers();
 
-    // 3. roles 실시간 감시는 동기적으로 즉시 시작하여 회원 목록 로드가 지연되지 않도록 함
+    // 3. roles 실시간 감시는 동기적으로 즉시 시작
     const q = query(rolesCol, orderBy("createdAt", "asc"));
     const roleList = document.getElementById("role-list");
 
@@ -647,7 +660,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const tr = document.createElement("tr");
           const isSystem = roleData.isSystem === true;
           
-          // 최고 관리자 super_admin의 핵심 권한(대시보드진입, 등급설정)은 해제되지 않도록 강제 락
+          // 최고 관리자 super_admin의 핵심 권한은 해제되지 않도록 강제 락
           const lockAdmin = roleKey === "super_admin";
           
           const deleteBtn = isSystem 
@@ -675,8 +688,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // 등급 종류가 최초 로드되거나 변경되면 가입 유저 테이블 실시간 갱신
-      loadUsers();
+      // [성능 최적화] roles onSnapshot 콜백에서 loadUsers() 자동 호출 제거
+      // 등급 목록이 바뀔 때마다 users 컬렉션을 재조회하면 불필요한 Firestore 읽기가 발생합니다.
+      // 탭 클릭 시에만 loadUsers()를 호출합니다.
     }, (error) => {
       console.error("Roles subscription error:", error);
       if (roleList) {
@@ -684,6 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
 
   // 가입 회원 목록 로드 및 동적 옵션 바인딩
   async function loadUsers() {
@@ -781,6 +796,18 @@ document.addEventListener("DOMContentLoaded", () => {
       await updateDoc(userDocRef, {
         role: newRole
       });
+      
+      // [성능 최적화] 역할 변경 시 auth.js의 sessionStorage 역할 캐시를 무효화하여
+      // 다음 로그인 시 변경된 권한이 정확히 반영되도록 보장합니다.
+      if (typeof window.clearUserRoleCache === "function") {
+        window.clearUserRoleCache(targetUid);
+      }
+
+      // [실시간 정합성] 만약 등급이 바뀐 대상이 본인인 경우 권한 즉시 재반영
+      if (auth.currentUser && auth.currentUser.uid === targetUid) {
+        await verifyAndApplyPermissions(auth.currentUser, true);
+      }
+      
       alert("회원 등급이 정상적으로 수정되었습니다.");
       loadUsers(); // 목록 새로고침
     } catch (error) {
@@ -945,9 +972,9 @@ document.addEventListener("DOMContentLoaded", () => {
         e.target.textContent = "...";
 
         try {
-          // 1. 해당 등급을 소유한 가입 회원 목록 로드 및 일괄 등급 강등 처리
+          // 1. [성능 최적화] 가입 회원 전체를 로드하지 않고 삭제되는 등급(roleKey)을 지닌 회원만 필터링 쿼리하여 Firestore 요금 및 지연 시간 방지
           const usersCol = collection(db, "users");
-          const q = query(usersCol);
+          const q = query(usersCol, where("role", "==", roleKey));
           const usersSnap = await getDocs(q);
 
           let updatePromises = [];
@@ -994,6 +1021,11 @@ document.addEventListener("DOMContentLoaded", () => {
             [fieldName]: isChecked
           });
           console.log(`Updated permissions for ${roleKey}: ${fieldName} -> ${isChecked}`);
+          
+          // [실시간 정합성] 최고 관리자가 권한 설정을 변경했으므로 본인의 권한 캐시를 최신화하여 UI 탭 상태 즉각 동기화
+          if (auth.currentUser) {
+            await verifyAndApplyPermissions(auth.currentUser, true);
+          }
         } catch (error) {
           console.error("Toggle permission update failed:", error);
           alert("권한 설정을 업데이트하지 못했습니다: " + error.message);
@@ -1079,7 +1111,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let unsubscribeClinics = null;
 
   async function loadClinics() {
-    if (unsubscribeClinics) unsubscribeClinics();
+    // [성능 최적화] 탭 클릭 시마다 호출되므로 이전 리스너가 있으면 해제
+    if (unsubscribeClinics) {
+      unsubscribeClinics();
+      unsubscribeClinics = null;
+    }
 
     const q = query(collection(db, "clinics"), orderBy("createdAt", "asc"));
     const adminClinicList = document.getElementById("admin-clinic-list");
@@ -1087,10 +1123,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     adminClinicList.innerHTML = `<tr><td colspan="5" class="table-loading">데이터를 불러오는 중입니다...</td></tr>`;
 
-    // 1회성 체크로 Seed 데이터 삽입 결정
     try {
-      const snap = await getDocs(q);
-      if (snap.empty) {
+      // [성능 최적화] 관리자 병원탭도 getDocs 일회성 조회로 전환
+      // 병원 데이터는 관리자가 직접 수정/추가할 때만 변경되므로 실시간 리스너가 불필요합니다.
+      // onSnapshot은 WebSocket 연결을 유지하며 탭을 열어 두는 동안 지속적으로 과금됩니다.
+      const querySnapshot = await getDocs(q);
+
+      // 데이터가 없으면 초기 Seed 데이터 자동 삽입
+      if (querySnapshot.empty) {
         adminClinicList.innerHTML = `<tr><td colspan="5" class="table-loading">기본 병원 데이터를 생성 중입니다...</td></tr>`;
         for (let i = 0; i < seedClinics.length; i++) {
           await addDoc(collection(db, "clinics"), {
@@ -1099,19 +1139,12 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
         console.log("Seed clinics populated successfully.");
-      }
-    } catch (e) {
-      console.error("Failed to seed clinics:", e);
-    }
-
-    // 실시간 리스닝
-    unsubscribeClinics = onSnapshot(q, (querySnapshot) => {
-      adminClinicList.innerHTML = "";
-
-      if (querySnapshot.empty) {
-        adminClinicList.innerHTML = `<tr><td colspan="5" class="table-empty">등록된 병원이 없습니다.</td></tr>`;
+        // Seed 후 다시 로드
+        await loadClinics();
         return;
       }
+
+      adminClinicList.innerHTML = "";
 
       querySnapshot.forEach((docSnap) => {
         const docId = docSnap.id;
@@ -1128,7 +1161,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${deptsHTML}</td>
           <td>${clinic.address || '-'}</td>
           <td style="vertical-align: middle; white-space: nowrap;">
-            <!-- 수정 버튼: 해당 병원 정보를 불러와 수정 모달을 팝업 -->
             <button class="btn-action confirm btn-edit-clinic"
               data-id="${docId}"
               data-name="${(clinic.name || '').replace(/"/g, '&quot;')}"
@@ -1138,13 +1170,15 @@ document.addEventListener("DOMContentLoaded", () => {
               data-depts="${(clinic.depts || []).join(',').replace(/"/g, '&quot;')}"
               style="margin-right: 6px;"
             >수정</button>
-            <!-- 삭제 버튼 -->
             <button class="btn-action delete btn-delete-clinic" data-id="${docId}">삭제</button>
           </td>
         `;
         adminClinicList.appendChild(tr);
       });
-    });
+    } catch (e) {
+      console.error("Failed to load clinics:", e);
+      adminClinicList.innerHTML = `<tr><td colspan="5" class="table-empty">병원 목록을 불러오지 못했습니다.</td></tr>`;
+    }
   }
 
   // --- 병원 관리 구글 지도 및 파일 업로드 헬퍼 로직 ---
@@ -1429,4 +1463,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-// Build cache bust: 2026-06-27T16:30:00
+// Build cache bust: 2026-07-06T14:17:00
