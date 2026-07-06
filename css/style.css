@@ -3147,12 +3147,15 @@ body.home-page {
 
   /* 예약 및 의료통역 버튼 가로 가득 채우기 (드로어 크기 260px 내에서 180px 크기로 아담하게 통일) */
   .btn-nav-booking {
+    display: inline-block; /* [레이아웃 버그 수정] inline-block 속성을 부여하여 가로폭(width) 설정 활성화 및 상하 공간 침범 방지 */
     width: 100%;
     max-width: 180px; /* 로고 사이즈에 맞춰 180px로 한계 설정 */
     text-align: center;
     border-radius: 10px !important;
-    padding: 0.75rem !important;
+    padding: 0.7rem !important; /* [간격 최적화] 세로 패딩을 다듬어 일반 텍스트 메뉴 높이감과 조화롭도록 설정 */
+    margin: 0 auto; /* [간격 평준화] 추가 마진을 제거하여 드로어 공통 gap(1.25rem)에 의해 모든 메뉴 간격이 동일하게 일치되도록 수정 */
     box-sizing: border-box;
+    border-bottom: none !important; /* [미관 개선] 일반 메뉴의 얇은 하단 경계선이 보더 버튼 아래 중복으로 비치지 않도록 강제 제거 */
   }
 
   /* 서랍 내 삽입되는 동적 로그인 영역 컨테이너 (가운데 정렬) */
