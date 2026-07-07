@@ -1847,6 +1847,103 @@ body {
     padding: 3rem 0;
   }
 
+  /* [모바일 등급 관리 테이블 전용 프리미엄 디자인 고도화] */
+  #content-users .admin-table tr {
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(0, 243, 255, 0.18) !important; /* 더 섬세하고 프리미엄한 얇은 실선 */
+    border-radius: 16px !important;
+    background: rgba(15, 21, 46, 0.95) !important; /* 조금 더 짙은 불투명 네이비 배경 */
+    padding: 1.25rem 0 !important; /* [라인 끝단 정렬] 좌우 패딩을 0으로 리셋하여 자식 td의 구분선이 양 끝에 닿게 함 (기존: 1.5rem) */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* [두 줄 정렬 및 가로선 양끝 확장] td의 flex-direction을 column으로 설정하여 컬럼 위, 내용 아래 두 줄 레이아웃 구축 */
+  #content-users .admin-table td {
+    display: flex !important;
+    flex-direction: column !important; /* 컬럼 라벨(위)과 데이터 내용(아래)의 세로 정렬 구조 */
+    align-items: flex-start !important; /* 왼쪽 정렬 보장 */
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important; /* [구분선 명도 조정] 좀 더 밝고 뚜렷한 흰색 구분선 적용 */
+    padding: 0.85rem 1.25rem !important; /* [여백 튜닝] td에 좌우 패딩을 주어 글자가 카드 경계선에서 자연스럽게 안으로 들어가게 배치 */
+    font-size: 0.92rem !important;
+  }
+
+  /* 등급 키와 표시이름 등 텍스트 중심 셀의 스타일 정밀 튜닝 */
+  #content-users .admin-table td:nth-child(1) {
+    color: #a5b4fc !important; /* 화사하고 시인성 높은 인디고 텍스트 */
+    font-weight: 700 !important;
+  }
+
+  /* 마지막 버튼 영역 셀의 수직(column) 정렬 구조 유지 및 구분선 제거 */
+  #content-users .admin-table td:last-child {
+    border-bottom: none !important; /* 마지막 구분선 제거 */
+    padding-top: 1.25rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* 수정/삭제 버튼 컨테이너가 두 번째 줄(아래)에서 가로로 깔끔하게 정렬되도록 스타일 정의 */
+  #content-users .admin-table td:last-child > div {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    justify-content: flex-start !important; /* 왼쪽으로 가지런히 정렬 */
+    width: 100% !important;
+    margin: 0.45rem 0 0 0 !important; /* 상단 라벨과의 정돈된 간격 확보 */
+  }
+
+  /* 시스템 등급 문구나 삭제 버튼의 세로 찌러짐을 방지하고 깔끔하게 고정 */
+  #content-users .admin-table td:last-child span,
+  #content-users .admin-table td:last-child button {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* [스위치 모바일 찌러짐 원천 차단] */
+  .switch-container {
+    flex-shrink: 0 !important; /* flex 부모 안에서 스위치 비율이 강제 축소되어 찌러지는 현상 영구 차단 */
+  }
+
+  /* [모바일 전용 라벨 정의] 가상 요소를 활용해 첫 번째 줄에 컬럼명을 텍스트 잘림 없이 명확하게 노출 */
+  #content-users .admin-table td::before {
+    display: block !important;
+    width: 100% !important;
+    text-align: left !important;
+    margin-bottom: 0.45rem !important; /* 컬럼 라벨과 아래 데이터 내용 간의 자연스러운 행 간격 */
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.45) !important; /* 은은하고 단정한 톤 */
+    font-weight: 600 !important;
+  }
+
+  /* 각 td의 1대1 한글 컬럼 라벨 바인딩 */
+  #content-users .admin-table td:nth-child(1)::before {
+    content: "등급 식별 키" !important;
+  }
+  #content-users .admin-table td:nth-child(2)::before {
+    content: "표시 이름" !important;
+  }
+  #content-users .admin-table td:nth-child(3)::before {
+    content: "관리자 메뉴 권한" !important;
+  }
+  #content-users .admin-table td:nth-child(4)::before {
+    content: "예약내역 조회 권한" !important;
+  }
+  #content-users .admin-table td:nth-child(5)::before {
+    content: "병원 목록 관리 권한" !important;
+  }
+  #content-users .admin-table td:nth-child(6)::before {
+    content: "등급 종류 관리 권한" !important;
+  }
+  #content-users .admin-table td:nth-child(7)::before {
+    content: "가입회원 리스트 권한" !important;
+  }
+  #content-users .admin-table td:nth-child(8)::before {
+    content: "작업 동작" !important;
+  }
+
   /* 회원 목록 라벨 ::before 설정 */
   #user-list td::before {
     font-weight: 700;
@@ -3110,8 +3207,8 @@ body.home-page {
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     flex-direction: column;
-    padding: 2.5rem 1.5rem; /* 좁아진 가로폭에 대비해 조밀한 안쪽 패딩 설정 */
-    gap: 1.25rem;
+    padding: 1.5rem 1.25rem; /* [메뉴 간격 최적화] 세로 패딩 축소로 한눈에 들어오게 조정 (기존: 2.5rem 1.5rem) */
+    gap: 0.75rem; /* [메뉴 간격 최적화] 자식 요소 간의 수직 여백을 조밀하게 조정 (기존: 1.25rem) */
     align-items: center; /* 메뉴 및 모든 구성 요소를 가로 정중앙 정렬 */
     border-left: 1px solid rgba(99, 102, 241, 0.25); /* 프리미엄 우측 드로어 경계 실선 추가 */
     border-top: none;
@@ -3132,37 +3229,65 @@ body.home-page {
     left: auto;
   }
 
-  /* 서랍 내부 메뉴 링크 확대 및 가운데 정렬 */
+  /* [디자인 일관성 적용] 서랍 내부 메뉴 링크를 하단 예약내역 버튼과 동일한 뱃지/버튼 스타일로 구현 */
   .nav-link {
-    font-size: 1.15rem; /* 서랍 크기에 맞춰 폰트 소폭 조정 */
+    font-size: 0.9rem; /* [폰트 통일] 뱃지 버튼 크기와 통일하기 위해 크기 축소 (기존: 1.15rem) */
     width: 100%;
+    max-width: 180px; /* [너비 고정] 다른 모든 버튼들과 가로폭을 일치시켜 대칭 균형 형성 (기존: 100%) */
+    margin: 0 auto; /* 중앙 정렬 보장 */
+    box-sizing: border-box;
     text-align: center; /* 메뉴 텍스트 정중앙 배치 */
-    padding: 0.6rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 0.6rem 1rem; /* [버튼 패딩] 뱃지 버튼과 높이감을 동일하게 맞춤 (기존: 0.6rem 0) */
+    background: rgba(255, 255, 255, 0.04); /* [배경 통일] 하단 예약내역 버튼과 동일한 반투명 다크 그레이 배경 */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* [보더 통일] 하단 예약내역 버튼과 동일한 테두리 */
+    border-radius: 10px; /* [라운드 통일] 둥근 모서리 통일 (기존: border-bottom) */
+    color: var(--text-secondary);
+    display: inline-block;
+    transition: var(--transition-smooth);
+  }
+
+  /* [디자인 일관성 적용] 서랍 내부 메뉴 링크 활성화/호버 시 디자인 */
+  .nav-link:hover,
+  .nav-link.active {
+    background: rgba(255, 255, 255, 0.08); /* [호버 효과] 하단 예약내역 버튼의 호버 배경과 일치 */
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.2); /* [테두리 강조] 호버 시 은은한 백색 테두리 노출 */
   }
 
   .nav-link::after {
     display: none; /* 모바일 모드에선 하단 밑줄 장식 비활성화 */
   }
 
-  /* 예약 및 의료통역 버튼 가로 가득 채우기 (드로어 크기 260px 내에서 180px 크기로 아담하게 통일) */
+  /* [디자인 일관성 적용] 예약 및 의료통역 버튼을 하단 관리자 버튼과 일치하는 강조형 그라데이션 뱃지로 수정 */
   .btn-nav-booking {
     display: inline-block; /* [레이아웃 버그 수정] inline-block 속성을 부여하여 가로폭(width) 설정 활성화 및 상하 공간 침범 방지 */
     width: 100%;
     max-width: 180px; /* 로고 사이즈에 맞춰 180px로 한계 설정 */
     text-align: center;
-    border-radius: 10px !important;
-    padding: 0.7rem !important; /* [간격 최적화] 세로 패딩을 다듬어 일반 텍스트 메뉴 높이감과 조화롭도록 설정 */
-    margin: 0 auto; /* [간격 평준화] 추가 마진을 제거하여 드로어 공통 gap(1.25rem)에 의해 모든 메뉴 간격이 동일하게 일치되도록 수정 */
+    border-radius: 10px !important; /* [라운드 통일] 모서리 통일 */
+    padding: 0.6rem 1rem !important; /* [패딩 통일] 일반 메뉴 버튼들과 높이 일관성 매칭 (기존: 0.7rem) */
+    margin: 0 auto; /* [간격 평준화] 추가 마진을 제거하여 드로어 공통 gap(0.75rem)에 의해 모든 메뉴 간격이 동일하게 일치되도록 수정 */
     box-sizing: border-box;
     border-bottom: none !important; /* [미관 개선] 일반 메뉴의 얇은 하단 경계선이 보더 버튼 아래 중복으로 비치지 않도록 강제 제거 */
+    /* [스타일 일관성] 관리자 버튼과 비견되는 인디고-퍼플 프리미엄 그라데이션 뱃지 적용 */
+    background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 0.9rem; /* [폰트 통일] 다른 버튼들과 통일 */
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); /* 입체적인 뱃지 느낌을 위한 그림자 */
+  }
+
+  /* [디자인 일관성 적용] 예약 및 의료통역 버튼 호버 시 스타일 */
+  .btn-nav-booking:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4) !important;
   }
 
   /* 서랍 내 삽입되는 동적 로그인 영역 컨테이너 (가운데 정렬) */
   .nav-auth-area {
     margin-left: 0;
-    margin-top: 2rem;
-    padding-top: 2rem;
+    margin-top: 1.25rem; /* [간격 최적화] 로그인 영역 이전 여백 축소 (기존: 2rem) */
+    padding-top: 1.25rem; /* [간격 최적화] 안쪽 상단 패딩 축소 (기존: 2rem) */
     border-top: 1px solid rgba(255, 255, 255, 0.08); /* 구분 실선 추가 */
     width: 100%;
     display: flex;
@@ -3176,17 +3301,18 @@ body.home-page {
     width: 100%;
     max-width: 180px; /* 로고의 실질 가로 너비 비율에 맞춰 최대 크기를 180px로 대폭 축소 */
     margin: 0 auto;
-    gap: 0.6rem; /* 세로 정렬 시 버튼 간 간격을 콤팩트하게 튜닝 */
+    gap: 0.5rem; /* [간격 최적화] 세로 정렬 시 버튼 간 간격을 콤팩트하게 튜닝 (기존: 0.6rem) */
   }
 
   /* 프로필 캡슐 가로폭 제한 정렬 */
   .user-capsule {
     width: 100%;
     justify-content: center; /* 캡슐 내부 이름 정중앙 정렬 */
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem; /* [간격 최적화] 안쪽 패딩 조율로 콤팩트화 (기존: 0.5rem 1rem) */
     background: rgba(255, 255, 255, 0.06);
     box-sizing: border-box;
-    border-radius: 12px;
+    border-radius: 10px; /* [라운드 통일] 10px로 다른 버튼들과 완벽히 일치 (기존: 12px) */
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .user-avatar {
@@ -3203,7 +3329,7 @@ body.home-page {
   .btn-nav-action {
     width: 100%;
     justify-content: center;
-    padding: 0.75rem;
+    padding: 0.6rem 1rem; /* [패딩 통일] 다른 버튼들과 상하 높이 통일 (기존: 0.75rem) */
     font-size: 0.9rem;
     border-radius: 10px;
     box-sizing: border-box;
@@ -3213,7 +3339,7 @@ body.home-page {
   .btn-nav-logout {
     width: 100%;
     text-align: center;
-    padding: 0.75rem;
+    padding: 0.6rem 1rem; /* [패딩 통일] 다른 버튼들과 상하 높이 통일 (기존: 0.75rem) */
     font-size: 0.9rem;
     background: rgba(244, 63, 94, 0.08);
     color: #fda4af;
@@ -3232,9 +3358,9 @@ body.home-page {
     max-width: 180px; /* 로그인 유도 버튼 가로 폭도 똑같이 180px로 제한 */
     margin: 0 auto;
     text-align: center;
-    padding: 0.85rem;
-    font-size: 0.95rem;
-    border-radius: 12px;
+    padding: 0.6rem 1rem; /* [패딩 통일] 다른 버튼들과 상하 높이 통일 (기존: 0.85rem) */
+    font-size: 0.9rem; /* [폰트 통일] (기존: 0.95rem) */
+    border-radius: 10px; /* [라운드 통일] (기존: 12px) */
     box-sizing: border-box;
   }
 }
@@ -3339,32 +3465,83 @@ body.home-page {
 }
 
 /* 회원 테이블 가독성/줄바꿈 방지 */
-.admin-users-layout .clinic-list-section .admin-table th,
-.admin-users-layout .clinic-list-section .admin-table td {
+.admin-users-full-layout .clinic-list-section .admin-table th,
+.admin-users-full-layout .clinic-list-section .admin-table td {
   white-space: nowrap;
 }
 
-/* 등록된 등급 종류 테이블 (우측 상단) 찌러짐 및 잘림 방지를 위해 가로폭을 가입 회원 목록처럼 100%로 확장 */
-.admin-users-layout .clinic-list-section .table-responsive:first-of-type {
+/* [외곽 테두리 여백 제거 및 가로폭 최적화] 등급 목록 섹션과 추가 폼의 너비를 일치시켜 우측 빈 공간 여백 및 외곽선 늘어짐 제거 */
+.admin-users-full-layout .clinic-list-section,
+.admin-users-full-layout .clinic-form-section {
+  max-width: 1100px !important; /* 테이블 최대 크기와 일치시켜 불필요한 우측 연장 차단 */
+  width: 100% !important;
+}
+
+/* [가로 간격 최적화] 등록된 등급 종류 테이블의 가로폭을 조금 늘려 컬럼 자간 간격을 소폭 여유 있게 조정 */
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table {
+  min-width: auto !important; /* 글로벌 스타일의 min-width: 1300px 강제 해제 */
+  max-width: 1100px; /* 테이블 최대 가로 길이를 제한하여 자간 간격 소폭 확대 (기존: 950px) */
   width: 100%;
 }
 
-.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table th,
-.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table td {
-  padding: 0.75rem 0.8rem;
-  font-size: 0.88rem;
-  text-align: center; /* 8열 데이터 중앙 정렬로 시인성 증대 */
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type {
+  width: 100%;
+  max-width: 1100px;
 }
 
-/* 등급 종류 테이블 헤더/셀 개별 조율 */
-.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(1),
-.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(1) {
+/* [라인 정렬 최적화] 테이블 th, td 셀의 패딩 축소 및 중앙 정렬 기본 세팅 */
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th,
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.88rem;
+  text-align: center; /* 데이터 및 토글 버튼을 열 중앙에 완벽 배치 */
+  vertical-align: middle;
+}
+
+/* [컬럼 라인 맞춤] 등급 키와 표시이름 컬럼 정렬 및 너비 설정 (텍스트 중심이므로 좌측 정렬) */
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(1),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(1) {
   text-align: left;
   font-weight: 700;
+  width: 15%; /* 등급 키 컬럼의 가로폭 명시적 제한 */
 }
-.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(2),
-.admin-users-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(2) {
+
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(2),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(2) {
   text-align: left;
+  width: 15%; /* 표시이름 컬럼의 가로폭 명시적 제한 */
+}
+
+/* [컬럼 라인 맞춤] 각 권한 토글 스위치 컬럼 정렬 및 너비 설정 (중앙 정렬) */
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(3),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(3),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(4),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(4),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(5),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(5),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(6),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(6),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(7),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(7) {
+  width: 10%; /* 각 토글 컬럼의 가로폭을 동일하게 고정하여 헤더 텍스트와 정렬선 일치 */
+}
+
+/* [컬럼 라인 맞춤] 등급변경(수정/삭제 액션 버튼) 영역 컬럼 수직 정렬 강제 일치화 */
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table th:nth-child(8),
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(8) {
+  text-align: center !important; /* [정렬 보장] 글로벌 left 정렬을 오버라이딩하여 가운데 정렬 강제 적용 */
+  width: 20%; /* 액션 버튼 영역의 너비를 충분히 확보하여 라인 일치 */
+  padding-left: 0 !important; /* 안쪽 좌우 패딩을 제거하여 순수 콘텐츠 기준 수직 정렬 유도 */
+  padding-right: 0 !important;
+}
+
+/* 등급변경 셀 내부의 버튼 정렬 컨테이너 강제 가운데 정렬 */
+.admin-users-full-layout .clinic-list-section .table-responsive:first-of-type .admin-table td:nth-child(8) > div {
+  display: flex !important;
+  justify-content: center !important; /* 자식 요소(수정/삭제 버튼) 가로 중앙 정렬 보장 */
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 auto !important;
 }
 
 /* ==========================================================================
