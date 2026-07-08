@@ -11,7 +11,8 @@ import {
   updateDoc,
   deleteDoc,
   addDoc,
-  setDoc
+  setDoc,
+  limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -35,6 +36,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const statCancelled = document.getElementById("stat-cancelled");
 
   let unsubscribe = null;
+  // [예약 개수 제한 필터] 로컬 상태 보존 관리 변수 정의 (기본값: 10개)
+  let currentLimit = parseInt(localStorage.getItem("admin_reservation_limit") || "10", 10);
+  // [회원 개수 제한 필터] 로컬 상태 보존 관리 변수 정의 (기본값: 10개)
+  let currentLimitUsers = parseInt(localStorage.getItem("admin_user_limit") || "10", 10);
+  // [회원 등급 필터] 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
+  let currentRoleFilter = localStorage.getItem("admin_user_role_filter") || "all";
+  // [예약 언어 필터] 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
+  let currentLangFilter = localStorage.getItem("admin_reservation_lang_filter") || "all";
 
   // 통계 업데이트 함수 정의
   function updateStats(total, pending, confirmed, cancelled) {
@@ -45,13 +54,61 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 렌더링 전용 함수 정의
-  function renderReservations(items) {
+  function renderReservations(items, allItems = []) {
     reservationList.innerHTML = "";
 
     let totalCount = 0;
     let pendingCount = 0;
     let confirmedCount = 0;
     let cancelledCount = 0;
+
+    // 선택언어별 카운팅 (언어 필터링이 적용되지 않은 전체 items 기준 또는 allItems 기준 전달)
+    // 원본 데이터가 있으면 그것을 기준으로 언어별 카운트를 세어 정확성을 기합니다.
+    const statsItems = allItems.length > 0 ? allItems : items;
+    const langCounts = {
+      ko: 0, ja: 0, vi: 0, en: 0, zh: 0, ru: 0, my: 0, km: 0, mn: 0, th: 0, lo: 0, ne: 0, id: 0, si: 0, bn: 0
+    };
+    statsItems.forEach(item => {
+      if (item.lang && langCounts[item.lang] !== undefined) {
+        langCounts[item.lang]++;
+      }
+    });
+
+    // 선택언어별 예약수 타일 렌더링 (#admin-lang-stats)
+    const langStatsContainer = document.getElementById("admin-lang-stats");
+    if (langStatsContainer) {
+      // 예약캡처 디자인 모사: 둥근 모서리, 은은한 테두리 색상, 언어별 고유 텍스트 색상 및 아이콘 매핑
+      const langConfig = {
+        ko: { flag: "🇰🇷", label: "한국어", color: "#ffffff", border: "rgba(255, 255, 255, 0.2)" },
+        ja: { flag: "🇯🇵", label: "일본어", color: "#38bdf8", border: "rgba(56, 189, 248, 0.2)" },
+        vi: { flag: "🇻🇳", label: "베트남어", color: "#e2e8f0", border: "rgba(226, 232, 240, 0.2)" },
+        en: { flag: "🇺🇸", label: "영어", color: "#ec4899", border: "rgba(236, 72, 153, 0.2)" },
+        zh: { flag: "🇨🇳", label: "중국어", color: "#3b82f6", border: "rgba(59, 130, 246, 0.2)" },
+        ru: { flag: "🇷🇺", label: "러시아어", color: "#f59e0b", border: "rgba(245, 158, 11, 0.2)" },
+        my: { flag: "🇲🇲", label: "미얀마어", color: "#a855f7", border: "rgba(168, 85, 247, 0.2)" },
+        km: { flag: "🇰🇭", label: "캄보디아어", color: "#ef4444", border: "rgba(239, 68, 68, 0.2)" },
+        mn: { flag: "🇲🇳", label: "몽골어", color: "#10b981", border: "rgba(16, 185, 129, 0.2)" },
+        th: { flag: "🇹🇭", label: "태국어", color: "#14b8a6", border: "rgba(20, 184, 166, 0.2)" },
+        lo: { flag: "🇱🇦", label: "라오스어", color: "#f43f5e", border: "rgba(244, 63, 94, 0.2)" },
+        ne: { flag: "🇳🇵", label: "네팔어", color: "#84cc16", border: "rgba(132, 204, 22, 0.2)" },
+        id: { flag: "🇮🇩", label: "인도네시아어", color: "#06b6d4", border: "rgba(6, 182, 212, 0.2)" },
+        si: { flag: "🇱🇰", label: "스리랑카어", color: "#6366f1", border: "rgba(99, 102, 241, 0.2)" },
+        bn: { flag: "🇧🇩", label: "방글라데시어", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
+      };
+
+      let html = "";
+      Object.entries(langConfig).forEach(([key, cfg]) => {
+        const count = langCounts[key] || 0;
+        // 캡처 디자인처럼: 상단에 flag와 label, 하단에 숫자와 '명' or '건'
+        html += `
+          <div class="lang-stat-tile" style="border-color: ${cfg.border};">
+            <span class="lang-tile-title" style="color: ${cfg.color};">${cfg.flag} ${cfg.label}</span>
+            <span class="lang-tile-value" style="color: ${cfg.color};">${count}<small>명</small></span>
+          </div>
+        `;
+      });
+      langStatsContainer.innerHTML = html;
+    }
 
     if (items.length === 0) {
       reservationList.innerHTML = `<tr><td colspan="13" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
@@ -87,15 +144,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // 선택언어 라벨 매핑
+      // 선택언어 라벨 매핑 (15개 언어 완벽 맵핑 및 코드 교정)
       const langLabels = {
-        "vi": "🇻🇳 베트남어 (Vietnamese)",
         "ko": "🇰🇷 한국어 (Korean)",
+        "ja": "🇯🇵 일본어 (Japanese)",
+        "vi": "🇻🇳 베트남어 (Vietnamese)",
         "en": "🇺🇸 영어 (English)",
+        "zh": "🇨🇳 중국어 (Chinese)",
+        "ru": "🇷🇺 러시아어 (Russian)",
         "my": "🇲🇲 미얀마어 (Burmese)",
-        "kh": "🇰🇭 캄보디아어 (Khmer)",
-        "la": "🇱🇦 라오스어 (Lao)",
-        "np": "🇳🇵 네팔어 (Nepali)"
+        "km": "🇰🇭 캄보디아어 (Khmer)",
+        "mn": "🇲🇳 몽골어 (Mongolian)",
+        "th": "🇹🇭 태국어 (Thai)",
+        "lo": "🇱🇦 라오스어 (Lao)",
+        "ne": "🇳🇵 네팔어 (Nepali)",
+        "id": "🇮🇩 인도네시아어 (Indonesian)",
+        "si": "🇱🇰 스리랑카어 (Sinhalese)",
+        "bn": "🇧🇩 방글라데시어 (Bengali)"
       };
       const displayLang = langLabels[data.lang] || (data.lang ? `🌐 ${data.lang}` : "-");
 
@@ -168,28 +233,40 @@ document.addEventListener("DOMContentLoaded", () => {
     updateStats(totalCount, pendingCount, confirmedCount, cancelledCount);
   }
 
-  // 실시간 수신 대기 및 병합
-  function loadReservations() {
+  // 실시간 수신 대기 및 병합 (동적 limit 개수 제한 연동)
+  function loadReservations(isFirstLoad = false) {
     if (unsubscribe) {
       unsubscribe();
     }
 
-    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
-    reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
+    // [복합색인 에러 회피] where와 orderBy를 엮으면 인덱스 에러가 발생하므로 단일 정렬 쿼리 후 클라이언트 필터링 진행
+    // 필터링 적용을 고려해 넉넉하게 최근 200개 목록을 가져옵니다.
+    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"), limit(200));
+    
+    // 최초 로드 시에만 로딩 표시 및 로컬스토리지 즉시 반환 처리
+    if (isFirstLoad) {
+      reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
 
-    // 1단계: Firestore 로드 전, 로컬스토리지 백업 데이터가 있다면 먼저 렌더링 (즉각적인 피드백 보장)
-    let initialLocalItems = [];
-    try {
-      const localData = localStorage.getItem("local_reservations");
-      if (localData) {
-        initialLocalItems = JSON.parse(localData);
+      // 1단계: Firestore 로드 전, 로컬스토리지 백업 데이터가 있다면 먼저 렌더링 (즉각적인 피드백 보장)
+      let initialLocalItems = [];
+      try {
+        const localData = localStorage.getItem("local_reservations");
+        if (localData) {
+          initialLocalItems = JSON.parse(localData);
+        }
+      } catch (e) {
+        console.error("Initial local storage parse failed:", e);
       }
-    } catch (e) {
-      console.error("Initial local storage parse failed:", e);
-    }
-    if (initialLocalItems.length > 0) {
-      const sortedLocal = initialLocalItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      renderReservations(sortedLocal);
+      if (initialLocalItems.length > 0) {
+        // 로컬스토리지 백업 데이터에 대해서도 선택 언어 필터링 적용
+        let filteredLocal = initialLocalItems;
+        if (currentLangFilter !== "all") {
+          filteredLocal = initialLocalItems.filter(item => item.lang === currentLangFilter);
+        }
+        const sortedLocal = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        // 제한 수량만큼 잘라내어 초기 렌더링 (전체 목록 전달)
+        renderReservations(sortedLocal.slice(0, currentLimit), initialLocalItems);
+      }
     }
 
     unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -217,7 +294,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const mergedMap = new Map();
 
       localItems.forEach(item => {
-        mergedMap.set(item.id, item);
+        // [예약 언어 필터] 로컬 아이템에 대해서도 언어가 일치하는 경우에만 병합
+        if (currentLangFilter === "all" || item.lang === currentLangFilter) {
+          mergedMap.set(item.id, item);
+        }
       });
 
       firestoreItems.forEach(item => {
@@ -234,12 +314,26 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // 4. 시간 역순 정렬
-      const finalItems = Array.from(mergedMap.values()).sort((a, b) => {
+      const sortedItems = Array.from(mergedMap.values()).sort((a, b) => {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
-      // 5. 렌더링 호출
-      renderReservations(finalItems);
+      // [실시간 정합성] 서버에서 최신 상태를 받아왔으므로 로컬스토리지 백업 데이터도 즉시 최신화
+      // 이로 인해 F5(Ctrl+F5) 새로고침 시에도 최신 정보 기준으로 즉각 렌더링되어 1명이 튀는 현상이 영구 방지됩니다.
+      try {
+        localStorage.setItem("local_reservations", JSON.stringify(sortedItems));
+      } catch (e) {
+        console.error("Failed to sync sortedItems to local_reservations:", e);
+      }
+
+      // 5. 선택 언어로 최종 클라이언트 필터링
+      let filteredItems = sortedItems;
+      if (currentLangFilter !== "all") {
+        filteredItems = sortedItems.filter(item => item.lang === currentLangFilter);
+      }
+
+      // 6. 렌더링 호출 (지정된 limit 크기만큼 최종 슬라이스하고 전체 목록 sortedItems 전달)
+      renderReservations(filteredItems.slice(0, currentLimit), sortedItems);
 
     }, (error) => {
       console.warn("Firestore listener failed. Showing local storage data only.", error);
@@ -253,8 +347,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } catch (e) {}
 
-      const finalItems = localItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      renderReservations(finalItems);
+      // 에러 상황 시에도 언어 필터 적용
+      let filteredLocal = localItems;
+      if (currentLangFilter !== "all") {
+        filteredLocal = localItems.filter(item => item.lang === currentLangFilter);
+      }
+      const finalItems = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      // 제한 수량만큼 잘라내어 렌더링 (전체 목록 전달)
+      renderReservations(finalItems.slice(0, currentLimit), localItems);
     });
   }
 
@@ -341,8 +441,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 새로고침 버튼
   btnRefresh.addEventListener("click", () => {
-    loadReservations();
+    loadReservations(false);
   });
+
+  // [예약 개수 제한 필터] 드롭다운 select 요소 바인딩 및 초기값 로컬스토리지 동기화
+  const selectLimit = document.getElementById("select-limit-count");
+  if (selectLimit) {
+    // 저장된 수치가 있으면 드롭다운 초기값으로 자동 적용
+    selectLimit.value = currentLimit.toString();
+    
+    selectLimit.addEventListener("change", (e) => {
+      currentLimit = parseInt(e.target.value, 10);
+      localStorage.setItem("admin_reservation_limit", currentLimit.toString());
+      loadReservations(false); // 필터 선택값 변경 시 즉각 Firestore limit 재조회 및 렌더링
+    });
+  }
+
+  // [예약 선택언어 필터] 드롭다운 select 요소 바인딩 및 초기값 로컬스토리지 동기화
+  const selectLangFilter = document.getElementById("select-lang-filter");
+  if (selectLangFilter) {
+    // 저장된 언어가 있으면 드롭다운 초기값으로 자동 적용
+    selectLangFilter.value = currentLangFilter;
+    
+    selectLangFilter.addEventListener("change", (e) => {
+      currentLangFilter = e.target.value;
+      localStorage.setItem("admin_reservation_lang_filter", currentLangFilter);
+      loadReservations(false); // 언어 선택값 변경 시 즉각 예약 목록 재조회 및 렌더링
+    });
+  }
 
   // [성능 및 정합성 최적화] 관리자 권한을 파악하고 UI를 제어하는 함수
   async function verifyAndApplyPermissions(user, forceRefresh = false) {
@@ -480,8 +606,24 @@ document.addEventListener("DOMContentLoaded", () => {
       // 권한 검증 및 UI 갱신 함수 실행
       const isApproved = await verifyAndApplyPermissions(user);
       if (isApproved) {
-        // 성공 시 예약 정보 최초 로드
-        loadReservations();
+        // 새로고침 시 기존에 선택해두었던 활성 탭 복원 시도
+        const savedTab = sessionStorage.getItem("active_admin_tab");
+        const tabToClick = savedTab ? document.getElementById(savedTab) : null;
+        
+        // 저장된 탭이 존재하고 권한에 의해 화면에 표시(style.display !== "none")되고 있는 경우만 트리거
+        if (tabToClick && tabToClick.style.display !== "none") {
+          tabToClick.click();
+          // 예약 내역 관리 탭이 활성화되는 경우에만 실시간 리스너 작동 (서버 과금 방지)
+          if (savedTab === "tab-reservations") {
+            loadReservations(true);
+          }
+        } else {
+          // 저장된 탭 정보가 없거나 비노출 상태인 경우 기본값으로 예약 탭 활성화 및 로드
+          if (tabReservations) {
+            tabReservations.click();
+          }
+          loadReservations(true);
+        }
       }
     } catch (error) {
       console.error("Auth role check failed:", error);
@@ -506,6 +648,10 @@ document.addEventListener("DOMContentLoaded", () => {
       contentUsers.style.display = "none";
       if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "none";
+      // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
+      sessionStorage.setItem("active_admin_tab", "tab-reservations");
+      // 예약 내역 탭 활성화 시 예약 목록 로드 시작 (새로고침 후 다시 눌렀을 때의 데이터 연동 보장)
+      loadReservations(false);
     });
 
     tabUsers.addEventListener("click", () => {
@@ -517,7 +663,16 @@ document.addEventListener("DOMContentLoaded", () => {
       contentUsers.style.display = "block";
       if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "none";
+      
+      // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+      
       initRolesAndListen(); // 회원 등급 실시간 로드 시작
+      // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
+      sessionStorage.setItem("active_admin_tab", "tab-users");
     });
 
     if (tabPermissions) {
@@ -530,9 +685,18 @@ document.addEventListener("DOMContentLoaded", () => {
         contentUsers.style.display = "none";
         if (contentPermissions) contentPermissions.style.display = "block";
         contentClinics.style.display = "none";
+        
+        // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
+        if (unsubscribe) {
+          unsubscribe();
+          unsubscribe = null;
+        }
+        
         // [성능 최적화] initRolesAndListen() 내부에서 loadUsers()를 이미 호출하므로 중복 호출 제거
         // initRolesAndListen()가 최초 진입 시 loadUsers()를 포함하여 처리합니다.
         initRolesAndListen();
+        // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
+        sessionStorage.setItem("active_admin_tab", "tab-permissions");
       });
     }
 
@@ -545,7 +709,16 @@ document.addEventListener("DOMContentLoaded", () => {
       contentUsers.style.display = "none";
       if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "block";
+      
+      // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+      
       loadClinics(); // 병원 목록 불러오기
+      // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
+      sessionStorage.setItem("active_admin_tab", "tab-clinics");
     });
   }
 
@@ -688,6 +861,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+      // [회원 등급별 보기 필터] 수집된 rolesCache 기반으로 등급 필터 드롭다운 옵션 동적 빌드
+      const selectRoleFilter = document.getElementById("select-role-filter");
+      if (selectRoleFilter) {
+        let filterHTML = `<option value="all" ${currentRoleFilter === "all" ? "selected" : ""}>전체보기</option>`;
+        Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
+          const isSelected = currentRoleFilter === roleKey ? "selected" : "";
+          filterHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel} 보기</option>`;
+        });
+        selectRoleFilter.innerHTML = filterHTML;
+      }
+
       // [성능 최적화] roles onSnapshot 콜백에서 loadUsers() 자동 호출 제거
       // 등급 목록이 바뀔 때마다 users 컬렉션을 재조회하면 불필요한 Firestore 읽기가 발생합니다.
       // 탭 클릭 시에만 loadUsers()를 호출합니다.
@@ -706,20 +890,51 @@ document.addEventListener("DOMContentLoaded", () => {
     
     userList.innerHTML = `<tr><td colspan="5" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
 
+    // [레이스 컨디션 해결] rolesCache가 아직 Firestore 실시간 리스너로부터 수집되지 않은 경우
+    // 일시적으로 roles 컬렉션을 일회성(getDocs) 조회하여 캐시를 선제 빌드 (등급 미등록 노출 오류 완벽 방지)
+    if (Object.keys(rolesCache).length === 0) {
+      try {
+        const rolesCol = collection(db, "roles");
+        const rolesSnap = await getDocs(rolesCol);
+        rolesSnap.forEach((docSnap) => {
+          rolesCache[docSnap.id] = docSnap.data().label;
+        });
+      } catch (e) {
+        console.error("Fallback roles loading failed in loadUsers:", e);
+      }
+    }
+
     try {
-      const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
+      // [복합색인 에러 회피] where와 orderBy를 엮으면 인덱스 에러가 발생하므로 단일 정렬 쿼리 후 클라이언트 필터링 진행
+      // 필터링 적용을 고려해 넉넉하게 최근 200개 목록을 가져옵니다.
+      const userQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(200));
+      const querySnapshot = await getDocs(userQuery);
 
       userList.innerHTML = "";
 
-      if (querySnapshot.empty) {
+      // 1. 수집 가공
+      let rawUsers = [];
+      querySnapshot.forEach((docSnap) => {
+        rawUsers.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      // 2. 등급 클라이언트 필터링
+      let filteredUsers = rawUsers;
+      if (currentRoleFilter !== "all") {
+        filteredUsers = rawUsers.filter(user => user.role === currentRoleFilter);
+      }
+
+      if (filteredUsers.length === 0) {
         userList.innerHTML = `<tr><td colspan="5" class="table-empty">가입된 회원이 없습니다.</td></tr>`;
         return;
       }
 
-      querySnapshot.forEach((docSnap) => {
-        const userData = docSnap.data();
-        const userId = docSnap.id;
+      // 3. 제한 수량에 슬라이스 적용 렌더링
+      filteredUsers.slice(0, currentLimitUsers).forEach((userData) => {
+        const userId = userData.id;
         const tr = document.createElement("tr");
 
         // 가입 날짜 포맷팅
@@ -820,6 +1035,29 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnRefreshUsers) {
     btnRefreshUsers.addEventListener("click", () => {
       loadUsers();
+    });
+  }
+
+  // [회원 개수 제한 필터] 드롭다운 select 요소 바인딩 및 초기값 로컬스토리지 동기화
+  const selectLimitUsers = document.getElementById("select-limit-users");
+  if (selectLimitUsers) {
+    // 저장된 수치가 있으면 드롭다운 초기값으로 자동 적용
+    selectLimitUsers.value = currentLimitUsers.toString();
+    
+    selectLimitUsers.addEventListener("change", (e) => {
+      currentLimitUsers = parseInt(e.target.value, 10);
+      localStorage.setItem("admin_user_limit", currentLimitUsers.toString());
+      loadUsers(); // 필터 선택값 변경 시 즉각 Firestore limit 재조회 및 렌더링
+    });
+  }
+
+  // [회원 등급별 보기 필터] 드롭다운 select 요소 바인딩
+  const selectRoleFilter = document.getElementById("select-role-filter");
+  if (selectRoleFilter) {
+    selectRoleFilter.addEventListener("change", (e) => {
+      currentRoleFilter = e.target.value;
+      localStorage.setItem("admin_user_role_filter", currentRoleFilter);
+      loadUsers(); // 등급 필터 선택 변경 시 즉시 목록 재조회 렌더링
     });
   }
 
@@ -1168,6 +1406,27 @@ document.addEventListener("DOMContentLoaded", () => {
               data-desc="${(clinic.desc || '').replace(/"/g, '&quot;')}"
               data-address="${(clinic.address || '').replace(/"/g, '&quot;')}"
               data-depts="${(clinic.depts || []).join(',').replace(/"/g, '&quot;')}"
+              
+              /* [다국어 지원] 수정 폼 기본값 노출을 위한 4개 국어 속성 결합 */
+              data-namevi="${(clinic.name_vi || '').replace(/"/g, '&quot;')}"
+              data-deptsvi="${(clinic.depts_vi || []).join(',').replace(/"/g, '&quot;')}"
+              data-addressvi="${(clinic.address_vi || '').replace(/"/g, '&quot;')}"
+              data-descvi="${(clinic.desc_vi || '').replace(/"/g, '&quot;')}"
+
+              data-nameja="${(clinic.name_ja || '').replace(/"/g, '&quot;')}"
+              data-deptsja="${(clinic.depts_ja || []).join(',').replace(/"/g, '&quot;')}"
+              data-addressja="${(clinic.address_ja || '').replace(/"/g, '&quot;')}"
+              data-descja="${(clinic.desc_ja || '').replace(/"/g, '&quot;')}"
+
+              data-namezh="${(clinic.name_zh || '').replace(/"/g, '&quot;')}"
+              data-deptszh="${(clinic.depts_zh || []).join(',').replace(/"/g, '&quot;')}"
+              data-addresszh="${(clinic.address_zh || '').replace(/"/g, '&quot;')}"
+              data-desczh="${(clinic.desc_zh || '').replace(/"/g, '&quot;')}"
+
+              data-nameru="${(clinic.name_ru || '').replace(/"/g, '&quot;')}"
+              data-deptsru="${(clinic.depts_ru || []).join(',').replace(/"/g, '&quot;')}"
+              data-addressru="${(clinic.address_ru || '').replace(/"/g, '&quot;')}"
+              data-descru="${(clinic.desc_ru || '').replace(/"/g, '&quot;')}"
               style="margin-right: 6px;"
             >수정</button>
             <button class="btn-action delete btn-delete-clinic" data-id="${docId}">삭제</button>
@@ -1273,7 +1532,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 병원 등록 폼 서브밋 핸들러
+  // 병원 등록 폼 서브밋 핸들러 (다국어 필드 및 진료과목 지원 개선)
   const clinicRegisterForm = document.getElementById("clinic-register-form");
   if (clinicRegisterForm) {
     clinicRegisterForm.addEventListener("submit", async (e) => {
@@ -1284,6 +1543,31 @@ document.addEventListener("DOMContentLoaded", () => {
       const deptsRaw = document.getElementById("reg-clinic-depts").value.trim();
       const address = document.getElementById("reg-clinic-address").value.trim();
       const desc = document.getElementById("reg-clinic-desc").value.trim();
+
+      // [다국어 지원] 신규 아코디언에서 다국어(vi, ja, zh, ru) 번역 기입 데이터 수집 (진료과목 추가 수집)
+      const name_vi = document.getElementById("reg-clinic-name-vi").value.trim();
+      const deptsRaw_vi = document.getElementById("reg-clinic-depts-vi").value.trim();
+      const depts_vi = deptsRaw_vi ? deptsRaw_vi.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+      const address_vi = document.getElementById("reg-clinic-address-vi").value.trim();
+      const desc_vi = document.getElementById("reg-clinic-desc-vi").value.trim();
+
+      const name_ja = document.getElementById("reg-clinic-name-ja").value.trim();
+      const deptsRaw_ja = document.getElementById("reg-clinic-depts-ja").value.trim();
+      const depts_ja = deptsRaw_ja ? deptsRaw_ja.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+      const address_ja = document.getElementById("reg-clinic-address-ja").value.trim();
+      const desc_ja = document.getElementById("reg-clinic-desc-ja").value.trim();
+
+      const name_zh = document.getElementById("reg-clinic-name-zh").value.trim();
+      const deptsRaw_zh = document.getElementById("reg-clinic-depts-zh").value.trim();
+      const depts_zh = deptsRaw_zh ? deptsRaw_zh.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+      const address_zh = document.getElementById("reg-clinic-address-zh").value.trim();
+      const desc_zh = document.getElementById("reg-clinic-desc-zh").value.trim();
+
+      const name_ru = document.getElementById("reg-clinic-name-ru").value.trim();
+      const deptsRaw_ru = document.getElementById("reg-clinic-depts-ru").value.trim();
+      const depts_ru = deptsRaw_ru ? deptsRaw_ru.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+      const address_ru = document.getElementById("reg-clinic-address-ru").value.trim();
+      const desc_ru = document.getElementById("reg-clinic-desc-ru").value.trim();
 
       if (!uploadedImageBase64) {
         alert("병원사진 파일을 선택해 주세요. 이미지 압축 처리 중일 수 있습니다.");
@@ -1297,6 +1581,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSubmit.textContent = "등록 중...";
 
       try {
+        // Firestore clinics 컬렉션에 등록 처리
         await addDoc(collection(db, "clinics"), {
           name,
           englishName,
@@ -1304,6 +1589,11 @@ document.addEventListener("DOMContentLoaded", () => {
           depts,
           address,
           desc,
+          // 기입된 다국어 정보가 있는 경우에만 선택적으로 데이터베이스 필드로 결합 저장 (서버 리소스 정합성 최적화)
+          ...(name_vi && { name_vi, depts_vi, address_vi, desc_vi }),
+          ...(name_ja && { name_ja, depts_ja, address_ja, desc_ja }),
+          ...(name_zh && { name_zh, depts_zh, address_zh, desc_zh }),
+          ...(name_ru && { name_ru, depts_ru, address_ru, desc_ru }),
           createdAt: new Date().toISOString()
         });
         alert("신규 병원이 성공적으로 등록되었습니다.");
@@ -1333,7 +1623,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (adminClinicList) {
     adminClinicList.addEventListener("click", async (e) => {
 
-      // ── 수정 버튼 처리 ──
+      // ── 수정 버튼 처리 (다국어 연동 고도화 복원 및 구현) ──
       if (e.target.classList.contains("btn-edit-clinic")) {
         const btn = e.target;
         const docId       = btn.getAttribute("data-id");
@@ -1343,7 +1633,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const curAddress  = btn.getAttribute("data-address");
         const curDepts    = btn.getAttribute("data-depts");
 
-        // 인라인 수정 모달 동적 생성 (기존 모달 재사용 방지를 위해 매번 새로 생성)
+        // [다국어 지원] 데이터 속성으로부터 기존 다국어 값 추출
+        const curNameVi    = btn.getAttribute("data-namevi") || "";
+        const curDeptsVi   = btn.getAttribute("data-deptsvi") || "";
+        const curAddressVi = btn.getAttribute("data-addressvi") || "";
+        const curDescVi    = btn.getAttribute("data-descvi") || "";
+
+        const curNameJa    = btn.getAttribute("data-nameja") || "";
+        const curDeptsJa   = btn.getAttribute("data-deptsja") || "";
+        const curAddressJa = btn.getAttribute("data-addressja") || "";
+        const curDescJa    = btn.getAttribute("data-descja") || "";
+
+        const curNameZh    = btn.getAttribute("data-namezh") || "";
+        const curDeptsZh   = btn.getAttribute("data-deptszh") || "";
+        const curAddressZh = btn.getAttribute("data-addresszh") || "";
+        const curDescZh    = btn.getAttribute("data-desczh") || "";
+
+        const curNameRu    = btn.getAttribute("data-nameru") || "";
+        const curDeptsRu   = btn.getAttribute("data-deptsru") || "";
+        const curAddressRu = btn.getAttribute("data-addressru") || "";
+        const curDescRu    = btn.getAttribute("data-descru") || "";
+
+        // 인라인 수정 모달 동적 생성
         let editModal = document.getElementById("clinic-edit-modal");
         if (editModal) editModal.remove();
 
@@ -1356,7 +1667,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ].join(";");
         editModal.innerHTML = `
           <div style="background:#1e1b4b; border:1px solid rgba(165,180,252,0.25); border-radius:16px;
-                      padding:2rem; width:min(520px,92vw); max-height:90vh; overflow-y:auto;
+                      padding:2rem; width:min(540px,92vw); max-height:90vh; overflow-y:auto;
                       box-shadow:0 24px 80px rgba(0,0,0,0.6);">
             <h3 style="margin:0 0 1.4rem; color:#a5b4fc; font-size:1.15rem;">✏️ 병원 정보 수정</h3>
             <!-- 병원명 -->
@@ -1383,7 +1694,60 @@ document.addEventListener("DOMContentLoaded", () => {
             <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">병원 설명</label>
             <textarea id="edit-clinic-desc" rows="4"
               style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
-                     background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1.4rem; box-sizing:border-box; resize:vertical;">${curDesc}</textarea>
+                     background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1rem; box-sizing:border-box; resize:vertical;">${curDesc}</textarea>
+            
+            <!-- [다국어 지원] 다국어 번역 수정 아코디언 -->
+            <details style="border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.8rem; margin-bottom:1.4rem; background:rgba(255,255,255,0.02);">
+              <summary style="font-weight:600; color:#a5b4fc; cursor:pointer; font-size:0.85rem; outline:none; user-select:none;">🌐 다국어 번역 수정 (선택사항)</summary>
+              <div style="margin-top:0.8rem; display:flex; flex-direction:column; gap:0.8rem;">
+                
+                <!-- 베트남어 -->
+                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
+                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇻🇳 베트남어 (Vietnamese)</legend>
+                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
+                    <input id="edit-clinic-name-vi" type="text" value="${curNameVi}" placeholder="Tên bệnh viện (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-depts-vi" type="text" value="${curDeptsVi}" placeholder="Khoa điều trị (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-address-vi" type="text" value="${curAddressVi}" placeholder="Địa chỉ (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <textarea id="edit-clinic-desc-vi" rows="2" placeholder="Mô tả bệnh viện (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescVi}</textarea>
+                  </div>
+                </fieldset>
+
+                <!-- 일본어 -->
+                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
+                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇯🇵 일본어 (Japanese)</legend>
+                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
+                    <input id="edit-clinic-name-ja" type="text" value="${curNameJa}" placeholder="病院名 (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-depts-ja" type="text" value="${curDeptsJa}" placeholder="診療科目 (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-address-ja" type="text" value="${curAddressJa}" placeholder="住所 (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <textarea id="edit-clinic-desc-ja" rows="2" placeholder="病院の説明 (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescJa}</textarea>
+                  </div>
+                </fieldset>
+
+                <!-- 중국어 -->
+                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
+                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇨🇳 중국어 (Chinese)</legend>
+                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
+                    <input id="edit-clinic-name-zh" type="text" value="${curNameZh}" placeholder="医院名称 (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-depts-zh" type="text" value="${curDeptsZh}" placeholder="诊疗科目 (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-address-zh" type="text" value="${curAddressZh}" placeholder="地址 (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <textarea id="edit-clinic-desc-zh" rows="2" placeholder="医院介绍 (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescZh}</textarea>
+                  </div>
+                </fieldset>
+
+                <!-- 러시아어 -->
+                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
+                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇷🇺 러시아어 (Russian)</legend>
+                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
+                    <input id="edit-clinic-name-ru" type="text" value="${curNameRu}" placeholder="Название клиники (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-depts-ru" type="text" value="${curDeptsRu}" placeholder="Медицинские отделения (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <input id="edit-clinic-address-ru" type="text" value="${curAddressRu}" placeholder="Адрес клиники (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
+                    <textarea id="edit-clinic-desc-ru" rows="2" placeholder="Описание клиники (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescRu}</textarea>
+                  </div>
+                </fieldset>
+
+              </div>
+            </details>
+
             <!-- 버튼 영역 -->
             <div style="display:flex; gap:10px; justify-content:flex-end;">
               <button id="btn-edit-clinic-cancel" class="btn btn-secondary"
@@ -1414,6 +1778,31 @@ document.addEventListener("DOMContentLoaded", () => {
           const newAddress = document.getElementById("edit-clinic-address").value.trim();
           const newDesc    = document.getElementById("edit-clinic-desc").value.trim();
 
+          // [다국어 지원] 수정 폼에서 수집된 다국어 정보 변수 정의 (진료과목 포함)
+          const newNameVi    = document.getElementById("edit-clinic-name-vi").value.trim();
+          const newDeptsRawVi = document.getElementById("edit-clinic-depts-vi").value.trim();
+          const newDeptsVi   = newDeptsRawVi ? newDeptsRawVi.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+          const newAddressVi = document.getElementById("edit-clinic-address-vi").value.trim();
+          const newDescVi    = document.getElementById("edit-clinic-desc-vi").value.trim();
+
+          const newNameJa    = document.getElementById("edit-clinic-name-ja").value.trim();
+          const newDeptsRawJa = document.getElementById("edit-clinic-depts-ja").value.trim();
+          const newDeptsJa   = newDeptsRawJa ? newDeptsRawJa.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+          const newAddressJa = document.getElementById("edit-clinic-address-ja").value.trim();
+          const newDescJa    = document.getElementById("edit-clinic-desc-ja").value.trim();
+
+          const newNameZh    = document.getElementById("edit-clinic-name-zh").value.trim();
+          const newDeptsRawZh = document.getElementById("edit-clinic-depts-zh").value.trim();
+          const newDeptsZh   = newDeptsRawZh ? newDeptsRawZh.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+          const newAddressZh = document.getElementById("edit-clinic-address-zh").value.trim();
+          const newDescZh    = document.getElementById("edit-clinic-desc-zh").value.trim();
+
+          const newNameRu    = document.getElementById("edit-clinic-name-ru").value.trim();
+          const newDeptsRawRu = document.getElementById("edit-clinic-depts-ru").value.trim();
+          const newDeptsRu   = newDeptsRawRu ? newDeptsRawRu.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+          const newAddressRu = document.getElementById("edit-clinic-address-ru").value.trim();
+          const newDescRu    = document.getElementById("edit-clinic-desc-ru").value.trim();
+
           if (!newName || !newEngName || !newAddress) {
             alert("병원명, 영문 식별명, 주소는 필수 항목입니다.");
             return;
@@ -1424,16 +1813,39 @@ document.addEventListener("DOMContentLoaded", () => {
           saveBtn.textContent = "저장 중...";
 
           try {
-            // Firestore 문서 업데이트
+            // Firestore 문서 업데이트 (다국어 필드도 덮어쓰기 업데이트 반영)
             await updateDoc(doc(db, "clinics", docId), {
               name: newName,
               englishName: newEngName,
               depts: newDepts,
               address: newAddress,
-              desc: newDesc
+              desc: newDesc,
+              
+              name_vi: newNameVi,
+              depts_vi: newDeptsVi,
+              address_vi: newAddressVi,
+              desc_vi: newDescVi,
+
+              name_ja: newNameJa,
+              depts_ja: newDeptsJa,
+              address_ja: newAddressJa,
+              desc_ja: newDescJa,
+
+              name_zh: newNameZh,
+              depts_zh: newDeptsZh,
+              address_zh: newAddressZh,
+              desc_zh: newDescZh,
+
+              name_ru: newNameRu,
+              depts_ru: newDeptsRu,
+              address_ru: newAddressRu,
+              desc_ru: newDescRu
             });
             alert("병원 정보가 성공적으로 수정되었습니다.");
             editModal.remove();
+            
+            // 병원 수정 완료 후 테이블 새로고침
+            loadClinics();
           } catch (error) {
             console.error("Update clinic failed:", error);
             alert("수정 중 오류가 발생했습니다: " + error.message);

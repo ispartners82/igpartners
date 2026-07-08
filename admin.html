@@ -68,17 +68,47 @@
         </div>
       </div>
 
+      <!-- 선택언어별 예약수 타일 영역 (예약캡처 디자인 모사) -->
+      <div id="admin-lang-stats" class="admin-lang-stats"></div>
+
       <!-- 예약 목록 테이블 영역 -->
       <main class="admin-main">
-        <div class="table-controls">
+        <div class="table-controls" style="justify-content: space-between; align-items: center; display: flex; margin-bottom: 1.5rem;">
           <h2>예약 상세 목록</h2>
-          <button id="btn-refresh" class="btn-refresh">
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path fill="currentColor"
-                d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-            </svg>
-            새로고침
-          </button>
+          <!-- [레이아웃 교정] 우측 조작계 3가지 항목 그룹화 및 촘촘한 정렬 컨테이너 -->
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="btn-refresh" class="btn-refresh">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor"
+                  d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+              </svg>
+              새로고침
+            </button>
+            <select id="select-limit-count" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+              <option value="10">10개씩 보기</option>
+              <option value="20">20개씩 보기</option>
+              <option value="50">50개씩 보기</option>
+              <option value="100">100개씩 보기</option>
+            </select>
+            <select id="select-lang-filter" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+              <option value="all">전체보기</option>
+              <option value="ko">🇰🇷 한국어</option>
+              <option value="ja">🇯🇵 일본어</option>
+              <option value="vi">🇻🇳 베트남어</option>
+              <option value="en">🇺🇸 영어</option>
+              <option value="zh">🇨🇳 중국어</option>
+              <option value="ru">🇷🇺 러시아어</option>
+              <option value="my">🇲🇲 미얀마어</option>
+              <option value="km">🇰🇭 캄보디아어</option>
+              <option value="mn">🇲🇳 몽골어</option>
+              <option value="th">🇹🇭 태국어</option>
+              <option value="lo">🇱🇦 라오스어</option>
+              <option value="ne">🇳🇵 네팔어</option>
+              <option value="id">🇮🇩 인도네시아어</option>
+              <option value="si">🇱🇰 스리랑카어</option>
+              <option value="bn">🇧🇩 방글라데시어</option>
+            </select>
+          </div>
         </div>
 
         <div class="table-responsive">
@@ -116,23 +146,29 @@
     <div id="content-users" class="admin-tab-content" style="display: none;">
       <main class="admin-main">
         <div class="admin-users-full-layout">
- 
+
           <!-- 1. 회원 등급 종류 추가 폼 (상단 - 넓고 단정한 1줄 가로 정렬 구성) -->
           <section class="clinic-form-section" style="max-width: 680px; margin-bottom: 2rem;">
             <h2>회원 등급 종류 추가</h2>
-            <form id="role-register-form" class="admin-clinic-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end;">
+            <form id="role-register-form" class="admin-clinic-form"
+              style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end;">
               <div class="form-group" style="margin-bottom: 0;">
-                <label for="reg-role-key" style="margin-bottom: 4px;">등급 키 (영문 식별자) <span class="required">*</span></label>
-                <input type="text" id="reg-role-key" required placeholder="예: vip, res_manager" style="padding: 0.6rem 0.8rem; font-size: 0.88rem;">
+                <label for="reg-role-key" style="margin-bottom: 4px;">등급 키 (영문 식별자) <span
+                    class="required">*</span></label>
+                <input type="text" id="reg-role-key" required placeholder="예: vip, res_manager"
+                  style="padding: 0.6rem 0.8rem; font-size: 0.88rem;">
               </div>
               <div class="form-group" style="margin-bottom: 0;">
-                <label for="reg-role-label" style="margin-bottom: 4px;">등급 표시이름 (한글 라벨) <span class="required">*</span></label>
-                <input type="text" id="reg-role-label" required placeholder="예: VIP 회원, 예약 매니저" style="padding: 0.6rem 0.8rem; font-size: 0.88rem;">
+                <label for="reg-role-label" style="margin-bottom: 4px;">등급 표시이름 (한글 라벨) <span
+                    class="required">*</span></label>
+                <input type="text" id="reg-role-label" required placeholder="예: VIP 회원, 예약 매니저"
+                  style="padding: 0.6rem 0.8rem; font-size: 0.88rem;">
               </div>
-              <button type="submit" class="btn btn-primary" style="height: 38px; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap;">등급 추가</button>
+              <button type="submit" class="btn btn-primary"
+                style="height: 38px; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap;">등급 추가</button>
             </form>
           </section>
- 
+
           <!-- 2. 등록된 등급 종류 목록 (하단 - 가로폭 100% 8열 넉넉한 공간) -->
           <section class="clinic-list-section" style="width: 100%;">
             <h2>등록된 등급 종류 및 세부 기능 권한 설정</h2>
@@ -142,13 +178,13 @@
                 <thead>
                   <tr>
                     <th>등급 키</th>
-                    <th>표시이름</th>
+                    <th>등급 명</th>
                     <th>관리자</th>
-                    <th>예약내역</th>
+                    <th>예약내역관리</th>
                     <th>병원관리</th>
                     <th>등급권한관리</th>
                     <th>회원리스트</th>
-                    <th>등급변경</th> <!-- 사용자 요청에 맞춰 '등급변경' 컬럼명으로 복원 -->
+                    <th>등급명 변경</th> <!-- 사용자 요청에 맞춰 '등급변경' 컬럼명으로 복원 -->
                   </tr>
                 </thead>
                 <tbody id="role-list">
@@ -159,7 +195,7 @@
               </table>
             </div>
           </section>
- 
+
         </div>
       </main>
     </div>
@@ -170,13 +206,25 @@
         <div class="table-controls"
           style="margin-bottom: 1.5rem; justify-content: space-between; align-items: center; display: flex;">
           <h2>가입 회원 목록 및 권한 변경</h2>
-          <button id="btn-refresh-users" class="btn-refresh">
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path fill="currentColor"
-                d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-            </svg>
-            새로고침
-          </button>
+          <!-- [레이아웃 교정] 우측 조작계 3가지 항목 그룹화 및 촘촘한 정렬 컨테이너 -->
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="btn-refresh-users" class="btn-refresh">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor"
+                  d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+              </svg>
+              새로고침
+            </button>
+            <select id="select-limit-users" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+              <option value="10">10개씩 보기</option>
+              <option value="20">20개씩 보기</option>
+              <option value="50">50개씩 보기</option>
+              <option value="100">100개씩 보기</option>
+            </select>
+            <select id="select-role-filter" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+              <option value="all">전체보기</option>
+            </select>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="admin-table">
@@ -252,6 +300,58 @@
                 <label for="reg-clinic-desc">병원설명 <span class="required">*</span></label>
                 <textarea id="reg-clinic-desc" rows="4" required placeholder="병원에 대한 상세 설명을 작성해 주세요."></textarea>
               </div>
+
+              <!-- [다국어 지원] 병원 다국어 번역 선택 입력란 (details 아코디언 형태로 평소엔 접어둠) -->
+              <details class="form-group" style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem; margin-top: 1rem; background: rgba(255,255,255,0.01);">
+                <summary style="font-weight: 600; color: #a5b4fc; cursor: pointer; outline: none; user-select: none;">🌐 다국어 번역 추가 입력 (선택사항)</summary>
+                <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                  
+                  <!-- 베트남어 (vi) 번역 입력 필드셋 -->
+                  <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                    <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇻🇳 베트남어 (Vietnamese)</legend>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                      <input type="text" id="reg-clinic-name-vi" placeholder="Tên bệnh viện (베트남어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-depts-vi" placeholder="Khoa điều trị (베트남어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-address-vi" placeholder="Địa chỉ (베트남어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <textarea id="reg-clinic-desc-vi" rows="2" placeholder="Mô tả bệnh viện (베트남어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                    </div>
+                  </fieldset>
+
+                  <!-- 일본어 (ja) 번역 입력 필드셋 -->
+                  <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                    <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇯🇵 일본어 (Japanese)</legend>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                      <input type="text" id="reg-clinic-name-ja" placeholder="病院名 (일본어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-depts-ja" placeholder="診療科目 (일본어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-address-ja" placeholder="住所 (일본어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <textarea id="reg-clinic-desc-ja" rows="2" placeholder="病院の説明 (일본어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                    </div>
+                  </fieldset>
+
+                  <!-- 중국어 (zh) 번역 입력 필드셋 -->
+                  <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                    <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇨🇳 중국어 (Chinese)</legend>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                      <input type="text" id="reg-clinic-name-zh" placeholder="医院名称 (중국어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-depts-zh" placeholder="诊疗科目 (중국어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-address-zh" placeholder="地址 (중국어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <textarea id="reg-clinic-desc-zh" rows="2" placeholder="医院介绍 (중국어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                    </div>
+                  </fieldset>
+
+                  <!-- 러시아어 (ru) 번역 입력 필드셋 -->
+                  <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                    <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇷🇺 러시아어 (Russian)</legend>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                      <input type="text" id="reg-clinic-name-ru" placeholder="Название клиники (러시아어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-depts-ru" placeholder="Медицинские отделения (러시아어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <input type="text" id="reg-clinic-address-ru" placeholder="Адрес клиники (러시아어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
+                      <textarea id="reg-clinic-desc-ru" rows="2" placeholder="Описание клиники (러시아어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                    </div>
+                  </fieldset>
+
+                </div>
+              </details>
               <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">병원 등록하기</button>
             </form>
           </section>

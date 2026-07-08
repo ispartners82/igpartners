@@ -7,6 +7,7 @@ import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/fir
  * UI 정적 문자열 및 오류 알림을 관리하기 위한 다국어(I18n) 사전 정의
  */
 const i18n = {
+  // 한국어 번역 리소스
   ko: {
     loading: "병원 목록을 불러오는 중입니다...",
     empty: "등록된 병원이 없습니다.",
@@ -21,6 +22,7 @@ const i18n = {
     modalClose: "닫기",
     modalTrigger: "로그인"
   },
+  // 베트남어 번역 리소스
   vi: {
     loading: "Đang tải danh sách bệnh viện...",
     empty: "Không có bệnh viện nào.",
@@ -35,6 +37,7 @@ const i18n = {
     modalClose: "Đóng",
     modalTrigger: "Đăng nhập"
   },
+  // 영어 번역 리소스
   en: {
     loading: "Loading clinic list...",
     empty: "No clinics found.",
@@ -49,6 +52,7 @@ const i18n = {
     modalClose: "Close",
     modalTrigger: "Sign in"
   },
+  // 일본어 번역 리소스
   ja: {
     loading: "病院リストを読み込んでいます...",
     empty: "登録された病院がありません。",
@@ -62,6 +66,171 @@ const i18n = {
     modalDescSub: "予約の申請および履歴確認のためにグローバルログインを行ってください。",
     modalClose: "閉じる",
     modalTrigger: "ログイン"
+  },
+  // 중국어 간체 번역 리소스
+  zh: {
+    loading: "正在加载医院列表...",
+    empty: "没有注册的医院。",
+    selectBtn: "立即预约",
+    loginRequired: "请先登录以进行预约。",
+    pageTitle: "选择医院",
+    pageSubtitle: "请选择您要进行诊疗预约的医院。",
+    changeLang: "更改语言",
+    modalTitle: "🔒 需要登录",
+    modalDescMain: "此服务需要登录。",
+    modalDescSub: "请完成谷歌登录以申请和确认预约。",
+    modalClose: "关闭",
+    modalTrigger: "登录"
+  },
+  // 러시아어 번역 리소스
+  ru: {
+    loading: "Загрузка списка клиник...",
+    empty: "Нет зарегистрированных клиник.",
+    selectBtn: "Забронировать сейчас",
+    loginRequired: "Пожалуйста, войдите в систему, чтобы продолжить бронирование.",
+    pageTitle: "Выбор клиники",
+    pageSubtitle: "Пожалуйста, выберите клинику для записи на прием.",
+    changeLang: "Сменить язык",
+    modalTitle: "🔒 Требуется вход",
+    modalDescMain: "Для этого сервиса требуется вход в систему.",
+    modalDescSub: "Пожалуйста, войдите через Google для отправки и проверки бронирования.",
+    modalClose: "Закрыть",
+    modalTrigger: "Войти"
+  },
+  // 미얀마어 번역 리소스
+  my: {
+    loading: "ဆေးရုံစာရင်းကို ဖွင့်နေပါသည်...",
+    empty: "မှတ်ပုံတင်ထားသော ဆေးရုံမရှိပါ။",
+    selectBtn: "ယခုပဲ ကြိုတင်ကတ်ပြားယူရန်",
+    loginRequired: "ကြိုတင်ကတ်ပြားရယူရန် ကျေးဇူးပြု၍ အရင် လော့ဂ်အင်ဝင်ပေးပါ။",
+    pageTitle: "ဆေးရုံရွေးချယ်ရန်",
+    pageSubtitle: "ကုသမှုခံယူရန် ဆေးရုံကို ရွေးချယ်ပေးပါ။",
+    changeLang: "ဘာသာစကားပြောင်းရန်",
+    modalTitle: "🔒 လော့ဂ်အင်ဝင်ရန် လိုအပ်သည်",
+    modalDescMain: "ဤဝန်ဆောင်မှုကို အသုံးပြုရန် လော့ဂ်အင်ဝင်ရန် လိုအပ်ပါသည်။",
+    modalDescSub: "ကြိုတင်စာင်းသွင်းမှုနှင့် အခြေအနေများကို စစ်ဆေးရန် Google အကောင့်ဖြင့် လော့ဂ်အင်ဝင်ပေးပါ။",
+    modalClose: "ပိတ်ရန်",
+    modalTrigger: "လော့ဂ်အင်ဝင်ရန်"
+  },
+  // 캄보디아어 (Khmer) 번역 리소스
+  km: {
+    loading: "កំពុងផ្ទុកបញ្ជីមន្ទីរពេទ្យ...",
+    empty: "មិនមានមន្ទីរពេទ្យដែលបានចុះឈ្មោះទេ។",
+    selectBtn: "កក់ឥឡូវនេះ",
+    loginRequired: "សូមចូលគណនីរបស់អ្នកជាមុនសិន ដើម្បីធ្វើការកក់ទុក។",
+    pageTitle: "ជ្រើសរើសមន្ទីរពេទ្យ",
+    pageSubtitle: "សូមជ្រើសរើសមន្ทีរពេទ្យដែលអ្នកចង់ទៅពិនិត្យ។",
+    changeLang: "ផ្លាស់ប្តូរភាសា",
+    modalTitle: "🔒 ត្រូវការចូលគណនី",
+    modalDescMain: "សេវាកម្មនេះតម្រូវឱ្យមានការចូលគណនី។",
+    modalDescSub: "សូមចូលគណនី Google ដើម្បីដាក់ពាក្យ និងពិនិត្យមើលការកក់ទុករបស់អ្នក។",
+    modalClose: "បិទ",
+    modalTrigger: "ចូលគណនី"
+  },
+  // 몽골어 번역 리소스
+  mn: {
+    loading: "Эмнэлгийн жагсаалтыг ачаалж байна...",
+    empty: "Бүртгэлтэй эмнэлэг байхгүй байна.",
+    selectBtn: "Одоо захиалах",
+    loginRequired: "Захиалга хийхийн тулд эхлээд нэвтэрнэ үү.",
+    pageTitle: "Эмнэлэг сонгох",
+    pageSubtitle: "Эмчилгээний захиалга хийх эмнэлгээ сонгоно уу.",
+    changeLang: "Хэл өөрчлөх",
+    modalTitle: "🔒 Нэвтрэх шаардлагатай",
+    modalDescMain: "Энэхүү үйлчилгээг ашиглахад нэвтрэх шаардлагатай.",
+    modalDescSub: "Захиалга хийх болон захиалгын түүхийг шалгахын тулд Google хаягаар нэвтэрнэ үү.",
+    modalClose: "Хаах",
+    modalTrigger: "Нэвтрэх"
+  },
+  // 태국어 번역 리소스
+  th: {
+    loading: "กำลังโหลดรายชื่อโรงพยาบาล...",
+    empty: "ไม่มีโรงพยาบาลที่ลงทะเบียนไว้",
+    selectBtn: "จองเลย",
+    loginRequired: "กรุณาเข้าสู่ระบบก่อนทำการจอง",
+    pageTitle: "เลือกโรงพยาบาล",
+    pageSubtitle: "กรุณาเลือกโรงพยาบาลที่คุณต้องการเข้ารับการรักษา",
+    changeLang: "เปลี่ยนภาษา",
+    modalTitle: "🔒 จำเป็นต้องเข้าสู่ระบบ",
+    modalDescMain: "บริการนี้จำเป็นต้องเข้าสู่ระบบ",
+    modalDescSub: "กรุณาเข้าสู่ระบบด้วย Google เพื่อจองและตรวจสอบประวัติการจอง",
+    modalClose: "ปิด",
+    modalTrigger: "เข้าสู่ระบบ"
+  },
+  // 라오스어 번역 리소스
+  lo: {
+    loading: "ກຳລັງໂຫລດລາຍຊື່ໂຮງໝໍ...",
+    empty: "ບໍ່ມີໂຮງໝໍທີ່ລົງທະບຽນ.",
+    selectBtn: "ຈອງຕອນນີ້",
+    loginRequired: "ກະລຸນາເຂົ້າສູ່ລະບົບກ່ອນເພື່ອດຳເນີນການຈອງ.",
+    pageTitle: "ເລືອກໂຮງໝໍ",
+    pageSubtitle: "ກະລຸນາເລືອກໂຮງໝໍທີ່ທ່ານຕ້ອງການເຂົ້າຮັບການກວດ.",
+    changeLang: "ປ່ຽນພາສາ",
+    modalTitle: "🔒 ຕ້ອງມີການເຂົ້າສູ່ລະບົບ",
+    modalDescMain: "ບໍລິການນີ້ຕ້ອງການການເຂົ້າສູ່ລະບົບ.",
+    modalDescSub: "ກະລຸນາເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີ Google ເພື່ອຈອງ ແລະ ກວດສອບປະຫວັດການຈອງ.",
+    modalClose: "ປິດ",
+    modalTrigger: "ເຂົ້າສູ່ລະບົບ"
+  },
+  // 네팔어 번역 리소스
+  ne: {
+    loading: "अस्पतालहरूको सूची लोड हुँदैछ...",
+    empty: "कुनै पनि अस्पताल दर्ता गरिएको छैन।",
+    selectBtn: "अहिले नै बुक गर्नुहोस्",
+    loginRequired: "कृपया बुकिङ जारी राख्न पहिले लगइन गर्नुहोस्।",
+    pageTitle: "अस्पताल छनोट गर्नुहोस्",
+    pageSubtitle: "कृपया उपचारको लागि अस्पताल छनोट गर्नुहोस्।",
+    changeLang: "भाषा परिवर्तन गर्नुहोस्",
+    modalTitle: "🔒 लगइन आवश्यक छ",
+    modalDescMain: "यो सेवा प्रयोग गर्न लगइन आवश्यक छ।",
+    modalDescSub: "बुकिङ आवेदन दिन र बुकिङ इतिहास हेर्न कृपया गुगल लगइन गर्नुहोस्।",
+    modalClose: "बन्द गर्नुहोस्",
+    modalTrigger: "लगइन"
+  },
+  // 인도네시아어 번역 리소스
+  id: {
+    loading: "Memuat daftar rumah sakit...",
+    empty: "Tidak ada rumah sakit yang terdaftar.",
+    selectBtn: "Pesan Sekarang",
+    loginRequired: "Silakan masuk terlebih dahulu untuk melanjutkan pemesanan.",
+    pageTitle: "Pilih Rumah Sakit",
+    pageSubtitle: "Silakan pilih rumah sakit untuk melakukan reservasi medis.",
+    changeLang: "Ubah Bahasa",
+    modalTitle: "🔒 Diperlukan Masuk",
+    modalDescMain: "Layanan ini memerlukan masuk log terlebih dahulu.",
+    modalDescSub: "Silakan masuk dengan akun Google Anda untuk melakukan dan memeriksa reservasi.",
+    modalClose: "Tutup",
+    modalTrigger: "Masuk"
+  },
+  // 스리랑카어 (Sinhala) 번역 리소스
+  si: {
+    loading: "රෝහල් ලැයිස්තුව පූරණය වෙමින් පවතී...",
+    empty: "ලියාපදිංចි රෝහල් කිසිවක් නැත.",
+    selectBtn: "දැන්ම වෙන්කරවා ගන්න",
+    loginRequired: "වෙන්කරවා ගැනීම සඳහා කරුණாකර පළමුව ලොග් වන්න.",
+    pageTitle: "රෝහල තෝරන්න",
+    pageSubtitle: "කරුණාකර ප්‍රතිකාර සඳහා රෝහලක් තෝරාගන්න.",
+    changeLang: "භාෂාව වෙනස් කරන්න",
+    modalTitle: "🔒 ඇතුල්වීම අවශ්‍යයි",
+    modalDescMain: "මෙම සේවාව සඳහා ලොග් වීම අවශ්‍ය වේ.",
+    modalDescSub: "වෙන්කරවා ගැනීම් සිදු කිරීමට සහ පරීක්ෂා කිරීමට කරුණาකර Google ගිණුමෙන් ලොග් වන්න.",
+    modalClose: "වසා දමන්න",
+    modalTrigger: "ලොග් වන්න"
+  },
+  // 방글라데시어 (Bengali) 번역 리소스
+  bn: {
+    loading: "হাসপাতালের তালিকা লোড হচ্ছে...",
+    empty: "কোন নিবন্ধিত হাসপাতাল নেই।",
+    selectBtn: "এখনই বুক করুন",
+    loginRequired: "বুকিং করতে অনুগ্রহ করে প্রথমে লগইন করুন।",
+    pageTitle: "হাসপাতাল নির্বাচন করুন",
+    pageSubtitle: "চিকিত্সার জন্য অনুগ্রহ করে একটি hospital নির্বাচন করুন।",
+    changeLang: "ভাষা পরিবর্তন করুন",
+    modalTitle: "🔒 লগইন প্রয়োজন",
+    modalDescMain: "এই পরিষেবাটির জন্য লগইন করা প্রয়োজন।",
+    modalDescSub: "বুকিং আবেদন করতে এবং বুকিংয়ের তথ্য দেখতে অনুগ্রহ করে গুগল লগইন করুন।",
+    modalClose: "বন্ধ করুন",
+    modalTrigger: "লগইন"
   }
 };
 
@@ -121,8 +290,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const clinicDesc = clinic[`desc_${currentLang}`] || clinic.desc || "";
         const clinicAddress = clinic[`address_${currentLang}`] || clinic.address || "";
 
-        // 진료과목 배지 HTML 구성
-        const deptBadges = (clinic.depts || [])
+        // 진료과목 배지 HTML 구성 (다국어 진료과목 필드 지원 연계)
+        const deptBadges = (clinic[`depts_${currentLang}`] || clinic.depts || [])
           .map(dept => `<span class="dept-badge">${dept}</span>`)
           .join("");
 

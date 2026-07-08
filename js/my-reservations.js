@@ -71,15 +71,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // 언어 매핑
+      // 예약 진행 시 선택한 언어 코드에 대응하는 언어명 표기 매핑 사전
       const langLabels = {
         "vi": "🇻🇳 베트남어 (Vietnamese)",
         "ko": "🇰🇷 한국어 (Korean)",
         "en": "🇺🇸 영어 (English)",
+        "ja": "🇯🇵 일본어 (Japanese)",
+        "zh": "🇨🇳 중국어 (Chinese)",
+        "ru": "🇷🇺 러시아어 (Russian)",
         "my": "🇲🇲 미얀마어 (Burmese)",
-        "kh": "🇰🇭 캄보디아어 (Khmer)",
-        "la": "🇱🇦 라오스어 (Lao)",
-        "np": "🇳🇵 네팔어 (Nepali)"
+        "km": "🇰🇭 캄보디아어 (Khmer)",
+        "kh": "🇰🇭 캄보디아어 (Khmer)", // 하위 호환용 캄보디아어 키 유지
+        "mn": "🇲🇳 몽골어 (Mongolian)",
+        "th": "🇹🇭 태국어 (Thai)",
+        "lo": "🇱🇦 라오스어 (Lao)",
+        "la": "🇱🇦 라오스어 (Lao)", // 하위 호환용 라오스어 키 유지
+        "ne": "🇳🇵 네팔어 (Nepali)",
+        "np": "🇳🇵 네팔어 (Nepali)", // 하위 호환용 네팔어 키 유지
+        "id": "🇮🇩 인도네시아어 (Indonesian)",
+        "si": "🇱🇰 스리랑카어 (Sinhala)",
+        "bn": "🇧🇩 방글라데시어 (Bengali)"
       };
       const displayLang = langLabels[data.lang] || (data.lang ? `🌐 ${data.lang}` : "-");
 

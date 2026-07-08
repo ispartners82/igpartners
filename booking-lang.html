@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="css/style.css?v=2.1.9">
 </head>
 
-<body>
+<body style="display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: flex-start;">
   <!-- 백그라운드 오로라 빛 장식 -->
   <div class="bg-decorations">
     <div class="aurora-1"></div>
@@ -209,31 +209,77 @@
     </main>
   </div>
 
+  <!-- 하단 푸터 (Footer) -->
+  <footer class="global-footer" style="width: 100%; margin-top: auto;">
+    <div class="footer-container">
+      <!-- 푸터 브랜드 설명 -->
+      <div class="footer-brand">
+        <span class="footer-logo-txt">IGPartners</span>
+        <p class="footer-brand-desc">
+          국내 최초의 글로벌 헬스케어 매칭 게이트웨이로서, 다국적 외국인 환자와 전문 의료진을 가장 안전하고 부드럽게 잇는 교두보가 되어 드리겠습니다.
+        </p>
+      </div>
+
+      <!-- 푸터 내 퀵링크 그룹 -->
+      <div class="footer-links">
+        <div class="footer-link-group">
+          <h4>서비스 안내</h4>
+          <ul>
+            <li><a href="/index.html#about">회사소개</a></li>
+            <li><a href="/index.html#services">제공 서비스</a></li>
+            <li><a href="/index.html#partners">협력사 네트워크</a></li>
+          </ul>
+        </div>
+        <div class="footer-link-group">
+          <h4>진료 예약</h4>
+          <ul>
+            <li><a href="booking-lang.html">예약신청 하기</a></li>
+            <li><a href="my-reservations.html">내 예약 조회</a></li>
+          </ul>
+        </div>
+        <div class="footer-link-group">
+          <h4>고객 지원</h4>
+          <ul>
+            <li><a href="#">이용약관</a></li>
+            <li><a href="#">개인정보처리방침</a></li>
+            <li><a href="mailto:support@igpartners.co.kr">이메일 문의</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 푸터 라이선스 및 저작권 정보 -->
+    <div class="footer-bottom">
+      <p>&copy; 2026 IGPartners Inc. All rights reserved.</p>
+      <p>대표자: IGPartners | 법인등록번호: 000-00-00000 | 대구 수성구 알파시티 1로 4길 8</p>
+    </div>
+  </footer>
+
   <!-- Firebase 및 공통 모듈 로드 -->
   <script type="module" src="js/navigation.js?v=2.1.9"></script>
   <script type="module" src="js/main.js?v=2.1.9"></script>
   <script type="module" src="/js/auth.js?v=2.1.9"></script>
 
-  <!-- 로그인 안내 모달 팝업 -->
+  <!-- 로그인 안내 모달 팝업 (베트남어 삭제 후 한국어(영어) 형태로 포맷 개선) -->
   <div id="login-required-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-content" style="max-width: 450px;">
       <div class="modal-header">
-        <h2>🔒 Yêu cầu đăng nhập (로그인 필요)</h2>
+        <h2>🔒 로그인 필요 (Login Required)</h2>
         <button id="btn-close-login-modal-x" class="modal-close-x">&times;</button>
       </div>
       <div class="modal-body" style="padding: 2rem; text-align: center;">
         <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.5;">
-          Dịch vụ này yêu cầu đăng nhập bằng tài khoản Google.<br>
-          (이 서비스는 구글 로그인이 필요합니다.)
+          구글 로그인이 필요한 서비스입니다.<br>
+          (This service requires a Google account login.)
         </p>
         <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0;">
-          Vui lòng đăng nhập để tiếp tục đặt lịch hẹn và xem lịch sử đặt hẹn của bạn.<br>
-          (예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.)
+          예약 신청 및 내역 확인을 위해 구글 로그인을 진행해 주세요.<br>
+          (Please sign in to proceed with clinic reservation and view history.)
         </p>
       </div>
       <div class="modal-footer" style="gap: 0.75rem; justify-content: center; padding: 1.2rem 2rem;">
-        <button id="btn-close-login-modal" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 90px;">Đóng (닫기)</button>
-        <button id="btn-trigger-login" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 110px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">Đăng nhập (로그인)</button>
+        <button id="btn-close-login-modal" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 90px;">닫기 (Close)</button>
+        <button id="btn-trigger-login" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 110px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">로그인 (Sign in)</button>
       </div>
     </div>
   </div>
