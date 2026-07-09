@@ -31,10 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <a href="/index.html" class="nav-link ${currentPath === "/" || currentPath.endsWith("index.html") ? "active" : ""}">홈</a>
           </li>
           <li class="nav-item">
-            <a href="/index.html#about" class="nav-link">회사소개</a>
+            <!-- 한글 주석: 회사소개 메뉴 클릭 시 외부 독립 회사소개 페이지(about.html)로 연결하도록 변경 -->
+            <a href="/about.html" class="nav-link ${currentPath.endsWith("about.html") ? "active" : ""}">회사소개</a>
           </li>
           <li class="nav-item">
-            <a href="/index.html#services" class="nav-link">제공 서비스</a>
+            <!-- 한글 주석: 제공 서비스 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 -->
+            <a href="/about.html#services" class="nav-link">제공 서비스</a>
           </li>
           <li class="nav-item">
             <a href="/index.html#partners" class="nav-link">협력 회사</a>
@@ -42,9 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <li class="nav-item">
             <a href="/booking-lang.html" class="nav-link btn-nav-booking ${currentPath.endsWith("booking-lang.html") ? "active" : ""}">진료 예약</a>
           </li>
-          <!-- 신규 추가: 진료 예약과 동일한 강조 디자인을 적용한 의료통역 메뉴 링크 -->
+          <!-- 한글 주석: 의료통역 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 -->
           <li class="nav-item">
-            <a href="/index.html#services" class="nav-link btn-nav-booking">의료통역</a>
+            <a href="/about.html#services" class="nav-link btn-nav-booking">의료통역</a>
           </li>
         </ul>
 
@@ -71,16 +73,16 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="nav-mobile-quick" id="nav-mobile-quick">
           <!-- 홈 바로가기 버튼 (집 아이콘) -->
           <a href="/index.html" class="quick-icon-btn ${currentPath === "/" || currentPath.endsWith("index.html") ? "active" : ""}" title="홈">🏠</a>
-          <!-- 회사소개 바로가기 버튼 (빌딩 아이콘) -->
-          <a href="/index.html#about" class="quick-icon-btn" title="회사소개">🏢</a>
-          <!-- 제공서비스 바로가기 버튼 (도구 아이콘) -->
-          <a href="/index.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
+          <!-- 한글 주석: 모바일 퀵 메뉴 회사소개 클릭 시 약속된 about.html 페이지로 연동 변경 -->
+          <a href="/about.html" class="quick-icon-btn ${currentPath.endsWith("about.html") ? "active" : ""}" title="회사소개">🏢</a>
+          <!-- 한글 주석: 모바일 퀵 메뉴 제공서비스 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 -->
+          <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
           <!-- 협력업체 바로가기 버튼 (악수 아이콘) -->
           <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
           <!-- 진료 예약 바로가기 버튼 (달력 아이콘) -->
           <a href="/booking-lang.html" class="quick-icon-btn ${currentPath.endsWith("booking-lang.html") ? "active" : ""}" title="진료 예약">📅</a>
-          <!-- 의료통역 바로가기 버튼 (지구본 아이콘) -->
-          <a href="/index.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
+          <!-- 한글 주석: 모바일 퀵 메뉴 의료통역 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 -->
+          <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
           <!-- 예약 내역 바로가기 버튼 (로그인 상태에 따라 auth.js에서 동적 표시) -->
           <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn ${currentPath.endsWith("my-reservations.html") ? "active" : ""}" style="display: none;" title="예약내역">📋</a>
           <!-- 관리자 대시보드 바로가기 버튼 (권한 등급에 따라 auth.js에서 동적 표시) -->

@@ -1427,6 +1427,8 @@ document.addEventListener("DOMContentLoaded", () => {
               data-deptsru="${(clinic.depts_ru || []).join(',').replace(/"/g, '&quot;')}"
               data-addressru="${(clinic.address_ru || '').replace(/"/g, '&quot;')}"
               data-descru="${(clinic.desc_ru || '').replace(/"/g, '&quot;')}"
+              /* [한글 주석] 병원 사진 수정을 위해 기존 이미지 데이터 전송 속성 추가 */
+              data-image="${(clinic.image || '').replace(/"/g, '&quot;')}"
               style="margin-right: 6px;"
             >수정</button>
             <button class="btn-action delete btn-delete-clinic" data-id="${docId}">삭제</button>
@@ -1653,6 +1655,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const curDeptsRu   = btn.getAttribute("data-deptsru") || "";
         const curAddressRu = btn.getAttribute("data-addressru") || "";
         const curDescRu    = btn.getAttribute("data-descru") || "";
+        /* [한글 주석] 병원 수정 폼에 로드하기 위해 기존 병원 사진의 Base64 데이터를 추출 */
+        const curImage     = btn.getAttribute("data-image") || "";
 
         // 인라인 수정 모달 동적 생성
         let editModal = document.getElementById("clinic-edit-modal");
@@ -1695,6 +1699,18 @@ document.addEventListener("DOMContentLoaded", () => {
             <textarea id="edit-clinic-desc" rows="4"
               style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
                      background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1rem; box-sizing:border-box; resize:vertical;">${curDesc}</textarea>
+            
+            <!-- [한글 주석] 병원 사진 수정 입력 폼 및 미리보기 디자인 영역 추가 -->
+            <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">병원 사진 수정</label>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem;">
+              <input id="edit-clinic-image-file" type="file" accept="image/*" style="display:none;">
+              <button id="btn-edit-clinic-image-trigger" class="btn btn-secondary" style="padding:0.4rem 1rem; font-size:0.8rem; border-radius:6px; cursor:pointer;" type="button">사진 선택</button>
+              <span id="edit-clinic-image-filename" style="color:rgba(255,255,255,0.4); font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;">선택된 파일 없음</span>
+            </div>
+            <!-- [한글 주석] 병원 이미지 미리보기 영역 (기존 이미지가 존재할 경우 기본 노출) -->
+            <div id="edit-clinic-image-preview-container" style="margin-bottom:1rem; display:${curImage ? 'block' : 'none'}; text-align:center;">
+              <img id="edit-clinic-image-preview" src="${curImage}" alt="Clinic Preview" style="max-width:100%; max-height:150px; border-radius:8px; border:1px solid rgba(165,180,252,0.3); object-fit:cover;">
+            </div>
             
             <!-- [다국어 지원] 다국어 번역 수정 아코디언 -->
             <details style="border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.8rem; margin-bottom:1.4rem; background:rgba(255,255,255,0.02);">
@@ -1760,6 +1776,75 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.body.appendChild(editModal);
 
+        /* [한글 주석] 병원 수정용 이미지 Base64를 저장할 변수 초기화 (기존 이미지 값을 기본값으로 설정) */
+        let editImageBase64 = curImage;
+
+        const editInputImage = document.getElementById("edit-clinic-image-file");
+        const editBtnTrigger = document.getElementById("btn-edit-clinic-image-trigger");
+        const editImgFilename = document.getElementById("edit-clinic-image-filename");
+        const editImgPreviewContainer = document.getElementById("edit-clinic-image-preview-container");
+        const editImgPreview = document.getElementById("edit-clinic-image-preview");
+
+        /* [한글 주석] 커스텀 디자인 버튼 클릭 시 실제 숨겨진 file input을 클릭해 파일 탐색기 노출 */
+        if (editBtnTrigger && editInputImage) {
+          editBtnTrigger.addEventListener("click", () => editInputImage.click());
+        }
+
+        /* [한글 주석] 파일이 새로 선택되면 신규 등록과 동일하게 최대 5MB 체크 및 Canvas 800px 리사이징 처리 실행 */
+        if (editInputImage) {
+          editInputImage.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 5MB 용량 제한
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+              alert("이미지 용량은 최대 5MB를 초과할 수 없습니다. (Image file exceeds 5MB limit.)");
+              editInputImage.value = "";
+              return;
+            }
+
+            if (editImgFilename) editImgFilename.textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const img = new Image();
+              img.onload = () => {
+                // Canvas 리사이징 처리 (가로 최대 800px)
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                
+                let width = img.width;
+                let height = img.height;
+                const maxDim = 800;
+
+                if (width > maxDim || height > maxDim) {
+                  if (width > height) {
+                    height = Math.round((height * maxDim) / width);
+                    width = maxDim;
+                  } else {
+                    width = Math.round((width * maxDim) / height);
+                    height = maxDim;
+                  }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // JPEG 압축 (75% 품질)
+                editImageBase64 = canvas.toDataURL("image/jpeg", 0.75);
+
+                // 미리보기 표출
+                if (editImgPreview) editImgPreview.src = editImageBase64;
+                if (editImgPreviewContainer) editImgPreviewContainer.style.display = "block";
+              };
+              img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
         // 취소 버튼
         document.getElementById("btn-edit-clinic-cancel").addEventListener("click", () => {
           editModal.remove();
@@ -1813,10 +1898,12 @@ document.addEventListener("DOMContentLoaded", () => {
           saveBtn.textContent = "저장 중...";
 
           try {
-            // Firestore 문서 업데이트 (다국어 필드도 덮어쓰기 업데이트 반영)
+            // Firestore 문서 업데이트 (다국어 필드 및 병원 사진 덮어쓰기 업데이트 반영)
             await updateDoc(doc(db, "clinics", docId), {
               name: newName,
               englishName: newEngName,
+              /* [한글 주석] 병원 수정 폼에서 수집 또는 기존 유지된 사진 Base64 데이터를 Firestore에 반영 */
+              image: editImageBase64,
               depts: newDepts,
               address: newAddress,
               desc: newDesc,
