@@ -2763,19 +2763,17 @@ body.home-page {
   min-height: 100vh;
   overflow-y: auto;
 }
-
-/* 웰컴 히어로 섹션 (웅장한 다크 오로라) */
+/* 웰컴 히어로 섹션 (웅장한 다크 오로라 - 높이를 절반으로 줄여 아래 광고판과의 간격 감축) */
 .hero-section {
   position: relative;
-  min-height: 90vh;
+  min-height: 45vh; /* 기존 90vh에서 45vh로 대폭 축소하여 간격을 감축함 */
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 8rem 2rem 4rem;
+  padding: 8rem 2rem 2rem; /* 하단 padding을 4rem에서 2rem으로 축소 */
   overflow: hidden;
 }
-
 /* 히어로 내부 빛 확산 */
 .hero-glow {
   position: absolute;
@@ -3306,26 +3304,26 @@ body.home-page {
     color: #ffffff;
   }
 
-  /* 세로형 슬라이딩 서랍 메뉴 디자인 정의 (가로 사이즈를 브랜드 로고 비례인 260px로 축소하고 우측 슬라이드로 최적화) */
+  /* 세로형 슬라이딩 서랍 메뉴 디자인 정의 (가로 사이즈를 210px로 축소하고 우측 슬라이드로 최적화) */
   .nav-menu {
     position: fixed;
     top: 80px;
-    right: -260px; /* 기존 left: -100% 대신 우측 숨김 상태로 레이아웃 이동 */
+    right: -210px; /* 기존 right: -260px에서 210px로 축소하여 컴팩트화 */
     left: auto; /* 좌측 정렬 초기화 */
-    width: 260px; /* 브랜드 로고 가로 영역 비례에 맞춰 컴팩트하게 260px로 고정 */
+    width: 210px; /* 가로폭을 컴팩트하게 210px로 고정하여 모바일 가용 화면 확보 */
     height: calc(100vh - 80px);
     background: rgba(12, 16, 32, 0.96); /* 일관된 프리미엄 다크 네이비 투명 광택 배경 적용 */
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     flex-direction: column;
-    padding: 1.5rem 1.25rem; /* [메뉴 간격 최적화] 세로 패딩 축소로 한눈에 들어오게 조정 (기존: 2.5rem 1.5rem) */
-    gap: 0.75rem; /* [메뉴 간격 최적화] 자식 요소 간의 수직 여백을 조밀하게 조정 (기존: 1.25rem) */
+    padding: 1.5rem 1.25rem; /* 세로 패딩 축소로 한눈에 들어오게 조정 */
+    gap: 0.75rem; /* 자식 요소 간의 수직 여백을 조밀하게 조정 */
     align-items: center; /* 메뉴 및 모든 구성 요소를 가로 정중앙 정렬 */
-    border-left: 1px solid rgba(99, 102, 241, 0.25); /* 프리미엄 우측 드로어 경계 실선 추가 */
+    border-left: 2px solid rgba(0, 243, 255, 0.85); /* 예쁜 형광 시안 테두리 변경 및 두께 확대 */
     border-top: none;
     transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     overflow-y: auto; /* 스크롤 활성화 */
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.45); /* 서랍장 입체감을 높이기 위한 부유 그림자 추가 */
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.45), -3px 0 12px rgba(0, 243, 255, 0.25); /* 예쁜 형광 글로우 그림자 추가 */
   }
 
   /* 스크롤 시 서랍 상단 위치 조율 */
@@ -3340,29 +3338,40 @@ body.home-page {
     left: auto;
   }
 
+  /* 모바일 네비게이션 아이템 부모 컨테이너 가로폭 강제 확장 (자식인 a 태그가 160px 크기를 온전히 가질 수 있게 보장) */
+  .nav-item {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   /* [디자인 일관성 적용] 서랍 내부 메뉴 링크를 하단 예약내역 버튼과 동일한 뱃지/버튼 스타일로 구현 */
   .nav-link {
-    font-size: 0.9rem; /* [폰트 통일] 뱃지 버튼 크기와 통일하기 위해 크기 축소 (기존: 1.15rem) */
-    width: 100%;
-    max-width: 180px; /* [너비 고정] 다른 모든 버튼들과 가로폭을 일치시켜 대칭 균형 형성 (기존: 100%) */
-    margin: 0 auto; /* 중앙 정렬 보장 */
-    box-sizing: border-box;
+    font-size: 0.9rem; /* 뱃지 버튼 크기와 통일하기 위해 크기 축소 */
+    width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
+    max-width: 160px !important;
+    margin: 0 auto !important; /* 중앙 정렬 보장 */
+    box-sizing: border-box !important;
     text-align: center; /* 메뉴 텍스트 정중앙 배치 */
-    padding: 0.6rem 1rem; /* [버튼 패딩] 뱃지 버튼과 높이감을 동일하게 맞춤 (기존: 0.6rem 0) */
-    background: rgba(255, 255, 255, 0.04); /* [배경 통일] 하단 예약내역 버튼과 동일한 반투명 다크 그레이 배경 */
-    border: 1px solid rgba(255, 255, 255, 0.08); /* [보더 통일] 하단 예약내역 버튼과 동일한 테두리 */
-    border-radius: 10px; /* [라운드 통일] 둥근 모서리 통일 (기존: border-bottom) */
+    padding: 0.6rem 1rem; /* 뱃지 버튼과 높이감을 동일하게 맞춤 */
+    background: rgba(255, 255, 255, 0.04); /* 하단 예약내역 버튼과 동일한 반투명 다크 그레이 배경 */
+    border: 1px solid rgba(0, 243, 255, 0.5) !important; /* 밝고 깨끗한 형광 시안 테두리선 적용 */
+    border-radius: 10px; /* 둥근 모서리 통일 */
     color: var(--text-secondary);
-    display: inline-block;
+    display: flex !important; /* 일치된 렌더링을 위해 flex로 통일 */
+    justify-content: center;
+    align-items: center;
     transition: var(--transition-smooth);
   }
 
   /* [디자인 일관성 적용] 서랍 내부 메뉴 링크 활성화/호버 시 디자인 */
   .nav-link:hover,
   .nav-link.active {
-    background: rgba(255, 255, 255, 0.08); /* [호버 효과] 하단 예약내역 버튼의 호버 배경과 일치 */
-    color: var(--text-primary);
-    border-color: rgba(255, 255, 255, 0.2); /* [테두리 강조] 호버 시 은은한 백색 테두리 노출 */
+    background: rgba(0, 243, 255, 0.08); /* 형광 시안 배경 반사 효과 */
+    color: #ffffff;
+    border-color: rgba(0, 243, 255, 1) !important; /* 호버 시 가장 밝은 100% 불투명도 형광 시안 테두리 노출 */
+    box-shadow: 0 0 8px rgba(0, 243, 255, 0.35); /* 테두리 글로우 네온 효과 추가 */
   }
 
   .nav-link::after {
@@ -3371,59 +3380,63 @@ body.home-page {
 
   /* [디자인 일관성 적용] 예약 및 의료통역 버튼을 하단 관리자 버튼과 일치하는 강조형 그라데이션 뱃지로 수정 */
   .btn-nav-booking {
-    display: inline-block; /* [레이아웃 버그 수정] inline-block 속성을 부여하여 가로폭(width) 설정 활성화 및 상하 공간 침범 방지 */
-    width: 100%;
-    max-width: 180px; /* 로고 사이즈에 맞춰 180px로 한계 설정 */
+    display: flex !important; /* 레이아웃 버그 및 하단 관리자 버튼과의 정렬 일치를 위해 flex로 전환 */
+    justify-content: center;
+    align-items: center;
+    width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
+    max-width: 160px !important;
     text-align: center;
-    border-radius: 10px !important; /* [라운드 통일] 모서리 통일 */
-    padding: 0.6rem 1rem !important; /* [패딩 통일] 일반 메뉴 버튼들과 높이 일관성 매칭 (기존: 0.7rem) */
-    margin: 0 auto; /* [간격 평준화] 추가 마진을 제거하여 드로어 공통 gap(0.75rem)에 의해 모든 메뉴 간격이 동일하게 일치되도록 수정 */
-    box-sizing: border-box;
-    border-bottom: none !important; /* [미관 개선] 일반 메뉴의 얇은 하단 경계선이 보더 버튼 아래 중복으로 비치지 않도록 강제 제거 */
-    /* [스타일 일관성] 관리자 버튼과 비견되는 인디고-퍼플 프리미엄 그라데이션 뱃지 적용 */
+    border-radius: 10px !important; /* 모서리 통일 */
+    padding: 0.6rem 1rem !important; /* 일반 메뉴 버튼들과 높이 일관성 매칭 */
+    margin: 0 auto !important; /* 추가 마진을 제거하여 드로어 공통 gap에 의해 모든 메뉴 간격이 동일하게 일치되도록 수정 */
+    box-sizing: border-box !important;
+    border-bottom: none !important; /* 일반 메뉴의 얇은 하단 경계선이 보더 버튼 아래 중복으로 비치지 않도록 강제 제거 */
+    /* 스타일 일관성: 관리자 버튼과 비견되는 인디고-퍼플 프리미엄 그라데이션 뱃지 적용 */
     background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%) !important;
-    border: none !important;
+    border: 1px solid rgba(0, 243, 255, 0.75) !important; /* 밝고 깨끗한 형광 시안 테두리선 강제 추가 */
     color: #ffffff !important;
-    font-size: 0.9rem; /* [폰트 통일] 다른 버튼들과 통일 */
+    font-size: 0.9rem; /* 다른 버튼들과 통일 */
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); /* 입체적인 뱃지 느낌을 위한 그림자 */
   }
 
   /* [디자인 일관성 적용] 예약 및 의료통역 버튼 호버 시 스타일 */
   .btn-nav-booking:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4) !important;
+    border-color: rgba(0, 243, 255, 1) !important; /* 호버 시 형광 시안 100% 강조 */
+    box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4), 0 0 10px rgba(0, 243, 255, 0.4) !important;
   }
 
   /* 서랍 내 삽입되는 동적 로그인 영역 컨테이너 (가운데 정렬) */
   .nav-auth-area {
     margin-left: 0;
-    margin-top: 1.25rem; /* [간격 최적화] 로그인 영역 이전 여백 축소 (기존: 2rem) */
-    padding-top: 1.25rem; /* [간격 최적화] 안쪽 상단 패딩 축소 (기존: 2rem) */
+    margin-top: 1.25rem; /* 로그인 영역 이전 여백 축소 */
+    padding-top: 1.25rem; /* 안쪽 상단 패딩 축소 */
     border-top: 1px solid rgba(255, 255, 255, 0.08); /* 구분 실선 추가 */
     width: 100%;
     display: flex;
     justify-content: center; /* 로고 너비에 맞춰 정중앙 정렬 */
   }
 
-  /* 로그인 유저 뱃지 세로 배열 정의 (가로 폭 고정 제한 및 중앙 배치 - 로고 사이즈에 맞춰 180px로 대폭 축소) */
+  /* 로그인 유저 뱃지 세로 배열 정의 (가로 폭 고정 제한 및 중앙 배치 - 로고 사이즈에 맞춰 160px로 대폭 축소) */
   .auth-user-badge {
     flex-direction: column;
     align-items: center; /* 로고와 균형을 위해 세로 정중앙 배치 */
-    width: 100%;
-    max-width: 180px; /* 로고의 실질 가로 너비 비율에 맞춰 최대 크기를 180px로 대폭 축소 */
-    margin: 0 auto;
-    gap: 0.5rem; /* [간격 최적화] 세로 정렬 시 버튼 간 간격을 콤팩트하게 튜닝 (기존: 0.6rem) */
+    width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
+    max-width: 160px !important;
+    margin: 0 auto !important;
+    gap: 0.5rem; /* 세로 정렬 시 버튼 간 간격을 콤팩트하게 튜닝 */
   }
 
   /* 프로필 캡슐 가로폭 제한 정렬 */
   .user-capsule {
-    width: 100%;
+    width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
+    max-width: 160px !important;
     justify-content: center; /* 캡슐 내부 이름 정중앙 정렬 */
-    padding: 0.4rem 0.8rem; /* [간격 최적화] 안쪽 패딩 조율로 콤팩트화 (기존: 0.5rem 1rem) */
+    padding: 0.4rem 0.8rem; /* 안쪽 패딩 조율로 콤팩트화 */
     background: rgba(255, 255, 255, 0.06);
-    box-sizing: border-box;
-    border-radius: 10px; /* [라운드 통일] 10px로 다른 버튼들과 완벽히 일치 (기존: 12px) */
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-sizing: border-box !important;
+    border-radius: 10px; /* 다른 버튼들과 모서리 둥글기 일치 */
+    border: 1px solid rgba(0, 243, 255, 0.6) !important; /* 프로필 캡슐에도 밝고 깨끗한 형광 시안 테두리선 적용 */
   }
 
   .user-avatar {
@@ -3438,41 +3451,60 @@ body.home-page {
 
   /* 서랍용 예약내역 및 관리자 버튼 터치 영역 보정 (로고 비례 아담화) */
   .btn-nav-action {
-    width: 100%;
+    width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
+    max-width: 160px !important;
     justify-content: center;
-    padding: 0.6rem 1rem; /* [패딩 통일] 다른 버튼들과 상하 높이 통일 (기존: 0.75rem) */
+    padding: 0.6rem 1rem; /* 다른 버튼들과 상하 높이 통일 */
     font-size: 0.9rem;
     border-radius: 10px;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
+    border: 1px solid rgba(0, 243, 255, 0.6) !important; /* 예약내역, 관리자 버튼 등에도 형광 시안 테두리 부여 */
+    display: flex !important; /* 레이아웃 어긋남 방지를 위해 inline-flex에서 flex로 일관성 정렬 */
+  }
+
+  .btn-nav-action:hover {
+    border-color: rgba(0, 243, 255, 1) !important;
+    box-shadow: 0 0 8px rgba(0, 243, 255, 0.35) !important;
   }
 
   /* 서랍용 로그아웃 버튼 디자인 보정 (가독성을 위한 배경 톤 및 크기 제한) */
   .btn-nav-logout {
-    width: 100%;
+    width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
+    max-width: 160px !important;
     text-align: center;
-    padding: 0.6rem 1rem; /* [패딩 통일] 다른 버튼들과 상하 높이 통일 (기존: 0.75rem) */
+    padding: 0.6rem 1rem; /* 다른 버튼들과 상하 높이 통일 */
     font-size: 0.9rem;
     background: rgba(244, 63, 94, 0.08);
     color: #fda4af;
     border-radius: 10px;
     margin-top: 0.25rem;
+    box-sizing: border-box !important; /* 패딩으로 인한 가로 폭 비대화 방지 */
+    border: 1px solid rgba(244, 63, 94, 0.6) !important; /* 로그아웃 버튼은 기능별 구분을 위해 붉은 형광 테두리 적용 */
   }
 
   .btn-nav-logout:hover {
     background: rgba(244, 63, 94, 0.12);
     text-decoration: none;
+    border-color: rgba(244, 63, 94, 1) !important;
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.4) !important;
   }
 
-  /* 서랍용 로그인 유도 버튼 최적화 (가로 폭 똑같이 180px로 제한) */
+  /* 서랍용 로그인 유도 버튼 최적화 (가로 폭 똑같이 160px로 제한) */
   .btn-nav-login {
-    width: 100%;
-    max-width: 180px; /* 로그인 유도 버튼 가로 폭도 똑같이 180px로 제한 */
-    margin: 0 auto;
+    width: 160px !important; /* 로그인 유도 버튼 가로 폭도 똑같이 160px로 제한 */
+    max-width: 160px !important;
+    margin: 0 auto !important;
     text-align: center;
-    padding: 0.6rem 1rem; /* [패딩 통일] 다른 버튼들과 상하 높이 통일 (기존: 0.85rem) */
-    font-size: 0.9rem; /* [폰트 통일] (기존: 0.95rem) */
-    border-radius: 10px; /* [라운드 통일] (기존: 12px) */
-    box-sizing: border-box;
+    padding: 0.6rem 1rem; /* 다른 버튼들과 상하 높이 통일 */
+    font-size: 0.9rem;
+    border-radius: 10px;
+    box-sizing: border-box !important;
+    border: 1px solid rgba(0, 243, 255, 0.8) !important; /* 로그인 유도 버튼에도 형광 시안 테두리 적용 */
+  }
+
+  .btn-nav-login:hover {
+    border-color: rgba(0, 243, 255, 1) !important;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.4) !important;
   }
 }
 
@@ -3751,3 +3783,159 @@ body.home-page {
     display: none;
   }
 }
+
+/* ==========================================================================
+   19. 홈페이지 슬라이딩 광고 타일 그리드 (Aesthetic Ad Slides Grid)
+   ========================================================================== */
+
+/* 한 줄에 4개씩 8개 카드가 배치되는 4열 그리드 레이아웃 */
+.ad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+/* 개별 광고 카드 스타일 (글래스모피즘 효과 및 형광 시안 테두리 조화) */
+.ad-card {
+  background: rgba(17, 22, 50, 0.65);
+  border: 1px solid rgba(0, 243, 255, 0.25); /* 기본 얇은 형광 시안 테두리선 */
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  height: 340px; /* 세로 높이 고정 */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+/* 광고 카드 마우스 호버 시 글로우 광택 효과 */
+.ad-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0, 243, 255, 0.85); /* 호버 시 테두리 형광 강조 */
+  box-shadow: 0 16px 35px rgba(0, 243, 255, 0.15), 0 0 15px rgba(0, 243, 255, 0.25);
+  background: rgba(17, 22, 50, 0.85);
+}
+
+/* 자동 이미지 슬라이더 영역 래퍼 */
+.ad-slide-wrapper {
+  position: relative;
+  width: 100%;
+  height: 180px; /* 이미지 영역 세로 높이 */
+  overflow: hidden;
+  background: #060913;
+}
+
+/* 슬라이딩용 이미지 기본 상태 (절대 배치 후 페이드 아웃) */
+.ad-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0; /* 평소엔 투명화 */
+  transform: scale(1.02);
+  transition: opacity 0.8s ease-in-out, transform 4s ease-in-out; /* 페이드와 함께 줌 인 애니메이션 */
+  z-index: 1;
+}
+
+/* 활성화되어 화면에 노출되는 이미지 상태 */
+.ad-slide.active {
+  opacity: 1; /* 활성화 시 노출 */
+  transform: scale(1);
+  z-index: 2;
+}
+
+/* 카드 하단 정보 설명 영역 */
+.ad-info {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-grow: 1;
+  z-index: 3;
+  position: relative;
+}
+
+/* 광고 카테고리 태그 뱃지 */
+.ad-tag {
+  font-size: 0.75rem;
+  color: #00f3ff; /* 형광 시안 포인트 컬러 */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 광고 타이틀 제목 */
+.ad-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* 광고 설명 텍스트 */
+.ad-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+/* ==========================================================================
+   반응형 그리드 조율 미디어 쿼리 (1024px이하 2열, 600px이하 1열)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .ad-grid {
+    grid-template-columns: repeat(2, 1fr); /* 태블릿에서는 2열로 정렬 */
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .ad-grid {
+    grid-template-columns: 1fr; /* 소형 모바일에서는 1열로 정렬 */
+    gap: 1rem;
+  }
+}
+
+/* ==========================================================================
+   20. 광고 배너 관리 폼 전용 어드민 스타일 (Ad CRUD Admin Panel)
+   ========================================================================== */
+
+/* URL 입력창 개별 필드 스타일 */
+.ad-image-url {
+  background: #0c1020 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(0, 243, 255, 0.25) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease-in-out;
+}
+
+/* URL 입력창 포커스 시 네온 라이트 효과 */
+.ad-image-url:focus {
+  outline: none;
+  border-color: rgba(0, 243, 255, 0.95) !important;
+  box-shadow: 0 0 8px rgba(0, 243, 255, 0.3) !important;
+}
+
+/* URL 목록 컨테이너 내부 행 여백 조절 */
+.ad-url-row {
+  margin-bottom: 0.15rem;
+}
+
+/* 광고 테이블 목록 내 배지 스타일 */
+#admin-ad-list td .badge {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+}
+

@@ -267,24 +267,35 @@ document.addEventListener("DOMContentLoaded", () => {
   container.innerHTML = `<div class="table-loading" style="grid-column: span 3; text-align: center; padding: 3rem; color: #a5b4fc;">${dict.loading}</div>`;
 
   // 3. Firestore에서 병원 데이터 로드 시작
-  // [성능 최적화] onSnapshot 실시간 리스너 대신 getDocs 일회성 조회 사용
-  // - 병원 목록은 관리자가 수정할 때만 바뀌므로 실시간 감시가 필요 없습니다.
-  // - onSnapshot은 탭을 열어 두는 동안 지속적으로 Firestore 연결을 유지하며 읽기 과금이 발생합니다.
-  const q = query(collection(db, "clinics"), orderBy("createdAt", "asc"));
+  // [한글 주석: 관리자가 순서 이동(Swap) 조정한 순번 order 오름차순 기준으로 병원 목록을 쿼리 정렬]
+  const q = query(collection(db, "clinics"), orderBy("order", "asc"));
 
   (async () => {
     try {
-      const querySnapshot = await getDocs(q);
+      // [한글 주석: 세션 스토리지 기반 병원 목록 캐싱 적용으로 불필요한 Firestore DB 읽기 0회로 최적화]
+      const cachedData = sessionStorage.getItem("cached_clinics_list");
+      let clinicsData = [];
+
+      if (cachedData) {
+        clinicsData = JSON.parse(cachedData);
+        console.log("Clinics list loaded from Session Cache (0 Firestore Read cost)");
+      } else {
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((docSnap) => {
+          clinicsData.push(docSnap.data());
+        });
+        sessionStorage.setItem("cached_clinics_list", JSON.stringify(clinicsData));
+        console.log("Clinics list loaded from Firestore DB and cached");
+      }
+
       container.innerHTML = "";
 
-      if (querySnapshot.empty) {
+      if (clinicsData.length === 0) {
         container.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dict.empty}</div>`;
         return;
       }
 
-      querySnapshot.forEach((docSnap) => {
-        const clinic = docSnap.data();
-        
+      clinicsData.forEach((clinic) => {
         // 언어에 맞는 병원 필드 동적 매핑 (만약 전용 다국어 필드가 없으면 하위 호환을 위해 기본값 fallback)
         const clinicName = clinic[`name_${currentLang}`] || clinic.name || "";
         const clinicDesc = clinic[`desc_${currentLang}`] || clinic.desc || "";

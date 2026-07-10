@@ -12,7 +12,8 @@ import {
   deleteDoc,
   addDoc,
   setDoc,
-  limit
+  limit,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -22,8 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tabReservations = document.getElementById("tab-reservations");
   const tabUsers = document.getElementById("tab-users");
+  // [디자인/기능 개편] 광고 배너 관리를 위한 신규 탭 버튼 및 패널 요소 캐싱
+  const tabAds = document.getElementById("tab-ads");
   const contentReservations = document.getElementById("content-reservations");
   const contentUsers = document.getElementById("content-users");
+  const contentAds = document.getElementById("content-ads");
 
   const userList = document.getElementById("user-list");
   const btnRefreshUsers = document.getElementById("btn-refresh-users");
@@ -44,6 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentRoleFilter = localStorage.getItem("admin_user_role_filter") || "all";
   // [예약 언어 필터] 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
   let currentLangFilter = localStorage.getItem("admin_reservation_lang_filter") || "all";
+  // [한글 주석: 예약 검색 필터] 실시간 검색어 상태 변수 (기본값: 빈 문자열)
+  let currentSearchQuery = "";
 
   // 통계 업데이트 함수 정의
   function updateStats(total, pending, confirmed, cancelled) {
@@ -263,6 +269,25 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentLangFilter !== "all") {
           filteredLocal = initialLocalItems.filter(item => item.lang === currentLangFilter);
         }
+        // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입]
+        if (currentSearchQuery) {
+          filteredLocal = filteredLocal.filter(item => {
+            const name = (item.name || "").toLowerCase();
+            const phone = (item.phone || "").toLowerCase();
+            const symptoms = (item.symptoms || "").toLowerCase();
+            const clinic = (item.clinic || "").toLowerCase();
+            const alienNo = (item.alienNo || "").toLowerCase();
+            const passportNo = (item.passportNo || "").toLowerCase();
+            const visaType = (item.visaType || "").toLowerCase();
+            return name.includes(currentSearchQuery) || 
+                   phone.includes(currentSearchQuery) || 
+                   symptoms.includes(currentSearchQuery) || 
+                   clinic.includes(currentSearchQuery) ||
+                   alienNo.includes(currentSearchQuery) ||
+                   passportNo.includes(currentSearchQuery) ||
+                   visaType.includes(currentSearchQuery);
+          });
+        }
         const sortedLocal = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         // 제한 수량만큼 잘라내어 초기 렌더링 (전체 목록 전달)
         renderReservations(sortedLocal.slice(0, currentLimit), initialLocalItems);
@@ -331,6 +356,25 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentLangFilter !== "all") {
         filteredItems = sortedItems.filter(item => item.lang === currentLangFilter);
       }
+      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입]
+      if (currentSearchQuery) {
+        filteredItems = filteredItems.filter(item => {
+          const name = (item.name || "").toLowerCase();
+          const phone = (item.phone || "").toLowerCase();
+          const symptoms = (item.symptoms || "").toLowerCase();
+          const clinic = (item.clinic || "").toLowerCase();
+          const alienNo = (item.alienNo || "").toLowerCase();
+          const passportNo = (item.passportNo || "").toLowerCase();
+          const visaType = (item.visaType || "").toLowerCase();
+          return name.includes(currentSearchQuery) || 
+                 phone.includes(currentSearchQuery) || 
+                 symptoms.includes(currentSearchQuery) || 
+                 clinic.includes(currentSearchQuery) ||
+                 alienNo.includes(currentSearchQuery) ||
+                 passportNo.includes(currentSearchQuery) ||
+                 visaType.includes(currentSearchQuery);
+        });
+      }
 
       // 6. 렌더링 호출 (지정된 limit 크기만큼 최종 슬라이스하고 전체 목록 sortedItems 전달)
       renderReservations(filteredItems.slice(0, currentLimit), sortedItems);
@@ -351,6 +395,25 @@ document.addEventListener("DOMContentLoaded", () => {
       let filteredLocal = localItems;
       if (currentLangFilter !== "all") {
         filteredLocal = localItems.filter(item => item.lang === currentLangFilter);
+      }
+      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입]
+      if (currentSearchQuery) {
+        filteredLocal = filteredLocal.filter(item => {
+          const name = (item.name || "").toLowerCase();
+          const phone = (item.phone || "").toLowerCase();
+          const symptoms = (item.symptoms || "").toLowerCase();
+          const clinic = (item.clinic || "").toLowerCase();
+          const alienNo = (item.alienNo || "").toLowerCase();
+          const passportNo = (item.passportNo || "").toLowerCase();
+          const visaType = (item.visaType || "").toLowerCase();
+          return name.includes(currentSearchQuery) || 
+                 phone.includes(currentSearchQuery) || 
+                 symptoms.includes(currentSearchQuery) || 
+                 clinic.includes(currentSearchQuery) ||
+                 alienNo.includes(currentSearchQuery) ||
+                 passportNo.includes(currentSearchQuery) ||
+                 visaType.includes(currentSearchQuery);
+        });
       }
       const finalItems = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       // 제한 수량만큼 잘라내어 렌더링 (전체 목록 전달)
@@ -470,80 +533,139 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // [한글 주석: 예약 검색 필터] 검색 버튼 클릭 및 엔터 키 입력 시 검색 처리 (실시간 검색 이벤트 대체)
+  const inputSearchReservations = document.getElementById("input-search-reservations");
+  const btnSearchReservations = document.getElementById("btn-search-reservations");
+
+  function executeSearch() {
+    if (inputSearchReservations) {
+      currentSearchQuery = inputSearchReservations.value.toLowerCase().trim();
+      loadReservations(false); // 입력한 검색어로 목록 갱신
+    }
+  }
+
+  if (inputSearchReservations) {
+    inputSearchReservations.value = currentSearchQuery;
+
+    // 엔터 키 입력 시 검색 실행
+    inputSearchReservations.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        executeSearch();
+      }
+    });
+  }
+
+  if (btnSearchReservations) {
+    // 검색 버튼 클릭 시 검색 실행
+    btnSearchReservations.addEventListener("click", () => {
+      executeSearch();
+    });
+  }
+
+
+  // [성능 및 정합성 최적화] 관리자 권한을 파악하고 UI를 제어하는 함수
+  // [한글 주석: 권한 기반 UI 탭 제어를 전담 처리하는 리팩토링된 헬퍼 함수]
+  function applyPermissionsUI(permissions) {
+    const tabReservations = document.getElementById("tab-reservations");
+    const tabUsers = document.getElementById("tab-users");
+    const tabPermissions = document.getElementById("tab-permissions");
+    const tabClinics = document.getElementById("tab-clinics");
+    const tabAds = document.getElementById("tab-ads");
+
+    if (tabReservations) {
+      tabReservations.style.display = permissions.hasReservations ? "inline-block" : "none";
+    }
+    if (tabUsers) {
+      tabUsers.style.display = permissions.hasRoles ? "inline-block" : "none";
+    }
+    if (tabPermissions) {
+      tabPermissions.style.display = permissions.hasPermissions ? "inline-block" : "none";
+    }
+    if (tabClinics) {
+      tabClinics.style.display = permissions.hasClinics ? "inline-block" : "none";
+    }
+    if (tabAds) {
+      tabAds.style.display = permissions.hasAds ? "inline-block" : "none";
+    }
+
+    // 활성화 탭 강제 튕김 보정
+    const activeTab = document.querySelector(".tab-btn.active");
+    if (activeTab) {
+      if (activeTab.id === "tab-clinics" && !permissions.hasClinics) {
+        if (tabReservations) tabReservations.click();
+      } else if (activeTab.id === "tab-ads" && !permissions.hasAds) {
+        if (tabReservations) tabReservations.click();
+      } else if (activeTab.id === "tab-users" && !permissions.hasRoles) {
+        if (tabReservations) tabReservations.click();
+      } else if (activeTab.id === "tab-permissions" && !permissions.hasPermissions) {
+        if (tabReservations) tabReservations.click();
+      }
+    }
+  }
+
   // [성능 및 정합성 최적화] 관리자 권한을 파악하고 UI를 제어하는 함수
   async function verifyAndApplyPermissions(user, forceRefresh = false) {
     if (!user) return false;
 
-    const cacheKey = `admin_permissions_cache_${user.uid}`;
-    
-    // 강제 새로고침 플래그가 참인 경우 세션스토리지 캐시 무효화
-    if (forceRefresh) {
-      sessionStorage.removeItem(cacheKey);
-      if (typeof window.clearUserRoleCache === "function") {
-        window.clearUserRoleCache(user.uid);
-      }
-    }
-
-    let cachedData = null;
-    try {
+    // [한글 주석: 세션 캐시 검색 및 복원 처리로 불필요한 Firestore 유저/등급 getDoc 요금 차단]
+    const cacheKey = `admin_permissions_${user.uid}`;
+    if (!forceRefresh) {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
-        cachedData = JSON.parse(cached);
+        const cachedObj = JSON.parse(cached);
+        console.log("Admin permissions restored from Session Cache (0 Firestore Read cost)");
+        currentLoginUserRole = cachedObj.role;
+        applyPermissionsUI(cachedObj.permissions);
+        return cachedObj.permissions;
       }
-    } catch (e) {
-      console.error("Failed to parse cached admin permissions:", e);
     }
 
     let permissions = null;
     let userRole = null;
 
-    if (cachedData) {
-      userRole = cachedData.role;
-      permissions = cachedData.permissions;
-      console.log("Cached admin role and permissions loaded:", userRole);
-    } else {
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
 
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        userRole = userData.role || "user";
-        
-        // 등급 문서로부터 5가지 권한 로드
-        const roleDocRef = doc(db, "roles", userRole);
-        const roleDocSnap = await getDoc(roleDocRef);
-        
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      userRole = userData.role || "user";
+      
+      // 등급 문서로부터 5가지 권한 로드
+      const roleDocRef = doc(db, "roles", userRole);
+      const roleDocSnap = await getDoc(roleDocRef);
+      
+      permissions = {
+        isAdmin: false,
+        hasReservations: false,
+        hasClinics: false,
+        hasRoles: false,
+        hasPermissions: false,
+        hasStats: false,
+        hasAds: false
+      };
+
+      if (roleDocSnap.exists()) {
+        const roleData = roleDocSnap.data();
+        // DB 로드 데이터 바인딩 + 누락 필드가 있을 경우 등급키 성격에 따라 하위 호환 롤백 가드 적용 (100% 진입 성공 보장)
         permissions = {
-          isAdmin: false,
-          hasReservations: false,
-          hasClinics: false,
-          hasRoles: false,
-          hasPermissions: false
+          isAdmin: roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+          hasReservations: roleData.hasReservations !== undefined ? roleData.hasReservations : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+          hasClinics: roleData.hasClinics !== undefined ? roleData.hasClinics : ["super_admin", "admin", "admin_user"].includes(userRole),
+          hasRoles: roleData.hasRoles !== undefined ? roleData.hasRoles : (userRole === "super_admin"),
+          hasPermissions: roleData.hasPermissions !== undefined ? roleData.hasPermissions : (userRole === "super_admin"),
+          hasStats: roleData.hasStats !== undefined ? roleData.hasStats : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+          // [한글 주석: DB에서 로드된 광고배너관리 권한 바인딩 및 super_admin 가드]
+          hasAds: roleData.hasAds !== undefined ? roleData.hasAds : (userRole === "super_admin")
         };
-
-        if (roleDocSnap.exists()) {
-          const roleData = roleDocSnap.data();
-          // DB 로드 데이터 바인딩 + 누락 필드가 있을 경우 등급키 성격에 따라 하위 호환 롤백 가드 적용 (100% 진입 성공 보장)
-          permissions = {
-            isAdmin: roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
-            hasReservations: roleData.hasReservations !== undefined ? roleData.hasReservations : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
-            hasClinics: roleData.hasClinics !== undefined ? roleData.hasClinics : ["super_admin", "admin", "admin_user"].includes(userRole),
-            hasRoles: roleData.hasRoles !== undefined ? roleData.hasRoles : (userRole === "super_admin"),
-            hasPermissions: roleData.hasPermissions !== undefined ? roleData.hasPermissions : (userRole === "super_admin")
-          };
-        } else {
-          // 예외 상황: roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
-          if (userRole === "super_admin") {
-            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true };
-          } else if (["admin", "admin_user"].includes(userRole)) {
-            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false };
-          } else if (["top_manager", "res_manager"].includes(userRole)) {
-            permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false };
-          }
+      } else {
+        // 예외 상황: roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
+        if (userRole === "super_admin") {
+          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasStats: true, hasAds: true };
+        } else if (["admin", "admin_user"].includes(userRole)) {
+          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false };
+        } else if (["top_manager", "res_manager"].includes(userRole)) {
+          permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false };
         }
-
-        // 세션 캐시에 보관
-        sessionStorage.setItem(cacheKey, JSON.stringify({ role: userRole, permissions }));
       }
     }
 
@@ -551,44 +673,19 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(`Access granted for role: ${userRole}`);
       currentLoginUserRole = userRole; // 등급 캐싱
       
-      // 동적으로 탭 노출 여부 온오프 스위칭
-      const tabReservations = document.getElementById("tab-reservations");
-      const tabUsers = document.getElementById("tab-users");
-      const tabPermissions = document.getElementById("tab-permissions");
-      const tabClinics = document.getElementById("tab-clinics");
-
-      if (tabReservations) {
-        tabReservations.style.display = permissions.hasReservations ? "inline-block" : "none";
-      }
-      if (tabUsers) {
-        tabUsers.style.display = permissions.hasRoles ? "inline-block" : "none";
-      }
-      if (tabPermissions) {
-        tabPermissions.style.display = permissions.hasPermissions ? "inline-block" : "none";
-      }
-      if (tabClinics) {
-        tabClinics.style.display = permissions.hasClinics ? "inline-block" : "none";
-      }
+      // 세션 스토리지 캐시 최신화 저장
+      sessionStorage.setItem(cacheKey, JSON.stringify({ role: userRole, permissions }));
       
-      // 만약 권한 변경 후 강제 고침 시, 더이상 권한이 없는 탭이 활성화되어 있다면 예약 탭으로 자동 이동
-      const activeTab = document.querySelector(".tab-btn.active");
-      if (activeTab) {
-        if (activeTab.id === "tab-clinics" && !permissions.hasClinics) {
-          if (tabReservations) tabReservations.click();
-        } else if (activeTab.id === "tab-users" && !permissions.hasRoles) {
-          if (tabReservations) tabReservations.click();
-        } else if (activeTab.id === "tab-permissions" && !permissions.hasPermissions) {
-          if (tabReservations) tabReservations.click();
-        }
-      }
+      // UI 스위칭
+      applyPermissionsUI(permissions);
 
-      return true;
+      return permissions;
     }
 
     // 권한이 해제된 경우 로그인 메인으로 차단
     alert("관리자 권한이 없습니다. (Access Denied: No Admin Role)");
     location.href = "./index.html";
-    return false;
+    return null;
   }
 
   // Firebase Auth 상태 감지 및 관리자 권한 검증
@@ -604,8 +701,16 @@ document.addEventListener("DOMContentLoaded", () => {
       reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
       
       // 권한 검증 및 UI 갱신 함수 실행
-      const isApproved = await verifyAndApplyPermissions(user);
-      if (isApproved) {
+      const permissions = await verifyAndApplyPermissions(user);
+      if (permissions) {
+        // 모든 탭 버튼 및 콘텐츠 숨김 처리 헬퍼 함수
+        const hideAllTabsAndContents = () => {
+          const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds];
+          const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds];
+          tabs.forEach(t => { if (t) t.classList.remove("active"); });
+          contents.forEach(c => { if (c) c.style.display = "none"; });
+        };
+
         // 새로고침 시 기존에 선택해두었던 활성 탭 복원 시도
         const savedTab = sessionStorage.getItem("active_admin_tab");
         const tabToClick = savedTab ? document.getElementById(savedTab) : null;
@@ -616,13 +721,32 @@ document.addEventListener("DOMContentLoaded", () => {
           // 예약 내역 관리 탭이 활성화되는 경우에만 실시간 리스너 작동 (서버 과금 방지)
           if (savedTab === "tab-reservations") {
             loadReservations(true);
+          } else if (savedTab === "tab-ads") {
+            // [한글 주석: 세션 상에 광고 탭이 기록되어 있을 경우, 진입 시 광고 리스트 로드 함수 호출]
+            loadAds();
           }
         } else {
-          // 저장된 탭 정보가 없거나 비노출 상태인 경우 기본값으로 예약 탭 활성화 및 로드
-          if (tabReservations) {
+          // 저장된 탭 정보가 없거나 비노출 상태인 경우 우선순위에 따라 탭 활성화 및 로드
+          // 우선순위: 예약내역관리(hasReservations) -> 병원관리(hasClinics) -> 광고배너(hasClinics) -> 등급권한관리(hasRoles) -> 회원리스트(hasPermissions)
+          if (permissions.hasReservations && tabReservations) {
             tabReservations.click();
+            loadReservations(true);
+          } else if (permissions.hasClinics && tabClinics) {
+            tabClinics.click();
+          } else if (permissions.hasAds && tabAds) {
+            // [한글 주석: 광고 배너 관리 탭 권한 복원 처리]
+            tabAds.click();
+          } else if (permissions.hasRoles && tabUsers) {
+            tabUsers.click();
+          } else if (permissions.hasPermissions && tabPermissions) {
+            tabPermissions.click();
+          } else {
+            // 모든 항목이 비활성화 되어 있는 경우 아무것도 보이지 않게 처리
+            hideAllTabsAndContents();
+            if (reservationList) {
+              reservationList.innerHTML = `<tr><td colspan="15" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
+            }
           }
-          loadReservations(true);
         }
       }
     } catch (error) {
@@ -644,10 +768,14 @@ document.addEventListener("DOMContentLoaded", () => {
       tabUsers.classList.remove("active");
       if (tabPermissions) tabPermissions.classList.remove("active");
       tabClinics.classList.remove("active");
+      if (tabAds) tabAds.classList.remove("active");
+      
       contentReservations.style.display = "block";
       contentUsers.style.display = "none";
       if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "none";
+      if (contentAds) contentAds.style.display = "none";
+      
       // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
       sessionStorage.setItem("active_admin_tab", "tab-reservations");
       // 예약 내역 탭 활성화 시 예약 목록 로드 시작 (새로고침 후 다시 눌렀을 때의 데이터 연동 보장)
@@ -659,10 +787,13 @@ document.addEventListener("DOMContentLoaded", () => {
       tabReservations.classList.remove("active");
       if (tabPermissions) tabPermissions.classList.remove("active");
       tabClinics.classList.remove("active");
+      if (tabAds) tabAds.classList.remove("active");
+      
       contentReservations.style.display = "none";
       contentUsers.style.display = "block";
       if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "none";
+      if (contentAds) contentAds.style.display = "none";
       
       // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
       if (unsubscribe) {
@@ -681,10 +812,13 @@ document.addEventListener("DOMContentLoaded", () => {
         tabReservations.classList.remove("active");
         tabUsers.classList.remove("active");
         tabClinics.classList.remove("active");
+        if (tabAds) tabAds.classList.remove("active");
+        
         contentReservations.style.display = "none";
         contentUsers.style.display = "none";
         if (contentPermissions) contentPermissions.style.display = "block";
         contentClinics.style.display = "none";
+        if (contentAds) contentAds.style.display = "none";
         
         // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
         if (unsubscribe) {
@@ -692,8 +826,6 @@ document.addEventListener("DOMContentLoaded", () => {
           unsubscribe = null;
         }
         
-        // [성능 최적화] initRolesAndListen() 내부에서 loadUsers()를 이미 호출하므로 중복 호출 제거
-        // initRolesAndListen()가 최초 진입 시 loadUsers()를 포함하여 처리합니다.
         initRolesAndListen();
         // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
         sessionStorage.setItem("active_admin_tab", "tab-permissions");
@@ -705,10 +837,13 @@ document.addEventListener("DOMContentLoaded", () => {
       tabReservations.classList.remove("active");
       tabUsers.classList.remove("active");
       if (tabPermissions) tabPermissions.classList.remove("active");
+      if (tabAds) tabAds.classList.remove("active");
+      
       contentReservations.style.display = "none";
       contentUsers.style.display = "none";
       if (contentPermissions) contentPermissions.style.display = "none";
       contentClinics.style.display = "block";
+      if (contentAds) contentAds.style.display = "none";
       
       // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
       if (unsubscribe) {
@@ -720,22 +855,49 @@ document.addEventListener("DOMContentLoaded", () => {
       // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
       sessionStorage.setItem("active_admin_tab", "tab-clinics");
     });
+
+    if (tabAds) {
+      tabAds.addEventListener("click", () => {
+        tabAds.classList.add("active");
+        tabReservations.classList.remove("active");
+        tabUsers.classList.remove("active");
+        if (tabPermissions) tabPermissions.classList.remove("active");
+        tabClinics.classList.remove("active");
+        
+        contentReservations.style.display = "none";
+        contentUsers.style.display = "none";
+        if (contentPermissions) contentPermissions.style.display = "none";
+        contentClinics.style.display = "none";
+        if (contentAds) contentAds.style.display = "block";
+        
+        // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
+        if (unsubscribe) {
+          unsubscribe();
+          unsubscribe = null;
+        }
+        
+        loadAds(); // 광고 배너 CRUD 데이터 불러오기 실행
+        // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
+        sessionStorage.setItem("active_admin_tab", "tab-ads");
+      });
+    }
   }
 
   // --- 회원 등급(역할) 동적 관리 기능 구현 ---
   let unsubscribeRoles = null;
   let rolesCache = {}; // { super_admin: "최고 관리자", ... }
 
+  // [한글 주석: 기본 등급 데이터셋 선언 - hasAds(광고배너관리) 기능 권한을 super_admin에만 기본 부여]
   const defaultRoles = [
-    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true },
-    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false },
-    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false },
-    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false },
-    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false },
-    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false },
-    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false },
-    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false },
-    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false }
+    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasAds: true },
+    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false },
+    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false },
+    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
+    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
+    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
+    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
+    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
+    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false }
   ];
 
   // 회원 등급 로드 및 초기 시드 처리
@@ -757,7 +919,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let needsMigration = snap.empty;
         if (!snap.empty) {
           const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
-          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined) {
+          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined || superAdminSnap.data().hasAds === undefined) {
             needsMigration = true;
           }
         }
@@ -778,6 +940,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 hasClinics: r.hasClinics,
                 hasRoles: r.hasRoles,
                 hasPermissions: r.hasPermissions,
+                hasAds: r.hasAds,
                 createdAt: new Date().toISOString()
               });
             } else {
@@ -788,7 +951,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 hasReservations: existingData.hasReservations !== undefined ? existingData.hasReservations : r.hasReservations,
                 hasClinics: existingData.hasClinics !== undefined ? existingData.hasClinics : r.hasClinics,
                 hasRoles: existingData.hasRoles !== undefined ? existingData.hasRoles : r.hasRoles,
-                hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions
+                hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions,
+                hasAds: existingData.hasAds !== undefined ? existingData.hasAds : r.hasAds
               });
             }
           }
@@ -850,6 +1014,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${makeToggleHTML(roleKey, "hasClinics", roleData.hasClinics, false)}</td>
             <td>${makeToggleHTML(roleKey, "hasRoles", roleData.hasRoles, lockAdmin)}</td>
             <td>${makeToggleHTML(roleKey, "hasPermissions", roleData.hasPermissions, false)}</td>
+            <!-- [한글 주석: 광고배너관리 권한 컬럼 스위치 주입] -->
+            <td>${makeToggleHTML(roleKey, "hasAds", roleData.hasAds, false)}</td>
+            <td>${makeToggleHTML(roleKey, "hasStats", roleData.hasStats, false)}</td>
             <td>
               <div style="display:flex; gap:6px; align-items:center; justify-content:center;">
                 <button class="btn-action confirm btn-edit-role" data-key="${roleKey}" data-label="${roleData.label.replace(/"/g, '&quot;')}">수정</button>
@@ -878,7 +1045,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, (error) => {
       console.error("Roles subscription error:", error);
       if (roleList) {
-        roleList.innerHTML = `<tr><td colspan="8" class="table-error" style="color:#fda4af; text-align:center; padding:1.5rem; background:rgba(244,63,94,0.05); border-radius:8px;">등급 정보를 불러올 수 없습니다. (Firestore 보안 규칙 배포 확인 필요)</td></tr>`;
+        roleList.innerHTML = `<tr><td colspan="9" class="table-error" style="color:#fda4af; text-align:center; padding:1.5rem; background:rgba(244,63,94,0.05); border-radius:8px;">등급 정보를 불러올 수 없습니다. (Firestore 보안 규칙 배포 확인 필요)</td></tr>`;
       }
     });
   }
@@ -1347,6 +1514,8 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   let unsubscribeClinics = null;
+  // [한글 주석: 병원 순서 이동(Swap) 처리를 위해 현재 메모리에 로드된 병원 데이터 리스트 캐싱]
+  let currentLoadedClinics = [];
 
   async function loadClinics() {
     // [성능 최적화] 탭 클릭 시마다 호출되므로 이전 리스너가 있으면 해제
@@ -1355,24 +1524,24 @@ document.addEventListener("DOMContentLoaded", () => {
       unsubscribeClinics = null;
     }
 
-    const q = query(collection(db, "clinics"), orderBy("createdAt", "asc"));
+    // 순서(order) 필드 기준으로 오름차순(asc) 정렬 쿼리 실행
+    const q = query(collection(db, "clinics"), orderBy("order", "asc"));
     const adminClinicList = document.getElementById("admin-clinic-list");
     if (!adminClinicList) return;
 
-    adminClinicList.innerHTML = `<tr><td colspan="5" class="table-loading">데이터를 불러오는 중입니다...</td></tr>`;
+    adminClinicList.innerHTML = `<tr><td colspan="6" class="table-loading">데이터를 불러오는 중입니다...</td></tr>`;
 
     try {
-      // [성능 최적화] 관리자 병원탭도 getDocs 일회성 조회로 전환
-      // 병원 데이터는 관리자가 직접 수정/추가할 때만 변경되므로 실시간 리스너가 불필요합니다.
-      // onSnapshot은 WebSocket 연결을 유지하며 탭을 열어 두는 동안 지속적으로 과금됩니다.
       const querySnapshot = await getDocs(q);
 
       // 데이터가 없으면 초기 Seed 데이터 자동 삽입
       if (querySnapshot.empty) {
-        adminClinicList.innerHTML = `<tr><td colspan="5" class="table-loading">기본 병원 데이터를 생성 중입니다...</td></tr>`;
+        adminClinicList.innerHTML = `<tr><td colspan="6" class="table-loading">기본 병원 데이터를 생성 중입니다...</td></tr>`;
         for (let i = 0; i < seedClinics.length; i++) {
           await addDoc(collection(db, "clinics"), {
             ...seedClinics[i],
+            // 시딩할 때 순번(order) 필드 부여 (1~6번 차례대로 매핑)
+            order: i + 1,
             createdAt: new Date(Date.now() + i * 1000).toISOString()
           });
         }
@@ -1382,14 +1551,46 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // [한글 주석: 데이터베이스 자동 보정(Auto Migration) 로직]
+      // 기존에 order 필드 없이 생성되었던 병원 문서들에 대해 자동으로 순서를 부여해 줍니다.
+      let needsMigration = false;
+      querySnapshot.forEach((doc) => {
+        if (doc.data().order === undefined) {
+          needsMigration = true;
+        }
+      });
+
+      if (needsMigration) {
+        console.log("Legacy clinic detected. Executing order migration...");
+        let tempOrder = 1;
+        for (const docSnap of querySnapshot.docs) {
+          await updateDoc(doc(db, "clinics", docSnap.id), { order: tempOrder++ });
+        }
+        // 마이그레이션 반영 후 다시 불러오기
+        loadClinics();
+        return;
+      }
+
+      currentLoadedClinics = [];
       adminClinicList.innerHTML = "";
 
+      // 메모리에 이동 처리를 위한 객체 배열 보관
       querySnapshot.forEach((docSnap) => {
-        const docId = docSnap.id;
-        const clinic = docSnap.data();
+        currentLoadedClinics.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      currentLoadedClinics.forEach((clinic, index) => {
+        const docId = clinic.id;
         const tr = document.createElement("tr");
 
         const deptsHTML = (clinic.depts || []).map(d => `<span class="dept-badge" style="margin-right: 4px; display: inline-block;">${d}</span>`).join("");
+
+        // 위쪽 행이 없으면 위로(▲) 버튼 비활성화, 아래쪽 행이 없으면 아래로(▼) 버튼 비활성화
+        const upDisabled = index === 0 ? "disabled" : "";
+        const downDisabled = index === currentLoadedClinics.length - 1 ? "disabled" : "";
 
         tr.innerHTML = `
           <td>
@@ -1398,47 +1599,55 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="font-bold">${clinic.name || '-'} <br><small style="color:var(--text-secondary);">${clinic.englishName || '-'}</small></td>
           <td>${deptsHTML}</td>
           <td>${clinic.address || '-'}</td>
+          <!-- 순서 출력 열 -->
+          <td style="font-weight: 700; color: rgba(255,255,255,0.7);">${clinic.order}</td>
           <td style="vertical-align: middle; white-space: nowrap;">
-            <button class="btn-action confirm btn-edit-clinic"
-              data-id="${docId}"
-              data-name="${(clinic.name || '').replace(/"/g, '&quot;')}"
-              data-engname="${(clinic.englishName || '').replace(/"/g, '&quot;')}"
-              data-desc="${(clinic.desc || '').replace(/"/g, '&quot;')}"
-              data-address="${(clinic.address || '').replace(/"/g, '&quot;')}"
-              data-depts="${(clinic.depts || []).join(',').replace(/"/g, '&quot;')}"
-              
-              /* [다국어 지원] 수정 폼 기본값 노출을 위한 4개 국어 속성 결합 */
-              data-namevi="${(clinic.name_vi || '').replace(/"/g, '&quot;')}"
-              data-deptsvi="${(clinic.depts_vi || []).join(',').replace(/"/g, '&quot;')}"
-              data-addressvi="${(clinic.address_vi || '').replace(/"/g, '&quot;')}"
-              data-descvi="${(clinic.desc_vi || '').replace(/"/g, '&quot;')}"
+            <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
+              <!-- [한글 주석: 순서 조작 위/아래 이동 버튼 배치 - 타원형 찌그러짐 차단을 위한 원형 서클 style 가드 적용] -->
+              <button class="btn-move-up-clinic" data-id="${docId}" data-index="${index}" ${upDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▲</button>
+              <button class="btn-move-down-clinic" data-id="${docId}" data-index="${index}" ${downDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▼</button>
+              <span style="border-left: 1px solid rgba(255,255,255,0.15); height: 16px; margin: 0 0.25rem;"></span>
+              <button class="btn-action confirm btn-edit-clinic"
+                data-id="${docId}"
+                data-name="${(clinic.name || '').replace(/"/g, '&quot;')}"
+                data-engname="${(clinic.englishName || '').replace(/"/g, '&quot;')}"
+                data-desc="${(clinic.desc || '').replace(/"/g, '&quot;')}"
+                data-address="${(clinic.address || '').replace(/"/g, '&quot;')}"
+                data-depts="${(clinic.depts || []).join(',').replace(/"/g, '&quot;')}"
+                
+                /* [다국어 지원] 수정 폼 기본값 노출을 위한 4개 국어 속성 결합 */
+                data-namevi="${(clinic.name_vi || '').replace(/"/g, '&quot;')}"
+                data-deptsvi="${(clinic.depts_vi || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressvi="${(clinic.address_vi || '').replace(/"/g, '&quot;')}"
+                data-descvi="${(clinic.desc_vi || '').replace(/"/g, '&quot;')}"
 
-              data-nameja="${(clinic.name_ja || '').replace(/"/g, '&quot;')}"
-              data-deptsja="${(clinic.depts_ja || []).join(',').replace(/"/g, '&quot;')}"
-              data-addressja="${(clinic.address_ja || '').replace(/"/g, '&quot;')}"
-              data-descja="${(clinic.desc_ja || '').replace(/"/g, '&quot;')}"
+                data-nameja="${(clinic.name_ja || '').replace(/"/g, '&quot;')}"
+                data-deptsja="${(clinic.depts_ja || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressja="${(clinic.address_ja || '').replace(/"/g, '&quot;')}"
+                data-descja="${(clinic.desc_ja || '').replace(/"/g, '&quot;')}"
 
-              data-namezh="${(clinic.name_zh || '').replace(/"/g, '&quot;')}"
-              data-deptszh="${(clinic.depts_zh || []).join(',').replace(/"/g, '&quot;')}"
-              data-addresszh="${(clinic.address_zh || '').replace(/"/g, '&quot;')}"
-              data-desczh="${(clinic.desc_zh || '').replace(/"/g, '&quot;')}"
+                data-namezh="${(clinic.name_zh || '').replace(/"/g, '&quot;')}"
+                data-deptszh="${(clinic.depts_zh || []).join(',').replace(/"/g, '&quot;')}"
+                data-addresszh="${(clinic.address_zh || '').replace(/"/g, '&quot;')}"
+                data-desczh="${(clinic.desc_zh || '').replace(/"/g, '&quot;')}"
 
-              data-nameru="${(clinic.name_ru || '').replace(/"/g, '&quot;')}"
-              data-deptsru="${(clinic.depts_ru || []).join(',').replace(/"/g, '&quot;')}"
-              data-addressru="${(clinic.address_ru || '').replace(/"/g, '&quot;')}"
-              data-descru="${(clinic.desc_ru || '').replace(/"/g, '&quot;')}"
-              /* [한글 주석] 병원 사진 수정을 위해 기존 이미지 데이터 전송 속성 추가 */
-              data-image="${(clinic.image || '').replace(/"/g, '&quot;')}"
-              style="margin-right: 6px;"
-            >수정</button>
-            <button class="btn-action delete btn-delete-clinic" data-id="${docId}">삭제</button>
+                data-nameru="${(clinic.name_ru || '').replace(/"/g, '&quot;')}"
+                data-deptsru="${(clinic.depts_ru || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressru="${(clinic.address_ru || '').replace(/"/g, '&quot;')}"
+                data-descru="${(clinic.desc_ru || '').replace(/"/g, '&quot;')}"
+                /* [한글 주석] 병원 사진 수정을 위해 기존 이미지 데이터 전송 속성 추가 */
+                data-image="${(clinic.image || '').replace(/"/g, '&quot;')}"
+                style="height: 28px; line-height: 1;"
+              >수정</button>
+              <button class="btn-action delete btn-delete-clinic" data-id="${docId}" style="height: 28px; line-height: 1;">삭제</button>
+            </div>
           </td>
         `;
         adminClinicList.appendChild(tr);
       });
     } catch (e) {
       console.error("Failed to load clinics:", e);
-      adminClinicList.innerHTML = `<tr><td colspan="5" class="table-empty">병원 목록을 불러오지 못했습니다.</td></tr>`;
+      adminClinicList.innerHTML = `<tr><td colspan="6" class="table-empty">병원 목록을 불러오지 못했습니다.</td></tr>`;
     }
   }
 
@@ -1454,10 +1663,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      // 5MB 용량 제한
-      const maxSize = 5 * 1024 * 1024;
+      // [한글 주석: 이미지 가드 한도를 10MB 용량 제한으로 상향 조정]
+      const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert("이미지 용량은 최대 5MB를 초과할 수 없습니다. (Image file exceeds 5MB limit.)");
+        alert("이미지 용량은 최대 10MB를 초과할 수 없습니다. (Image file exceeds 10MB limit.)");
         inputImage.value = "";
         if (imgPreviewContainer) imgPreviewContainer.style.display = "none";
         uploadedImageBase64 = "";
@@ -1583,6 +1792,15 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSubmit.textContent = "등록 중...";
 
       try {
+        // [한글 주석: 신규 병원 등록 시 기존 order 최댓값 뒤에 오도록 순서 자동 매핑]
+        let nextOrder = 1;
+        const maxQuery = query(collection(db, "clinics"), orderBy("order", "desc"), limit(1));
+        const maxSnap = await getDocs(maxQuery);
+        if (!maxSnap.empty) {
+          const maxVal = maxSnap.docs[0].data().order;
+          nextOrder = (typeof maxVal === "number" ? maxVal : 0) + 1;
+        }
+
         // Firestore clinics 컬렉션에 등록 처리
         await addDoc(collection(db, "clinics"), {
           name,
@@ -1591,6 +1809,7 @@ document.addEventListener("DOMContentLoaded", () => {
           depts,
           address,
           desc,
+          order: nextOrder,
           // 기입된 다국어 정보가 있는 경우에만 선택적으로 데이터베이스 필드로 결합 저장 (서버 리소스 정합성 최적화)
           ...(name_vi && { name_vi, depts_vi, address_vi, desc_vi }),
           ...(name_ja && { name_ja, depts_ja, address_ja, desc_ja }),
@@ -1599,6 +1818,8 @@ document.addEventListener("DOMContentLoaded", () => {
           createdAt: new Date().toISOString()
         });
         alert("신규 병원이 성공적으로 등록되었습니다.");
+        // [한글 주석: 병원 신설 성공 시 다국어 예약 페이지 내 병원 캐시 무효화]
+        sessionStorage.removeItem("cached_clinics_list");
         
         // 폼 초기화 및 변수 정리
         clinicRegisterForm.reset();
@@ -1796,10 +2017,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = e.target.files[0];
             if (!file) return;
 
-            // 5MB 용량 제한
-            const maxSize = 5 * 1024 * 1024;
+            // [한글 주석: 이미지 가드 한도를 10MB 용량 제한으로 상향 조정]
+            const maxSize = 10 * 1024 * 1024;
             if (file.size > maxSize) {
-              alert("이미지 용량은 최대 5MB를 초과할 수 없습니다. (Image file exceeds 5MB limit.)");
+              alert("이미지 용량은 최대 10MB를 초과할 수 없습니다. (Image file exceeds 10MB limit.)");
               editInputImage.value = "";
               return;
             }
@@ -1929,6 +2150,8 @@ document.addEventListener("DOMContentLoaded", () => {
               desc_ru: newDescRu
             });
             alert("병원 정보가 성공적으로 수정되었습니다.");
+            // [한글 주석: 병원 수정 반영에 따른 세션 캐시 갱신 무효화]
+            sessionStorage.removeItem("cached_clinics_list");
             editModal.remove();
             
             // 병원 수정 완료 후 테이블 새로고침
@@ -1951,6 +2174,9 @@ document.addEventListener("DOMContentLoaded", () => {
             e.target.textContent = "...";
             await deleteDoc(doc(db, "clinics", docId));
             alert("병원이 삭제되었습니다.");
+            // [한글 주석: 병원 삭제 완료에 따른 세션 캐시 무효화]
+            sessionStorage.removeItem("cached_clinics_list");
+            loadClinics(); // 삭제 후 테이블 리프레시
           } catch (error) {
             console.error("Delete clinic failed:", error);
             alert("병원 삭제 중 오류가 발생했습니다: " + error.message);
@@ -1959,7 +2185,505 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       }
+
+      // ── [신규 추가] 병원 순서 위로 이동 (Swap Up) ──
+      if (e.target.classList.contains("btn-move-up-clinic")) {
+        const idx = parseInt(e.target.getAttribute("data-index"));
+        if (idx <= 0) return; // 최상단은 이동 불가
+
+        e.target.disabled = true;
+        const currentClinic = currentLoadedClinics[idx];
+        const prevClinic = currentLoadedClinics[idx - 1];
+
+        try {
+          const currentOrder = currentClinic.order;
+          const prevOrder = prevClinic.order;
+
+          // 두 문서의 order 값을 원자적으로 맞교환 후 Firestore에 커밋
+          await Promise.all([
+            updateDoc(doc(db, "clinics", currentClinic.id), { order: prevOrder }),
+            updateDoc(doc(db, "clinics", prevClinic.id), { order: currentOrder })
+          ]);
+
+          // [한글 주석: 병원 순서 교환 완료에 따른 세션 캐시 무효화]
+          sessionStorage.removeItem("cached_clinics_list");
+          loadClinics(); // 새로고침
+        } catch (error) {
+          console.error("Swap up clinic failed:", error);
+          alert("순서 이동에 실패했습니다: " + error.message);
+          e.target.disabled = false;
+        }
+      }
+
+      // ── [신규 추가] 병원 순서 아래로 이동 (Swap Down) ──
+      if (e.target.classList.contains("btn-move-down-clinic")) {
+        const idx = parseInt(e.target.getAttribute("data-index"));
+        if (idx >= currentLoadedClinics.length - 1) return; // 최하단은 이동 불가
+
+        e.target.disabled = true;
+        const currentClinic = currentLoadedClinics[idx];
+        const nextClinic = currentLoadedClinics[idx + 1];
+
+        try {
+          const currentOrder = currentClinic.order;
+          const nextOrder = nextClinic.order;
+
+          // 두 문서의 order 값을 원자적으로 맞교환 후 Firestore에 커밋
+          await Promise.all([
+            updateDoc(doc(db, "clinics", currentClinic.id), { order: nextOrder }),
+            updateDoc(doc(db, "clinics", nextClinic.id), { order: currentOrder })
+          ]);
+
+          // [한글 주석: 병원 순서 교환 완료에 따른 세션 캐시 무효화]
+          sessionStorage.removeItem("cached_clinics_list");
+          loadClinics(); // 새로고침
+        } catch (error) {
+          console.error("Swap down clinic failed:", error);
+          alert("순서 이동에 실패했습니다: " + error.message);
+          e.target.disabled = false;
+        }
+      }
     });
   }
+
+  // ==========================================================================
+  // ── [신규 추가] 광고 배너 CRUD 관리 업무 로직 ──
+  // ==========================================================================
+  const adManageForm = document.getElementById("ad-manage-form");
+  const adUrlsContainer = document.getElementById("ad-urls-container");
+  const btnAddAdUrl = document.getElementById("btn-add-ad-url");
+  const adminAdList = document.getElementById("admin-ad-list");
+  const adEditId = document.getElementById("ad-edit-id");
+  const adFormTitle = document.getElementById("ad-form-title");
+  const btnCancelAdEdit = document.getElementById("btn-cancel-ad-edit");
+  const btnSubmitAd = document.getElementById("btn-submit-ad");
+
+  // [한글 주석: 로컬 파일의 용량을 축소 압축하여 Firestore 1MB 제한 및 대역폭 추가 과금을 아예 방지하는 리사이징 헬퍼 함수]
+  const compressImage = (file, maxWidth = 500) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // 이미지 가로폭이 기준치를 초과할 시 비율 축소 조율
+          if (width > maxWidth) {
+            height = (maxWidth / width) * height;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // 퀄리티 0.7로 JPEG 인코딩하여 용량을 20KB~30KB 내외로 조여서 생성
+          const base64Data = canvas.toDataURL("image/jpeg", 0.7);
+          resolve(base64Data);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
+  // 광고 폼의 이미지 URL 행 템플릿 생성 헬퍼 함수 (파일 선택 컨트롤 결합)
+  const createAdUrlRow = (urlValue = "") => {
+    const row = document.createElement("div");
+    row.className = "ad-url-row";
+    row.style.display = "flex";
+    row.style.gap = "0.5rem";
+    row.style.alignItems = "center";
+    row.style.flexWrap = "wrap";
+    row.innerHTML = `
+      <input type="text" class="ad-image-url" required value="${urlValue}" placeholder="웹 이미지 주소(URL) 또는 우측 파일 업로드 이용" style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 200px;">
+      <div style="display: flex; gap: 0.35rem; align-items: center;">
+        <label class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.6rem 0.8rem; min-width: auto; margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+          📁 파일 선택
+          <input type="file" class="ad-file-input" accept="image/*" style="display: none;">
+        </label>
+        <button type="button" class="btn btn-secondary btn-remove-ad-url" style="font-size: 0.75rem; padding: 0.6rem; min-width: auto; background: rgba(244, 63, 94, 0.1); color: #fda4af; border-color: rgba(244,63,94,0.3);">&times;</button>
+      </div>
+    `;
+    return row;
+  };
+
+  // URL 행 추가 버튼 이벤트 리스너
+  if (btnAddAdUrl && adUrlsContainer) {
+    btnAddAdUrl.addEventListener("click", () => {
+      adUrlsContainer.appendChild(createAdUrlRow());
+    });
+  }
+
+  // URL 행 내 삭제 및 파일 선택 이벤트 위임 처리 리스너
+  if (adUrlsContainer) {
+    // 1) 동적 삭제 처리
+    adUrlsContainer.addEventListener("click", (e) => {
+      if (e.target.classList.contains("btn-remove-ad-url")) {
+        const rows = adUrlsContainer.querySelectorAll(".ad-url-row");
+        if (rows.length <= 1) {
+          alert("광고 슬라이드를 위해 최소 1개 이상의 이미지 주소가 필요합니다.");
+          return;
+        }
+        e.target.closest(".ad-url-row").remove();
+      }
+    });
+
+    // 2) 로컬 파일 변경 시 압축하여 Base64 텍스트로 치환 적용
+    adUrlsContainer.addEventListener("change", async (e) => {
+      if (e.target.classList.contains("ad-file-input")) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const row = e.target.closest(".ad-url-row");
+        const urlInput = row.querySelector(".ad-image-url");
+        const labelNode = e.target.closest("label");
+
+        const originalLabel = labelNode.innerHTML;
+        labelNode.style.pointerEvents = "none";
+        labelNode.innerHTML = "⌛ 변환 중...";
+
+        try {
+          // 최대 가로폭 500px 및 압축 퀄리티 0.7 적용
+          const compressedBase64 = await compressImage(file, 500);
+          urlInput.value = compressedBase64;
+        } catch (error) {
+          console.error("Image compress error:", error);
+          alert("이미지 변환 도중 에러가 발생했습니다: " + error.message);
+        } finally {
+          labelNode.style.pointerEvents = "auto";
+          labelNode.innerHTML = originalLabel;
+        }
+      }
+    });
+  }
+
+  // [한글 주석: 순서 이동 동작(Swap) 처리를 위해 현재 메모리에 올려진 광고 리스트 캐싱]
+  let currentLoadedAds = [];
+
+  // 1) Firestore로부터 광고 목록 전체를 조회하여 테이블 렌더링 (Read)
+  async function loadAds() {
+    if (!adminAdList) return;
+    adminAdList.innerHTML = `<tr><td colspan="6" class="table-loading">광고 데이터를 불러오는 중입니다...</td></tr>`;
+
+    try {
+      // 순서(order) 필드 기준으로 오름차순(asc) 쿼리 실행
+      const q = query(collection(db, "ads"), orderBy("order", "asc"));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        adminAdList.innerHTML = `<tr><td colspan="6" class="table-empty">등록된 광고 배너가 없습니다.</td></tr>`;
+        currentLoadedAds = [];
+        return;
+      }
+
+      // [한글 주석: 데이터베이스 자동 보정(Auto Migration) 로직]
+      // 기존에 order 필드 없이 생성되었던 레거시 문서들에 대해 자동으로 순서를 보완 발급합니다.
+      let needsMigration = false;
+      querySnapshot.forEach((doc) => {
+        if (doc.data().order === undefined) {
+          needsMigration = true;
+        }
+      });
+
+      if (needsMigration) {
+        console.log("Legacy ad detected. Executing order migration...");
+        let tempOrder = 1;
+        for (const docSnap of querySnapshot.docs) {
+          await updateDoc(doc(db, "ads", docSnap.id), { order: tempOrder++ });
+        }
+        // 마이그레이션 반영 후 쿼리 재실행
+        loadAds();
+        return;
+      }
+
+      currentLoadedAds = [];
+      let html = "";
+      
+      // 위/아래 이동 처리를 위해 문서를 배열 객체 리스트에 우선 정렬 보관
+      querySnapshot.forEach((doc) => {
+        currentLoadedAds.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      currentLoadedAds.forEach((ad, index) => {
+        const imagesCount = ad.images ? ad.images.length : 0;
+        const intervalSec = ad.slideInterval ? ad.slideInterval / 1000 : 4;
+
+        // 위쪽 행이 없으면 위로(▲) 버튼 비활성화, 아래쪽 행이 없으면 아래로(▼) 버튼 비활성화
+        const upDisabled = index === 0 ? "disabled" : "";
+        const downDisabled = index === currentLoadedAds.length - 1 ? "disabled" : "";
+
+        html += `
+          <tr>
+            <td style="font-weight: 700; color: #00f3ff;">${ad.tag || ""}</td>
+            <td>${ad.title || ""}</td>
+            <td><span class="badge" style="background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc;">${imagesCount}개</span></td>
+            <td>${intervalSec}초</td>
+            <!-- 순서 조정용 텍스트 노출 -->
+            <td style="font-weight: 700; color: rgba(255,255,255,0.7);">${ad.order}</td>
+            <td>
+              <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
+                <!-- [한글 주석: 위/아래 정렬 조작 버튼을 캡처본 형태의 원형 서클 28px 규격으로 일치화 - 타원형 찌그러짐 차단 style 가드] -->
+                <button class="btn-move-up-ad" data-id="${ad.id}" data-index="${index}" ${upDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▲</button>
+                <button class="btn-move-down-ad" data-id="${ad.id}" data-index="${index}" ${downDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▼</button>
+                <span style="border-left: 1px solid rgba(255,255,255,0.15); height: 16px; margin: 0 0.25rem;"></span>
+                <!-- [한글 주석: 수정/삭제 버튼도 병원 관리 버튼 클래스 및 크기 규격(28px)과 동일하게 병합] -->
+                <button class="btn-action confirm btn-edit-ad" data-id="${ad.id}" style="height: 28px; line-height: 28px; padding: 0 0.75rem; font-size: 0.8rem; border: none; font-weight: 700;">수정</button>
+                <button class="btn-action delete btn-delete-ad" data-id="${ad.id}" style="height: 28px; line-height: 28px; padding: 0 0.75rem; font-size: 0.8rem; font-weight: 700;">삭제</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      adminAdList.innerHTML = html;
+    } catch (error) {
+      console.error("Load ads failed:", error);
+      adminAdList.innerHTML = `<tr><td colspan="6" class="table-error">광고 데이터를 로드하지 못했습니다: ${error.message}</td></tr>`;
+    }
+  }
+
+  // 2) 광고 데이터 저장 및 수정 제출 리스너 (Create & Update)
+  if (adManageForm) {
+    adManageForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const tagVal = document.getElementById("ad-tag").value.trim();
+      const titleVal = document.getElementById("ad-title").value.trim();
+      const descVal = document.getElementById("ad-desc").value.trim();
+      const intervalSec = parseFloat(document.getElementById("ad-interval").value) || 4;
+      const slideIntervalMs = intervalSec * 1000;
+
+      // 폼 내 이미지 인풋 상자들로부터 활성 URL 값 추출
+      const urlInputs = adUrlsContainer.querySelectorAll(".ad-image-url");
+      const imagesArray = [];
+      urlInputs.forEach((input) => {
+        const val = input.value.trim();
+        if (val) imagesArray.push(val);
+      });
+
+      if (imagesArray.length === 0) {
+        alert("최소 1개 이상의 이미지 주소를 올바르게 입력해 주세요.");
+        return;
+      }
+
+      const submitBtn = btnSubmitAd || adManageForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = "저장 중...";
+
+      const editId = adEditId ? adEditId.value : "";
+
+      try {
+        if (editId) {
+          // 수정 모드 (Update)
+          await updateDoc(doc(db, "ads", editId), {
+            tag: tagVal,
+            title: titleVal,
+            desc: descVal,
+            images: imagesArray,
+            slideInterval: slideIntervalMs
+          });
+          alert("광고 배너가 성공적으로 수정되었습니다.");
+          // [한글 주석: 광고 배너 수정 성공 시 메인 홈 캐시 무효화]
+          sessionStorage.removeItem("cached_home_ads");
+        } else {
+          // [한글 주석: 신규 광고 배너를 등록할 때 순번(order) 최댓값을 실시간으로 조회하여 마지막 순서에 자동 배치]
+          let nextOrder = 1;
+          const maxQuery = query(collection(db, "ads"), orderBy("order", "desc"), limit(1));
+          const maxSnap = await getDocs(maxQuery);
+          if (!maxSnap.empty) {
+            const maxVal = maxSnap.docs[0].data().order;
+            nextOrder = (typeof maxVal === "number" ? maxVal : 0) + 1;
+          }
+
+          // 신규 등록 모드 (Create)
+          await addDoc(collection(db, "ads"), {
+            tag: tagVal,
+            title: titleVal,
+            desc: descVal,
+            images: imagesArray,
+            slideInterval: slideIntervalMs,
+            order: nextOrder,
+            createdAt: serverTimestamp()
+          });
+          alert("새 광고 배너가 성공적으로 등록되었습니다.");
+          // [한글 주석: 신규 광고 배너 등록 성공 시 메인 홈 캐시 무효화]
+          sessionStorage.removeItem("cached_home_ads");
+        }
+
+        // 폼 초기화 및 일반 모드로의 강제 복원
+        resetAdForm();
+        loadAds(); // 테이블 리프레시
+      } catch (error) {
+        console.error("Save ad failed:", error);
+        alert("광고 저장에 실패했습니다: " + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = editId ? "수정 완료" : "광고 등록하기";
+      }
+    });
+  }
+
+  // 3) 광고 편집 취소 처리 함수
+  const resetAdForm = () => {
+    if (!adManageForm) return;
+    adManageForm.reset();
+    if (adEditId) adEditId.value = "";
+    if (adFormTitle) adFormTitle.innerHTML = "신규 광고 배너 등록";
+    if (btnSubmitAd) btnSubmitAd.textContent = "광고 등록하기";
+    if (btnCancelAdEdit) btnCancelAdEdit.style.display = "none";
+
+    // 이미지 URL 영역도 초기값(1개의 비어있는 열)으로 재정리
+    if (adUrlsContainer) {
+      adUrlsContainer.innerHTML = "";
+      adUrlsContainer.appendChild(createAdUrlRow());
+    }
+  };
+
+  if (btnCancelAdEdit) {
+    btnCancelAdEdit.addEventListener("click", resetAdForm);
+  }
+
+  // 4) 광고 목록 편집, 삭제, 순서 이동 클릭 핸들러 (이벤트 위임)
+  if (adminAdList) {
+    adminAdList.addEventListener("click", async (e) => {
+      // ── [신규 추가] 순서 위로 이동 (Swap Up) ──
+      if (e.target.classList.contains("btn-move-up-ad")) {
+        const idx = parseInt(e.target.getAttribute("data-index"));
+        if (idx <= 0) return; // 최상단은 이동 불가능
+
+        e.target.disabled = true;
+        const currentAd = currentLoadedAds[idx];
+        const prevAd = currentLoadedAds[idx - 1];
+
+        try {
+          // 두 광고의 order 값을 서로 맞교환(Swap)하여 Firestore에 동시 커밋
+          const currentOrder = currentAd.order;
+          const prevOrder = prevAd.order;
+
+          await Promise.all([
+            updateDoc(doc(db, "ads", currentAd.id), { order: prevOrder }),
+            updateDoc(doc(db, "ads", prevAd.id), { order: currentOrder })
+          ]);
+
+          // [한글 주석: 광고 배너 순서 변경 성공 시 세션 캐시 무효화]
+          sessionStorage.removeItem("cached_home_ads");
+          loadAds(); // 새로고침
+        } catch (error) {
+          console.error("Swap up failed:", error);
+          alert("순서 이동에 실패했습니다: " + error.message);
+          e.target.disabled = false;
+        }
+      }
+
+      // ── [신규 추가] 순서 아래로 이동 (Swap Down) ──
+      if (e.target.classList.contains("btn-move-down-ad")) {
+        const idx = parseInt(e.target.getAttribute("data-index"));
+        if (idx >= currentLoadedAds.length - 1) return; // 최하단은 이동 불가능
+
+        e.target.disabled = true;
+        const currentAd = currentLoadedAds[idx];
+        const nextAd = currentLoadedAds[idx + 1];
+
+        try {
+          // 두 광고의 order 값을 서로 맞교환(Swap)하여 Firestore에 동시 커밋
+          const currentOrder = currentAd.order;
+          const nextOrder = nextAd.order;
+
+          await Promise.all([
+            updateDoc(doc(db, "ads", currentAd.id), { order: nextOrder }),
+            updateDoc(doc(db, "ads", nextAd.id), { order: currentOrder })
+          ]);
+
+          // [한글 주석: 광고 배너 순서 변경 성공 시 세션 캐시 무효화]
+          sessionStorage.removeItem("cached_home_ads");
+          loadAds(); // 새로고침
+        } catch (error) {
+          console.error("Swap down failed:", error);
+          alert("순서 이동에 실패했습니다: " + error.message);
+          e.target.disabled = false;
+        }
+      }
+
+      // ── 수정 모드 전환 처리 (Update Form Fill) ──
+      if (e.target.classList.contains("btn-edit-ad")) {
+        const docId = e.target.getAttribute("data-id");
+        e.target.disabled = true;
+        e.target.textContent = "...";
+
+        try {
+          const docSnap = await getDoc(doc(db, "ads", docId));
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+
+            // 폼 필드 대입
+            if (adEditId) adEditId.value = docId;
+            document.getElementById("ad-tag").value = data.tag || "";
+            document.getElementById("ad-title").value = data.title || "";
+            document.getElementById("ad-desc").value = data.desc || "";
+            document.getElementById("ad-interval").value = data.slideInterval ? data.slideInterval / 1000 : 4;
+
+            // 이미지 URL 영역 채우기
+            if (adUrlsContainer && data.images) {
+              adUrlsContainer.innerHTML = "";
+              data.images.forEach((url) => {
+                adUrlsContainer.appendChild(createAdUrlRow(url));
+              });
+            }
+
+            // UI 텍스트 스위칭
+            if (adFormTitle) adFormTitle.innerHTML = "광고 배너 정보 수정";
+            if (btnSubmitAd) btnSubmitAd.textContent = "수정 완료";
+            if (btnCancelAdEdit) btnCancelAdEdit.style.display = "inline-block";
+
+            // 상단 폼 영역으로 포커싱 및 스크롤
+            adManageForm.scrollIntoView({ behavior: "smooth" });
+          } else {
+            alert("존재하지 않는 광고 데이터입니다.");
+          }
+        } catch (error) {
+          console.error("Retrieve ad document failed:", error);
+          alert("수정 데이터를 불러오지 못했습니다: " + error.message);
+        } finally {
+          e.target.disabled = false;
+          e.target.textContent = "수정";
+        }
+      }
+
+      // ── 삭제 클릭 처리 (Delete) ──
+      if (e.target.classList.contains("btn-delete-ad")) {
+        const docId = e.target.getAttribute("data-id");
+        if (confirm("정말 이 광고 배너를 삭제하시겠습니까? 삭제 즉시 홈페이지 메인 배너 리스트에서 제외됩니다.")) {
+          e.target.disabled = true;
+          e.target.textContent = "...";
+
+          try {
+            await deleteDoc(doc(db, "ads", docId));
+            alert("광고 배너가 성공적으로 삭제되었습니다.");
+            // [한글 주석: 광고 배너 삭제 성공 시 세션 캐시 무효화]
+            sessionStorage.removeItem("cached_home_ads");
+            loadAds(); // 새로고침
+          } catch (error) {
+            console.error("Delete ad document failed:", error);
+            alert("광고 삭제에 실패했습니다: " + error.message);
+            e.target.disabled = false;
+            e.target.textContent = "삭제";
+          }
+        }
+      }
+    });
+  }
+
+  // 탭 클릭 시 리소스 전역 로드 연동을 위해 window 스코프 배포
+  window.loadAds = loadAds;
 });
-// Build cache bust: 2026-07-06T14:17:00
+// Build cache bust: 2026-07-11T02:11:00
+

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGPartners - 예약 상세 통계 대시보드</title>
+
+  <!-- Google 폰트 로드 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- 통합 스타일시트 연동 -->
+  <link rel="stylesheet" href="/css/style.css?v=2.4.1">
+  <!-- 한글 주석: 데스크톱/모바일 반응형 필터 그리드 스타일 정의 -->
+  <style>
+    /* 기본적으로 모바일 1열 세로 레이아웃 */
+    #stats-filter-form {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 12px;
+    }
+
+    /* 콤팩트하고 세련된 인풋 스타일 */
+    #stats-filter-form select,
+    #stats-filter-form input[type="date"] {
+      height: 38px !important;
+      padding: 0.4rem 0.6rem !important;
+      font-size: 0.88rem !important;
+      background: #0c1020 !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(0, 243, 255, 0.25) !important;
+      border-radius: 8px !important;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #stats-filter-form select:focus,
+    #stats-filter-form input[type="date"]:focus {
+      border-color: #00f3ff !important;
+      box-shadow: 0 0 8px rgba(0, 243, 255, 0.2) !important;
+    }
+
+    #stats-filter-form label {
+      font-size: 0.85rem !important;
+      margin-bottom: 4px !important;
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    /* 화면 해상도가 1025px 이상인 넓은 화면(데스크톱 웹)에서는 가로 3열 나열 구조로 배치 */
+    @media (min-width: 1025px) {
+      #stats-filter-form {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+    }
+
+    /* 한글 주석: 프린트/PDF 저장 시 불필요한 레이아웃 가림 처리 */
+    @media print {
+
+      #global-header,
+      .bg-decorations,
+      .clinic-form-section,
+      .table-controls {
+        display: none !important;
+      }
+
+      .container {
+        margin-top: 0 !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 백그라운드 오로라 빛 장식 -->
+  <div class="bg-decorations">
+    <div class="aurora-1"></div>
+    <div class="aurora-2"></div>
+  </div>
+
+  <!-- 공통 상단 네비게이션 바 컴포넌트 동적 주입 -->
+  <header id="global-header"></header>
+
+  <!-- 상단 네비게이션 바 여백(100px) 확보를 위한 컨테이너 -->
+  <div class="container admin-container" style="margin-top: 100px;">
+
+    <header class="header">
+      <h1 class="title">예약 분석 및 조건부 조회 대시보드</h1>
+      <p class="subtitle">다양한 조건(언어, 병원, 성별, 체류기간, 예약일자)을 조합하여 세부 통계를 산출하고 해당 목록을 조회할 수 있습니다.</p>
+    </header>
+
+    <!-- 통계 전용 조회 조건 컨트롤러 카드 -->
+    <section class="clinic-form-section" style="max-width: 100%; margin-bottom: 2rem;">
+      <h2>검색/조회 필터 설정</h2>
+      <form id="stats-filter-form" class="admin-clinic-form" onsubmit="return false;">
+
+        <!-- 1. 선택 언어 필터 -->
+        <div class="form-group">
+          <label for="filter-lang">선택 언어</label>
+          <select id="filter-lang">
+            <option value="all">전체보기</option>
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="ja">🇯🇵 일본어</option>
+            <option value="vi">🇻🇳 베트남어</option>
+            <option value="en">🇺🇸 영어</option>
+            <option value="zh">🇨🇳 중국어</option>
+            <option value="ru">🇷🇺 러시아어</option>
+            <option value="my">🇲🇲 미얀마어</option>
+            <option value="km">🇰🇭 캄보디아어</option>
+            <option value="mn">🇲🇳 몽골어</option>
+            <option value="th">🇹🇭 태국어</option>
+            <option value="lo">🇱🇦 라오스어</option>
+            <option value="ne">🇳🇵 네팔어</option>
+            <option value="id">🇮🇩 인도네시아어</option>
+            <option value="si">🇱🇰 스리랑카어</option>
+            <option value="bn">🇧🇩 방글라데시어</option>
+          </select>
+        </div>
+
+        <!-- 2. 선택 병원 필터 (신설) -->
+        <div class="form-group">
+          <label for="filter-clinic">선택 병원</label>
+          <select id="filter-clinic">
+            <option value="all">전체보기 (로딩중...)</option>
+          </select>
+        </div>
+
+        <!-- 3. 성별 필터 -->
+        <div class="form-group">
+          <label for="filter-gender">성별</label>
+          <select id="filter-gender">
+            <option value="all">전체보기</option>
+            <option value="남성">남성</option>
+            <option value="여성">여성</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+
+        <!-- 4. 체류만료일 범위 필터 -->
+        <div class="form-group">
+          <label>체류만료일 기간</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="date" id="filter-expiry-start" style="flex: 1;">
+            <span style="color: #00f3ff;">~</span>
+            <input type="date" id="filter-expiry-end" style="flex: 1;">
+          </div>
+        </div>
+
+        <!-- 5. 예약시간(접수일) 범위 필터 -->
+        <div class="form-group">
+          <label>예약시간(접수시간) 기간</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="date" id="filter-reg-start" style="flex: 1;">
+            <span style="color: #00f3ff;">~</span>
+            <input type="date" id="filter-reg-end" style="flex: 1;">
+          </div>
+        </div>
+
+        <!-- 6. 희망진료일 범위 필터 -->
+        <div class="form-group">
+          <label>희망진료일 기간</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="date" id="filter-hope-start" style="flex: 1;">
+            <span style="color: #00f3ff;">~</span>
+            <input type="date" id="filter-hope-end" style="flex: 1;">
+          </div>
+        </div>
+
+        <!-- 한글 주석: 통합 조작행 (3열 가로 전체 병합 및 여백 소멸화) -->
+        <div class="form-actions-row"
+          style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px; margin-top: 8px; flex-wrap: wrap; gap: 12px;">
+          <!-- 좌측: 예약시간 단축 선택 버튼 그룹 -->
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <span style="font-size: 0.82rem; color: rgba(255, 255, 255, 0.5); margin-right: 4px;">접수일 단축선택:</span>
+            <button type="button" id="btn-quick-week" class="btn-refresh"
+              style="padding: 0 10px; font-size: 0.78rem; height: 30px; line-height: 28px;">일주일</button>
+            <button type="button" id="btn-quick-month" class="btn-refresh"
+              style="padding: 0 10px; font-size: 0.78rem; height: 30px; line-height: 28px;">한달</button>
+            <button type="button" id="btn-quick-year" class="btn-refresh"
+              style="padding: 0 10px; font-size: 0.78rem; height: 30px; line-height: 28px;">1년</button>
+            <button type="button" id="btn-quick-reset-date" class="btn-refresh"
+              style="padding: 0 10px; font-size: 0.78rem; height: 30px; line-height: 28px; color: #ff5e5e; border-color: rgba(255, 94, 94, 0.3);">지우기</button>
+          </div>
+
+          <!-- 우측: 메인 검색 및 초기화 컨트롤 그룹 -->
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-stats-reset" class="btn-refresh"
+              style="height: 36px; padding: 0 16px; font-size: 0.85rem; border-color: rgba(255,255,255,0.25); color: #ffffff;">필터
+              초기화</button>
+            <button type="button" id="btn-stats-query" class="btn btn-primary"
+              style="height: 36px; padding: 0 24px; font-size: 0.85rem; font-weight: bold; background: #00f3ff; color: #0c1020; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;">조회하기</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- 통계 요약 카드 섹션 (조회된 결과 기반) -->
+    <div class="admin-stats" style="margin-bottom: 2rem;">
+      <div class="stat-card">
+        <span class="stat-title">조회된 예약 건수</span>
+        <span id="stats-total-count" class="stat-value">0</span>
+      </div>
+      <div class="stat-card pending">
+        <span class="stat-title">대기 중</span>
+        <span id="stats-pending-count" class="stat-value">0</span>
+      </div>
+      <div class="stat-card confirmed">
+        <span class="stat-title">예약 확정</span>
+        <span id="stats-confirmed-count" class="stat-value">0</span>
+      </div>
+      <div class="stat-card cancelled">
+        <span class="stat-title">예약 취소</span>
+        <span id="stats-cancelled-count" class="stat-value">0</span>
+      </div>
+    </div>
+
+    <!-- 조회된 리스트 데이터 테이블 -->
+    <main class="admin-main">
+      <div class="table-controls"
+        style="justify-content: space-between; display: flex; align-items: center; margin-bottom: 1.5rem;">
+        <h2>조회 및 필터 결과 리스트</h2>
+        <!-- 엑셀 다운로드나 간단한 인쇄 기능을 고려할 수 있는 조작 영역 -->
+        <!-- 한글 주석: 엑셀 파일 다운로드 및 인쇄 버튼 배치 -->
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-stats-excel" class="btn-refresh"
+            style="font-size: 0.88rem; background: #10b981; color: #ffffff; border-color: rgba(16, 185, 129, 0.4);">📊
+            엑셀 파일 다운로드</button>
+          <button id="btn-stats-print" class="btn-refresh" style="font-size: 0.88rem;">프린트 / PDF 저장</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>선택언어</th>
+              <th>이 름</th>
+              <th>선택 병원</th>
+              <th>성 별</th>
+              <th>비자타입</th>
+              <th>생년월일</th>
+              <th>신원정보</th>
+              <th>체류만료일</th>
+              <th>연락처</th>
+              <th>예약시간</th>
+              <th>희망진료일</th>
+              <th>주 소</th>
+              <th>증 상</th>
+              <th>상 태</th>
+            </tr>
+          </thead>
+          <tbody id="stats-result-list">
+            <tr>
+              <td colspan="14" class="table-loading">조건을 선택한 후 [조회하기] 버튼을 눌러주세요.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase 및 통계 스크립트 로드 -->
+  <script type="module" src="/js/stats.js?v=1.0.0"></script>
+  <!-- 공통 인증 모듈 연동 -->
+  <script type="module" src="/js/auth.js?v=2.0.7"></script>
+  <!-- 공통 상단바 렌더링용 스크립트 연동 -->
+  <script type="module" src="/js/navigation.js?v=2.1.9"></script>
+</body>
+
+</html>

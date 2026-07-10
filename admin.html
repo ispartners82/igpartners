@@ -14,7 +14,7 @@
     rel="stylesheet">
 
   <!-- 메인 스타일시트 연동 -->
-  <link rel="stylesheet" href="/css/style.css?v=2.1.9">
+  <link rel="stylesheet" href="/css/style.css?v=2.4.1">
 </head>
 
 <body>
@@ -43,7 +43,8 @@
       <button id="tab-clinics" class="tab-btn" style="display: none;">병원 관리</button>
       <button id="tab-users" class="tab-btn" style="display: none;">등급,권한 관리</button>
       <button id="tab-permissions" class="tab-btn" style="display: none;">회원 리스트</button>
-
+      <!-- 신규 추가: 광고 배너 CRUD 관리 탭 (권한이 활성화되었을 때만 노출) -->
+      <button id="tab-ads" class="tab-btn" style="display: none;">광고 배너 관리</button>
     </div>
 
     <!-- 예약 내역 관리 탭 콘텐츠 -->
@@ -75,15 +76,13 @@
       <main class="admin-main">
         <div class="table-controls" style="justify-content: space-between; align-items: center; display: flex; margin-bottom: 1.5rem;">
           <h2>예약 상세 목록</h2>
-          <!-- [레이아웃 교정] 우측 조작계 3가지 항목 그룹화 및 촘촘한 정렬 컨테이너 -->
+          <!-- [레이아웃 교정] 우측 조작계 항목 그룹화 및 촘촘한 정렬 컨테이너 (검색 필드 추가 완료) -->
           <div style="display: flex; gap: 8px; align-items: center;">
-            <button id="btn-refresh" class="btn-refresh">
-              <svg viewBox="0 0 24 24" width="16" height="16">
-                <path fill="currentColor"
-                  d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-              </svg>
-              새로고침
-            </button>
+            <!-- 한글 주석: 예약 검색 필드 및 검색 버튼 추가 (실시간 검색 기능 대체) -->
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <input type="text" id="input-search-reservations" placeholder="이름, 연락처, 증상, 병원 검색..." style="background: #0c1020; color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; width: 220px; outline: none; transition: border-color 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
+              <button id="btn-search-reservations" style="background: #00f3ff; color: #0c1020; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; height: 36px; white-space: nowrap;">검색</button>
+            </div>
             <select id="select-limit-count" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
               <option value="10">10개씩 보기</option>
               <option value="20">20개씩 보기</option>
@@ -108,6 +107,14 @@
               <option value="si">🇱🇰 스리랑카어</option>
               <option value="bn">🇧🇩 방글라데시어</option>
             </select>
+            <!-- 한글 주석: 사용자 요청에 따라 '새로고침' 버튼의 렌더링 위치를 언어 필터 우측으로 이동 -->
+            <button id="btn-refresh" class="btn-refresh" style="height: 36px;">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor"
+                  d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+              </svg>
+              새로고침
+            </button>
           </div>
         </div>
 
@@ -124,8 +131,8 @@
                 <th>신원정보<br>(외국인등록번호)</th>
                 <th>체류만료일</th>
                 <th>연락처</th>
-                <th>접수시간</th>
-                <th>예약 희망일</th>
+                <th>예약시간</th>
+                <th>희망진료일</th>
                 <th>주 소</th>
                 <th>증 상</th>
                 <th>상 태</th>
@@ -184,6 +191,9 @@
                     <th>병원관리</th>
                     <th>등급권한관리</th>
                     <th>회원리스트</th>
+                    <!-- [한글 주석: 등급 권한 토글 제어를 위한 신규 광고배너관리 열 추가] -->
+                    <th>광고배너관리</th>
+                    <th>예약통계</th>
                     <th>등급명 변경</th> <!-- 사용자 요청에 맞춰 '등급변경' 컬럼명으로 복원 -->
                   </tr>
                 </thead>
@@ -367,26 +377,120 @@
                     <th>병원이름</th>
                     <th>진료과목</th>
                     <th>주소</th>
+                    <!-- [한글 주석: 병원 순서 지정을 조절하기 위한 순서 컬럼 th 추가] -->
+                    <th>순서</th>
                     <th>관리</th>
                   </tr>
                 </thead>
                 <tbody id="admin-clinic-list">
                   <tr>
-                    <td colspan="5" class="table-loading">병원 데이터를 불러오는 중입니다...</td>
+                    <td colspan="6" class="table-loading">병원 데이터를 불러오는 중입니다...</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </section>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <!-- ==========================================================================
+         5. 광고 배너 관리 탭 콘텐츠 (새로운 CRUD 패널)
+         ========================================================================== -->
+      <div id="content-ads" class="admin-tab-content" style="display: none;">
+        <div class="admin-users-layout">
+          <!-- 5-1. 광고 배너 등록/수정 폼 영역 (왼쪽) -->
+          <section class="clinic-form-section">
+            <h2 id="ad-form-title">신규 광고 배너 등록</h2>
+            <form id="ad-manage-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <input type="hidden" id="ad-edit-id"> <!-- 수정 모드 시 문서 ID 저장용 -->
+
+              <!-- 광고 태그 (병원명 등) -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-tag" style="font-size: 0.85rem; font-weight: 700;">태그 (예: 병원명/기관명)</label>
+                <input type="text" id="ad-tag" required placeholder="예: 이심당치과, BL성형피부과 등" style="padding: 0.6rem; font-size: 0.9rem;">
+              </div>
+
+              <!-- 광고 제목 -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-title" style="font-size: 0.85rem; font-weight: 700;">광고 제목</label>
+                <input type="text" id="ad-title" required placeholder="예: 스마트 디지털 임플란트" style="padding: 0.6rem; font-size: 0.9rem;">
+              </div>
+
+              <!-- 광고 설명 -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-desc" style="font-size: 0.85rem; font-weight: 700;">광고 상세 설명</label>
+                <textarea id="ad-desc" rows="3" required placeholder="광고의 상세 설명 정보를 입력해 주세요." style="padding: 0.6rem; font-size: 0.9rem; line-height: 1.4; resize: none;"></textarea>
+              </div>
+
+              <!-- 이미지 슬라이드 전환 시간 -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-interval" style="font-size: 0.85rem; font-weight: 700;">슬라이드 사진 전환 시간 (초)</label>
+                <input type="number" id="ad-interval" min="1" max="60" required value="4" placeholder="예: 4 (4초 간격으로 사진 롤링)" style="padding: 0.6rem; font-size: 0.9rem;">
+              </div>
+
+              <!-- 이미지 URL 동적 리스트 폼 (최소 1장 이상 등록) -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label style="font-size: 0.85rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+                  <span>사진 이미지 URL 목록 (최소 1개)</span>
+                  <button type="button" id="btn-add-ad-url" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.6rem; min-width: auto;">+ 추가</button>
+                </label>
+                <div id="ad-urls-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <!-- 자바스크립트로 동적 인풋 박스가 렌더링되며, 기본으로 최소 1개가 주어집니다 -->
+                  <div class="ad-url-row" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <input type="text" class="ad-image-url" required placeholder="웹 이미지 주소(URL) 또는 우측 파일 업로드 이용" style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 200px;">
+                    <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <!-- [한글 주석: 디자인 일관성을 지키는 숨김형 파일 업로드 버튼 및 가짜 뱃지 스타일 적용] -->
+                      <label class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.6rem 0.8rem; min-width: auto; margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+                        📁 파일 선택
+                        <input type="file" class="ad-file-input" accept="image/*" style="display: none;">
+                      </label>
+                      <button type="button" class="btn btn-secondary btn-remove-ad-url" style="font-size: 0.75rem; padding: 0.6rem; min-width: auto; background: rgba(244, 63, 94, 0.1); color: #fda4af; border-color: rgba(244,63,94,0.3);">&times;</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- [한글 주석: 수정취소/수정완료 버튼의 크기를 줄이고 50:50으로 정확히 대칭 분할 정렬] -->
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; width: 100%;">
+                <button type="button" id="btn-cancel-ad-edit" class="btn btn-secondary" style="flex: 1; display: none; padding: 0.5rem 0.75rem; font-size: 0.85rem; height: 38px; min-width: auto; line-height: 1.4;">수정 취소</button>
+                <button type="submit" id="btn-submit-ad" class="btn btn-primary" style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.85rem; height: 38px; min-width: auto; line-height: 1.4;">광고 등록하기</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- 5-2. 광고 목록 현황 테이블 (오른쪽) -->
+          <section class="clinic-list-section" style="flex-grow: 1.5;">
+            <h2>등록된 광고 배너 현황</h2>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>태그</th>
+                    <th>제목</th>
+                    <th>사진 수</th>
+                    <th>슬라이드 주기</th>
+                    <!-- 신규 추가: 광고 배너 출력 순서를 조절하기 위한 순서 컬럼 -->
+                    <th>순서</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-ad-list">
+                  <tr>
+                    <td colspan="5" class="table-loading">광고 데이터를 불러오는 중입니다...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
   </div>
 
   <!-- Firebase 및 관리 로직 로드 (ES Module) -->
-  <script type="module" src="/js/navigation.js?v=2.1.9"></script>
-  <script type="module" src="/js/admin.js?v=2.1.9"></script>
-  <script type="module" src="/js/auth.js?v=2.1.9"></script>
+  <script type="module" src="/js/navigation.js?v=2.4.1"></script>
+  <script type="module" src="/js/admin.js?v=2.4.1"></script>
+  <script type="module" src="/js/auth.js?v=2.4.1"></script>
 </body>
 
 </html>

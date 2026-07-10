@@ -185,19 +185,47 @@ document.addEventListener("DOMContentLoaded", () => {
       // 동일 세션 내 최초 1회만 Firestore에서 읽고 이후에는 캐시에서 역할을 반환합니다.
       try {
         const userRole = await getCachedUserRole(user.uid);
-        const allowedRoles = ["super_admin", "admin", "admin_user"];
-        const isAdmin = userRole && allowedRoles.includes(userRole);
+
+        // [한글 주석: roles 컬렉션에서 해당 등급의 관리자 진입 권한(isAdmin) 및 예약통계 권한(hasStats)을 동적으로 읽어옴]
+        let isAdmin = false;
+        let hasStats = false;
+        if (userRole) {
+          try {
+            const roleDocRef = doc(db, "roles", userRole);
+            const roleDocSnap = await getDoc(roleDocRef);
+            if (roleDocSnap.exists()) {
+              const roleData = roleDocSnap.data();
+              isAdmin = roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+              hasStats = roleData.hasStats !== undefined ? roleData.hasStats : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+            } else {
+              isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+              hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+            }
+          } catch (e) {
+            console.error("Failed to load permissions from roles in auth.js:", e);
+            isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+            hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+          }
+        }
 
         const currentAdminBtn = document.getElementById("btn-admin-dashboard");
+        const currentStatsBtn = document.getElementById("btn-stats-dashboard");
         // 신규 추가: 모바일용 퀵 관리자 버튼 캐싱
         const currentQuickAdminBtn = document.getElementById("quick-btn-admin-dashboard");
+        const currentQuickStatsBtn = document.getElementById("quick-btn-stats-dashboard");
         
         if (currentAdminBtn) {
           currentAdminBtn.style.display = isAdmin ? "inline-flex" : "none";
         }
+        if (currentStatsBtn) {
+          currentStatsBtn.style.display = hasStats ? "inline-flex" : "none";
+        }
         // 신규 추가: 모바일용 퀵 관리자 버튼도 권한에 맞춰 동시 노출 제어
         if (currentQuickAdminBtn) {
           currentQuickAdminBtn.style.display = isAdmin ? "inline-flex" : "none";
+        }
+        if (currentQuickStatsBtn) {
+          currentQuickStatsBtn.style.display = hasStats ? "inline-flex" : "none";
         }
       } catch (error) {
         console.error("사용자 권한 등급 확인 실패 (Admin button check failed):", error);
@@ -226,6 +254,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (quickBtnAdminDashboard) {
         quickBtnAdminDashboard.style.display = "none";
       }
+      const quickBtnStatsDashboard = document.getElementById("quick-btn-stats-dashboard");
+      if (quickBtnStatsDashboard) {
+        quickBtnStatsDashboard.style.display = "none";
+      }
       if (quickBtnLogin) {
         quickBtnLogin.style.display = "inline-flex";
       }
@@ -233,6 +265,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // 로그아웃 시 관리자 버튼 즉시 숨김
       if (btnAdminDashboard) {
         btnAdminDashboard.style.display = "none";
+      }
+      const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
+      if (btnStatsDashboard) {
+        btnStatsDashboard.style.display = "none";
       }
       
       // [성능 최적화] 로그아웃 시 이전 사용자 역할 캐시 및 관리자 권한 캐시를 전체 정리

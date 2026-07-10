@@ -39,14 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
             <a href="/about.html#services" class="nav-link">제공 서비스</a>
           </li>
           <li class="nav-item">
-            <a href="/index.html#partners" class="nav-link">협력 회사</a>
-          </li>
-          <li class="nav-item">
             <a href="/booking-lang.html" class="nav-link btn-nav-booking ${currentPath.endsWith("booking-lang.html") ? "active" : ""}">진료 예약</a>
           </li>
           <!-- 한글 주석: 의료통역 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 -->
           <li class="nav-item">
             <a href="/about.html#services" class="nav-link btn-nav-booking">의료통역</a>
+          </li>
+          <!-- 한글 주석: 사용자 요청에 따라 '협력 회사' 메뉴 위치를 '의료통역' 우측으로 이동시킴 -->
+          <li class="nav-item">
+            <a href="/index.html#partners" class="nav-link">협력 회사</a>
           </li>
         </ul>
 
@@ -62,6 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res">📅 예약내역</a>
             <!-- 관리자 대시보드 진입 버튼 (권한 등급에 따라 노출 제어) -->
             <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin" style="display: none;">👑 관리자</a>
+            <!-- 한글 주석: 예약 통계 페이지 진입 버튼 추가 -->
+            <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin" style="display: none;">📊 예약통계</a>
             <!-- 로그아웃 버튼 -->
             <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
           </div>
@@ -77,16 +80,18 @@ document.addEventListener("DOMContentLoaded", () => {
           <a href="/about.html" class="quick-icon-btn ${currentPath.endsWith("about.html") ? "active" : ""}" title="회사소개">🏢</a>
           <!-- 한글 주석: 모바일 퀵 메뉴 제공서비스 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 -->
           <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
-          <!-- 협력업체 바로가기 버튼 (악수 아이콘) -->
-          <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
           <!-- 진료 예약 바로가기 버튼 (달력 아이콘) -->
           <a href="/booking-lang.html" class="quick-icon-btn ${currentPath.endsWith("booking-lang.html") ? "active" : ""}" title="진료 예약">📅</a>
           <!-- 한글 주석: 모바일 퀵 메뉴 의료통역 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 -->
           <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
+          <!-- 한글 주석: 사용자 요청에 따라 모바일 퀵 메뉴에서도 '협력 회사'의 위치를 의료통역 뒤로 이동시킴 -->
+          <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
           <!-- 예약 내역 바로가기 버튼 (로그인 상태에 따라 auth.js에서 동적 표시) -->
           <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn ${currentPath.endsWith("my-reservations.html") ? "active" : ""}" style="display: none;" title="예약내역">📋</a>
           <!-- 관리자 대시보드 바로가기 버튼 (권한 등급에 따라 auth.js에서 동적 표시) -->
           <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn ${currentPath.endsWith("admin.html") ? "active" : ""}" style="display: none;" title="관리자">👑</a>
+          <!-- 한글 주석: 예약 통계 바로가기 버튼 추가 -->
+          <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn ${currentPath.endsWith("stats.html") ? "active" : ""}" style="display: none;" title="예약통계">📊</a>
           <!-- 퀵 로그인 버튼 (로그아웃 상태에 따라 auth.js에서 동적 표시) -->
           <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
         </div>
