@@ -22,6 +22,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnStatsPrint = document.getElementById("btn-stats-print");
   const btnStatsExcel = document.getElementById("btn-stats-excel"); // 신설: 엑셀 다운로드 버튼
   
+  // 엑셀 미리보기 모달 DOM 요소 취득 (한글 주석 필수)
+  const excelPreviewModal = document.getElementById("excel-preview-modal");
+  const excelPreviewTbody = document.getElementById("excel-preview-tbody");
+  const previewTotalCount = document.getElementById("preview-total-count");
+  const btnClosePreview = document.getElementById("btn-close-preview");
+  const btnCancelExcel = document.getElementById("btn-cancel-excel");
+  const btnConfirmExcel = document.getElementById("btn-confirm-excel");
+  
   const btnQuickWeek = document.getElementById("btn-quick-week");
   const btnQuickMonth = document.getElementById("btn-quick-month");
   const btnQuickYear = document.getElementById("btn-quick-year");
@@ -402,74 +410,315 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // [한글 주석: 필터된 리스트 대상 CSV 기반 엑셀 다운로드 기능 구현]
-  function downloadExcel() {
+  // =========================================================================
+  // 10. 엑셀 다운로드 미리보기 모달 제어 및 ExcelJS 고품질 저장 기능 (한글 주석 필수)
+  // =========================================================================
+
+  // [한글 주석: 예약 목록의 언어 코드를 한국어 이름으로 매핑하는 딕셔너리]
+  const langLabels = {
+    "ko": "한국어", "ja": "일본어", "vi": "베트남어", "en": "영어",
+    "zh": "중국어", "ru": "러시아어", "my": "미얀마어", "km": "캄보디아어",
+    "mn": "몽골어", "th": "태국어", "lo": "라오스어", "ne": "네팔어",
+    "id": "인도네시아어", "si": "스리랑카어", "bn": "방글라데시어"
+  };
+
+  // [한글 주석: 엑셀 미리보기 모달 닫기 함수]
+  function closeExcelPreview() {
+    if (excelPreviewModal) {
+      excelPreviewModal.classList.remove("active");
+    }
+  }
+
+  // [한글 주석: 엑셀 미리보기 화면을 구성하고 모달을 띄우는 함수]
+  function openExcelPreview() {
     if (!currentFilteredReservations || currentFilteredReservations.length === 0) {
       alert("다운로드할 데이터가 없습니다. 먼저 조회 조건 필터를 이용해 예약 내역을 조회해 주세요.");
       return;
     }
 
-    let csvContent = "\uFEFF"; // 한글 깨짐 방지용 UTF-8 BOM 선언
-    
-    // [한글 주석: 가장 상단에 총 조회 건수 텍스트 추가]
-    csvContent += `"총 조회 건수","${currentFilteredReservations.length}건"\n\n`;
-    
-    // CSV 헤더 정의
-    csvContent += "선택언어,이름,선택병원,성별,비자타입,생년월일,체류만료일,연락처,접수시간,희망진료일,주소,증상,상태\n";
+    // 미리보기 테이블 본문 비우기
+    excelPreviewTbody.innerHTML = "";
+    previewTotalCount.textContent = currentFilteredReservations.length;
 
-    const langLabels = {
-      "ko": "한국어", "ja": "일본어", "vi": "베트남어", "en": "영어",
-      "zh": "중국어", "ru": "러시아어", "my": "미얀마어", "km": "캄보디아어",
-      "mn": "몽골어", "th": "태국어", "lo": "라오스어", "ne": "네팔어",
-      "id": "인도네시아어", "si": "스리랑카어", "bn": "방글라데시어"
-    };
+    // 필터된 전체 목록을 순회하며 미리보기 간이 테이블 구성
+    currentFilteredReservations.forEach(data => {
+      const tr = document.createElement("tr");
 
-    currentFilteredReservations.forEach(item => {
-      const lang = langLabels[item.lang] || item.lang || "";
-      const name = item.name || "";
-      const clinic = item.clinic || "";
-      const gender = item.gender || "";
-      const visaType = item.visaType || "";
-      const dob = item.dob || "";
-      const visaExpiry = item.visaExpiry || "";
-      const phone = item.phone || "";
-      
-      let regDateStr = "";
-      if (item.createdAt) {
-        const jsDate = new Date(item.createdAt);
-        regDateStr = isNaN(jsDate.getTime()) ? "" : jsDate.toLocaleDateString("ko-KR", {
+      const displayLang = langLabels[data.lang] || (data.lang ? `${data.lang}` : "-");
+
+      const idInfo = [];
+      if (data.alienNo) idInfo.push(`외국인: ${data.alienNo}`);
+      if (data.passportNo) idInfo.push(`여권: ${data.passportNo}`);
+      const idInfoText = idInfo.length > 0 ? idInfo.join(", ") : "-";
+
+      let statusText = "대기중";
+      if (data.status === "confirmed") statusText = "예약 확정";
+      else if (data.status === "cancelled") statusText = "예약 취소";
+
+      let regDateStr = "-";
+      if (data.createdAt) {
+        const jsDate = new Date(data.createdAt);
+        regDateStr = isNaN(jsDate.getTime()) ? "-" : jsDate.toLocaleDateString("ko-KR", {
           year: "numeric", month: "2-digit", day: "2-digit"
         }) + " " + jsDate.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
       }
 
-      const hopeDate = item.reservationDate || "";
-      const address = (item.address || "").replace(/"/g, '""'); // 쌍따옴표 치환
-      const symptoms = (item.symptoms || "").replace(/"/g, '""');
-
-      let statusText = "대기중";
-      if (item.status === "confirmed") statusText = "예약 확정";
-      else if (item.status === "cancelled") statusText = "예약 취소";
-
-      // 쉼표 구분을 위한 쌍따옴표 래핑 레코드 추가
-      csvContent += `"${lang}","${name}","${clinic}","${gender}","${visaType}","${dob}","${visaExpiry}","${phone}","${regDateStr}","${hopeDate}","${address}","${symptoms}","${statusText}"\n`;
+      tr.innerHTML = `
+        <td>${displayLang}</td>
+        <td style="font-weight: bold;">${data.name || "-"}</td>
+        <td>${data.clinic || "-"}</td>
+        <td>${data.gender || "-"}</td>
+        <td>${data.visaType || "-"}</td>
+        <td>${data.dob || "-"}</td>
+        <td style="font-size: 0.8rem;">${idInfoText}</td>
+        <td>${data.visaExpiry || "-"}</td>
+        <td>${data.phone || "-"}</td>
+        <td>${regDateStr}</td>
+        <td>${data.reservationDate || "-"}</td>
+        <td>${statusText}</td>
+      `;
+      excelPreviewTbody.appendChild(tr);
     });
 
-    // Blob 생성 및 다운로드 발생
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `IGPartners_예약목록_${todayStr}.csv`);
-    link.style.visibility = "hidden";
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // 모달 활성화
+    excelPreviewModal.classList.add("active");
   }
 
+  // [한글 주석: ExcelJS 라이브러리를 이용하여 고도로 디자인된 엑셀 파일을 빌드하고 내보내는 핵심 함수]
+  async function downloadStyledExcel() {
+    if (!currentFilteredReservations || currentFilteredReservations.length === 0) {
+      alert("다운로드할 예약 데이터가 존재하지 않습니다.");
+      return;
+    }
+
+    try {
+      // 1) 워크북 및 시트 인스턴스 생성
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("예약통계 리스트");
+
+      // 2) 눈금선(Gridlines) 보이게 설정
+      worksheet.views = [{ showGridLines: true }];
+
+      // 3) 대형 타이틀 셀 병합 및 스타일링 (1행 ~ 2행 병합)
+      worksheet.mergeCells("A1:N2");
+      const titleCell = worksheet.getCell("A1");
+      titleCell.value = "IGPartners 예약 상세 통계 리스트";
+      titleCell.font = {
+        name: "Malgun Gothic",
+        size: 16,
+        bold: true,
+        color: { argb: "FFFFFFFF" } // 흰색 글꼴
+      };
+      titleCell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF0F172A" } // 어두운 슬레이트 블루 (#0f172a)
+      };
+      titleCell.alignment = { vertical: "middle", horizontal: "center" };
+
+      // 4) 요약 정보 기재 (4행)
+      const now = new Date();
+      const printDateStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0") + " " + String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+      
+      let total = currentFilteredReservations.length;
+      let confirmed = currentFilteredReservations.filter(i => i.status === "confirmed").length;
+      let cancelled = currentFilteredReservations.filter(i => i.status === "cancelled").length;
+      let pending = total - (confirmed + cancelled);
+
+      worksheet.mergeCells("A4:E4");
+      const dateCell = worksheet.getCell("A4");
+      dateCell.value = `출력 일시: ${printDateStr}`;
+      dateCell.font = { name: "Malgun Gothic", size: 10, bold: true, color: { argb: "FF475569" } };
+      dateCell.alignment = { vertical: "middle", horizontal: "left" };
+
+      worksheet.mergeCells("F4:N4");
+      const summaryCell = worksheet.getCell("F4");
+      summaryCell.value = `상태 통계 요약:  총 ${total}건  [ 예약 확정: ${confirmed}건 | 예약 취소: ${cancelled}건 | 대기중: ${pending}건 ]`;
+      summaryCell.font = { name: "Malgun Gothic", size: 10, bold: true, color: { argb: "FF1E293B" } };
+      summaryCell.alignment = { vertical: "middle", horizontal: "right" };
+
+      // 요약 줄 스타일링 테두리 및 옅은 배경
+      const summaryRow = worksheet.getRow(4);
+      summaryRow.height = 24;
+      for (let c = 1; c <= 14; c++) {
+        const cell = summaryRow.getCell(c);
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFF1F5F9" } // 연한 그레이색 백그라운드 (#f1f5f9)
+        };
+        cell.border = {
+          top: { style: "thin", color: { argb: "FFCBD5E1" } },
+          bottom: { style: "thin", color: { argb: "FFCBD5E1" } }
+        };
+      }
+
+      // 5) 테이블 헤더 정의 (6행)
+      const headers = [
+        "선택언어", "이 름", "선택 병원", "성 별", "비자타입", 
+        "생년월일", "신원정보 (외국인등록번호/여권)", "체류만료일", "연락처", 
+        "접수시간", "희망진료일", "주 소", "증 상", "상 태"
+      ];
+      
+      const headerRow = worksheet.getRow(6);
+      headerRow.height = 28;
+      
+      headers.forEach((headerText, index) => {
+        const cell = headerRow.getCell(index + 1);
+        cell.value = headerText;
+        cell.font = { name: "Malgun Gothic", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF10B981" } // 에메랄드 그린 핵심 색상 (#10b981)
+        };
+        cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+        cell.border = {
+          top: { style: "medium", color: { argb: "FF047857" } },
+          bottom: { style: "medium", color: { argb: "FF047857" } },
+          left: { style: "thin", color: { argb: "FFCBD5E1" } },
+          right: { style: "thin", color: { argb: "FFCBD5E1" } }
+        };
+      });
+
+      // 6) 데이터 로우 삽입 (7행부터 시작)
+      currentFilteredReservations.forEach((item, rIdx) => {
+        const dataRowNumber = 7 + rIdx;
+        const row = worksheet.getRow(dataRowNumber);
+        row.height = 24;
+
+        // 접수시간(createdAt) 포맷 가공
+        let regDateStr = "";
+        if (item.createdAt) {
+          const jsDate = new Date(item.createdAt);
+          regDateStr = isNaN(jsDate.getTime()) ? "" : jsDate.toLocaleDateString("ko-KR", {
+            year: "numeric", month: "2-digit", day: "2-digit"
+          }) + " " + jsDate.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+        }
+
+        // 신원정보 텍스트 조립
+        const idInfo = [];
+        if (item.alienNo) idInfo.push(`외국인: ${item.alienNo}`);
+        if (item.passportNo) idInfo.push(`여권: ${item.passportNo}`);
+        const idInfoText = idInfo.length > 0 ? idInfo.join(" / ") : "-";
+
+        // 예약 상태 다국어 -> 한국어 명칭 변환
+        let statusText = "대기중";
+        let statusBgColor = "FFFFF3C7"; // 대기중: 연한 옐로우 (#fef3c7)
+        if (item.status === "confirmed") {
+          statusText = "예약 확정";
+          statusBgColor = "FFD1FAE5"; // 확정: 연한 에메랄드 (#d1fae5)
+        } else if (item.status === "cancelled") {
+          statusText = "예약 취소";
+          statusBgColor = "FFFEE2E2"; // 취소: 연한 핑크적색 (#fee2e2)
+        }
+
+        // 값들 배열에 배치
+        const rowValues = [
+          langLabels[item.lang] || item.lang || "-",
+          item.name || "-",
+          item.clinic || "-",
+          item.gender || "-",
+          item.visaType || "-",
+          item.dob || "-",
+          idInfoText,
+          item.visaExpiry || "-",
+          item.phone || "-",
+          regDateStr,
+          item.reservationDate || "-",
+          item.address || "-",
+          item.symptoms || "-",
+          statusText
+        ];
+
+        // 각 셀에 값 입력 및 디테일한 개별 디자인 스타일 입히기
+        rowValues.forEach((val, cIdx) => {
+          const cell = row.getCell(cIdx + 1);
+          cell.value = val;
+          cell.font = { name: "Malgun Gothic", size: 10, color: { argb: "FF334155" } };
+          
+          // 공통 테두리 스타일 적용
+          cell.border = {
+            top: { style: "thin", color: { argb: "FFE2E8F0" } },
+            bottom: { style: "thin", color: { argb: "FFE2E8F0" } },
+            left: { style: "thin", color: { argb: "FFE2E8F0" } },
+            right: { style: "thin", color: { argb: "FFE2E8F0" } }
+          };
+
+          // 데이터 정렬 정밀 세팅 (한글 주석 필수)
+          // 텍스트 길이나 컬럼 특성에 맞춰 정렬
+          if ([1, 4, 5, 6, 8, 9, 10, 11, 14].includes(cIdx + 1)) {
+            // 언어, 성별, 비자, 생일, 만료일, 연락처, 접수일, 진료희망일, 상태는 가운데 정렬
+            cell.alignment = { vertical: "middle", horizontal: "center" };
+          } else {
+            // 이름, 병원명, 신원정보, 주소, 증상은 왼쪽 정렬 및 텍스트 래핑 허용
+            cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+          }
+
+          // 상태 열(14번째 컬럼)에 고유한 상태 파스텔 배경색 채우기
+          if (cIdx + 1 === 14) {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: statusBgColor }
+            };
+            cell.font = { name: "Malgun Gothic", size: 10, bold: true, color: { argb: "FF1E293B" } };
+          }
+        });
+      });
+
+      // 7) 컬럼 너비 자동 맞춤(Auto-fit Columns Width) 알고리즘 적용
+      worksheet.columns.forEach((column) => {
+        let maxLen = 10;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          if (cell.row > 5) { // 헤더 및 데이터 라인 기준으로 길이 측정
+            const valStr = cell.value ? String(cell.value) : "";
+            // 한글 및 다국어 폰트는 바이트 기준 폭 보정을 위해 글자당 가중치 2 적용
+            let charCount = 0;
+            for (let i = 0; i < valStr.length; i++) {
+              if (valStr.charCodeAt(i) > 127) {
+                charCount += 1.8;
+              } else {
+                charCount += 1.0;
+              }
+            }
+            if (charCount > maxLen) {
+              maxLen = charCount;
+            }
+          }
+        });
+        // 텍스트 래핑이 있는 긴 주소나 증상은 너무 무한히 커지는 것을 방지하기 위해 최대 너비 제한 35로 설정
+        column.width = Math.min(Math.max(maxLen + 3, 12), 35);
+      });
+
+      // 8) ExcelJS를 사용하여 buffer 획득 및 다운로드 처리 (FileSaver 연동)
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      
+      const todayStr = now.toISOString().slice(0, 10).replace(/-/g, "");
+      saveAs(blob, `IGPartners_예약분석_${todayStr}.xlsx`);
+
+      // 9) 완료 시 미리보기 모달 닫기
+      closeExcelPreview();
+
+    } catch (error) {
+      console.error("엑셀 파일 빌드 및 내보내기 실패:", error);
+      alert("디자인 엑셀 다운로드 중 오류가 발생했습니다. 개발자 도구의 콘솔을 확인해 주세요.");
+    }
+  }
+
+  // 11. 이벤트 바인딩 설정
   if (btnStatsExcel) {
-    btnStatsExcel.addEventListener("click", downloadExcel);
+    btnStatsExcel.addEventListener("click", openExcelPreview);
+  }
+  if (btnClosePreview) {
+    btnClosePreview.addEventListener("click", closeExcelPreview);
+  }
+  if (btnCancelExcel) {
+    btnCancelExcel.addEventListener("click", closeExcelPreview);
+  }
+  if (btnConfirmExcel) {
+    btnConfirmExcel.addEventListener("click", downloadStyledExcel);
   }
 });
+
