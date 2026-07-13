@@ -123,14 +123,66 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
+   * [성능 최적화] 역할별 상세 권한(isAdmin, hasStats) 캐시 함수 (신설)
+   * - 동일 세션 내에서 DB(roles 컬렉션)의 반복 조회를 생략하기 위해 세션스토리지에 캐싱합니다.
+   * @param {string} userRole - 사용자 등급 역할(role)
+   * @returns {Promise<{isAdmin: boolean, hasStats: boolean}>} 권한 객체
+   */
+  async function getCachedRolePermissions(userRole) {
+    if (!userRole) {
+      return { isAdmin: false, hasStats: false };
+    }
+    const cacheKey = `role_permissions_cache_${userRole}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached !== null) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {
+        console.error("캐시된 권한 파싱 실패:", e);
+      }
+    }
+
+    // 캐시가 없을 때만 Firestore(roles) 1회 조회
+    let isAdmin = false;
+    let hasStats = false;
+    try {
+      const roleDocRef = doc(db, "roles", userRole);
+      const roleDocSnap = await getDoc(roleDocRef);
+      if (roleDocSnap.exists()) {
+        const roleData = roleDocSnap.data();
+        isAdmin = roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+        hasStats = roleData.hasStats !== undefined ? roleData.hasStats : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+      } else {
+        isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+        hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+      }
+    } catch (e) {
+      console.error("Failed to load permissions from roles in caching logic:", e);
+      isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+      hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+    }
+
+    const perms = { isAdmin, hasStats };
+    try {
+      sessionStorage.setItem(cacheKey, JSON.stringify(perms));
+    } catch (e) {
+      console.error("권한 캐시 세션스토리지 저장 실패:", e);
+    }
+    return perms;
+  }
+
+  /**
    * [성능 최적화] 역할 캐시 무효화 함수
-   * 로그아웃 또는 역할 변경 시 호출하여 캐시를 삭제합니다.
+   * 로그아웃 또는 역할 변경 시 호출하여 캐시를 삭제합니다. (전체 세션 캐시 무효화 처리로 보강)
    */
   function clearUserRoleCache(uid) {
     if (uid) {
       sessionStorage.removeItem(`user_role_cache_${uid}`);
       sessionStorage.removeItem(`admin_permissions_cache_${uid}`);
     }
+    // 역할 권한 캐시들도 같이 무효화하기 위해 세션스토리지 일괄 클리어 지원
+    sessionStorage.clear();
+    console.log("세션스토리지 캐시 일괄 무효화가 완료되었습니다.");
   }
 
   // 역할 캐시 무효화 함수를 전역으로 노출 (admin.js에서 역할 변경 후 캐시 초기화에 활용)
@@ -186,26 +238,13 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const userRole = await getCachedUserRole(user.uid);
 
-        // [한글 주석: roles 컬렉션에서 해당 등급의 관리자 진입 권한(isAdmin) 및 예약통계 권한(hasStats)을 동적으로 읽어옴]
+        // [한글 주석: 세션스토리지에 캐싱된 권한 정보(isAdmin, hasStats)를 사용해 Firestore DB 중복 읽기 원천 방지]
         let isAdmin = false;
         let hasStats = false;
         if (userRole) {
-          try {
-            const roleDocRef = doc(db, "roles", userRole);
-            const roleDocSnap = await getDoc(roleDocRef);
-            if (roleDocSnap.exists()) {
-              const roleData = roleDocSnap.data();
-              isAdmin = roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-              hasStats = roleData.hasStats !== undefined ? roleData.hasStats : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-            } else {
-              isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-              hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-            }
-          } catch (e) {
-            console.error("Failed to load permissions from roles in auth.js:", e);
-            isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-            hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-          }
+          const perms = await getCachedRolePermissions(userRole);
+          isAdmin = perms.isAdmin;
+          hasStats = perms.hasStats;
         }
 
         const currentAdminBtn = document.getElementById("btn-admin-dashboard");

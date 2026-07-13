@@ -28,9 +28,10 @@
       gap: 12px;
     }
 
-    /* 콤팩트하고 세련된 인풋 스타일 */
+    /* 콤팩트하고 세련된 인풋 스타일 (주석 필수: 텍스트 입력 폼 추가 대응) */
     #stats-filter-form select,
-    #stats-filter-form input[type="date"] {
+    #stats-filter-form input[type="date"],
+    #stats-filter-form input[type="text"] {
       height: 38px !important;
       padding: 0.4rem 0.6rem !important;
       font-size: 0.88rem !important;
@@ -42,7 +43,8 @@
     }
 
     #stats-filter-form select:focus,
-    #stats-filter-form input[type="date"]:focus {
+    #stats-filter-form input[type="date"]:focus,
+    #stats-filter-form input[type="text"]:focus {
       border-color: #00f3ff !important;
       box-shadow: 0 0 8px rgba(0, 243, 255, 0.2) !important;
     }
@@ -53,14 +55,25 @@
       color: rgba(255, 255, 255, 0.8) !important;
     }
 
-    /* 화면 해상도가 1025px 이상인 넓은 화면(데스크톱 웹)에서는 가로 3열 나열 구조로 배치 */
+    /* 화면 해상도가 1025px 이상인 넓은 화면(데스크톱 웹)에서는 12열 그리드를 기준으로 1행(3칸씩 4개)과 2행(4칸씩 3개)의 가로정렬 라인을 완벽히 일치시킴 */
     @media (min-width: 1025px) {
       #stats-filter-form {
-        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-columns: repeat(12, 1fr) !important;
+      }
+      .filter-col-3 {
+        grid-column: span 3 !important;
+      }
+      .filter-col-4 {
+        grid-column: span 4 !important;
       }
     }
 
-    /* 한글 주석: 프린트/PDF 저장 시 불필요한 레이아웃 가림 처리 */
+    /* 브라우저 기본 용지 여백 최소화 (한글 주석: 세로/가로 인쇄 영역의 가로 폭을 최대로 극대화) */
+    @page {
+      margin: 5mm !important;
+    }
+
+    /* 한글 주석: 프린트/PDF 저장 시 불필요한 레이아웃 가림 및 테이블 잘림/겹침 방지 최적화 v4 */
     @media print {
 
       #global-header,
@@ -70,9 +83,83 @@
         display: none !important;
       }
 
-      .container {
-        margin-top: 0 !important;
+      /* 테이블 상위 부모 요소 가로 100% 강제 적용 및 내부/외부 마진 제거 */
+      .container,
+      .admin-main,
+      .table-responsive {
+        margin: 0 !important;
         padding: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        overflow: hidden !important; /* 세로 모드 시 돌출 및 잘림 강제 방지 */
+        max-height: none !important;
+      }
+
+      .admin-table {
+        width: 100% !important;
+        table-layout: fixed !important; /* 고정 칸 비율 분할로 가로 100% 꽉 채우기 보장 */
+        word-break: break-all !important;
+        zoom: normal !important;
+        transform: none !important;
+      }
+
+      .admin-table th,
+      .admin-table td {
+        font-size: 7.2px !important; /* 세로/가로 인쇄용 7.2px */
+        padding: 3px 1px !important; /* 패딩 최소화로 가로 공간 확보 */
+        white-space: normal !important; /* 줄바꿈 허용 */
+        word-wrap: break-word !important;
+        word-break: break-all !important; /* 단어 쪼개어 강제 줄바꿈 처리 */
+        overflow-wrap: anywhere !important; /* 가로폭 침범 방지 강제 적용 */
+        text-align: center !important; /* 가독성을 위한 중앙 정렬 */
+      }
+
+      /* 15개 전체 컬럼에 대한 비율별 가로폭 정밀 재배치 (세로 모드 압축형, 합계 100%) */
+      .col-lang { width: 5.0% !important; }      /* 선택언어 */
+      .col-name { width: 6.5% !important; }      /* 이름 */
+      .col-clinic { width: 8.0% !important; }    /* 선택병원 */
+      .col-gender { width: 3.0% !important; }    /* 성별 */
+      .col-visa-type { width: 4.5% !important; }  /* 비자타입 */
+      .col-dob { width: 7.0% !important; }        /* 생년월일 */
+      .col-id { width: 9.0% !important; }         /* 신원정보 */
+      .col-visa-expiry { width: 7.0% !important; }/* 체류만료일 */
+      .col-phone { width: 8.0% !important; }      /* 연락처 */
+      .col-date { width: 9.0% !important; }       /* 예약시간 */
+      .col-res-date { width: 7.5% !important; }   /* 희망진료일 */
+      .col-address { width: 7.0% !important; }    /* 주소 */
+      .col-symptoms { width: 6.0% !important; }   /* 증상 */
+      .col-inflow { width: 5.5% !important; }     /* 유입경로 */
+      .col-status { width: 7.0% !important; }     /* 상태 */
+
+      /* 선택언어 뱃지 겹침 현상 해결: 셀 포지션 간섭 제거 및 뱃지 폰트/디스플레이 최적화 */
+      .lang-badge {
+        background: none !important;
+        border: none !important;
+        color: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-weight: bold !important;
+        box-shadow: none !important;
+        display: inline-block !important; /* 가로 배열 유지로 겹침 현상 제거 */
+        font-size: 7px !important; /* 본문 폰트(7.2px)와 조화되도록 크기 축소 */
+      }
+
+      /* 상태 뱃지 정밀 축소 (타원형 테두리 스케일 정밀 다운) */
+      .admin-table td .badge {
+        font-size: 6.8px !important; /* 7px 이하로 조율 */
+        padding: 1px 4px !important; /* 가로/세로 여백 최소화 */
+        border-radius: 4px !important; /* 좁은 폭에 어울리는 둥글기 */
+        border-width: 0.5px !important; /* 테두리 얇게 */
+        line-height: 1.1 !important;
+        display: inline-block !important;
+      }
+
+      /* 주소와 증상 열 노출 유지 */
+      .col-address, 
+      .col-symptoms,
+      .admin-table th:nth-child(12),
+      .admin-table th:nth-child(13) {
+        display: table-cell !important;
       }
     }
 
@@ -251,7 +338,7 @@
       <form id="stats-filter-form" class="admin-clinic-form" onsubmit="return false;">
 
         <!-- 1. 선택 언어 필터 -->
-        <div class="form-group">
+        <div class="form-group filter-col-3">
           <label for="filter-lang">선택 언어</label>
           <select id="filter-lang">
             <option value="all">전체보기</option>
@@ -274,7 +361,7 @@
         </div>
 
         <!-- 2. 선택 병원 필터 (신설) -->
-        <div class="form-group">
+        <div class="form-group filter-col-3">
           <label for="filter-clinic">선택 병원</label>
           <select id="filter-clinic">
             <option value="all">전체보기 (로딩중...)</option>
@@ -282,7 +369,7 @@
         </div>
 
         <!-- 3. 성별 필터 -->
-        <div class="form-group">
+        <div class="form-group filter-col-3">
           <label for="filter-gender">성별</label>
           <select id="filter-gender">
             <option value="all">전체보기</option>
@@ -292,8 +379,14 @@
           </select>
         </div>
 
+        <!-- 3-2. 유입경로 필터 (신설: 검색어 입력 형식) -->
+        <div class="form-group filter-col-3">
+          <label for="filter-inflow">유입경로</label>
+          <input type="text" id="filter-inflow" placeholder="유입경로 입력 (예: 지인, 인스타 등)">
+        </div>
+
         <!-- 4. 체류만료일 범위 필터 -->
-        <div class="form-group">
+        <div class="form-group filter-col-4">
           <label>체류만료일 기간</label>
           <div style="display: flex; gap: 8px; align-items: center;">
             <input type="date" id="filter-expiry-start" style="flex: 1;">
@@ -303,7 +396,7 @@
         </div>
 
         <!-- 5. 예약시간(접수일) 범위 필터 -->
-        <div class="form-group">
+        <div class="form-group filter-col-4">
           <label>예약시간(접수시간) 기간</label>
           <div style="display: flex; gap: 8px; align-items: center;">
             <input type="date" id="filter-reg-start" style="flex: 1;">
@@ -313,7 +406,7 @@
         </div>
 
         <!-- 6. 희망진료일 범위 필터 -->
-        <div class="form-group">
+        <div class="form-group filter-col-4">
           <label>희망진료일 기간</label>
           <div style="display: flex; gap: 8px; align-items: center;">
             <input type="date" id="filter-hope-start" style="flex: 1;">

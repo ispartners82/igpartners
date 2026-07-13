@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterLang = document.getElementById("filter-lang");
   const filterClinic = document.getElementById("filter-clinic"); // 신설: 선택 병원 필터
   const filterGender = document.getElementById("filter-gender");
+  const filterInflow = document.getElementById("filter-inflow"); // 신설: 유입경로 검색 필터 엘리먼트 취득
   
   const filterExpiryStart = document.getElementById("filter-expiry-start");
   const filterExpiryEnd = document.getElementById("filter-expiry-end");
@@ -192,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const langVal = filterLang.value;
     const clinicVal = filterClinic ? filterClinic.value : "all"; // 신설: 병원 필터 선택값
     const genderVal = filterGender.value;
+    const inflowVal = filterInflow ? filterInflow.value.trim().toLowerCase() : ""; // 신설: 유입경로 입력 검색어 획득
     
     const expStartVal = filterExpiryStart.value;
     const expEndVal = filterExpiryEnd.value;
@@ -213,6 +215,11 @@ document.addEventListener("DOMContentLoaded", () => {
       // B. 성별 필터
       if (genderVal !== "all") {
         if (!item.gender || item.gender.trim() !== genderVal) return false;
+      }
+
+      // B-2. 유입경로 검색 필터 (한글 주석: 입력어가 포함된 유입경로 매칭 체크)
+      if (inflowVal) {
+        if (!item.inflow || !item.inflow.toLowerCase().includes(inflowVal)) return false;
       }
 
       // C. 체류만료일 기간 필터 (YYYY-MM-DD 포맷 가정)
@@ -398,6 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
       filterLang.value = "all";
       if (filterClinic) filterClinic.value = "all";
       filterGender.value = "all";
+      if (filterInflow) filterInflow.value = ""; // 신설: 필터 리셋 시 유입경로 입력란도 비우기 처리
       filterExpiryStart.value = "";
       filterExpiryEnd.value = "";
       filterRegStart.value = "";

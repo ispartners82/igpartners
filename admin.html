@@ -72,23 +72,17 @@
       <!-- 선택언어별 예약수 타일 영역 (예약캡처 디자인 모사) -->
       <div id="admin-lang-stats" class="admin-lang-stats"></div>
 
-      <!-- 예약 목록 테이블 영역 -->
+      <!-- 예약 목록 테이블 영역 (한글 주석: 인라인 display: flex를 제거하여 style.css의 반응형 미디어 쿼리가 올바르게 적용되도록 개선) -->
       <main class="admin-main">
-        <div class="table-controls" style="justify-content: space-between; align-items: center; display: flex; margin-bottom: 1.5rem;">
-          <h2>예약 상세 목록</h2>
-          <!-- [레이아웃 교정] 우측 조작계 항목 그룹화 및 촘촘한 정렬 컨테이너 (검색 필드 추가 완료) -->
-          <div style="display: flex; gap: 8px; align-items: center;">
+        <h2 style="margin-bottom: 0.8rem; color: #ffffff; font-size: 1.25rem;">예약 상세 목록</h2>
+        <div class="table-controls" style="margin-bottom: 1.5rem;">
+          <!-- [레이아웃 교정] 우측 조작계 항목 그룹화 및 촘촘한 정렬 컨테이너 (모바일 줄바꿈 flex-wrap 추가) -->
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <!-- 한글 주석: 예약 검색 필드 및 검색 버튼 추가 (실시간 검색 기능 대체) -->
-            <div style="display: flex; gap: 4px; align-items: center;">
-              <input type="text" id="input-search-reservations" placeholder="이름, 연락처, 증상, 병원 검색..." style="background: #0c1020; color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; width: 220px; outline: none; transition: border-color 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
+            <div style="display: flex; gap: 4px; align-items: center; flex-wrap: nowrap;">
+              <input type="text" id="input-search-reservations" placeholder="이름, 연락처, 증상, 병원 검색..." style="background: #0c1020; color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; width: 220px; max-width: 100%; outline: none; transition: border-color 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
               <button id="btn-search-reservations" style="background: #00f3ff; color: #0c1020; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; height: 36px; white-space: nowrap;">검색</button>
             </div>
-            <select id="select-limit-count" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
-              <option value="10">10개씩 보기</option>
-              <option value="20">20개씩 보기</option>
-              <option value="50">50개씩 보기</option>
-              <option value="100">100개씩 보기</option>
-            </select>
             <select id="select-lang-filter" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
               <option value="all">전체보기</option>
               <option value="ko">🇰🇷 한국어</option>
@@ -106,6 +100,12 @@
               <option value="id">🇮🇩 인도네시아어</option>
               <option value="si">🇱🇰 스리랑카어</option>
               <option value="bn">🇧🇩 방글라데시어</option>
+            </select>
+            <select id="select-limit-count" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+              <option value="10">10개씩 보기</option>
+              <option value="20">20개씩 보기</option>
+              <option value="50">50개씩 보기</option>
+              <option value="100">100개씩 보기</option>
             </select>
             <!-- 한글 주석: 사용자 요청에 따라 '새로고침' 버튼의 렌더링 위치를 언어 필터 우측으로 이동 -->
             <button id="btn-refresh" class="btn-refresh" style="height: 36px;">
