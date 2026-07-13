@@ -272,20 +272,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   (async () => {
     try {
-      // [한글 주석: 세션 스토리지 기반 병원 목록 캐싱 적용으로 불필요한 Firestore DB 읽기 0회로 최적화]
-      const cachedData = sessionStorage.getItem("cached_clinics_list");
+      // [한글 주석: 로컬 스토리지 기반 병원 목록 캐싱 적용으로 불필요한 Firestore DB 읽기 0회로 최적화 - 탭 간 캐시 무효화를 위해 sessionStorage에서 localStorage로 변경]
+      const cachedData = localStorage.getItem("cached_clinics_list");
       let clinicsData = [];
 
       if (cachedData) {
         clinicsData = JSON.parse(cachedData);
-        console.log("Clinics list loaded from Session Cache (0 Firestore Read cost)");
+        console.log("Clinics list loaded from Local Storage Cache (0 Firestore Read cost)");
       } else {
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((docSnap) => {
           clinicsData.push(docSnap.data());
         });
-        sessionStorage.setItem("cached_clinics_list", JSON.stringify(clinicsData));
-        console.log("Clinics list loaded from Firestore DB and cached");
+        localStorage.setItem("cached_clinics_list", JSON.stringify(clinicsData));
+        console.log("Clinics list loaded from Firestore DB and cached to Local Storage");
       }
 
       container.innerHTML = "";

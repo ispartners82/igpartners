@@ -117,7 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (items.length === 0) {
-      reservationList.innerHTML = `<tr><td colspan="13" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
+      // [한글 주석: '유입경로' 컬럼이 추가되어 전체 컬럼 개수가 16개로 변경됨에 따라 빈 테이블 노출 시 colspan을 16으로 수정]
+      reservationList.innerHTML = `<tr><td colspan="16" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
       updateStats(0, 0, 0, 0);
       return;
     }
@@ -229,6 +230,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
         <td class="col-address">${data.address || "-"}</td>
         <td class="col-symptoms">${data.symptoms || "-"}</td>
+        <!-- [한글 주석: 증상과 상태 컬럼 사이에 유입경로(inflow)를 직접 수정 가능한 인라인 input 텍스트 필드로 렌더링] -->
+        <td class="col-inflow"><input type="text" class="inflow-edit-input" data-id="${docId}" value="${data.inflow || ''}" placeholder="유입경로 입력" /></td>
         <td class="col-status"><span class="badge ${statusBadgeClass}">${statusBadgeText}</span></td>
         <td class="col-actions"><div class="action-wrapper">${actionButtons}</div></td>
       `;
@@ -251,7 +254,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // 최초 로드 시에만 로딩 표시 및 로컬스토리지 즉시 반환 처리
     if (isFirstLoad) {
-      reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
+      // [한글 주석: '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 로딩 표시 colspan을 16으로 수정]
+      reservationList.innerHTML = `<tr><td colspan="16" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
 
       // 1단계: Firestore 로드 전, 로컬스토리지 백업 데이터가 있다면 먼저 렌더링 (즉각적인 피드백 보장)
       let initialLocalItems = [];
@@ -269,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentLangFilter !== "all") {
           filteredLocal = initialLocalItems.filter(item => item.lang === currentLangFilter);
         }
-        // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입]
+        // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로]
         if (currentSearchQuery) {
           filteredLocal = filteredLocal.filter(item => {
             const name = (item.name || "").toLowerCase();
@@ -279,13 +283,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const alienNo = (item.alienNo || "").toLowerCase();
             const passportNo = (item.passportNo || "").toLowerCase();
             const visaType = (item.visaType || "").toLowerCase();
+            // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
+            const inflow = (item.inflow || "").toLowerCase();
             return name.includes(currentSearchQuery) || 
                    phone.includes(currentSearchQuery) || 
                    symptoms.includes(currentSearchQuery) || 
                    clinic.includes(currentSearchQuery) ||
                    alienNo.includes(currentSearchQuery) ||
                    passportNo.includes(currentSearchQuery) ||
-                   visaType.includes(currentSearchQuery);
+                   visaType.includes(currentSearchQuery) ||
+                   inflow.includes(currentSearchQuery);
           });
         }
         const sortedLocal = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -356,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentLangFilter !== "all") {
         filteredItems = sortedItems.filter(item => item.lang === currentLangFilter);
       }
-      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입]
+      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로]
       if (currentSearchQuery) {
         filteredItems = filteredItems.filter(item => {
           const name = (item.name || "").toLowerCase();
@@ -366,13 +373,16 @@ document.addEventListener("DOMContentLoaded", () => {
           const alienNo = (item.alienNo || "").toLowerCase();
           const passportNo = (item.passportNo || "").toLowerCase();
           const visaType = (item.visaType || "").toLowerCase();
+          // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
+          const inflow = (item.inflow || "").toLowerCase();
           return name.includes(currentSearchQuery) || 
                  phone.includes(currentSearchQuery) || 
                  symptoms.includes(currentSearchQuery) || 
                  clinic.includes(currentSearchQuery) ||
                  alienNo.includes(currentSearchQuery) ||
                  passportNo.includes(currentSearchQuery) ||
-                 visaType.includes(currentSearchQuery);
+                 visaType.includes(currentSearchQuery) ||
+                 inflow.includes(currentSearchQuery);
         });
       }
 
@@ -396,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentLangFilter !== "all") {
         filteredLocal = localItems.filter(item => item.lang === currentLangFilter);
       }
-      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입]
+      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로]
       if (currentSearchQuery) {
         filteredLocal = filteredLocal.filter(item => {
           const name = (item.name || "").toLowerCase();
@@ -406,13 +416,16 @@ document.addEventListener("DOMContentLoaded", () => {
           const alienNo = (item.alienNo || "").toLowerCase();
           const passportNo = (item.passportNo || "").toLowerCase();
           const visaType = (item.visaType || "").toLowerCase();
+          // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
+          const inflow = (item.inflow || "").toLowerCase();
           return name.includes(currentSearchQuery) || 
                  phone.includes(currentSearchQuery) || 
                  symptoms.includes(currentSearchQuery) || 
                  clinic.includes(currentSearchQuery) ||
                  alienNo.includes(currentSearchQuery) ||
                  passportNo.includes(currentSearchQuery) ||
-                 visaType.includes(currentSearchQuery);
+                 visaType.includes(currentSearchQuery) ||
+                 inflow.includes(currentSearchQuery);
         });
       }
       const finalItems = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -505,6 +518,60 @@ document.addEventListener("DOMContentLoaded", () => {
   // 새로고침 버튼
   btnRefresh.addEventListener("click", () => {
     loadReservations(false);
+  });
+
+  // [한글 주석: 유입경로 인라인 입력란의 값이 변경되었을 때 Firestore 및 로컬스토리지를 업데이트하는 이벤트 리스너]
+  reservationList.addEventListener("change", async (e) => {
+    if (!e.target.classList.contains("inflow-edit-input")) return;
+
+    const input = e.target;
+    const docId = input.dataset.id;
+    const newInflow = input.value.trim();
+
+    if (!docId) return;
+
+    // 1. 로컬스토리지 백업 데이터 업데이트
+    try {
+      const existing = localStorage.getItem("local_reservations");
+      if (existing) {
+        let localData = JSON.parse(existing);
+        const index = localData.findIndex(item => item.id === docId);
+        if (index !== -1) {
+          localData[index].inflow = newInflow;
+          localStorage.setItem("local_reservations", JSON.stringify(localData));
+          
+          // [한글 주석: 로컬 전용 예약일 경우 별도 local_reservations_direct 키에 백업 저장]
+          if (docId.startsWith("local_")) {
+            localStorage.setItem("local_reservations_direct", JSON.stringify(localData.filter(item => item.id.startsWith("local_"))));
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Local inflow update error:", err);
+    }
+
+    // 2. 일반 Firestore 데이터의 경우 서버 데이터 업데이트
+    if (!docId.startsWith("local_")) {
+      try {
+        const docRef = doc(db, "reservations", docId);
+        await updateDoc(docRef, { inflow: newInflow });
+        // [한글 주석: 업데이트 성공 시 시각적 효과를 위해 잠시 테두리 색상 강조]
+        input.style.borderColor = "#34d399";
+        setTimeout(() => {
+          input.style.borderColor = "";
+        }, 1000);
+      } catch (err) {
+        console.error("Firestore inflow update error:", err);
+        input.style.borderColor = "#ef4444";
+        alert("유입경로 저장에 실패했습니다. (Database Error)");
+      }
+    } else {
+      // 로컬 데이터는 로컬스토리지만 업데이트되었으므로 성공 효과 부여
+      input.style.borderColor = "#34d399";
+      setTimeout(() => {
+        input.style.borderColor = "";
+      }, 1000);
+    }
   });
 
   // [예약 개수 제한 필터] 드롭다운 select 요소 바인딩 및 초기값 로컬스토리지 동기화
@@ -697,8 +764,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 최초 진입 시 데이터 로딩 인디케이터 표시
-      reservationList.innerHTML = `<tr><td colspan="13" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
+      // [한글 주석: '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 권한 확인 로딩 표시 colspan을 16으로 수정]
+      reservationList.innerHTML = `<tr><td colspan="16" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
       
       // 권한 검증 및 UI 갱신 함수 실행
       const permissions = await verifyAndApplyPermissions(user);
@@ -744,7 +811,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // 모든 항목이 비활성화 되어 있는 경우 아무것도 보이지 않게 처리
             hideAllTabsAndContents();
             if (reservationList) {
-              reservationList.innerHTML = `<tr><td colspan="15" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
+              // [한글 주석: '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 접근 불가 메시지 표시 colspan을 16으로 수정]
+              reservationList.innerHTML = `<tr><td colspan="16" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
             }
           }
         }
@@ -1818,8 +1886,11 @@ document.addEventListener("DOMContentLoaded", () => {
           createdAt: new Date().toISOString()
         });
         alert("신규 병원이 성공적으로 등록되었습니다.");
-        // [한글 주석: 병원 신설 성공 시 다국어 예약 페이지 내 병원 캐시 무효화]
-        sessionStorage.removeItem("cached_clinics_list");
+        // [한글 주석: 병원 신설 성공 시 다국어 예약 페이지 내 병원 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+        localStorage.removeItem("cached_clinics_list");
+        
+        // [한글 주석: 병원 등록 성공 즉시 왼쪽 등록된 병원 테이블 리스트를 새로고침하여 리스트에 바로 반영되도록 기능 추가]
+        loadClinics();
         
         // 폼 초기화 및 변수 정리
         clinicRegisterForm.reset();
@@ -2150,8 +2221,8 @@ document.addEventListener("DOMContentLoaded", () => {
               desc_ru: newDescRu
             });
             alert("병원 정보가 성공적으로 수정되었습니다.");
-            // [한글 주석: 병원 수정 반영에 따른 세션 캐시 갱신 무효화]
-            sessionStorage.removeItem("cached_clinics_list");
+            // [한글 주석: 병원 수정 반영에 따른 로컬 캐시 갱신 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+            localStorage.removeItem("cached_clinics_list");
             editModal.remove();
             
             // 병원 수정 완료 후 테이블 새로고침
@@ -2174,8 +2245,8 @@ document.addEventListener("DOMContentLoaded", () => {
             e.target.textContent = "...";
             await deleteDoc(doc(db, "clinics", docId));
             alert("병원이 삭제되었습니다.");
-            // [한글 주석: 병원 삭제 완료에 따른 세션 캐시 무효화]
-            sessionStorage.removeItem("cached_clinics_list");
+            // [한글 주석: 병원 삭제 완료에 따른 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+            localStorage.removeItem("cached_clinics_list");
             loadClinics(); // 삭제 후 테이블 리프레시
           } catch (error) {
             console.error("Delete clinic failed:", error);
@@ -2205,8 +2276,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateDoc(doc(db, "clinics", prevClinic.id), { order: currentOrder })
           ]);
 
-          // [한글 주석: 병원 순서 교환 완료에 따른 세션 캐시 무효화]
-          sessionStorage.removeItem("cached_clinics_list");
+          // [한글 주석: 병원 순서 교환 완료에 따른 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+          localStorage.removeItem("cached_clinics_list");
           loadClinics(); // 새로고침
         } catch (error) {
           console.error("Swap up clinic failed:", error);
@@ -2234,8 +2305,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateDoc(doc(db, "clinics", nextClinic.id), { order: currentOrder })
           ]);
 
-          // [한글 주석: 병원 순서 교환 완료에 따른 세션 캐시 무효화]
-          sessionStorage.removeItem("cached_clinics_list");
+          // [한글 주석: 병원 순서 교환 완료에 따른 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+          localStorage.removeItem("cached_clinics_list");
           loadClinics(); // 새로고침
         } catch (error) {
           console.error("Swap down clinic failed:", error);
@@ -2492,8 +2563,8 @@ document.addEventListener("DOMContentLoaded", () => {
             slideInterval: slideIntervalMs
           });
           alert("광고 배너가 성공적으로 수정되었습니다.");
-          // [한글 주석: 광고 배너 수정 성공 시 메인 홈 캐시 무효화]
-          sessionStorage.removeItem("cached_home_ads");
+          // [한글 주석: 광고 배너 수정 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+          localStorage.removeItem("cached_home_ads");
         } else {
           // [한글 주석: 신규 광고 배너를 등록할 때 순번(order) 최댓값을 실시간으로 조회하여 마지막 순서에 자동 배치]
           let nextOrder = 1;
@@ -2515,8 +2586,8 @@ document.addEventListener("DOMContentLoaded", () => {
             createdAt: serverTimestamp()
           });
           alert("새 광고 배너가 성공적으로 등록되었습니다.");
-          // [한글 주석: 신규 광고 배너 등록 성공 시 메인 홈 캐시 무효화]
-          sessionStorage.removeItem("cached_home_ads");
+          // [한글 주석: 신규 광고 배너 등록 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+          localStorage.removeItem("cached_home_ads");
         }
 
         // 폼 초기화 및 일반 모드로의 강제 복원
@@ -2574,8 +2645,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateDoc(doc(db, "ads", prevAd.id), { order: currentOrder })
           ]);
 
-          // [한글 주석: 광고 배너 순서 변경 성공 시 세션 캐시 무효화]
-          sessionStorage.removeItem("cached_home_ads");
+          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+          localStorage.removeItem("cached_home_ads");
           loadAds(); // 새로고침
         } catch (error) {
           console.error("Swap up failed:", error);
@@ -2603,8 +2674,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateDoc(doc(db, "ads", nextAd.id), { order: currentOrder })
           ]);
 
-          // [한글 주석: 광고 배너 순서 변경 성공 시 세션 캐시 무효화]
-          sessionStorage.removeItem("cached_home_ads");
+          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+          localStorage.removeItem("cached_home_ads");
           loadAds(); // 새로고침
         } catch (error) {
           console.error("Swap down failed:", error);
@@ -2668,8 +2739,8 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             await deleteDoc(doc(db, "ads", docId));
             alert("광고 배너가 성공적으로 삭제되었습니다.");
-            // [한글 주석: 광고 배너 삭제 성공 시 세션 캐시 무효화]
-            sessionStorage.removeItem("cached_home_ads");
+            // [한글 주석: 광고 배너 삭제 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+            localStorage.removeItem("cached_home_ads");
             loadAds(); // 새로고침
           } catch (error) {
             console.error("Delete ad document failed:", error);

@@ -925,6 +925,8 @@ document.addEventListener("DOMContentLoaded", () => {
         reservationDate: reservationDate,
         address: address,
         symptoms: symptoms,
+        // [inflow is initial empty, will be filled in admin page]
+        inflow: "",
         phone: phone,
         lang: currentLang, // 예약 진행 언어셋
         status: "pending",

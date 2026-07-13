@@ -1261,8 +1261,34 @@ body {
 .col-symptoms,
 .col-name,
 .col-visa-type,
-.col-visa-expiry {
+.col-visa-expiry,
+/* [한글 주석: 예약 목록의 유입경로 셀에 white-space: nowrap 적용] */
+.col-inflow {
   white-space: nowrap;
+}
+
+/* [한글 주석: 관리자 페이지 예약 목록의 유입경로 인라인 입력란 커스텀 스타일] */
+.inflow-edit-input {
+  background: rgba(12, 16, 32, 0.6);
+  color: #818cf8; /* text-accent 색상 */
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  width: 120px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  text-align: center;
+}
+.inflow-edit-input:focus {
+  border-color: #818cf8;
+  background: rgba(12, 16, 32, 0.9);
+  box-shadow: 0 0 4px rgba(129, 140, 248, 0.4);
+}
+.inflow-edit-input::placeholder {
+  color: rgba(129, 140, 248, 0.4);
+  font-size: 0.8rem;
 }
 
 .col-address,
@@ -1841,14 +1867,26 @@ body {
   #reservation-list td.col-res-date::before { content: "예약 희망일"; }
   #reservation-list td.col-address::before { content: "주 소"; }
   #reservation-list td.col-symptoms::before { content: "증 상"; }
+  /* [한글 주석: 모바일 반응형 뷰에서 유입경로 컬럼의 제목 라벨을 주입] */
+  #reservation-list td.col-inflow::before { content: "유입경로"; }
   #reservation-list td.col-status::before { content: "상 태"; }
   #reservation-list td.col-actions::before { content: "예약 상태 관리"; }
 
-  /* 주소나 증상 등 긴 텍스트는 모바일에서 우측 정렬 및 단어 줄바꿈 처리 */
+  /* 주소나 증상, 유입경로 등 긴 텍스트는 모바일에서 우측 정렬 및 단어 줄바꿈 처리 */
   #reservation-list td.col-address,
-  #reservation-list td.col-symptoms {
+  #reservation-list td.col-symptoms,
+  /* [한글 주석: 모바일 반응형 뷰에서 유입경로 셀도 긴 텍스트가 줄바꿈되도록 스타일 추가] */
+  #reservation-list td.col-inflow {
     word-break: break-all;
     max-width: 65%;
+  }
+
+  /* [한글 주석: 모바일 뷰 카드 형태 레이아웃에서 유입경로 입력창이 우측 정렬 및 조화로운 너비를 가지도록 조정] */
+  #reservation-list td.col-inflow .inflow-edit-input {
+    text-align: right;
+    width: 100%;
+    max-width: 150px;
+    padding: 2px 6px;
   }
 
   /* 상태관리 버튼 영역 스타일 */

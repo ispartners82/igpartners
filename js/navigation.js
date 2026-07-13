@@ -38,12 +38,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <!-- 한글 주석: 제공 서비스 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 -->
             <a href="/about.html#services" class="nav-link">제공 서비스</a>
           </li>
-          <li class="nav-item">
-            <a href="/booking-lang.html" class="nav-link btn-nav-booking ${currentPath.endsWith("booking-lang.html") ? "active" : ""}">진료 예약</a>
-          </li>
-          <!-- 한글 주석: 의료통역 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 -->
+          <!-- 한글 주석: 의료통역 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 (진료 예약 버튼과 위치 스왑) -->
           <li class="nav-item">
             <a href="/about.html#services" class="nav-link btn-nav-booking">의료통역</a>
+          </li>
+          <!-- 한글 주석: 진료 예약 메뉴를 의료통역 우측으로 순서 스왑 이동함 -->
+          <li class="nav-item">
+            <a href="/booking-lang.html" class="nav-link btn-nav-booking ${currentPath.endsWith("booking-lang.html") ? "active" : ""}">진료 예약</a>
           </li>
           <!-- 한글 주석: 사용자 요청에 따라 '협력 회사' 메뉴 위치를 '의료통역' 우측으로 이동시킴 -->
           <li class="nav-item">
@@ -80,10 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <a href="/about.html" class="quick-icon-btn ${currentPath.endsWith("about.html") ? "active" : ""}" title="회사소개">🏢</a>
           <!-- 한글 주석: 모바일 퀵 메뉴 제공서비스 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 -->
           <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
-          <!-- 진료 예약 바로가기 버튼 (달력 아이콘) -->
-          <a href="/booking-lang.html" class="quick-icon-btn ${currentPath.endsWith("booking-lang.html") ? "active" : ""}" title="진료 예약">📅</a>
-          <!-- 한글 주석: 모바일 퀵 메뉴 의료통역 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 -->
+          <!-- 한글 주석: 모바일 퀵 메뉴 의료통역 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 (진료 예약과 위치 스왑) -->
           <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
+          <!-- 한글 주석: 진료 예약 바로가기 버튼 (달력 아이콘, 의료통역 우측으로 스왑 이동) -->
+          <a href="/booking-lang.html" class="quick-icon-btn ${currentPath.endsWith("booking-lang.html") ? "active" : ""}" title="진료 예약">📅</a>
           <!-- 한글 주석: 사용자 요청에 따라 모바일 퀵 메뉴에서도 '협력 회사'의 위치를 의료통역 뒤로 이동시킴 -->
           <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
           <!-- 예약 내역 바로가기 버튼 (로그인 상태에 따라 auth.js에서 동적 표시) -->

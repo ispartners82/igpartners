@@ -135,13 +135,16 @@
                 <th>희망진료일</th>
                 <th>주 소</th>
                 <th>증 상</th>
+                <!-- [한글 주석: 예약 리스트 테이블에 신규 '유입경로' 컬럼 헤더 추가] -->
+                <th>유입경로</th>
                 <th>상 태</th>
                 <th>예약 상태 관리</th>
               </tr>
             </thead>
             <tbody id="reservation-list">
               <tr>
-                <td colspan="15" class="table-loading">데이터를 불러오는 중입니다...</td>
+                <!-- [한글 주석: '유입경로' 컬럼 추가로 전체 컬럼 개수가 16개로 변경됨에 따라 colspan 수정] -->
+                <td colspan="16" class="table-loading">데이터를 불러오는 중입니다...</td>
               </tr>
             </tbody>
           </table>

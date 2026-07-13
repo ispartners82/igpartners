@@ -130,7 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 넉넉하게 최근 500개 예약을 가져옵니다. (통계 목적)
     const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"), limit(500));
     
-    statsResultList.innerHTML = `<tr><td colspan="14" class="table-loading">실시간 데이터를 동기화하는 중입니다...</td></tr>`;
+    // [한글 주석: 유입경로 컬럼 추가에 따른 colspan을 15로 수정]
+    statsResultList.innerHTML = `<tr><td colspan="15" class="table-loading">실시간 데이터를 동기화하는 중입니다...</td></tr>`;
 
     // 로컬스토리지 백업 데이터 선 로딩
     try {
@@ -181,7 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   function applyFiltersAndRender(items) {
     if (!items || items.length === 0) {
-      statsResultList.innerHTML = `<tr><td colspan="14" class="table-empty">조회할 데이터가 존재하지 않습니다.</td></tr>`;
+      // [한글 주석: 유입경로 컬럼 추가에 따른 colspan을 15로 수정]
+      statsResultList.innerHTML = `<tr><td colspan="15" class="table-empty">조회할 데이터가 존재하지 않습니다.</td></tr>`;
       updateStatsCounters(0, 0, 0, 0);
       currentFilteredReservations = [];
       return;
@@ -274,7 +276,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let cancelled = 0;
 
     if (items.length === 0) {
-      statsResultList.innerHTML = `<tr><td colspan="14" class="table-empty">조회 조건에 만족하는 예약 내역이 없습니다.</td></tr>`;
+      // [한글 주석: 유입경로 컬럼 추가에 따른 colspan을 15로 수정]
+      statsResultList.innerHTML = `<tr><td colspan="15" class="table-empty">조회 조건에 만족하는 예약 내역이 없습니다.</td></tr>`;
       updateStatsCounters(0, 0, 0, 0);
       return;
     }
@@ -334,6 +337,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
         <td class="col-address" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.address || ""}">${data.address || "-"}</td>
         <td class="col-symptoms" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.symptoms || ""}">${data.symptoms || "-"}</td>
+        <!-- [한글 주석: 예약통계 페이지 결과 리스트에 유입경로 데이터 바인딩하는 td 셀 추가] -->
+        <td class="col-inflow font-bold text-accent">${data.inflow || "-"}</td>
         <td class="col-status"><span class="badge ${statusBadgeClass}">${statusBadgeText}</span></td>
       `;
 
@@ -475,6 +480,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${data.phone || "-"}</td>
         <td>${regDateStr}</td>
         <td>${data.reservationDate || "-"}</td>
+        <!-- [한글 주석: 엑셀 미리보기 테이블 컬럼 일치화를 위한 주소 및 증상 td 셀 추가] -->
+        <td>${data.address || "-"}</td>
+        <td>${data.symptoms || "-"}</td>
+        <!-- [한글 주석: 엑셀 미리보기 모달 테이블에 유입경로 데이터 추가] -->
+        <td>${data.inflow || "-"}</td>
         <td>${statusText}</td>
       `;
       excelPreviewTbody.appendChild(tr);
@@ -500,7 +510,8 @@ document.addEventListener("DOMContentLoaded", () => {
       worksheet.views = [{ showGridLines: true }];
 
       // 3) 대형 타이틀 셀 병합 및 스타일링 (1행 ~ 2행 병합)
-      worksheet.mergeCells("A1:N2");
+      // [한글 주석: 유입경로 컬럼이 추가되어 열 크기가 15로 확장됨에 따라 병합 범위 수정]
+      worksheet.mergeCells("A1:O2");
       const titleCell = worksheet.getCell("A1");
       titleCell.value = "IGPartners 예약 상세 통계 리스트";
       titleCell.font = {
@@ -531,7 +542,8 @@ document.addEventListener("DOMContentLoaded", () => {
       dateCell.font = { name: "Malgun Gothic", size: 10, bold: true, color: { argb: "FF475569" } };
       dateCell.alignment = { vertical: "middle", horizontal: "left" };
 
-      worksheet.mergeCells("F4:N4");
+      // [한글 주석: 유입경로 컬럼 추가로 15열(O열)까지 병합 범위 확장]
+      worksheet.mergeCells("F4:O4");
       const summaryCell = worksheet.getCell("F4");
       summaryCell.value = `상태 통계 요약:  총 ${total}건  [ 예약 확정: ${confirmed}건 | 예약 취소: ${cancelled}건 | 대기중: ${pending}건 ]`;
       summaryCell.font = { name: "Malgun Gothic", size: 10, bold: true, color: { argb: "FF1E293B" } };
@@ -540,7 +552,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // 요약 줄 스타일링 테두리 및 옅은 배경
       const summaryRow = worksheet.getRow(4);
       summaryRow.height = 24;
-      for (let c = 1; c <= 14; c++) {
+      // [한글 주석: 컬럼 개수 증가에 따라 테두리 스타일 지정 루프 범위를 15로 확장]
+      for (let c = 1; c <= 15; c++) {
         const cell = summaryRow.getCell(c);
         cell.fill = {
           type: "pattern",
@@ -554,10 +567,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // 5) 테이블 헤더 정의 (6행)
+      // [한글 주석: 엑셀 파일 내의 컬럼 헤더 목록에 유입경로 추가]
       const headers = [
         "선택언어", "이 름", "선택 병원", "성 별", "비자타입", 
         "생년월일", "신원정보 (외국인등록번호/여권)", "체류만료일", "연락처", 
-        "접수시간", "희망진료일", "주 소", "증 상", "상 태"
+        "접수시간", "희망진료일", "주 소", "증 상", "유입경로", "상 태"
       ];
       
       const headerRow = worksheet.getRow(6);
@@ -614,6 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 값들 배열에 배치
+        // [한글 주석: 엑셀 파일 내부 행 데이터에 유입경로(inflow) 연동 추가]
         const rowValues = [
           langLabels[item.lang] || item.lang || "-",
           item.name || "-",
@@ -628,6 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
           item.reservationDate || "-",
           item.address || "-",
           item.symptoms || "-",
+          item.inflow || "-",
           statusText
         ];
 
@@ -647,16 +663,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // 데이터 정렬 정밀 세팅 (한글 주석 필수)
           // 텍스트 길이나 컬럼 특성에 맞춰 정렬
-          if ([1, 4, 5, 6, 8, 9, 10, 11, 14].includes(cIdx + 1)) {
+          // [한글 주석: 유입경로 추가에 따라 상태 열 인덱스가 14에서 15로 확장되어 가운데 정렬 목록 수정]
+          if ([1, 4, 5, 6, 8, 9, 10, 11, 15].includes(cIdx + 1)) {
             // 언어, 성별, 비자, 생일, 만료일, 연락처, 접수일, 진료희망일, 상태는 가운데 정렬
             cell.alignment = { vertical: "middle", horizontal: "center" };
           } else {
-            // 이름, 병원명, 신원정보, 주소, 증상은 왼쪽 정렬 및 텍스트 래핑 허용
+            // 이름, 병원명, 신원정보, 주소, 증상, 유입경로는 왼쪽 정렬 및 텍스트 래핑 허용
             cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
           }
 
-          // 상태 열(14번째 컬럼)에 고유한 상태 파스텔 배경색 채우기
-          if (cIdx + 1 === 14) {
+          // [한글 주석: 유입경로 추가에 따라 상태 열(15번째 컬럼) 고유 배경 하이라이트 맵핑 수정]
+          if (cIdx + 1 === 15) {
             cell.fill = {
               type: "pattern",
               pattern: "solid",

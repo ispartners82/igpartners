@@ -99,11 +99,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   let adsData = [];
 
   try {
-    // [한글 주석: 세션 캐시 확인을 통한 Firestore 쿼리 비용 차단]
-    const cachedAds = sessionStorage.getItem("cached_home_ads");
+    // [한글 주석: 로컬 스토리지 캐시 확인을 통한 Firestore 쿼리 비용 차단 - 탭 간 캐시 동기화를 위해 sessionStorage에서 localStorage로 변경]
+    const cachedAds = localStorage.getItem("cached_home_ads");
     if (cachedAds) {
       adsData = JSON.parse(cachedAds);
-      console.log("Home ads loaded from Session Cache (0 Firestore Read cost)");
+      console.log("Home ads loaded from Local Storage Cache (0 Firestore Read cost)");
     } else {
       // 1. Firestore의 ads 컬렉션에서 순번(order) 오름차순 기준으로 실시간 데이터 목록 쿼리 실행
       const q = query(collection(db, "ads"), orderBy("order", "asc"));
@@ -117,12 +117,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             title: d.title,
             desc: d.desc,
             slideInterval: d.slideInterval || 4000,
-            images: d.images || []
+            images: d.images || [],
+            // [한글 주석: 데이터 일관성과 캐시 무효화 정합성을 위해 정렬 순번(order) 정보도 포함하여 저장]
+            order: d.order
           });
         });
       }
-      sessionStorage.setItem("cached_home_ads", JSON.stringify(adsData));
-      console.log("Home ads loaded from Firestore DB and cached");
+      localStorage.setItem("cached_home_ads", JSON.stringify(adsData));
+      console.log("Home ads loaded from Firestore DB and cached to Local Storage");
     }
   } catch (error) {
     console.error("Firestore ads loading error (falling back to samples):", error);
