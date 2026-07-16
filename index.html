@@ -50,60 +50,16 @@
       <!-- 실시간 DB 연동을 위해 자바스크립트로 동적 로드되는 광고 그리드 -->
       <div class="ad-grid" id="ad-grid-container">
         <!-- [한글 주석] 데이터 로딩이 시작되기 전 노출되는 인디케이터 -->
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: #00f3ff; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.05em;">
+        <div
+          style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: #00f3ff; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.05em;">
           🌐 실시간 파트너 솔루션을 불러오는 중입니다...
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 5. 하단 푸터 (Footer) -->
-  <footer class="global-footer">
-    <div class="footer-container">
-      <!-- 푸터 브랜드 설명 -->
-      <div class="footer-brand">
-        <span class="footer-logo-txt">IGPartners</span>
-        <p class="footer-brand-desc">
-          국내 최초의 글로벌 헬스케어 매칭 게이트웨이로서, 다국적 외국인 환자와 전문 의료진을 가장 안전하고 부드럽게 잇는 교두보가 되어 드리겠습니다.
-        </p>
-      </div>
-
-      <!-- 푸터 내 퀵링크 그룹 -->
-      <div class="footer-links">
-        <div class="footer-link-group">
-          <h4>서비스 안내</h4>
-          <ul>
-            <!-- 한글 주석: 푸터 회사소개 클릭 시 전체 내용이 포함된 about.html 페이지로 이동 -->
-            <li><a href="/about.html">회사소개</a></li>
-            <!-- 한글 주석: 푸터 제공 서비스 클릭 시 about.html 페이지의 서비스 소개 영역으로 스크롤 유도 -->
-            <li><a href="/about.html#services">제공 서비스</a></li>
-            <li><a href="#partners">협력사 네트워크</a></li>
-          </ul>
-        </div>
-        <div class="footer-link-group">
-          <h4>진료 예약</h4>
-          <ul>
-            <li><a href="booking-lang.html">예약신청 하기</a></li>
-            <li><a href="my-reservations.html">내 예약 조회</a></li>
-          </ul>
-        </div>
-        <div class="footer-link-group">
-          <h4>고객 지원</h4>
-          <ul>
-            <li><a href="#">이용약관</a></li>
-            <li><a href="#">개인정보처리방침</a></li>
-            <li><a href="mailto:support@igpartners.co.kr">이메일 문의</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- 푸터 라이선스 및 저작권 정보 -->
-    <div class="footer-bottom">
-      <p>&copy; 2026 IGPartners Inc. All rights reserved.</p>
-      <p>대표자: IGPartners | 법인등록번호: 000-00-00000 | 대구 수성구 알파시티 1로 4길 8</p>
-    </div>
-  </footer>
+  <!-- [한글 주석: 유지보수 용이성을 위해 푸터 내용을 공통 JS(navigation.js)에서 동적 주입하도록 구조 개선] -->
+  <footer id="global-footer" class="global-footer"></footer>
 
   <!-- Firebase 및 핵심 연동 모듈 로드 (순서 엄수) -->
   <script type="module" src="js/navigation.js?v=2.4.1"></script>

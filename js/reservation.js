@@ -746,6 +746,154 @@ const privacyContents = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  // [한글 주석: 카카오 SDK 초기화를 위한 JavaScript 키 정의 (실서비스 적용 시 발급받은 키로 교체해야 합니다.)]
+  const KAKAO_JAVASCRIPT_KEY = "YOUR_KAKAO_JAVASCRIPT_KEY";
+
+  if (typeof Kakao !== "undefined") {
+    try {
+      if (!Kakao.isInitialized()) {
+        // [한글 주석: 플레이스홀더 키가 아니고 올바른 키가 설정되어 있을 때만 초기화를 수행합니다.]
+        if (KAKAO_JAVASCRIPT_KEY && KAKAO_JAVASCRIPT_KEY !== "YOUR_KAKAO_JAVASCRIPT_KEY") {
+          Kakao.init(KAKAO_JAVASCRIPT_KEY);
+          console.log("Kakao SDK가 성공적으로 초기화되었습니다.");
+        } else {
+          console.warn("Kakao SDK가 로드되었으나 JavaScript 키가 설정되지 않았습니다. 'YOUR_KAKAO_JAVASCRIPT_KEY' 부분을 실제 발급받은 키로 수정해 주세요.");
+        }
+      }
+    } catch (err) {
+      console.error("Kakao SDK 초기화 중 오류 발생:", err);
+    }
+  }
+
+  // [한글 주석: 예약 내용을 템플릿화하여 사용자의 카카오톡으로 전송(공유)하는 함수]
+  const sendKakaoReservationShare = (name, gender, reservationDate, clinicName, symptoms) => {
+    if (typeof Kakao === "undefined" || !Kakao.isInitialized()) {
+      console.warn("Kakao SDK가 초기화되지 않았거나 로드되지 않아 카카오톡 공유 발송을 취소합니다.");
+      return;
+    }
+
+    try {
+      Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "📌 IGPartners 진료 예약 신청 완료",
+          description: `• 예약자: ${name}님 (${gender})\n• 예약일시: ${reservationDate}\n• 신청병원: ${clinicName}\n• 주요증상: ${symptoms}`,
+          imageUrl: window.location.origin + "/img/logo.png",
+          link: {
+            mobileWebUrl: window.location.origin + "/my-reservations.html",
+            webUrl: window.location.origin + "/my-reservations.html",
+          },
+        },
+        buttons: [
+          {
+            title: "내 예약 내역 확인하기",
+            link: {
+              mobileWebUrl: window.location.origin + "/my-reservations.html",
+              webUrl: window.location.origin + "/my-reservations.html",
+            },
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("카카오톡 메시지 공유 전송 중 예외 발생:", err);
+    }
+  };
+
+  // [한글 주석: 솔라피(Solapi) API 연동에 필요한 키 정의 및 설정 상수]
+  const SOLAPI_API_KEY = "NCS6QTA1RKWBG0P5";         // 솔라피에서 발급받은 API Key
+  const SOLAPI_API_SECRET = "YO0S9SMY2XTAKI3ZRH93X7FB4UC0BIGS";   // 솔라피에서 발급받은 API Secret Key
+  const SOLAPI_PF_ID = "YOUR_KAKAO_PF_ID";             // 카카오톡 채널 프로필 ID (예: 12345 형식의 솔라피 등록 ID)
+  const SOLAPI_TEMPLATE_ID = "YOUR_TEMPLATE_ID";       // 등록 승인 완료된 알림톡 템플릿 ID
+  const SOLAPI_SENDER_NUMBER = "YOUR_SENDER_NUMBER";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 02-123-4567)
+
+  // [한글 주석: 솔라피 API 호출 시 사용할 HMAC-SHA256 인증 헤더 생성 함수 (Web Crypto API 활용)]
+  const createSolapiAuthHeader = async (apiKey, apiSecret) => {
+    const date = new Date().toISOString();
+    const salt = Math.random().toString(36).substring(2, 15);
+
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(apiSecret);
+    const messageData = encoder.encode(date + salt);
+
+    // HMAC SHA-256 서명 생성
+    const cryptoKey = await window.crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    const signatureBuffer = await window.crypto.subtle.sign(
+      "HMAC",
+      cryptoKey,
+      messageData
+    );
+
+    const hashArray = Array.from(new Uint8Array(signatureBuffer));
+    const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`;
+  };
+
+  // [한글 주석: 솔라피 API를 호출하여 카카오톡 알림톡을 자동 발송하는 비동기 함수]
+  const sendSolapiAlimtalk = async (name, gender, reservationDate, clinicName, symptoms, phone) => {
+    // 키 설정이 유효한지 사전 체크
+    if (SOLAPI_API_KEY === "YOUR_SOLAPI_API_KEY" || SOLAPI_API_SECRET === "YOUR_SOLAPI_API_SECRET") {
+      console.warn("솔라피 API Key 또는 Secret이 설정되지 않았습니다. 실서비스 연동을 위해 키를 입력해 주세요.");
+      return;
+    }
+
+    try {
+      // API 인증 헤더 생성
+      const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
+
+      // 전화번호 포맷 정규화 (솔라피는 숫자로만 구성된 번호를 권장함)
+      const cleanPhone = phone.replace(/[^0-9]/g, "");
+
+      const requestBody = {
+        messages: [
+          {
+            to: cleanPhone,
+            from: SOLAPI_SENDER_NUMBER,
+            type: "CTA", // 알림톡 타입 지정
+            kakaoOptions: {
+              pfId: SOLAPI_PF_ID,
+              templateId: SOLAPI_TEMPLATE_ID,
+              // 템플릿 변수에 맞추어 바인딩 진행 (실제 템플릿 변수명과 일치해야 함)
+              variables: {
+                "#{이름}": name,
+                "#{성별}": gender,
+                "#{예약일시}": reservationDate,
+                "#{신청병원}": clinicName,
+                "#{주요증상}": symptoms.length > 50 ? symptoms.substring(0, 50) + "..." : symptoms,
+                "#{연락처}": phone
+              }
+            }
+          }
+        ]
+      };
+
+      const response = await fetch("https://api.solapi.com/messages/v4/send-many", {
+        method: "POST",
+        headers: {
+          "Authorization": authHeader,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.errorMessage || `HTTP status ${response.status}`);
+      }
+
+      console.log("알림톡 발송 완료:", responseData);
+    } catch (err) {
+      console.error("알림톡 발송 중 예외 오류 발생:", err);
+    }
+  };
+
   const clinicNameText = document.getElementById("clinic-name-text");
   const reservationForm = document.getElementById("reservation-form");
   const btnBack = document.getElementById("btn-back");
@@ -901,8 +1049,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const isAgreed = document.getElementById("agreement-check").checked;
 
     if (!isAgreed) {
-       alert(dict.agreeRequired);
-       return;
+      alert(dict.agreeRequired);
+      return;
     }
 
     // 예약하기 버튼 비활성화 (중복 제출 방지)
@@ -914,7 +1062,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       // Firestore에 예약 데이터 저장 (선택된 예약언어 정보 lang 필드 매핑)
       const docRef = await addDoc(collection(db, "reservations"), {
-        uid: userUid, 
+        uid: userUid,
         clinic: selectedClinic, // 영문 식별 병원명 저장
         name: name,
         gender: gender,
@@ -934,6 +1082,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       console.log("Reservation recorded with ID: ", docRef.id);
+
+      // [한글 주석: 예약 신청 완료 후, 입력된 정보를 기반으로 솔라피 API를 통해 카카오 알림톡 자동 전송 실행]
+      await sendSolapiAlimtalk(
+        name,
+        gender,
+        reservationDate,
+        selectedClinicLocalized || selectedClinic,
+        symptoms,
+        phone
+      );
+
+      // [한글 주석: 예약 신청 완료 알림 팝업 실행]
       alert(dict.submitSuccess);
 
       // 성공 시 예약 내역 확인 페이지로 리다이렉트
@@ -942,7 +1102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error adding reservation: ", error);
       alert(dict.submitError);
-      
+
       // 버튼 복구
       if (btnSubmit) {
         btnSubmit.disabled = false;

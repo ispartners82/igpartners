@@ -171,4 +171,57 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+
+  // =========================================================================
+  // 4. 공통 푸터(Footer) 동적 주입 로직
+  // =========================================================================
+  const globalFooter = document.getElementById("global-footer");
+  if (globalFooter) {
+    // [한글 주석: 모든 페이지의 하단 정보를 단일 파일에서 제어할 수 있도록 동적으로 마크업을 주입합니다.]
+    globalFooter.innerHTML = `
+      <div class="footer-container">
+        <!-- 푸터 브랜드 설명 -->
+        <div class="footer-brand">
+          <span class="footer-logo-txt">IGPartners</span>
+          <p class="footer-brand-desc">
+            국내 최초의 글로벌 헬스케어 매칭 게이트웨이로서, 다국적 외국인 환자와 전문 의료진을 가장 안전하고 부드럽게 잇는 교두보가 되어 드리겠습니다.
+          </p>
+        </div>
+
+        <!-- 푸터 내 퀵링크 그룹 -->
+        <div class="footer-links">
+          <div class="footer-link-group">
+            <h4>서비스 안내</h4>
+            <ul>
+              <li><a href="/about.html">회사소개</a></li>
+              <li><a href="/about.html#services">제공 서비스</a></li>
+              <li><a href="/index.html#partners">협력사 네트워크</a></li>
+            </ul>
+          </div>
+          <div class="footer-link-group">
+            <h4>진료 예약</h4>
+            <ul>
+              <li><a href="/booking-lang.html">예약신청 하기</a></li>
+              <li><a href="/my-reservations.html">내 예약 조회</a></li>
+            </ul>
+          </div>
+          <div class="footer-link-group">
+            <h4>고객 지원</h4>
+            <ul>
+              <li><a href="#">이용약관</a></li>
+              <li><a href="#">개인정보처리방침</a></li>
+              <li><a href="mailto:support@igpartners.co.kr">이메일 문의</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 푸터 라이선스 및 저작권 정보 -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 IGPartners Inc. All rights reserved.</p>
+        <!-- [한글 주석: 캡처본 요구사항에 맞춰 일관성 있게 구성된 최신 법인명 및 법인등록번호 표기] -->
+        <p>법인명: 주식회사 아이지파트너스 | 대표: 황기수 | 법인등록번호: 167-86-04055 | 대구 수성구 알파시티 1로 4길 8</p>
+      </div>
+    `;
+  }
 });

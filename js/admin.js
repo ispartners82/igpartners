@@ -2141,10 +2141,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("btn-edit-clinic-cancel").addEventListener("click", () => {
           editModal.remove();
         });
-        // 모달 바깥 클릭 시 닫기
-        editModal.addEventListener("click", (ev) => {
-          if (ev.target === editModal) editModal.remove();
-        });
+        // [한글 주석] 기존 모달 바깥 클릭 시 닫히는 이벤트를 제거합니다. (오직 취소 버튼 클릭 시에만 팝업이 닫히도록 설정)
+        // editModal.addEventListener("click", (ev) => {
+        //   if (ev.target === editModal) editModal.remove();
+        // });
 
         // 저장 버튼 - Firestore 업데이트
         document.getElementById("btn-edit-clinic-save").addEventListener("click", async () => {
