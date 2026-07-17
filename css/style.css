@@ -110,7 +110,12 @@ body {
   right: -5%;
   width: 50vw;
   height: 50vw;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(6, 9, 19, 0) 70%);
+  /* 
+     [배경 밝기 개선] 
+     우측 상단의 인디고 오로라 효과의 투명도를 기존 0.15에서 0.35로 상향 조정하여 
+     그라데이션의 밝은 영역이 화면에서 더욱 밝고 입체감 있게 돋보이도록 변경하였습니다. 
+  */
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(6, 9, 19, 0) 70%);
   filter: blur(40px);
 }
 
@@ -120,7 +125,12 @@ body {
   left: -10%;
   width: 60vw;
   height: 60vw;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, rgba(6, 9, 19, 0) 70%);
+  /* 
+     [배경 밝기 개선] 
+     좌측 하단의 퍼플 오로라 효과의 투명도를 기존 0.1에서 0.25로 상향 조정하여 
+     어두운 테마 배경 내에서 그라데이션 광원이 한층 더 화사하고 깊이감 있게 비치도록 변경하였습니다. 
+  */
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(6, 9, 19, 0) 70%);
   filter: blur(60px);
 }
 
@@ -2650,41 +2660,50 @@ body.modal-open {
   transform: translateY(0);
 }
 
-/* 로그인 유저 정보 뱃지 래퍼 (축소 방지, 갭 축소) */
+/* 
+   [사용자 경험 개선] 로그인 유저 정보 뱃지 래퍼 
+   계정 뱃지부터 로그아웃 뱃지까지를 단일한 형광 네온 시안 테두리로 감싸고,
+   전체 영역 크기를 슬림화하여 다른 일반 메뉴 링크들과 시각적으로 뚜렷이 구별되도록 개선했습니다.
+*/
 .auth-user-badge {
   display: flex;
   align-items: center;
-  gap: 0.6rem; /* 버튼 간격 소폭 긴밀하게 축소 */
-  flex-shrink: 0; /* 강제 축소 방지 */
+  gap: 0.4rem; /* 요소 간 간격을 콤팩트하게 축소 */
+  flex-shrink: 0; /* 레이아웃 수축 방지 */
+  border: 1px solid rgba(0, 243, 255, 0.55); /* 단일 형광 시안 테두리선 부여 */
+  border-radius: 50px; /* 전체를 아우르는 부드러운 캡슐 형태 */
+  padding: 0.25rem 0.6rem; /* 내부 패딩 최소화로 슬림화 */
+  background: rgba(6, 9, 19, 0.55); /* 은은하고 짙은 반투명 배경으로 구별성 강화 */
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.15), inset 0 0 4px rgba(0, 243, 255, 0.08); /* 네온 라이팅 효과 */
 }
 
-/* 프로필 이미지와 이름이 포함된 둥근 캡슐 (세로 높이 대폭 슬림화) */
+/* 프로필 이미지와 이름이 포함된 둥근 캡슐 (부모의 통합 테두리로 인해 기존 테두리/배경 제거) */
 .user-capsule {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.3rem 0.75rem 0.3rem 0.3rem; /* 상하좌우 여백 긴밀화 */
-  border-radius: 100px;
+  gap: 0.3rem; /* 아바타와 닉네임 간 갭 축소 */
+  background: transparent; /* 배경 투명화 */
+  border: none; /* 이중 테두리 방지를 위해 기존 테두리 제거 */
+  padding: 0 0.35rem 0 0.15rem; /* 좌우 여백을 단정하게 재배정 */
+  border-radius: 0;
   transition: var(--transition-smooth);
-  white-space: nowrap; /* 줄바꿈 금지 */
+  white-space: nowrap; /* 줄바꿈 방지 */
   flex-shrink: 0;
 }
 
 .user-avatar {
-  width: 24px; /* 아바타 크기 축소: 28px -> 24px */
-  height: 24px;
+  width: 20px; /* 아바타 크기 슬림화: 24px -> 20px */
+  height: 20px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 243, 255, 0.3); /* 형광 느낌을 맞춘 미세 테두리 */
   object-fit: cover;
 }
 
 .user-nickname {
-  font-size: 0.8rem; /* 닉네임 크기 소폭 축소 */
+  font-size: 0.75rem; /* 닉네임 글씨 크기 축소: 0.8rem -> 0.75rem */
   color: var(--text-primary);
   font-weight: 600;
-  max-width: 100px;
+  max-width: 90px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2693,15 +2712,15 @@ body.modal-open {
 /* 네비게이션 우측 상태 제어 액션 버튼들 (컴팩트 튜닝) */
 .btn-nav-action {
   text-decoration: none;
-  font-size: 0.8rem; /* 폰트 축소 */
+  font-size: 0.75rem; /* 폰트 축소: 0.8rem -> 0.75rem */
   font-weight: 600;
-  padding: 0.35rem 0.75rem; /* 세로/가로 패딩 축소로 브랜드 로고와 높이 균형 일치 */
-  border-radius: 8px; /* 아담한 라운드 */
+  padding: 0.25rem 0.5rem; /* 상하/좌우 여백을 축소하여 크기 슬림화 */
+  border-radius: 6px; /* 아담한 라운드 */
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.2rem;
   transition: var(--transition-smooth);
-  white-space: nowrap; /* 줄바꿈 금지 */
+  white-space: nowrap; /* 줄바꿈 방지 */
   flex-shrink: 0; /* 강제 축소 방지 */
 }
 
@@ -2723,23 +2742,23 @@ body.modal-open {
   background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
   color: #ffffff;
   border: none;
-  box-shadow: 0 3px 10px rgba(236, 72, 153, 0.2);
+  box-shadow: 0 2px 6px rgba(236, 72, 153, 0.2);
 }
 
 .btn-admin:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 12px rgba(236, 72, 153, 0.35);
+  box-shadow: 0 4px 10px rgba(236, 72, 153, 0.35);
 }
 
-/* 로그아웃 텍스트형 링크 버튼 (아담한 텍스트 링크로 보완) */
+/* 로그아웃 텍스트형 링크 버튼 (전체 크기 밸런스에 맞춰 조율) */
 .btn-nav-logout {
   background: transparent;
   border: none;
   color: #f43f5e;
   cursor: pointer;
-  font-size: 0.8rem; /* 폰트 축소 */
+  font-size: 0.75rem; /* 폰트 축소: 0.8rem -> 0.75rem */
+  padding: 0.25rem 0.4rem; /* 버튼식 여백 할당 */
   font-weight: 600;
-  padding: 0.35rem 0.5rem; /* 패딩 축소 */
   transition: var(--transition-smooth);
 }
 
@@ -3455,35 +3474,41 @@ body.home-page {
     justify-content: center; /* 로고 너비에 맞춰 정중앙 정렬 */
   }
 
-  /* 로그인 유저 뱃지 세로 배열 정의 (가로 폭 고정 제한 및 중앙 배치 - 로고 사이즈에 맞춰 160px로 대폭 축소) */
+  /* 
+     [사용자 경험 개선] 로그인 유저 뱃지 세로 배열 정의
+     모바일 서랍 메뉴에서도 데스크톱과 일치하도록 하나의 둥근 사각형 형광 테두리로 깔끔하게 묶어줍니다.
+  */
   .auth-user-badge {
     flex-direction: column;
     align-items: center; /* 로고와 균형을 위해 세로 정중앙 배치 */
     width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
     max-width: 160px !important;
     margin: 0 auto !important;
-    gap: 0.5rem; /* 세로 정렬 시 버튼 간 간격을 콤팩트하게 튜닝 */
+    gap: 0.4rem; /* 세로 정렬 시 버튼 간 간격을 콤팩트하게 튜닝 */
+    padding: 0.5rem !important; /* 내부 간격을 더 단정하게 확보 */
+    border: 1px solid rgba(0, 243, 255, 0.55) !important; /* 형광 테두리 명시 */
+    border-radius: 12px !important; /* 세로형 정렬에 맞는 둥근 모서리 적용 */
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.15) !important; /* 미세 네온 백글로우 */
   }
 
-  /* 프로필 캡슐 가로폭 제한 정렬 */
+  /* 프로필 캡슐 가로폭 제한 정렬 (이중 테두리 및 겹침 방지를 위해 외곽선 및 배경 제거) */
   .user-capsule {
-    width: 160px !important; /* 다른 모든 버튼들과 가로폭을 완벽히 일치시키기 위해 160px 강제 고정 */
-    max-width: 160px !important;
+    width: 100% !important; /* 부모 너비에 맞게 100% 확장 */
+    max-width: 100% !important;
     justify-content: center; /* 캡슐 내부 이름 정중앙 정렬 */
-    padding: 0.4rem 0.8rem; /* 안쪽 패딩 조율로 콤팩트화 */
-    background: rgba(255, 255, 255, 0.06);
-    box-sizing: border-box !important;
-    border-radius: 10px; /* 다른 버튼들과 모서리 둥글기 일치 */
-    border: 1px solid rgba(0, 243, 255, 0.6) !important; /* 프로필 캡슐에도 밝고 깨끗한 형광 시안 테두리선 적용 */
+    padding: 0.2rem 0 !important; /* 안쪽 패딩 조율로 콤팩트화 */
+    background: transparent !important; /* 배경 제거 */
+    border: none !important; /* 이중 보더 제거 */
+    box-shadow: none !important;
   }
 
   .user-avatar {
-    width: 24px;
-    height: 24px;
+    width: 20px; /* 아바타 크기 축소 */
+    height: 20px;
   }
 
   .user-nickname {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* 모바일 가독성을 위해 0.8rem 유지 */
     max-width: none;
   }
 
@@ -3975,5 +4000,76 @@ body.home-page {
   font-size: 0.75rem;
   font-weight: 700;
   border-radius: 6px;
+}
+
+/* ==========================================================================
+   히어로 섹션 신규 추가: 진료예약하기 버튼 스타일
+   ========================================================================== */
+/* 한글 주석: 버튼을 수직으로 상단 배치 및 중앙 정렬하기 위해 컨테이너 블록 추가 */
+.hero-booking-btn-container {
+  display: block;
+  margin-bottom: 1.5rem; /* 배지 태그와의 세로 간격 확보 */
+  text-align: center;
+}
+
+.hero-booking-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #6366f1 0%, #00f3ff 100%); /* 인디고 & 네온 시안 하모니 그라데이션 */
+  border-radius: 100px;
+  box-shadow: 0 4px 20px rgba(0, 243, 255, 0.25); /* 기본 네온 글로우 효과 */
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* 미세 인터랙션 애니메이션 */
+  position: relative;
+  overflow: hidden;
+  z-index: 10;
+  letter-spacing: -0.5px;
+}
+
+/* 호버 시 모션 및 글로우 극대화 */
+.hero-booking-btn:hover {
+  transform: translateY(-4px); /* 살짝 떠오르는 연출 */
+  background: linear-gradient(135deg, #00f3ff 0%, #6366f1 100%); /* 색상 반전 호버 효과 */
+  box-shadow: 0 10px 30px rgba(0, 243, 255, 0.55), 0 0 15px rgba(99, 102, 241, 0.4); /* 중첩 광채 장식 */
+  letter-spacing: 0.2px; /* 화살표 방향으로 살짝 늘어나는 시각적 효과 */
+}
+
+/* 클릭 액티브 시 피드백 */
+.hero-booking-btn:active {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 5px 15px rgba(0, 243, 255, 0.3);
+}
+
+/* 모바일 및 반응형 크기 조절 */
+@media (max-width: 768px) {
+  .hero-booking-btn-container {
+    margin-bottom: 1.2rem; /* 모바일 대응 마진 감축 */
+  }
+  
+  .hero-booking-btn {
+    padding: 0.7rem 1.8rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* ==========================================================================
+   개인정보 모달 내 확인 버튼 프리미엄 호버 효과
+   ========================================================================== */
+.btn-close-privacy-btn {
+  transition: all 0.3s ease;
+}
+.btn-close-privacy-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #7477f3 0%, #4f8ff7 100%) !important;
+  box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+}
+.btn-close-privacy-btn:active {
+  transform: translateY(0);
 }
 

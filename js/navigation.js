@@ -208,7 +208,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="footer-link-group">
             <h4>고객 지원</h4>
             <ul>
-              <li><a href="#">이용약관</a></li>
               <li><a href="#">개인정보처리방침</a></li>
               <li><a href="mailto:support@igpartners.co.kr">이메일 문의</a></li>
             </ul>
@@ -223,5 +222,75 @@ document.addEventListener("DOMContentLoaded", () => {
         <p>법인명: 주식회사 아이지파트너스 | 대표: 황기수 | 법인등록번호: 167-86-04055 | 대구 수성구 알파시티 1로 4길 8</p>
       </div>
     `;
+  }
+
+  // =========================================================================
+  // 5. 개인정보 처리방침 모달 동적 주입 및 이벤트 바인딩
+  // =========================================================================
+  const privacyModalHtml = `
+    <div id="privacy-policy-modal" class="modal-backdrop" style="display: none;">
+      <div class="modal-content" style="max-width: 600px; border: 1px solid rgba(0, 243, 255, 0.25);">
+        <!-- 모달 헤더: 닫기 X 버튼 배치 -->
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+          <h2 style="color: #ffffff; font-size: 1.3rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.5rem;">🔒 개인정보 처리방침</h2>
+          <button id="btn-close-privacy-modal-x" class="modal-close-x" style="color: rgba(255,255,255,0.6); font-size: 1.8rem; cursor: pointer; background: none; border: none;">&times;</button>
+        </div>
+        <!-- 모달 바디: 수집 목적 및 개인정보 규정 (스크롤 지원) -->
+        <div class="modal-body" style="padding: 2rem; overflow-y: auto; max-height: 55vh; line-height: 1.6;">
+          <h3 style="font-size: 1.1rem; color: #00f3ff; margin-top: 0; margin-bottom: 1rem; font-weight: 700;">📌 개인정보 수집 목적 및 중요성</h3>
+          <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 1.25rem;">
+            의료 안전 확보 및 한국 병원에서의 정확한 진료 접수 절차 이행을 위해 제공하는 정보는 다음과 같은 중대한 가치를 가집니다:
+          </p>
+          <ul style="list-style-type: disc; padding-left: 1.25rem; font-size: 0.85rem; color: rgba(255,255,255,0.9); display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 2rem;">
+            <li><strong>성명 및 성별:</strong> 환자의 신원을 정확히 식별하고, 병원 전자의무기록(EMR)의 중복을 예방합니다.</li>
+            <li><strong>생년월일 및 신원식별자(체류기간):</strong> 한국 의료법 및 출입국관리법에 따른 외국인 환자 진료 접수 시 필수적인 법적 본인 식별 정보입니다.</li>
+            <li><strong>연락처 및 주소:</strong> 예약 확정 안내 송신, 병원 일정 변동에 대한 비상 소통용입니다.</li>
+            <li><strong>현재 증상:</strong> 사전 진료 분과 배정 및 맞춤형 진료를 위한 중요 의료 정보로 보안 하에 전송됩니다.</li>
+          </ul>
+
+          <h3 style="font-size: 1.1rem; color: #00f3ff; margin-bottom: 1rem; font-weight: 700;">⚖️ 개인정보 처리방침 규정</h3>
+          <ol style="list-style-type: decimal; padding-left: 1.25rem; font-size: 0.85rem; color: rgba(255,255,255,0.8); display: flex; flex-direction: column; gap: 0.8rem;">
+            <li><strong>개인정보의 수집 및 이용 목적:</strong> 구글 계정을 이용한 회원가입 및 본인 인증, 한국 내 진료 대행 예약 신청, 예약 변경 및 안내 메시지 발송.</li>
+            <li><strong>수집하는 개인정보 항목:</strong> [필수] 구글 이메일, 이름, 프로필 사진, 생년월일, 연락처, 주소, 현재 임상 증상.</li>
+            <li><strong>개인정보의 보유 및 이용 기간:</strong> 회원 탈퇴 시 혹은 예약 목적 달성 후 1년 간 보관 후 안전하게 파기 (다만, 관계 법령에 규정이 있는 경우 법적 의무 기간 동안 별도 안전 보관).</li>
+            <li><strong>동의를 거부할 권리 및 불이익:</strong> 이용자는 개인정보 수집 및 이용 동의를 거부할 수 있으나, 거부 시 회원가입 및 실시간 예약 대행 서비스의 전체 이용이 제한됩니다.</li>
+          </ol>
+        </div>
+        <!-- 모달 푸터: 확인 버튼 -->
+        <div class="modal-footer" style="padding: 1.25rem 2rem; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: center; gap: 1rem;">
+          <button id="btn-close-privacy-modal" class="btn-close-privacy-btn" style="padding: 0.75rem 2.5rem; font-size: 0.95rem; font-weight: 700; color: #ffffff; background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%); border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;">확인</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // body 하단에 삽입
+  document.body.insertAdjacentHTML("beforeend", privacyModalHtml);
+
+  // 이벤트 대상 요소 캐싱
+  const privacyLink = Array.from(document.querySelectorAll("a")).find(el => el.textContent.trim() === "개인정보처리방침");
+  const privacyModal = document.getElementById("privacy-policy-modal");
+  const btnClosePrivacyX = document.getElementById("btn-close-privacy-modal-x");
+  const btnClosePrivacy = document.getElementById("btn-close-privacy-modal");
+
+  if (privacyLink && privacyModal) {
+    // 1. 개인정보처리방침 클릭 시 모달 노출
+    privacyLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      privacyModal.style.display = "flex";
+      document.body.classList.add("modal-open"); // 배경 스크롤 잠금 효과
+    });
+
+    const closeModal = () => {
+      privacyModal.style.display = "none";
+      document.body.classList.remove("modal-open");
+    };
+
+    // 2. 닫기 트리거(X 버튼, 확인 버튼, 배경 클릭) 이벤트 연결
+    btnClosePrivacyX.addEventListener("click", closeModal);
+    btnClosePrivacy.addEventListener("click", closeModal);
+    privacyModal.addEventListener("click", (e) => {
+      if (e.target === privacyModal) closeModal();
+    });
   }
 });
