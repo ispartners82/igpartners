@@ -117,8 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (items.length === 0) {
-      // [한글 주석: '유입경로' 컬럼이 추가되어 전체 컬럼 개수가 16개로 변경됨에 따라 빈 테이블 노출 시 colspan을 16으로 수정]
-      reservationList.innerHTML = `<tr><td colspan="16" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
+      // [한글 주석: '알림톡 상태' 컬럼이 추가되어 전체 컬럼 개수가 17개로 변경됨에 따라 빈 테이블 노출 시 colspan을 17으로 수정]
+      reservationList.innerHTML = `<tr><td colspan="17" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
       updateStats(0, 0, 0, 0);
       return;
     }
@@ -190,6 +190,24 @@ document.addEventListener("DOMContentLoaded", () => {
         statusBadgeClass = "badge-cancelled";
       }
 
+      // [한글 주석: 알림톡 상태 배지 생성]
+      let alimtalkBadgeText = "대기";
+      let alimtalkBadgeClass = "badge-alimtalk-none";
+      let alimtalkTitleAttr = "";
+
+      if (data.alimtalkStatus === "success") {
+        alimtalkBadgeText = "발송성공";
+        alimtalkBadgeClass = "badge-alimtalk-success";
+      } else if (data.alimtalkStatus === "fail") {
+        alimtalkBadgeText = "발송실패";
+        alimtalkBadgeClass = "badge-alimtalk-fail";
+        alimtalkTitleAttr = `title="에러 원인: ${data.alimtalkError || '알 수 없는 오류'}"`;
+      } else if (data.alimtalkStatus === "not_configured") {
+        alimtalkBadgeText = "미설정";
+        alimtalkBadgeClass = "badge-alimtalk-none";
+        alimtalkTitleAttr = `title="안내: ${data.alimtalkError || '솔라피 API 연동 설정이 플레이스홀더 상태입니다.'}"`;
+      }
+
       // 액션 버튼 제어
       let actionButtons = "";
       if (data.status === "pending") {
@@ -216,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 테이블 렌더링 처리
       // 성별-생년월일 사이에 비자타입(col-visa-type) 컬럼을 추가하고, 신원정보-연락처 사이에 체류만료일(col-visa-expiry) 컬럼을 각각 신설하여 출력합니다.
+      // [한글 주석: 유입경로와 상태 컬럼 사이에 알림톡 상태 배지(col-alimtalk) 컬럼을 신설하여 출력합니다]
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
         <td class="col-name font-bold">${data.name || "-"}</td>
@@ -232,6 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="col-symptoms">${data.symptoms || "-"}</td>
         <!-- [한글 주석: 증상과 상태 컬럼 사이에 유입경로(inflow)를 직접 수정 가능한 인라인 input 텍스트 필드로 렌더링] -->
         <td class="col-inflow"><input type="text" class="inflow-edit-input" data-id="${docId}" value="${data.inflow || ''}" placeholder="유입경로 입력" /></td>
+        <td class="col-alimtalk"><span class="badge ${alimtalkBadgeClass}" ${alimtalkTitleAttr}>${alimtalkBadgeText}</span></td>
         <td class="col-status"><span class="badge ${statusBadgeClass}">${statusBadgeText}</span></td>
         <td class="col-actions"><div class="action-wrapper">${actionButtons}</div></td>
       `;
@@ -254,8 +274,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // 최초 로드 시에만 로딩 표시 및 로컬스토리지 즉시 반환 처리
     if (isFirstLoad) {
-      // [한글 주석: '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 로딩 표시 colspan을 16으로 수정]
-      reservationList.innerHTML = `<tr><td colspan="16" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
+      // [한글 주석: '알림톡 상태' 컬럼 추가로 전체 컬럼이 17개가 됨에 따라 로딩 표시 colspan을 17으로 수정]
+      reservationList.innerHTML = `<tr><td colspan="17" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
 
       // 1단계: Firestore 로드 전, 로컬스토리지 백업 데이터가 있다면 먼저 렌더링 (즉각적인 피드백 보장)
       let initialLocalItems = [];
@@ -273,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentLangFilter !== "all") {
           filteredLocal = initialLocalItems.filter(item => item.lang === currentLangFilter);
         }
-        // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로]
+        // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
         if (currentSearchQuery) {
           filteredLocal = filteredLocal.filter(item => {
             const name = (item.name || "").toLowerCase();
@@ -285,6 +305,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const visaType = (item.visaType || "").toLowerCase();
             // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
             const inflow = (item.inflow || "").toLowerCase();
+            // [한글 주석: 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
+            const alimtalkStatus = (item.alimtalkStatus || "").toLowerCase();
+            const alimtalkError = (item.alimtalkError || "").toLowerCase();
             return name.includes(currentSearchQuery) || 
                    phone.includes(currentSearchQuery) || 
                    symptoms.includes(currentSearchQuery) || 
@@ -292,7 +315,9 @@ document.addEventListener("DOMContentLoaded", () => {
                    alienNo.includes(currentSearchQuery) ||
                    passportNo.includes(currentSearchQuery) ||
                    visaType.includes(currentSearchQuery) ||
-                   inflow.includes(currentSearchQuery);
+                   inflow.includes(currentSearchQuery) ||
+                   alimtalkStatus.includes(currentSearchQuery) ||
+                   alimtalkError.includes(currentSearchQuery);
           });
         }
         const sortedLocal = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -363,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentLangFilter !== "all") {
         filteredItems = sortedItems.filter(item => item.lang === currentLangFilter);
       }
-      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로]
+      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
       if (currentSearchQuery) {
         filteredItems = filteredItems.filter(item => {
           const name = (item.name || "").toLowerCase();
@@ -375,6 +400,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const visaType = (item.visaType || "").toLowerCase();
           // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
           const inflow = (item.inflow || "").toLowerCase();
+          // [한글 주석: 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
+          const alimtalkStatus = (item.alimtalkStatus || "").toLowerCase();
+          const alimtalkError = (item.alimtalkError || "").toLowerCase();
           return name.includes(currentSearchQuery) || 
                  phone.includes(currentSearchQuery) || 
                  symptoms.includes(currentSearchQuery) || 
@@ -382,7 +410,9 @@ document.addEventListener("DOMContentLoaded", () => {
                  alienNo.includes(currentSearchQuery) ||
                  passportNo.includes(currentSearchQuery) ||
                  visaType.includes(currentSearchQuery) ||
-                 inflow.includes(currentSearchQuery);
+                 inflow.includes(currentSearchQuery) ||
+                 alimtalkStatus.includes(currentSearchQuery) ||
+                 alimtalkError.includes(currentSearchQuery);
         });
       }
 
@@ -406,7 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentLangFilter !== "all") {
         filteredLocal = localItems.filter(item => item.lang === currentLangFilter);
       }
-      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로]
+      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
       if (currentSearchQuery) {
         filteredLocal = filteredLocal.filter(item => {
           const name = (item.name || "").toLowerCase();
@@ -418,6 +448,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const visaType = (item.visaType || "").toLowerCase();
           // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
           const inflow = (item.inflow || "").toLowerCase();
+          // [한글 주석: 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
+          const alimtalkStatus = (item.alimtalkStatus || "").toLowerCase();
+          const alimtalkError = (item.alimtalkError || "").toLowerCase();
           return name.includes(currentSearchQuery) || 
                  phone.includes(currentSearchQuery) || 
                  symptoms.includes(currentSearchQuery) || 
@@ -425,7 +458,9 @@ document.addEventListener("DOMContentLoaded", () => {
                  alienNo.includes(currentSearchQuery) ||
                  passportNo.includes(currentSearchQuery) ||
                  visaType.includes(currentSearchQuery) ||
-                 inflow.includes(currentSearchQuery);
+                 inflow.includes(currentSearchQuery) ||
+                 alimtalkStatus.includes(currentSearchQuery) ||
+                 alimtalkError.includes(currentSearchQuery);
         });
       }
       const finalItems = filteredLocal.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

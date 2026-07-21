@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase-db.js?v=2.0.7";
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /**
  * 폼 라벨, 힌트문구, 모달 및 다국어 팝업 얼럿을 다각도로 처리하기 위한 사전 정의
@@ -838,10 +838,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // [한글 주석: 솔라피 API를 호출하여 카카오톡 알림톡을 자동 발송하는 비동기 함수]
   const sendSolapiAlimtalk = async (name, gender, reservationDate, clinicName, symptoms, phone) => {
-    // 키 설정이 유효한지 사전 체크
+    // [한글 주석: 키 설정이 유효한지 사전 체크]
     if (SOLAPI_API_KEY === "YOUR_SOLAPI_API_KEY" || SOLAPI_API_SECRET === "YOUR_SOLAPI_API_SECRET") {
       console.warn("솔라피 API Key 또는 Secret이 설정되지 않았습니다. 실서비스 연동을 위해 키를 입력해 주세요.");
-      return;
+      return { status: "not_configured", error: "솔라피 API Key/Secret 미설정" };
+    }
+
+    // [한글 주석: 알림톡 필수 발송 파라미터가 유효한지 체크]
+    if (
+      SOLAPI_PF_ID === "YOUR_KAKAO_PF_ID" ||
+      SOLAPI_TEMPLATE_ID === "YOUR_TEMPLATE_ID" ||
+      SOLAPI_SENDER_NUMBER === "YOUR_SENDER_NUMBER" ||
+      !SOLAPI_PF_ID ||
+      !SOLAPI_TEMPLATE_ID ||
+      !SOLAPI_SENDER_NUMBER
+    ) {
+      console.warn("카카오톡 프로필 ID, 템플릿 ID, 혹은 발신번호 설정이 플레이스홀더 상태이거나 누락되었습니다.");
+      return { status: "not_configured", error: "알림톡 프로필/템플릿/발신번호 미설정" };
     }
 
     try {
@@ -889,8 +902,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       console.log("알림톡 발송 완료:", responseData);
+      return { status: "success" };
     } catch (err) {
       console.error("알림톡 발송 중 예외 오류 발생:", err);
+      return { status: "fail", error: err.message };
     }
   };
 
@@ -1084,7 +1099,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Reservation recorded with ID: ", docRef.id);
 
       // [한글 주석: 예약 신청 완료 후, 입력된 정보를 기반으로 솔라피 API를 통해 카카오 알림톡 자동 전송 실행]
-      await sendSolapiAlimtalk(
+      const alimtalkResult = await sendSolapiAlimtalk(
         name,
         gender,
         reservationDate,
@@ -1092,6 +1107,23 @@ document.addEventListener("DOMContentLoaded", () => {
         symptoms,
         phone
       );
+
+      // [한글 주석: 알림톡 전송 결과를 Firestore 예약 문서에 기록]
+      if (alimtalkResult) {
+        try {
+          const updateData = {
+            alimtalkStatus: alimtalkResult.status
+          };
+          if (alimtalkResult.error) {
+            updateData.alimtalkError = alimtalkResult.error;
+          }
+          const docDocRef = doc(db, "reservations", docRef.id);
+          await updateDoc(docDocRef, updateData);
+          console.log("Firestore 예약 문서에 알림톡 결과 업데이트 완료:", updateData);
+        } catch (updateErr) {
+          console.error("Firestore에 알림톡 발송 상태를 기록하는 중 에러 발생:", updateErr);
+        }
+      }
 
       // [한글 주석: 예약 신청 완료 알림 팝업 실행]
       alert(dict.submitSuccess);
