@@ -802,9 +802,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // [한글 주석: 솔라피(Solapi) API 연동에 필요한 키 정의 및 설정 상수]
   const SOLAPI_API_KEY = "NCS6QTA1RKWBG0P5";         // 솔라피에서 발급받은 API Key
   const SOLAPI_API_SECRET = "YO0S9SMY2XTAKI3ZRH93X7FB4UC0BIGS";   // 솔라피에서 발급받은 API Secret Key
-  const SOLAPI_PF_ID = "YOUR_KAKAO_PF_ID";             // 카카오톡 채널 프로필 ID (예: 12345 형식의 솔라피 등록 ID)
-  const SOLAPI_TEMPLATE_ID = "YOUR_TEMPLATE_ID";       // 등록 승인 완료된 알림톡 템플릿 ID
-  const SOLAPI_SENDER_NUMBER = "YOUR_SENDER_NUMBER";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 02-123-4567)
+  const SOLAPI_PF_ID = "igpartners";             // 카카오톡 채널 프로필 ID (예: 12345 형식의 솔라피 등록 ID)
+  const SOLAPI_TEMPLATE_ID = "HxEnWyJq09";       // 등록 승인 완료된 알림톡 템플릿 ID (솔라피 콘솔에서 발급)
+  const SOLAPI_SENDER_NUMBER = "01028196392";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 01012345678)
+
+  // [한글 주석: 새로운 예약 신청 알림톡을 실시간으로 전달받을 관리자 휴대폰 번호 목록 (여러 명 동시 지정 가능)]
+  const SOLAPI_ADMIN_PHONES = ["01048444115"]; // 예: ["01011112222", "01033334444"] 형태로 실제 관리자 번호를 기재합니다.
 
   // [한글 주석: 솔라피 API 호출 시 사용할 HMAC-SHA256 인증 헤더 생성 함수 (Web Crypto API 활용)]
   const createSolapiAuthHeader = async (apiKey, apiSecret) => {
@@ -836,12 +839,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`;
   };
 
-  // [한글 주석: 솔라피 API를 호출하여 카카오톡 알림톡을 자동 발송하는 비동기 함수]
-  const sendSolapiAlimtalk = async (name, gender, reservationDate, clinicName, symptoms, phone) => {
-    // [한글 주석: 키 설정이 유효한지 사전 체크]
+  // [한글 주석: 솔라피 API를 호출하여 등록된 관리자 휴대폰으로 10가지 예약 정보 알림톡을 다중 전송하는 비동기 함수]
+  const sendSolapiAlimtalk = async (lang, name, clinicName, gender, visaType, dob, reservationDate, symptoms, address, phone) => {
+    // [한글 주석: API 연동용 인증키 유효성 사전 검사]
     if (SOLAPI_API_KEY === "YOUR_SOLAPI_API_KEY" || SOLAPI_API_SECRET === "YOUR_SOLAPI_API_SECRET") {
       console.warn("솔라피 API Key 또는 Secret이 설정되지 않았습니다. 실서비스 연동을 위해 키를 입력해 주세요.");
       return { status: "not_configured", error: "솔라피 API Key/Secret 미설정" };
+    }
+
+    // [한글 주석: 알림 수신 대상인 관리자 전화번호 설정 유효성 검사]
+    if (!SOLAPI_ADMIN_PHONES || SOLAPI_ADMIN_PHONES.length === 0 || SOLAPI_ADMIN_PHONES[0] === "YOUR_ADMIN_PHONE") {
+      console.warn("알림을 수신할 관리자 연락처(SOLAPI_ADMIN_PHONES)가 설정되지 않았습니다.");
+      return { status: "not_configured", error: "관리자 연락처 미설정" };
     }
 
     // [한글 주석: 알림톡 필수 발송 파라미터가 유효한지 체크]
@@ -861,32 +870,41 @@ document.addEventListener("DOMContentLoaded", () => {
       // API 인증 헤더 생성
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
-      // 전화번호 포맷 정규화 (솔라피는 숫자로만 구성된 번호를 권장함)
-      const cleanPhone = phone.replace(/[^0-9]/g, "");
+      // [한글 주석: 설정된 모든 관리자 연락처별로 전송할 메시지 객체 배열을 생성]
+      const messages = SOLAPI_ADMIN_PHONES.map(adminPhone => {
+        // 전화번호 포맷 정규화 (솔라피 수신번호는 하이픈 제외 숫자로만 구성 권장)
+        const cleanAdminPhone = adminPhone.replace(/[^0-9]/g, "");
 
-      const requestBody = {
-        messages: [
-          {
-            to: cleanPhone,
-            from: SOLAPI_SENDER_NUMBER,
-            type: "CTA", // 알림톡 타입 지정
-            kakaoOptions: {
-              pfId: SOLAPI_PF_ID,
-              templateId: SOLAPI_TEMPLATE_ID,
-              // 템플릿 변수에 맞추어 바인딩 진행 (실제 템플릿 변수명과 일치해야 함)
-              variables: {
-                "#{이름}": name,
-                "#{성별}": gender,
-                "#{예약일시}": reservationDate,
-                "#{신청병원}": clinicName,
-                "#{주요증상}": symptoms.length > 50 ? symptoms.substring(0, 50) + "..." : symptoms,
-                "#{연락처}": phone
-              }
+        return {
+          to: cleanAdminPhone,
+          from: SOLAPI_SENDER_NUMBER,
+          type: "CTA", // 알림톡 타입 지정
+          kakaoOptions: {
+            pfId: SOLAPI_PF_ID,
+            templateId: SOLAPI_TEMPLATE_ID,
+            // [한글 주석: 관리자용 승인 알림톡 템플릿에 맞추어 10가지 예약 상세 필드를 변수로 매핑]
+            variables: {
+              "#{선택언어}": lang,
+              "#{이름}": name,
+              "#{선택병원}": clinicName,
+              "#{성별}": gender,
+              "#{비자타입}": visaType,
+              "#{생년월일}": dob,
+              "#{예약희망일}": reservationDate,
+              "#{증상}": symptoms.length > 50 ? symptoms.substring(0, 50) + "..." : symptoms,
+              "#{주소}": address,
+              "#{연락처}": phone
             }
           }
-        ]
+        };
+      });
+
+      // 솔라피 다중 전송 requestBody 정의
+      const requestBody = {
+        messages: messages
       };
 
+      // 솔라피 다중 메시지 전송 API 엔드포인트 호출
       const response = await fetch("https://api.solapi.com/messages/v4/send-many", {
         method: "POST",
         headers: {
@@ -901,10 +919,10 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(responseData.errorMessage || `HTTP status ${response.status}`);
       }
 
-      console.log("알림톡 발송 완료:", responseData);
+      console.log("관리자 알림톡 발송 완료:", responseData);
       return { status: "success" };
     } catch (err) {
-      console.error("알림톡 발송 중 예외 오류 발생:", err);
+      console.error("관리자 알림톡 발송 중 예외 오류 발생:", err);
       return { status: "fail", error: err.message };
     }
   };
@@ -1098,14 +1116,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("Reservation recorded with ID: ", docRef.id);
 
-      // [한글 주석: 예약 신청 완료 후, 입력된 정보를 기반으로 솔라피 API를 통해 카카오 알림톡 자동 전송 실행]
+      // [한글 주석: 예약 신청 완료 후, 입력된 정보를 기반으로 솔라피 API를 통해 관리자 알림톡(CTA) 자동 다중 전송 실행]
       const alimtalkResult = await sendSolapiAlimtalk(
-        name,
-        gender,
-        reservationDate,
-        selectedClinicLocalized || selectedClinic,
-        symptoms,
-        phone
+        currentLang, // 선택언어
+        name,        // 이름
+        selectedClinicLocalized || selectedClinic, // 선택병원
+        gender,      // 성별
+        visaType,    // 비자타입
+        dob,         // 생년월일
+        reservationDate, // 예약희망일
+        symptoms,    // 증상
+        address,     // 주소
+        phone        // 연락처
       );
 
       // [한글 주석: 알림톡 전송 결과를 Firestore 예약 문서에 기록]
