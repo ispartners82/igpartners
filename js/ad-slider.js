@@ -92,7 +92,8 @@ const FALLBACK_ADS = [
   }
 ];
 
-document.addEventListener("DOMContentLoaded", async () => {
+// [한글 주석: SPA 및 일반 로드 환경 모두에서 정상 구동되도록 페이지 데이터 로딩 및 슬라이더 초기화 메인 함수 정의]
+async function initPage() {
   const adGridContainer = document.getElementById("ad-grid-container");
   if (!adGridContainer) return;
 
@@ -180,4 +181,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       setInterval(nextSlide, ad.slideInterval);
     }
   });
-});
+}
+
+// [한글 주석: 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPage);
+} else {
+  initPage();
+}

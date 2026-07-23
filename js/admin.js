@@ -17,7 +17,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+// [한글 주석: SPA 및 일반 로드 환경 모두에서 정상 구동되도록 관리자 페이지 초기화 메인 함수 정의]
+function initPage() {
   const reservationList = document.getElementById("reservation-list");
   const btnRefresh = document.getElementById("btn-refresh");
 
@@ -2077,7 +2078,7 @@ document.addEventListener("DOMContentLoaded", () => {
           editBtnTrigger.addEventListener("click", () => editInputImage.click());
         }
 
-        /* [한글 주석] 파일이 새로 선택되면 신규 등록과 동일하게 최대 5MB 체크 및 Canvas 800px 리사이징 처리 실행 */
+        /* [한글 주석] 파일이 새로 선택되면 신규 등록과 동일하게 최대 10MB 체크 및 Canvas 800px 리사이징 처리 실행 */
         if (editInputImage) {
           editInputImage.addEventListener("change", (e) => {
             const file = e.target.files[0];
@@ -2754,6 +2755,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 탭 클릭 시 리소스 전역 로드 연동을 위해 window 스코프 배포
   window.loadAds = loadAds;
-});
+}
+
+// [한글 주석: 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPage);
+} else {
+  initPage();
+}
 // Build cache bust: 2026-07-11T02:11:00
 

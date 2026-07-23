@@ -157,6 +157,29 @@ body {
   align-items: center;
 }
 
+/* [한글 주석: SPA 메인 콘텐츠 컨테이너의 상단 여백 설정 - 고정 헤더 높이(5rem)에 가려지지 않으면서 최적의 콤팩트 간격을 유지하도록 3차 최적화] */
+#app-view-container {
+  margin-top: 90px !important;
+}
+@media (max-width: 1024px) {
+  #app-view-container {
+    margin-top: 90px !important; /* 사용자의 요청에 따라 모바일 모드에서도 상단 마진을 90px로 대폭 축소 밀착 적용 */
+  }
+}
+
+/* [한글 주석: 언어 선택 안내 문구 전용 형광 네온 스타일 - 크고 선명하게 돋보이도록 조정] */
+.lang-select-subtitle {
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  color: #00f3ff !important;
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+}
+@media (max-width: 768px) {
+  .lang-select-subtitle {
+    font-size: 1.15rem !important;
+  }
+}
+
 /* Header Section */
 /* [한글 주석: 대시보드 타이틀 헤더 영역을 정중앙 축에 가두어 탭 스위칭 시 제목 위치 흔들림을 100% 차단] */
 .header {
@@ -2914,7 +2937,7 @@ body.home-page {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 8rem 2rem 2rem; /* 하단 padding을 4rem에서 2rem으로 축소 */
+  padding: 7rem 2rem 2rem; /* [한글 주석: 상단 고정 헤더(5rem)에 버튼이 가려지지 않고 온전히 드러나도록 상단 여백을 7rem으로 재조정] */
   overflow: hidden;
 }
 /* 히어로 내부 빛 확산 */
@@ -3369,6 +3392,11 @@ body.home-page {
   /* ==========================================================================
      모바일 및 태블릿 통합 대응 (1024px 이하)
      ========================================================================== */
+
+  /* [한글 주석: 모바일 고정 메뉴바에 버튼이 가려지지 않도록 상단 패딩을 6.5rem으로 적당히 띄워 배치] */
+  .hero-section {
+    padding-top: 6.5rem;
+  }
 
   /* 모바일 화면 가로 공간을 최대한 활용하기 위해 전체 컨테이너 여백 및 간격 축소 */
   .nav-container {

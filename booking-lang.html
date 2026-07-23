@@ -80,6 +80,30 @@
           <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn" style="display: none;" title="관리자">👑</a>
           <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;" title="예약통계">📊</a>
           <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
+          <script>
+            (function(){
+              try {
+                var c = sessionStorage.getItem("auth_user_cache");
+                if (c) {
+                  var u = JSON.parse(c);
+                  document.getElementById("quick-btn-login").style.display = "none";
+                  document.getElementById("quick-btn-my-reservations").style.display = "inline-flex";
+                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
+                  if (p) {
+                    var perm = JSON.parse(p);
+                    if (perm && perm.permissions) {
+                      if (perm.permissions.isAdmin) {
+                        document.getElementById("quick-btn-admin-dashboard").style.display = "inline-flex";
+                      }
+                      if (perm.permissions.hasStats || perm.permissions.isAdmin) {
+                        document.getElementById("quick-btn-stats-dashboard").style.display = "inline-flex";
+                      }
+                    }
+                  }
+                }
+              } catch(e){}
+            })();
+          </script>
         </div>
 
         <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
@@ -93,13 +117,13 @@
   </header>
 
   <!-- [한글 주석: SPA 동적 뷰 전환 전용 메인 통일 컨테이너 - 이 상위의 global-header는 1ms도 파괴되지 않고 부동 유지됨] -->
-  <div id="app-view-container" class="container" style="margin-top: 100px;">
+  <div id="app-view-container" class="container">
     <!-- 기존 auth-bar는 공통 네비게이션 바(global-header)로 통합되어 제거되었습니다 -->
     
     <header class="header">
       <!-- 기존 로고도 공통 네비게이션 바로 통합되었습니다 -->
       <h1 class="title">Select Language</h1>
-      <p class="subtitle">예약을 진행하기 위해 편리한 언어를 선택해 주세요.</p>
+      <p class="subtitle lang-select-subtitle">예약을 진행하기 위해 편리한 언어를 선택해 주세요.</p>
     </header>
 
     <!-- 4열 반응형 언어 그리드 영역 -->

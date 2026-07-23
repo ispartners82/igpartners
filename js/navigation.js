@@ -135,8 +135,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // [한글 주석: 무한 루프를 완전 차단하고 탭 active 하이라이트만 0.01초 만에 스마트 스위칭하는 독립 함수]
   function updateActiveNavLinks(targetUrl) {
-    const currentPath = targetUrl || window.location.pathname;
-    const currentHash = window.location.hash;
+    // [한글 주석: 경로와 해시 분리 가드 엔진 - targetUrl에 해시가 붙어오더라도 순수 경로와 해시를 완전 분리 판별해 매칭 오류 원천 차단]
+    const urlString = targetUrl || (window.location.pathname + window.location.hash);
+    const [pathPart, hashPart] = urlString.split("#");
+    
+    const currentPath = pathPart;
+    const currentHash = hashPart ? `#${hashPart}` : "";
 
     const isIndexPage = (currentPath === "/" || currentPath.endsWith("index.html"));
     const isPartnersHash = currentHash === "#partners";
@@ -173,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     syncAuthBadgeInstantly();
   }
 
-  // [한글 주석: 0초 캐시 복원 엔진 - 페이지/뷰 스위칭 시 우측 관리자 버튼 2개가 0.1초 늦게 튀어나오며 발생하던 상단 메뉴 흔들림/사라짐 랙을 100% 원천 차단]
+  // [한글 주석: 0초 캐시 복원 엔진 - 페이지/뷰 스위칭 시 우측 관리자 버튼 2개 및 모바일 퀵메뉴가 0.1초 늦게 튀어나오며 발생하던 상단 메뉴 흔들림/사라짐 랙을 100% 원천 차단]
   function syncAuthBadgeInstantly() {
     try {
       const authUserElem = document.getElementById("auth-user");
@@ -183,6 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const userNameElem = document.getElementById("user-name");
       const userPhotoElem = document.getElementById("user-photo");
 
+      // [한글 주석: 모바일 전용 퀵 버튼 요소 추가 제어]
+      const quickBtnMyReservations = document.getElementById("quick-btn-my-reservations");
+      const quickBtnAdminDashboard = document.getElementById("quick-btn-admin-dashboard");
+      const quickBtnStatsDashboard = document.getElementById("quick-btn-stats-dashboard");
+      const quickBtnLogin = document.getElementById("quick-btn-login");
+
       const userCacheStr = sessionStorage.getItem("auth_user_cache");
       if (userCacheStr) {
         const userObj = JSON.parse(userCacheStr);
@@ -191,15 +201,32 @@ document.addEventListener("DOMContentLoaded", () => {
         if (userNameElem) userNameElem.textContent = userObj.displayName || "관리자";
         if (userPhotoElem && userObj.photoURL) userPhotoElem.src = userObj.photoURL;
 
+        // [한글 주석: 로그인 세션 복원 시 모바일 퀵 버튼 상태도 동시에 즉시 0ms로 노출 조정]
+        if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
+        if (quickBtnLogin) quickBtnLogin.style.display = "none";
+
         // 세션 캐시에 기록된 관리자 권한 확인 후 0초 만에 인메모리 노출
         const permCacheStr = sessionStorage.getItem(`admin_permissions_${userObj.uid}`);
         if (permCacheStr) {
           const permObj = JSON.parse(permCacheStr);
           if (permObj && permObj.permissions) {
-            if (btnAdminElem) btnAdminElem.style.display = (permObj.permissions.isAdmin) ? "inline-block" : "none";
-            if (btnStatsElem) btnStatsElem.style.display = (permObj.permissions.hasStats || permObj.permissions.isAdmin) ? "inline-block" : "none";
+            const isAdmin = !!permObj.permissions.isAdmin;
+            const hasStats = !!(permObj.permissions.hasStats || permObj.permissions.isAdmin);
+
+            if (btnAdminElem) btnAdminElem.style.display = isAdmin ? "inline-block" : "none";
+            if (btnStatsElem) btnStatsElem.style.display = hasStats ? "inline-block" : "none";
+
+            // [한글 주석: 모바일용 퀵 버튼 관리자/통계 상태 동시 0ms 제어]
+            if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = isAdmin ? "inline-flex" : "none";
+            if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = hasStats ? "inline-flex" : "none";
           }
         }
+      } else {
+        // [한글 주석: 로그인 세션 캐시가 없는 상태(비로그인)일 때의 모바일 퀵버튼 노출 상태 0ms 세팅]
+        if (quickBtnMyReservations) quickBtnMyReservations.style.display = "none";
+        if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = "none";
+        if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = "none";
+        if (quickBtnLogin) quickBtnLogin.style.display = "inline-flex";
       }
     } catch (e) {
       console.warn("syncAuthBadgeInstantly warning:", e);
@@ -448,18 +475,38 @@ document.addEventListener("DOMContentLoaded", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
-      // [한글 주석: 스크립트 중복 재주입 100% 차단 락 - 이미 로드된 스크립트를 재실행하여 구글 Auth/권한 조회가 재발동되며 뱃지가 사라지던 현상 완전 사살]
+      // [한글 주석: 페이지별 전용 스크립트 강제 재실행 엔진 - SPA 전환 시 기존 DOM이 소멸하고 신규 DOM이 생성되므로 페이지 개별 스크립트는 매번 반드시 재생성 및 재실행해야 함]
       const scripts = doc.querySelectorAll("script");
       scripts.forEach(s => {
         const src = s.getAttribute("src");
-        if (src && !src.includes("navigation.js") && !src.includes("auth.js") && !src.includes("firebase-config.js")) {
-          const isAlreadyLoaded = document.querySelector(`script[src="${src}"]`);
-          if (!isAlreadyLoaded) {
-            const scriptElem = document.createElement("script");
-            scriptElem.src = src;
-            scriptElem.type = s.type || "text/javascript";
-            document.body.appendChild(scriptElem);
+        if (src) {
+          // 공통 전역 싱글톤 스크립트는 중복 실행 방지를 위해 절대 건드리지 않음
+          if (src.includes("navigation.js") || src.includes("auth.js") || src.includes("firebase-config.js")) {
+            return;
           }
+          
+          // 기존에 삽입되었던 동일한 경로의 스크립트 엘리먼트 제거 (메모리 및 DOM 정리)
+          // 쿼리 스트링(?v=...) 부분을 무시하고 매칭하기 위해 src의 절대경로 패턴으로 확인
+          const cleanSrc = src.split("?")[0];
+          const existingScripts = document.querySelectorAll("script");
+          existingScripts.forEach(el => {
+            const elSrc = el.getAttribute("src");
+            if (elSrc && elSrc.includes(cleanSrc)) {
+              el.remove();
+            }
+          });
+
+          // 강제 재실행을 위해 새로운 script 태그 생성 및 캐시 방지용 타임스탬프 부착
+          const scriptElem = document.createElement("script");
+          scriptElem.src = cleanSrc + "?t=" + new Date().getTime();
+          scriptElem.type = s.type || "text/javascript";
+          document.body.appendChild(scriptElem);
+        } else if (s.textContent && !s.textContent.includes("loadViewSeamlessly")) {
+          // [한글 주석: src가 없는 인라인 복원 스크립트도 뷰 전환 시 신규 DOM을 대상으로 0ms 즉시 구동되도록 재생성 실행]
+          const scriptElem = document.createElement("script");
+          scriptElem.textContent = s.textContent;
+          scriptElem.type = s.type || "text/javascript";
+          document.body.appendChild(scriptElem);
         }
       });
 
@@ -514,5 +561,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // 뒤로가기 / 앞으로가기 브라우저 버튼 대응
   window.addEventListener("popstate", () => {
     loadViewSeamlessly(window.location.pathname, window.location.hash);
+  });
+
+  // [한글 주석: 동일 페이지 해시 이동(pushState) 시에도 탭 하이라이트가 누락 없이 스마트 동기화되도록 전역 hashchange 이벤트 연결]
+  window.addEventListener("hashchange", () => {
+    updateActiveNavLinks();
   });
 });

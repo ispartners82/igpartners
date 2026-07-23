@@ -2,7 +2,8 @@ import { auth, db } from "/js/firebase-db.js?v=2.0.7";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+// [한글 주석: SPA 및 일반 로드 환경 모두에서 정상 구동되도록 통계 페이지 초기화 메인 함수 정의]
+function initPage() {
   // 1. DOM 요소 취득
   const filterLang = document.getElementById("filter-lang");
   const filterClinic = document.getElementById("filter-clinic"); // 신설: 선택 병원 필터
@@ -745,5 +746,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnConfirmExcel) {
     btnConfirmExcel.addEventListener("click", downloadStyledExcel);
   }
-});
+}
+
+// [한글 주석: 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPage);
+} else {
+  initPage();
+}
 

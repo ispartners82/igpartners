@@ -79,6 +79,30 @@
           <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn" style="display: none;" title="관리자">👑</a>
           <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;" title="예약통계">📊</a>
           <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
+          <script>
+            (function(){
+              try {
+                var c = sessionStorage.getItem("auth_user_cache");
+                if (c) {
+                  var u = JSON.parse(c);
+                  document.getElementById("quick-btn-login").style.display = "none";
+                  document.getElementById("quick-btn-my-reservations").style.display = "inline-flex";
+                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
+                  if (p) {
+                    var perm = JSON.parse(p);
+                    if (perm && perm.permissions) {
+                      if (perm.permissions.isAdmin) {
+                        document.getElementById("quick-btn-admin-dashboard").style.display = "inline-flex";
+                      }
+                      if (perm.permissions.hasStats || perm.permissions.isAdmin) {
+                        document.getElementById("quick-btn-stats-dashboard").style.display = "inline-flex";
+                      }
+                    }
+                  }
+                }
+              } catch(e){}
+            })();
+          </script>
         </div>
 
         <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
@@ -91,8 +115,8 @@
     </nav>
   </header>
 
-  <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 인라인 스타일 추가 -->
-  <div class="container admin-container" style="margin-top: 100px;">
+  <!-- [한글 주석: SPA 동적 뷰 스위처 엔진이 이 영역을 감지하여 1:1 교체함으로써 헤더 파괴 및 튐현상을 100% 방지하는 본문 컨테이너] -->
+  <div id="app-view-container" class="container admin-container">
     <!-- 기존 auth-bar 및 언어선택 이동 링크는 공통 네비게이션 바 내부로 완벽히 통합되어 제거되었습니다 -->
 
     <header class="header">
