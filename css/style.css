@@ -8,6 +8,13 @@
 /* --------------------------------------------------------------------------
    1. Design Tokens & Variables (수정하기 쉽도록 변수화)
    -------------------------------------------------------------------------- */
+/* [한글 주석: 탭 전환 시 세로 스크롤바 상시 고정 및 전역 스무스 스크롤 효과 부여] */
+html {
+  overflow-y: scroll !important; /* 세로 스크롤바 트랙을 상시 고정하여 중앙 정렬 위치 점프 완벽 방지 */
+  scrollbar-gutter: stable !important;
+  scroll-behavior: smooth !important;
+}
+
 :root {
   /* [디자인 시스템] 전역 스크롤바 세련된 다크 스타일링 */
   scrollbar-width: thin;
@@ -151,8 +158,12 @@ body {
 }
 
 /* Header Section */
+/* [한글 주석: 대시보드 타이틀 헤더 영역을 정중앙 축에 가두어 탭 스위칭 시 제목 위치 흔들림을 100% 차단] */
 .header {
-  text-align: center;
+  text-align: center !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
   margin-bottom: 4rem;
   animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -962,12 +973,23 @@ body {
   box-sizing: border-box;
 }
 
+/* [한글 주석: 대시보드 컨테이너의 좌우 마진을 auto로 고정하여 모든 탭 패널 전환 시 뷰포트 중앙점 흔들림 방지] */
 .admin-container {
   max-width: 1400px;
   width: 95%;
-  max-width: 95%; /* 뷰포트 대비 최대 너비 95%를 초과하여 flex 아이템이 강제 팽창하지 않도록 방지합니다. */
-  min-width: 0; /* 수축이 올바르게 작용하도록 최소 너비 제약을 해제합니다. */
-  box-sizing: border-box; /* 크기 계산 시 패딩과 보더를 통합합니다. */
+  margin-left: auto !important;
+  margin-right: auto !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* [한글 주석: 탭 패널 전환 시 데이터 수집 대기 시간 동안 패널 높이가 0px로 순간 축소되어 헤더/탭 메뉴가 위아래로 튀는 랙을 방지하는 최소 높이 락] */
+.admin-tab-content {
+  width: 100%;
+  min-height: 550px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 /* 대시보드 통계 카드 */
@@ -1600,8 +1622,14 @@ body {
    12. Admin Tabs & Role Management (관리자 탭 및 등급 관리 추가)
    ---------------------------------- */
 
+/* [한글 주석: 관리자 탭 버튼 전체를 정중앙 수평 축에 고정하여 탭 전환 시 1px도 위치가 움직이지 않도록 락(Lock) 부여] */
 .admin-tabs {
-  display: flex;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
   gap: 1rem;
   margin-bottom: 2rem;
   border-bottom: 1px solid rgba(0, 243, 255, 0.2);
@@ -2511,22 +2539,32 @@ body.modal-open {
    7. 공통 상단 네비게이션 바 (Common Navigation Bar) 스타일 정의
    ========================================================================== */
 
-/* 네비게이션 바 기본 스타일 (밝고 부드러운 글래스모피즘 효과 및 프리미엄 폰트 교체) */
+/* [한글 주석: 상단 공통 네비게이션 헤더를 최상위 Layer(z-index: 99999)에 부동 고정하여 1ms도 파괴됨 없이 온전히 노출되도록 긴급 정상 복구] */
+#global-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 99999 !important;
+}
+
+/* [한글 주석: 상단 공통 네비게이션 바를 수직 80px 높이 내에서 완벽한 정중앙(align-items: center)으로 정돈] */
 .common-navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 80px;
-  z-index: 1000;
-  background: rgba(22, 31, 64, 0.55); /* 좀 더 밝고 부드러운 다크블루 톤 반투명 배경 */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(99, 102, 241, 0.45); /* 조금 더 밝고 선명한 형광 인디고 블루 실선 */
-  display: flex;
-  align-items: center;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 80px !important;
+  z-index: 99999 !important;
+  background: rgba(22, 31, 64, 0.75) !important; /* 정갈한 반투명 다크 톤 */
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.45) !important;
+  display: flex !important;
+  align-items: center !important;
   transition: var(--transition-smooth);
-  font-family: 'Plus Jakarta Sans', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; /* 부드럽고 세련된 프리미엄 서체 적용 */
+  font-family: 'Plus Jakarta Sans', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* 스크롤하여 내려갔을 때 변화할 디자인 (더 묵직하고 은은한 네온 글로우 테두리) */
@@ -2649,6 +2687,14 @@ body.modal-open {
   display: none !important; /* 언더라인 비활성화 */
 }
 
+/* [한글 주석: 의료통역 및 진료 예약 버튼 메뉴가 선택(active)되었을 때 글자색 흰색 전환 및 밝은 형광 네온 테두리/발광 효과 적용] */
+.btn-nav-booking.active {
+  background: rgba(34, 211, 238, 0.18) !important;
+  color: #ffffff !important;
+  border: 1px solid #22d3ee !important; /* 밝은 형광 네온 컬러 */
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.6), inset 0 0 8px rgba(34, 211, 238, 0.3) !important;
+}
+
 /* 우측 로그인/로그아웃/뱃지 영역 (축소 방지) */
 .nav-auth-area {
   display: flex;
@@ -2763,6 +2809,26 @@ body.modal-open {
   color: #ffffff;
   border: none;
   box-shadow: 0 2px 6px rgba(236, 72, 153, 0.2);
+}
+
+/* [한글 주석: 예약내역 버튼 선택(active) 시 반투명 형광 시안 테두리 및 글로우 하이라이트 적용] */
+.btn-my-res.active {
+  background: rgba(0, 243, 255, 0.18) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: 1px solid #00f3ff !important;
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.7), inset 0 0 6px rgba(0, 243, 255, 0.35) !important;
+  transform: scale(1.05);
+}
+
+/* [한글 주석: 관리자 및 예약통계 버튼 선택(active) 시 기존 분홍/핑크 그라데이션 배경을 100% 유지하면서 밝은 형광 네온 테두리 및 글로우 발광 효과 적용] */
+.btn-admin.active {
+  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%) !important; /* 기존 핑크 그라데이션 배경 100% 유지 */
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: 2px solid #00f3ff !important; /* 선명한 형광 시안 네온 테두리 */
+  box-shadow: 0 0 16px rgba(0, 243, 255, 0.85), 0 2px 8px rgba(236, 72, 153, 0.4) !important;
+  transform: scale(1.05);
 }
 
 .btn-admin:hover {
@@ -3492,6 +3558,15 @@ body.home-page {
     width: 100%;
     display: flex;
     justify-content: center; /* 로고 너비에 맞춰 정중앙 정렬 */
+  }
+
+  /* [한글 주석: 핵심 버그 픽스]
+     nav-auth-area가 nav-container의 직접 자식일 때(JS 이동 전)는 숨깁니다.
+     JS의 handleResponsiveLayout()이 nav-menu.appendChild(authArea)로 이동시키면
+     이 선택자가 더 이상 일치하지 않아 위의 .nav-auth-area 스타일(display:flex)이 자동 적용됩니다.
+  */
+  .nav-container > .nav-auth-area {
+    display: none !important;
   }
 
   /* 

@@ -674,6 +674,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabClinics = document.getElementById("tab-clinics");
     const tabAds = document.getElementById("tab-ads");
 
+    // [한글 주석: 상단 네비게이션 뱃지 영구 락 - 한 번 노출된 관리자/통계 뱃지는 뷰 스위칭 시 절대로 display: none으로 끄지 않고 영구 띄워둠]
+    const btnAdminDashboard = document.getElementById("btn-admin-dashboard");
+    const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
+    if (btnAdminDashboard && permissions.isAdmin) {
+      btnAdminDashboard.style.display = "inline-block";
+    }
+    if (btnStatsDashboard && (permissions.hasStats || permissions.isAdmin)) {
+      btnStatsDashboard.style.display = "inline-block";
+    }
+
     if (tabReservations) {
       tabReservations.style.display = permissions.hasReservations ? "inline-block" : "none";
     }
@@ -865,123 +875,70 @@ document.addEventListener("DOMContentLoaded", () => {
   const tabPermissions = document.getElementById("tab-permissions");
   const contentPermissions = document.getElementById("content-permissions");
 
+  // [한글 주석: 탭 전환 시 메뉴 영역 랙 및 깜빡임(Layout Shift)을 방지하는 통합 탭 스위칭 헬퍼 함수]
+  function switchTabSeamlessly(activeBtn, activeContent, tabStorageKey, fetchCallback) {
+    // 1. 모든 탭 버튼 및 패널 스위칭 처리 (메뉴는 고정되고 내용만 즉각 변경됨)
+    const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds];
+    const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds];
+
+    tabs.forEach(t => { if (t) t.classList.remove("active"); });
+    contents.forEach(c => { if (c) c.style.display = "none"; });
+
+    if (activeBtn) activeBtn.classList.add("active");
+    if (activeContent) activeContent.style.display = "block";
+
+    // 2. 활성 탭 키 세션 스토리지 기록
+    sessionStorage.setItem("active_admin_tab", tabStorageKey);
+
+    // 3. 예약 탭이 아닌 다른 탭으로 이동 시 예약 실시간 리스너 해제로 Firestore 읽기 비용 절감
+    if (tabStorageKey !== "tab-reservations" && unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
+
+    // 4. 데이터 로드 콜백 비동기 실행 (탭 전환 반응속도 100% 보장)
+    if (fetchCallback) {
+      fetchCallback();
+    }
+  }
+
   if (tabReservations && tabUsers && tabClinics) {
     tabReservations.addEventListener("click", () => {
-      tabReservations.classList.add("active");
-      tabUsers.classList.remove("active");
-      if (tabPermissions) tabPermissions.classList.remove("active");
-      tabClinics.classList.remove("active");
-      if (tabAds) tabAds.classList.remove("active");
-      
-      contentReservations.style.display = "block";
-      contentUsers.style.display = "none";
-      if (contentPermissions) contentPermissions.style.display = "none";
-      contentClinics.style.display = "none";
-      if (contentAds) contentAds.style.display = "none";
-      
-      // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
-      sessionStorage.setItem("active_admin_tab", "tab-reservations");
-      // 예약 내역 탭 활성화 시 예약 목록 로드 시작 (새로고침 후 다시 눌렀을 때의 데이터 연동 보장)
-      loadReservations(false);
+      switchTabSeamlessly(tabReservations, contentReservations, "tab-reservations", () => {
+        loadReservations(false);
+      });
     });
 
     tabUsers.addEventListener("click", () => {
-      tabUsers.classList.add("active");
-      tabReservations.classList.remove("active");
-      if (tabPermissions) tabPermissions.classList.remove("active");
-      tabClinics.classList.remove("active");
-      if (tabAds) tabAds.classList.remove("active");
-      
-      contentReservations.style.display = "none";
-      contentUsers.style.display = "block";
-      if (contentPermissions) contentPermissions.style.display = "none";
-      contentClinics.style.display = "none";
-      if (contentAds) contentAds.style.display = "none";
-      
-      // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
-      if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-      }
-      
-      initRolesAndListen(); // 회원 등급 실시간 로드 시작
-      // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
-      sessionStorage.setItem("active_admin_tab", "tab-users");
+      switchTabSeamlessly(tabUsers, contentUsers, "tab-users", () => {
+        initRolesAndListen();
+      });
     });
 
     if (tabPermissions) {
       tabPermissions.addEventListener("click", () => {
-        tabPermissions.classList.add("active");
-        tabReservations.classList.remove("active");
-        tabUsers.classList.remove("active");
-        tabClinics.classList.remove("active");
-        if (tabAds) tabAds.classList.remove("active");
-        
-        contentReservations.style.display = "none";
-        contentUsers.style.display = "none";
-        if (contentPermissions) contentPermissions.style.display = "block";
-        contentClinics.style.display = "none";
-        if (contentAds) contentAds.style.display = "none";
-        
-        // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
-        if (unsubscribe) {
-          unsubscribe();
-          unsubscribe = null;
-        }
-        
-        initRolesAndListen();
-        // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
-        sessionStorage.setItem("active_admin_tab", "tab-permissions");
+        switchTabSeamlessly(tabPermissions, contentPermissions, "tab-permissions", () => {
+          // [성능 최적화] 이미 roles 감시 리스너가 등록되어 있는 경우 initRolesAndListen()의 중복 쿼리 등록을 차단하고 loadUsers()만 실행하여 메뉴 랙 방지
+          if (unsubscribeRoles) {
+            loadUsers();
+          } else {
+            initRolesAndListen();
+          }
+        });
       });
     }
 
     tabClinics.addEventListener("click", () => {
-      tabClinics.classList.add("active");
-      tabReservations.classList.remove("active");
-      tabUsers.classList.remove("active");
-      if (tabPermissions) tabPermissions.classList.remove("active");
-      if (tabAds) tabAds.classList.remove("active");
-      
-      contentReservations.style.display = "none";
-      contentUsers.style.display = "none";
-      if (contentPermissions) contentPermissions.style.display = "none";
-      contentClinics.style.display = "block";
-      if (contentAds) contentAds.style.display = "none";
-      
-      // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
-      if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-      }
-      
-      loadClinics(); // 병원 목록 불러오기
-      // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
-      sessionStorage.setItem("active_admin_tab", "tab-clinics");
+      switchTabSeamlessly(tabClinics, contentClinics, "tab-clinics", () => {
+        loadClinics();
+      });
     });
 
     if (tabAds) {
       tabAds.addEventListener("click", () => {
-        tabAds.classList.add("active");
-        tabReservations.classList.remove("active");
-        tabUsers.classList.remove("active");
-        if (tabPermissions) tabPermissions.classList.remove("active");
-        tabClinics.classList.remove("active");
-        
-        contentReservations.style.display = "none";
-        contentUsers.style.display = "none";
-        if (contentPermissions) contentPermissions.style.display = "none";
-        contentClinics.style.display = "none";
-        if (contentAds) contentAds.style.display = "block";
-        
-        // 다른 탭으로 이동 시 예약 실시간 리스너를 해제하여 Firestore 불필요한 읽기 비용 차단 (서버 무료 원칙 보호)
-        if (unsubscribe) {
-          unsubscribe();
-          unsubscribe = null;
-        }
-        
-        loadAds(); // 광고 배너 CRUD 데이터 불러오기 실행
-        // 새로고침 시 탭 상태를 유지하기 위해 세션스토리지에 활성 탭 ID 기록
-        sessionStorage.setItem("active_admin_tab", "tab-ads");
+        switchTabSeamlessly(tabAds, contentAds, "tab-ads", () => {
+          loadAds();
+        });
       });
     }
   }
@@ -1158,7 +1115,10 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadUsers() {
     if (!userList) return;
     
-    userList.innerHTML = `<tr><td colspan="5" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
+    // [한글 주석: 기존 회원 목록 데이터가 이미 수집되어 있는 경우 탭 이동 시마다 테이블 전체를 지워서 대시보드 제목/탭 메뉴가 튀는 랙을 차단하도록 가드]
+    if (!userList.children || userList.children.length === 0 || userList.innerHTML.includes("table-loading")) {
+      userList.innerHTML = `<tr><td colspan="5" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
+    }
 
     // [레이스 컨디션 해결] rolesCache가 아직 Firestore 실시간 리스너로부터 수집되지 않은 경우
     // 일시적으로 roles 컬렉션을 일회성(getDocs) 조회하여 캐시를 선제 빌드 (등급 미등록 노출 오류 완벽 방지)
@@ -2476,7 +2436,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1) Firestore로부터 광고 목록 전체를 조회하여 테이블 렌더링 (Read)
   async function loadAds() {
     if (!adminAdList) return;
-    adminAdList.innerHTML = `<tr><td colspan="6" class="table-loading">광고 데이터를 불러오는 중입니다...</td></tr>`;
+    
+    // [한글 주석: 기존 광고 배너 목록 데이터가 수집되어 있는 경우 탭 이동 시마다 테이블 전체를 지워서 대시보드 제목/탭 메뉴가 튀는 랙을 차단하도록 가드]
+    if (!adminAdList.children || adminAdList.children.length === 0 || adminAdList.innerHTML.includes("table-loading")) {
+      adminAdList.innerHTML = `<tr><td colspan="6" class="table-loading">광고 데이터를 불러오는 중입니다...</td></tr>`;
+    }
 
     try {
       // 순서(order) 필드 기준으로 오름차순(asc) 쿼리 실행

@@ -24,8 +24,72 @@
     <div class="aurora-2"></div>
   </div>
 
-  <!-- 공통 상단 네비게이션 바 컴포넌트 동적 주입 -->
-  <header id="global-header"></header>
+  <!-- [한글 주석: 상단 네비게이션 파괴 방지를 위한 공통 상단 네비게이션 바 컴포넌트 정적 사전 배치] -->
+  <header id="global-header">
+    <nav class="common-navbar">
+      <div class="nav-container">
+        <a href="/index.html" class="nav-brand">
+          <img src="/img/logo.png" alt="IGPartners Logo" class="nav-logo">
+          <span class="nav-brand-text">IGPartners</span>
+        </a>
+        <ul class="nav-menu" id="nav-menu">
+          <li class="nav-item"><a href="/index.html" class="nav-link">홈</a></li>
+          <li class="nav-item"><a href="/about.html" class="nav-link">회사소개</a></li>
+          <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
+          <li class="nav-item"><a href="/about.html#services" class="nav-link btn-nav-booking">의료통역</a></li>
+          <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking">진료 예약</a></li>
+          <li class="nav-item"><a href="/index.html#partners" class="nav-link">협력 회사</a></li>
+        </ul>
+        <div class="nav-auth-area" id="nav-auth-area">
+          <div id="auth-user" class="auth-user-badge">
+            <!-- [한글 주석: HTML 파싱 0.00001초 순간 세션 스토리지에서 유저 이름/사진을 DOM에 즉시 박아 지워짐 100% 원천 차단] -->
+            <div class="user-capsule">
+              <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile" class="user-avatar">
+              <span id="user-name" class="user-nickname"></span>
+              <script>
+                (function(){
+                  try {
+                    var c = sessionStorage.getItem("auth_user_cache");
+                    if(c) {
+                      var u = JSON.parse(c);
+                      if(u.displayName) document.getElementById("user-name").textContent = u.displayName;
+                      if(u.photoURL) document.getElementById("user-photo").src = u.photoURL;
+                    }
+                  } catch(e){}
+                })();
+              </script>
+            </div>
+            <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res active">📅 예약내역</a>
+            <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin">👑 관리자</a>
+            <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin">📊 예약통계</a>
+            <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
+          </div>
+          <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
+        </div>
+
+        <!-- [한글 주석: 모바일 하단 고정 퀵 아이콘 네비게이션 바 - 데스크톱에서는 CSS로 비노출] -->
+        <div class="nav-mobile-quick" id="nav-mobile-quick">
+          <a href="/index.html" class="quick-icon-btn" title="홈">🏠</a>
+          <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
+          <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
+          <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
+          <a href="/booking-lang.html" class="quick-icon-btn" title="진료 예약">📅</a>
+          <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
+          <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn active" style="display: none;" title="예약내역">📋</a>
+          <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn" style="display: none;" title="관리자">👑</a>
+          <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;" title="예약통계">📊</a>
+          <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
+        </div>
+
+        <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
+        <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
+      </div>
+    </nav>
+  </header>
 
   <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 인라인 스타일 추가 -->
   <div class="container admin-container" style="margin-top: 100px;">

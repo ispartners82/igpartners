@@ -12,100 +12,202 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // 현재 활성화된 페이지 경로 파악 (메뉴 하이라이트 처리에 활용)
+  // [한글 주석: 현재 활성화된 페이지 경로 및 URL 해시 파악 (모든 메뉴의 active 하이라이트 처리에 활용)]
   const currentPath = window.location.pathname;
+  const currentHash = window.location.hash;
 
-  // 네비게이션 HTML 뼈대 주입
-  globalHeader.innerHTML = `
-    <nav class="common-navbar">
-      <div class="nav-container">
-        <!-- 좌측: 브랜드 로고 영역 -->
-        <a href="/index.html" class="nav-brand">
-          <img src="/img/logo.png" alt="IGPartners Logo" class="nav-logo">
-          <span class="nav-brand-text">IGPartners</span>
-        </a>
+  // [한글 주석: 홈 및 각 메뉴별 URL/해시 유무에 따른 active 탭 구분 식별자 정밀 정의]
+  const isIndexPage = (currentPath === "/" || currentPath.endsWith("index.html"));
+  const isPartnersHash = currentHash === "#partners";
+  const isHomeActive = isIndexPage && !isPartnersHash;
+  const isPartnersActive = isIndexPage && isPartnersHash;
 
-        <!-- 중앙: 네비게이션 메뉴 링크 영역 (반응형 대응) -->
-        <ul class="nav-menu" id="nav-menu">
-          <li class="nav-item">
-            <a href="/index.html" class="nav-link ${currentPath === "/" || currentPath.endsWith("index.html") ? "active" : ""}">홈</a>
-          </li>
-          <li class="nav-item">
-            <!-- 한글 주석: 회사소개 메뉴 클릭 시 외부 독립 회사소개 페이지(about.html)로 연결하도록 변경 -->
-            <a href="/about.html" class="nav-link ${currentPath.endsWith("about.html") ? "active" : ""}">회사소개</a>
-          </li>
-          <li class="nav-item">
-            <!-- 한글 주석: 제공 서비스 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 -->
-            <a href="/about.html#services" class="nav-link">제공 서비스</a>
-          </li>
-          <!-- 한글 주석: 의료통역 메뉴 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연결하도록 변경 (진료 예약 버튼과 위치 스왑) -->
-          <li class="nav-item">
-            <a href="/about.html#services" class="nav-link btn-nav-booking">의료통역</a>
-          </li>
-          <!-- 한글 주석: 진료 예약 메뉴를 의료통역 우측으로 순서 스왑 이동함 -->
-          <li class="nav-item">
-            <a href="/booking-lang.html" class="nav-link btn-nav-booking ${currentPath.endsWith("booking-lang.html") ? "active" : ""}">진료 예약</a>
-          </li>
-          <!-- 한글 주석: 사용자 요청에 따라 '협력 회사' 메뉴 위치를 '의료통역' 우측으로 이동시킴 -->
-          <li class="nav-item">
-            <a href="/index.html#partners" class="nav-link">협력 회사</a>
-          </li>
-        </ul>
+  const isAboutPage = currentPath.endsWith("about.html");
+  const isServicesHash = currentHash === "#services";
+  const isAboutActive = isAboutPage && !isServicesHash;
+  const isServicesActive = isAboutPage && isServicesHash;
 
-        <!-- 우측: 구글 로그인 상태 뱃지 및 인증 영역 (데스크톱 기준) -->
-        <div class="nav-auth-area" id="nav-auth-area">
-          <!-- 로그인 완료 후 노출될 사용자 뱃지 영역 -->
-          <div id="auth-user" class="auth-user-badge" style="display: none;">
-            <div class="user-capsule">
-              <img id="user-photo" src="" alt="Profile" class="user-avatar">
-              <span id="user-name" class="user-nickname"></span>
+  // [한글 주석: 진료 예약 관련 페이지(booking-lang, booking-clinic, booking-form) 진입 여부 식별자]
+  const isBookingActive = currentPath.includes("booking-");
+
+  // [한글 주석: 절대 동결 락 - 상단 헤더 DOM이 단 1ms도 파괴되거나 innerHTML로 다시 덮어씌워져 우측 뱃지가 사라지고 메뉴가 튀는 현상을 100% 완전 차단]
+  const existingNavbar = globalHeader.querySelector(".common-navbar");
+  if (existingNavbar && globalHeader.children.length > 0) {
+    // [한글 주석: 정적 HTML이 이미 존재하면 DOM을 파괴하지 않고 active 클래스만 스마트 업데이트]
+    // [한글 주석: 주의 - return을 제거하여 하단의 햄버거 이벤트/handleResponsiveLayout/syncAuthBadge 등 모바일 셋업 코드가 반드시 실행되도록 수정]
+    updateActiveNavLinks();
+    // return; ← [버그 수정] 이 줄이 있으면 모바일 이벤트 바인딩이 전혀 실행되지 않아 서랍 메뉴가 작동 불능 상태가 됨
+  }
+
+  if (!existingNavbar) {
+    globalHeader.innerHTML = `
+      <nav class="common-navbar">
+        <div class="nav-container">
+          <!-- 좌측: 브랜드 로고 영역 -->
+          <a href="/index.html" class="nav-brand">
+            <img src="/img/logo.png" alt="IGPartners Logo" class="nav-logo">
+            <span class="nav-brand-text">IGPartners</span>
+          </a>
+
+          <!-- 중앙: 네비게이션 메뉴 링크 영역 (반응형 대응) -->
+          <ul class="nav-menu" id="nav-menu">
+            <li class="nav-item">
+              <a href="/index.html" class="nav-link ${isHomeActive ? "active" : ""}">홈</a>
+            </li>
+            <li class="nav-item">
+              <a href="/about.html" class="nav-link ${isAboutActive ? "active" : ""}">회사소개</a>
+            </li>
+            <li class="nav-item">
+              <a href="/about.html#services" class="nav-link ${isServicesActive ? "active" : ""}">제공 서비스</a>
+            </li>
+            <li class="nav-item">
+              <a href="/about.html#services" class="nav-link btn-nav-booking ${isServicesActive ? "active" : ""}">의료통역</a>
+            </li>
+            <li class="nav-item">
+              <a href="/booking-lang.html" class="nav-link btn-nav-booking ${isBookingActive ? "active" : ""}">진료 예약</a>
+            </li>
+            <li class="nav-item">
+              <a href="/index.html#partners" class="nav-link ${isPartnersActive ? "active" : ""}">협력 회사</a>
+            </li>
+          </ul>
+
+          <!-- 우측: 구글 로그인 상태 뱃지 및 인증 영역 (데스크톱 기준) -->
+          <div class="nav-auth-area" id="nav-auth-area">
+            <div id="auth-user" class="auth-user-badge" style="display: none;">
+              <div class="user-capsule">
+                <img id="user-photo" src="" alt="Profile" class="user-avatar">
+                <span id="user-name" class="user-nickname"></span>
+              </div>
+              <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res ${currentPath.endsWith("my-reservations.html") ? "active" : ""}">📅 예약내역</a>
+              <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin ${currentPath.endsWith("admin.html") ? "active" : ""}" style="display: none;">👑 관리자</a>
+              <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin ${currentPath.endsWith("stats.html") ? "active" : ""}" style="display: none;">📊 예약통계</a>
+              <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
             </div>
-            <!-- 예약 확인 버튼 -->
-            <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res">📅 예약내역</a>
-            <!-- 관리자 대시보드 진입 버튼 (권한 등급에 따라 노출 제어) -->
-            <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin" style="display: none;">👑 관리자</a>
-            <!-- 한글 주석: 예약 통계 페이지 진입 버튼 추가 -->
-            <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin" style="display: none;">📊 예약통계</a>
-            <!-- 로그아웃 버튼 -->
-            <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
+            <button id="btn-login" class="btn-nav-login">로그인</button>
           </div>
-          <!-- 로그아웃 상태일 때 노출될 로그인 버튼 -->
-          <button id="btn-login" class="btn-nav-login">로그인</button>
-        </div>
 
-        <!-- 신규 추가: 모바일 전용 상단 퀵 메뉴 영역 (데스크톱 모드에서는 CSS로 비노출 제어) -->
-        <div class="nav-mobile-quick" id="nav-mobile-quick">
-          <!-- 홈 바로가기 버튼 (집 아이콘) -->
-          <a href="/index.html" class="quick-icon-btn ${currentPath === "/" || currentPath.endsWith("index.html") ? "active" : ""}" title="홈">🏠</a>
-          <!-- 한글 주석: 모바일 퀵 메뉴 회사소개 클릭 시 약속된 about.html 페이지로 연동 변경 -->
-          <a href="/about.html" class="quick-icon-btn ${currentPath.endsWith("about.html") ? "active" : ""}" title="회사소개">🏢</a>
-          <!-- 한글 주석: 모바일 퀵 메뉴 제공서비스 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 -->
-          <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
-          <!-- 한글 주석: 모바일 퀵 메뉴 의료통역 클릭 시 회사소개(전체 내용 페이지)의 서비스 섹션(#services)으로 연동 변경 (진료 예약과 위치 스왑) -->
-          <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
-          <!-- 한글 주석: 진료 예약 바로가기 버튼 (달력 아이콘, 의료통역 우측으로 스왑 이동) -->
-          <a href="/booking-lang.html" class="quick-icon-btn ${currentPath.endsWith("booking-lang.html") ? "active" : ""}" title="진료 예약">📅</a>
-          <!-- 한글 주석: 사용자 요청에 따라 모바일 퀵 메뉴에서도 '협력 회사'의 위치를 의료통역 뒤로 이동시킴 -->
-          <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
-          <!-- 예약 내역 바로가기 버튼 (로그인 상태에 따라 auth.js에서 동적 표시) -->
-          <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn ${currentPath.endsWith("my-reservations.html") ? "active" : ""}" style="display: none;" title="예약내역">📋</a>
-          <!-- 관리자 대시보드 바로가기 버튼 (권한 등급에 따라 auth.js에서 동적 표시) -->
-          <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn ${currentPath.endsWith("admin.html") ? "active" : ""}" style="display: none;" title="관리자">👑</a>
-          <!-- 한글 주석: 예약 통계 바로가기 버튼 추가 -->
-          <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn ${currentPath.endsWith("stats.html") ? "active" : ""}" style="display: none;" title="예약통계">📊</a>
-          <!-- 퀵 로그인 버튼 (로그아웃 상태에 따라 auth.js에서 동적 표시) -->
-          <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
-        </div>
+          <!-- 신규 추가: 모바일 전용 상단 퀵 메뉴 영역 (데스크톱 모드에서는 CSS로 비노출 제어) -->
+          <div class="nav-mobile-quick" id="nav-mobile-quick">
+            <a href="/index.html" class="quick-icon-btn ${isHomeActive ? "active" : ""}" title="홈">🏠</a>
+            <a href="/about.html" class="quick-icon-btn ${isAboutActive ? "active" : ""}" title="회사소개">🏢</a>
+            <a href="/about.html#services" class="quick-icon-btn ${isServicesActive ? "active" : ""}" title="제공 서비스">🛠️</a>
+            <a href="/about.html#services" class="quick-icon-btn ${isServicesActive ? "active" : ""}" title="의료통역">🌐</a>
+            <a href="/booking-lang.html" class="quick-icon-btn ${isBookingActive ? "active" : ""}" title="진료 예약">📅</a>
+            <a href="/index.html#partners" class="quick-icon-btn ${isPartnersActive ? "active" : ""}" title="협력 회사">🤝</a>
+            <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn ${currentPath.endsWith("my-reservations.html") ? "active" : ""}" style="display: none;" title="예약내역">📋</a>
+            <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn ${currentPath.endsWith("admin.html") ? "active" : ""}" style="display: none;" title="관리자">👑</a>
+            <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn ${currentPath.endsWith("stats.html") ? "active" : ""}" style="display: none;" title="예약통계">📊</a>
+            <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
+          </div>
 
-        <!-- 모바일 화면용 햄버거 토글 버튼 -->
-        <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
-        </button>
-      </div>
-    </nav>
-  `;
+          <!-- 모바일 화면용 햄버거 토글 버튼 -->
+          <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </button>
+        </div>
+      </nav>
+    `;
+  } else {
+    // [성능 최적화] 이미 마크업이 존재하는 경우 DOM 파괴 없이 active 클래스만 0.001초 만에 스마트 스위칭
+    const links = existingNavbar.querySelectorAll("a");
+    links.forEach(link => {
+      const href = link.getAttribute("href");
+      if (!href) return;
+
+      let isActive = false;
+      if (href === "/index.html" && isHomeActive) isActive = true;
+      else if (href === "/about.html" && isAboutActive) isActive = true;
+      else if (href === "/about.html#services" && isServicesActive) isActive = true;
+      else if (href === "/booking-lang.html" && isBookingActive) isActive = true;
+      else if (href === "/index.html#partners" && isPartnersActive) isActive = true;
+      else if (href === "/my-reservations.html" && currentPath.endsWith("my-reservations.html")) isActive = true;
+      else if (href === "/admin.html" && currentPath.endsWith("admin.html")) isActive = true;
+      else if (href === "/stats.html" && currentPath.endsWith("stats.html")) isActive = true;
+
+      // [한글 주석: nav-link, quick-icon-btn, btn-nav-action 클래스를 가진 링크에만 active 토글 적용]
+      if (link.classList.contains("nav-link") || link.classList.contains("quick-icon-btn") || link.classList.contains("btn-nav-action")) {
+        link.classList.toggle("active", isActive);
+      }
+    });
+  }
+
+  // [한글 주석: 무한 루프를 완전 차단하고 탭 active 하이라이트만 0.01초 만에 스마트 스위칭하는 독립 함수]
+  function updateActiveNavLinks(targetUrl) {
+    const currentPath = targetUrl || window.location.pathname;
+    const currentHash = window.location.hash;
+
+    const isIndexPage = (currentPath === "/" || currentPath.endsWith("index.html"));
+    const isPartnersHash = currentHash === "#partners";
+    const isHomeActive = isIndexPage && !isPartnersHash;
+    const isPartnersActive = isIndexPage && isPartnersHash;
+
+    const isAboutPage = currentPath.includes("about.html");
+    const isServicesHash = currentHash === "#services";
+    const isAboutActive = isAboutPage && !isServicesHash;
+    const isServicesActive = isAboutPage && isServicesHash;
+    const isBookingActive = currentPath.includes("booking-");
+
+    const links = document.querySelectorAll(".common-navbar a");
+    links.forEach(link => {
+      const href = link.getAttribute("href");
+      if (!href) return;
+
+      let isActive = false;
+      if (href === "/index.html" && isHomeActive) isActive = true;
+      else if (href === "/about.html" && isAboutActive) isActive = true;
+      else if (href === "/about.html#services" && isServicesActive) isActive = true;
+      else if (href === "/booking-lang.html" && isBookingActive) isActive = true;
+      else if (href === "/index.html#partners" && isPartnersActive) isActive = true;
+      else if (href === "/my-reservations.html" && currentPath.endsWith("my-reservations.html")) isActive = true;
+      else if (href === "/admin.html" && currentPath.endsWith("admin.html")) isActive = true;
+      else if (href === "/stats.html" && currentPath.endsWith("stats.html")) isActive = true;
+
+      if (link.classList.contains("nav-link") || link.classList.contains("quick-icon-btn") || link.classList.contains("btn-nav-action")) {
+        link.classList.toggle("active", isActive);
+      }
+    });
+
+    // [한글 주석: 뷰 스위칭 시 우측 프로필/관리자 버튼 2개의 상태를 0.001초 만에 최적화 복원]
+    syncAuthBadgeInstantly();
+  }
+
+  // [한글 주석: 0초 캐시 복원 엔진 - 페이지/뷰 스위칭 시 우측 관리자 버튼 2개가 0.1초 늦게 튀어나오며 발생하던 상단 메뉴 흔들림/사라짐 랙을 100% 원천 차단]
+  function syncAuthBadgeInstantly() {
+    try {
+      const authUserElem = document.getElementById("auth-user");
+      const btnLoginElem = document.getElementById("btn-login");
+      const btnAdminElem = document.getElementById("btn-admin-dashboard");
+      const btnStatsElem = document.getElementById("btn-stats-dashboard");
+      const userNameElem = document.getElementById("user-name");
+      const userPhotoElem = document.getElementById("user-photo");
+
+      const userCacheStr = sessionStorage.getItem("auth_user_cache");
+      if (userCacheStr) {
+        const userObj = JSON.parse(userCacheStr);
+        if (authUserElem) authUserElem.style.display = "flex";
+        if (btnLoginElem) btnLoginElem.style.display = "none";
+        if (userNameElem) userNameElem.textContent = userObj.displayName || "관리자";
+        if (userPhotoElem && userObj.photoURL) userPhotoElem.src = userObj.photoURL;
+
+        // 세션 캐시에 기록된 관리자 권한 확인 후 0초 만에 인메모리 노출
+        const permCacheStr = sessionStorage.getItem(`admin_permissions_${userObj.uid}`);
+        if (permCacheStr) {
+          const permObj = JSON.parse(permCacheStr);
+          if (permObj && permObj.permissions) {
+            if (btnAdminElem) btnAdminElem.style.display = (permObj.permissions.isAdmin) ? "inline-block" : "none";
+            if (btnStatsElem) btnStatsElem.style.display = (permObj.permissions.hasStats || permObj.permissions.isAdmin) ? "inline-block" : "none";
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("syncAuthBadgeInstantly warning:", e);
+    }
+  }
+
+  // 렌더링 즉시 0ms 장착
+  syncAuthBadgeInstantly();
 
   // 모바일 햄버거 메뉴 및 서랍장 관련 요소 캐싱
   const navToggle = document.getElementById("nav-toggle");
@@ -293,4 +395,124 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === privacyModal) closeModal();
     });
   }
+
+  // [한글 주석: SPA 동적 뷰 스위처 엔진 - 상단 메뉴바가 1ms도 사라지지 않고 제자리에 부동 고정된 채 아래 내용만 즉시 전환]
+  async function loadViewSeamlessly(targetUrl, hashTag = "") {
+    try {
+      // 1. 주소창 URL을 하드 새로고침 없이 즉시 갱신
+      const fullUrl = hashTag ? `${targetUrl}${hashTag}` : targetUrl;
+      history.pushState(null, null, fullUrl);
+
+      // 2. 백그라운드 비동기 타겟 HTML 뷰 수집
+      const response = await fetch(targetUrl);
+      if (!response.ok) {
+        location.href = fullUrl;
+        return;
+      }
+
+      const htmlText = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlText, "text/html");
+
+      // 3. 메인 콘텐츠 컨테이너 추출 및 인메모리 교체 (상단 global-header는 1ms도 손대지 않고 100% 온전히 유지)
+      // [한글 주석: 파싱된 타겟 HTML 문서에서 상단 #global-header를 사전에 제거하여 상단 메뉴바가 덮어씌워지고 사라지는 버그를 원천 차단]
+      const targetHeader = doc.querySelector("#global-header");
+      if (targetHeader) {
+        targetHeader.remove();
+      }
+
+      // [한글 주석: #app-view-container 및 메인 컨테이너 영역만 정밀하게 1대1 교체하여 상단 헤더 100% 동결 보장]
+      const newMain = doc.querySelector("#app-view-container") || doc.querySelector(".container.admin-container") || doc.querySelector(".container") || doc.querySelector("main");
+      const currentMain = document.querySelector("#app-view-container") || document.querySelector(".container.admin-container") || document.querySelector(".container") || document.querySelector("main");
+
+      if (newMain && currentMain) {
+        currentMain.innerHTML = newMain.innerHTML;
+      } else {
+        location.href = fullUrl;
+        return;
+      }
+
+      // [한글 주석: 무한 루프를 완전 차단하기 위해 popstate dispatch 이벤트를 제거하고 active 하이라이트만 직접 스마트 갱신]
+      window.dispatchEvent(new Event("hashchange"));
+      // [한글 주석: 계정 프로필 노드 영구 보존 락 - 뷰 전환 시 구글 계정 이름("이희승") 및 프로필 사진이 0.001초도 비어있지 않도록 즉시 동기화 보존]
+      updateActiveNavLinks(fullUrl);
+      syncAuthBadgeInstantly();
+
+      // 5. 해시 앵커(#partners, #services 등)가 있을 경우 스무스 스크롤 이동
+      if (hashTag) {
+        const targetSec = document.querySelector(hashTag);
+        if (targetSec) {
+          targetSec.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // [한글 주석: 스크립트 중복 재주입 100% 차단 락 - 이미 로드된 스크립트를 재실행하여 구글 Auth/권한 조회가 재발동되며 뱃지가 사라지던 현상 완전 사살]
+      const scripts = doc.querySelectorAll("script");
+      scripts.forEach(s => {
+        const src = s.getAttribute("src");
+        if (src && !src.includes("navigation.js") && !src.includes("auth.js") && !src.includes("firebase-config.js")) {
+          const isAlreadyLoaded = document.querySelector(`script[src="${src}"]`);
+          if (!isAlreadyLoaded) {
+            const scriptElem = document.createElement("script");
+            scriptElem.src = src;
+            scriptElem.type = s.type || "text/javascript";
+            document.body.appendChild(scriptElem);
+          }
+        }
+      });
+
+    } catch (e) {
+      console.warn("SPA View load failed, fallbacking to hard navigate:", e);
+      location.href = targetUrl;
+    }
+  }
+
+  // 상단 네비게이션 메뉴 클릭 스마트 인터셉터
+  document.addEventListener("click", (e) => {
+    const anchor = e.target.closest("a");
+    if (!anchor) return;
+
+    const href = anchor.getAttribute("href");
+    if (!href || href.startsWith("javascript:") || href.startsWith("tel:") || href.startsWith("mailto:")) return;
+
+    // 외부 링크는 기본 동작 수행
+    if (href.startsWith("http://") || href.startsWith("https://")) return;
+
+    // 파싱된 경로 및 해시 분리
+    const [pathPart, hashPart] = href.split("#");
+    const targetPath = pathPart || window.location.pathname;
+    const targetHash = hashPart ? `#${hashPart}` : "";
+
+    // 1) 동일 페이지 해시 이동 처리
+    if (targetPath === window.location.pathname || (targetPath === "/index.html" && window.location.pathname === "/") || (targetPath === "/" && window.location.pathname === "/index.html")) {
+      if (targetHash) {
+        e.preventDefault();
+        history.pushState(null, null, targetHash);
+        const targetElem = document.querySelector(targetHash);
+        if (targetElem) {
+          targetElem.scrollIntoView({ behavior: "smooth" });
+        }
+        window.dispatchEvent(new Event("hashchange"));
+      } else {
+        e.preventDefault();
+        history.pushState(null, null, targetPath);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.dispatchEvent(new Event("hashchange"));
+      }
+      return;
+    }
+
+    // 2) 다른 뷰(.html)로 이동 시 상단 메뉴 파괴를 차단하고 SPA 동적 뷰 스위칭 실행!
+    if (targetPath.endsWith(".html") || targetPath === "/") {
+      e.preventDefault();
+      loadViewSeamlessly(targetPath, targetHash);
+    }
+  });
+
+  // 뒤로가기 / 앞으로가기 브라우저 버튼 대응
+  window.addEventListener("popstate", () => {
+    loadViewSeamlessly(window.location.pathname, window.location.hash);
+  });
 });

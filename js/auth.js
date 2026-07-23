@@ -204,6 +204,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (user) {
       // 1) 로그인된 상태 처리
       window.isLoggedIn = true;
+      // [한글 주석: 상단 네비게이션 뷰 전환 시 유저 프로필 뱃지 0초 복원을 위한 세션 캐시 기록]
+      sessionStorage.setItem("auth_user_cache", JSON.stringify({
+        uid: user.uid,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      }));
       
       if (userPhoto) {
         userPhoto.src = user.photoURL || "https://lh3.googleusercontent.com/a/default-user=s96-c";
@@ -253,18 +259,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentQuickAdminBtn = document.getElementById("quick-btn-admin-dashboard");
         const currentQuickStatsBtn = document.getElementById("quick-btn-stats-dashboard");
         
-        if (currentAdminBtn) {
-          currentAdminBtn.style.display = isAdmin ? "inline-flex" : "none";
+        // [한글 주석: 상단 네비게이션 뱃지 영구 락 - 최초 로그인 후 검증된 관리자/통계 버튼은 뷰 전환 시 절대로 none으로 끄지 않고 100% 띄워 놓게 유지]
+        if (currentAdminBtn && isAdmin) {
+          currentAdminBtn.style.display = "inline-flex";
         }
-        if (currentStatsBtn) {
-          currentStatsBtn.style.display = hasStats ? "inline-flex" : "none";
+        if (currentStatsBtn && hasStats) {
+          currentStatsBtn.style.display = "inline-flex";
         }
-        // 신규 추가: 모바일용 퀵 관리자 버튼도 권한에 맞춰 동시 노출 제어
-        if (currentQuickAdminBtn) {
-          currentQuickAdminBtn.style.display = isAdmin ? "inline-flex" : "none";
+        if (currentQuickAdminBtn && isAdmin) {
+          currentQuickAdminBtn.style.display = "inline-flex";
         }
-        if (currentQuickStatsBtn) {
-          currentQuickStatsBtn.style.display = hasStats ? "inline-flex" : "none";
+        if (currentQuickStatsBtn && hasStats) {
+          currentQuickStatsBtn.style.display = "inline-flex";
         }
       } catch (error) {
         console.error("사용자 권한 등급 확인 실패 (Admin button check failed):", error);
@@ -273,17 +279,20 @@ document.addEventListener("DOMContentLoaded", () => {
       // 로그인 성공 시 로그인 요구 안내 모달 팝업 자동 숨김
       hideLoginModal();
     } else {
-      // 2) 로그아웃(비인증) 상태 처리
-      window.isLoggedIn = false;
-      
-      if (userPhoto) userPhoto.src = "";
-      if (userName) userName.textContent = "";
+      // [한글 주석: 세션 캐시(auth_user_cache)가 남아있다면 Auth SDK 초기 비동기 수신 지연 상황이므로 유저 이름/사진을 절대로 지우지 않음]
+      const hasUserCache = sessionStorage.getItem("auth_user_cache");
+      if (!hasUserCache) {
+        window.isLoggedIn = false;
+        
+        if (userPhoto) userPhoto.src = "";
+        if (userName) userName.textContent = "";
 
-      if (authUserArea) authUserArea.style.display = "none";
-      if (btnLogin) {
-        btnLogin.style.display = "block";
-        btnLogin.disabled = false;
-        btnLogin.textContent = "로그인";
+        if (authUserArea) authUserArea.style.display = "none";
+        if (btnLogin) {
+          btnLogin.style.display = "block";
+          btnLogin.disabled = false;
+          btnLogin.textContent = "로그인";
+        }
       }
 
       // 신규 추가: 로그아웃 상태일 때 모바일 퀵 예약 및 관리자 버튼 숨기고 로그인 아이콘 노출
