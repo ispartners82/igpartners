@@ -870,18 +870,18 @@ document.addEventListener("DOMContentLoaded", () => {
       // API 인증 헤더 생성
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
-      // [한글 주석: 각 예약 변수가 실제 데이터값으로 치환된 최종 발송용 텍스트 본문 생성 (줄바꿈 호환성을 위해 \r 제거)]
-      const messageText = `[신규 진료 예약 접수 알림]
-• 선택언어: ${lang}
-• 환자이름: ${name}
-• 신청병원: ${clinicName}
-• 성별: ${gender}
-• 비자타입: ${visaType}
-• 생년월일: ${dob}
-• 예약희망일: ${reservationDate}
-• 주요증상: ${symptoms.length > 50 ? symptoms.substring(0, 50) + "..." : symptoms}
-• 주소: ${address}
-• 연락처: ${phone}`.replace(/\r/g, "");
+      // [한글 주석: 각 예약 변수가 실제 데이터값으로 치환된 최종 발송용 텍스트 본문 생성 (줄바꿈 호환성을 위해 명시적 \n 결합 구조 사용)]
+      const messageText = "[신규 진료 예약 접수 알림]\n" +
+        "• 선택언어: " + lang + "\n" +
+        "• 환자이름: " + name + "\n" +
+        "• 신청병원: " + clinicName + "\n" +
+        "• 성별: " + gender + "\n" +
+        "• 비자타입: " + visaType + "\n" +
+        "• 생년월일: " + dob + "\n" +
+        "• 예약희망일: " + reservationDate + "\n" +
+        "• 주요증상: " + symptoms + "\n" + // [한글 주석: 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전히 배제]
+        "• 주소: " + address + "\n" +
+        "• 연락처: " + phone;
 
       // [한글 주석: 설정된 모든 관리자 연락처별로 전송할 메시지 객체 배열을 생성]
       const messages = SOLAPI_ADMIN_PHONES.map(adminPhone => {
@@ -905,7 +905,7 @@ document.addEventListener("DOMContentLoaded", () => {
               "#{비자타입}": visaType,
               "#{생년월일}": dob,
               "#{예약희망일}": reservationDate,
-              "#{증상}": symptoms.length > 50 ? symptoms.substring(0, 50) + "..." : symptoms,
+              "#{증상}": symptoms, // [한글 주석: variables 치환 시에도 증상 값 원본을 그대로 전송]
               "#{주소}": address,
               "#{연락처}": phone
             }
