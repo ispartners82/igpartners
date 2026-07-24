@@ -870,6 +870,20 @@ document.addEventListener("DOMContentLoaded", () => {
       // API 인증 헤더 생성
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
+      // [한글 주석: 카카오 채널에 승인 완료된 10가지 세부 항목의 템플릿 원문 전체 텍스트 정의 (줄바꿈/공백이 카카오 템플릿과 일치해야 함)]
+      const templateText = `[신규 진료 예약 접수 알림]
+
+• 선택언어: #{선택언어}
+• 환자이름: #{이름}
+• 신청병원: #{선택병원}
+• 성별: #{성별}
+• 비자타입: #{비자타입}
+• 생년월일: #{생년월일}
+• 예약희망일: #{예약희망일}
+• 주요증상: #{증상}
+• 주소: #{주소}
+• 연락처: #{연락처}`;
+
       // [한글 주석: 설정된 모든 관리자 연락처별로 전송할 메시지 객체 배열을 생성]
       const messages = SOLAPI_ADMIN_PHONES.map(adminPhone => {
         // 전화번호 포맷 정규화 (솔라피 수신번호는 하이픈 제외 숫자로만 구성 권장)
@@ -878,7 +892,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return {
           to: cleanAdminPhone,
           from: SOLAPI_SENDER_NUMBER,
-          type: "ATA", // [한글 주석: 솔라피 카카오 알림톡 정식 규격 타입인 ATA로 지정 (CTA는 템플릿 변수가 지원되지 않음)]
+          type: "ATA", // [한글 주석: 솔라피 카카오 알림톡 정식 규격 타입인 ATA로 지정]
+          text: templateText, // [한글 주석: 필수 누락되었던 템플릿 원문 전체 텍스트 추가 기입]
           kakaoOptions: {
             pfId: SOLAPI_PF_ID,
             templateId: SOLAPI_TEMPLATE_ID,
