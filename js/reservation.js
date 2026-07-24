@@ -746,58 +746,7 @@ const privacyContents = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // [한글 주석: 카카오 SDK 초기화를 위한 JavaScript 키 정의 (실서비스 적용 시 발급받은 키로 교체해야 합니다.)]
-  const KAKAO_JAVASCRIPT_KEY = "YOUR_KAKAO_JAVASCRIPT_KEY";
 
-  if (typeof Kakao !== "undefined") {
-    try {
-      if (!Kakao.isInitialized()) {
-        // [한글 주석: 플레이스홀더 키가 아니고 올바른 키가 설정되어 있을 때만 초기화를 수행합니다.]
-        if (KAKAO_JAVASCRIPT_KEY && KAKAO_JAVASCRIPT_KEY !== "YOUR_KAKAO_JAVASCRIPT_KEY") {
-          Kakao.init(KAKAO_JAVASCRIPT_KEY);
-          console.log("Kakao SDK가 성공적으로 초기화되었습니다.");
-        } else {
-          console.warn("Kakao SDK가 로드되었으나 JavaScript 키가 설정되지 않았습니다. 'YOUR_KAKAO_JAVASCRIPT_KEY' 부분을 실제 발급받은 키로 수정해 주세요.");
-        }
-      }
-    } catch (err) {
-      console.error("Kakao SDK 초기화 중 오류 발생:", err);
-    }
-  }
-
-  // [한글 주석: 예약 내용을 템플릿화하여 사용자의 카카오톡으로 전송(공유)하는 함수]
-  const sendKakaoReservationShare = (name, gender, reservationDate, clinicName, symptoms) => {
-    if (typeof Kakao === "undefined" || !Kakao.isInitialized()) {
-      console.warn("Kakao SDK가 초기화되지 않았거나 로드되지 않아 카카오톡 공유 발송을 취소합니다.");
-      return;
-    }
-
-    try {
-      Kakao.Share.sendDefault({
-        objectType: "feed",
-        content: {
-          title: "📌 IGPartners 진료 예약 신청 완료",
-          description: `• 예약자: ${name}님 (${gender})\n• 예약일시: ${reservationDate}\n• 신청병원: ${clinicName}\n• 주요증상: ${symptoms}`,
-          imageUrl: window.location.origin + "/img/logo.png",
-          link: {
-            mobileWebUrl: window.location.origin + "/my-reservations.html",
-            webUrl: window.location.origin + "/my-reservations.html",
-          },
-        },
-        buttons: [
-          {
-            title: "내 예약 내역 확인하기",
-            link: {
-              mobileWebUrl: window.location.origin + "/my-reservations.html",
-              webUrl: window.location.origin + "/my-reservations.html",
-            },
-          },
-        ],
-      });
-    } catch (err) {
-      console.error("카카오톡 메시지 공유 전송 중 예외 발생:", err);
-    }
-  };
 
   // [한글 주석: 솔라피(Solapi) API 연동에 필요한 키 정의 및 설정 상수]
   const SOLAPI_API_KEY = "NCS6QTA1RKWBG0P5";         // 솔라피에서 발급받은 API Key
@@ -941,72 +890,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // [한글 주석: 솔라피 API를 호출하여 카카오 파트너센터(채널 관리자 앱) 1:1 채팅방에 예약 상세 내역을 자동 생성하는 상담톡(BizMessage) 전송 비동기 함수]
-  const sendSolapiBizMessage = async (lang, name, clinicName, gender, visaType, dob, reservationDate, symptoms, address, phone) => {
-    // [한글 주석: API 연동 키 및 카카오 프로필 ID 유효성 검사]
-    if (SOLAPI_API_KEY === "YOUR_SOLAPI_API_KEY" || !SOLAPI_PF_ID) {
-      console.warn("솔라피 API Key 또는 카카오 프로필 ID가 설정되지 않아 상담톡을 전송하지 않습니다.");
-      return { status: "not_configured", error: "솔라피 설정 미완료" };
-    }
 
-    try {
-      // [한글 주석: 솔라피 HMAC-SHA256 인증 헤더 생성]
-      const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
-
-      // [한글 주석: 카카오 파트너센터 1:1 채팅 내역에 전송할 예약 정보 텍스트 포맷팅 (템플릿 일치 단어 수정 및 symptoms 가공 배제)]
-      const bizMessageText = "[새로운 진료 예약 접수 알림]\n" + // [한글 주석: 템플릿 검증 일치를 위해 '신규' -> '새로운'으로 단어 수정]
-        "• 예약언어: " + lang + "\n" + // [한글 주석: 템플릿 검증 일치를 위해 '선택언어' -> '예약언어'로 단어 수정]
-        "• 환자이름: " + name + "\n" +
-        "• 신청병원: " + clinicName + "\n" +
-        "• 성별: " + gender + "\n" +
-        "• 비자타입: " + visaType + "\n" +
-        "• 생년월일: " + dob + "\n" +
-        "• 예약희망일: " + reservationDate + "\n" +
-        "• 주요증상: " + symptoms + "\n" + // [한글 주석: 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전 배제]
-        "• 주소: " + address + "\n" +
-        "• 연락처: " + phone;
-
-      // [한글 주석: 등록된 관리자 휴대폰 번호별로 1:1 상담 메시지 객체 생성]
-      const messages = SOLAPI_ADMIN_PHONES.map(adminPhone => {
-        const cleanAdminPhone = adminPhone.replace(/[^0-9]/g, "");
-        return {
-          to: cleanAdminPhone,
-          from: SOLAPI_SENDER_NUMBER,
-          type: "CTA", // [한글 주석: 카카오톡 1:1 상담 메시지 전송 규격 타입 지정]
-          text: bizMessageText,
-          // [한글 주석: autoTypePrevent는 개별 메시지 객체 내부 필드가 아니므로 규격에 따라 제거합니다]
-          kakaoOptions: {
-            pfId: SOLAPI_PF_ID
-          }
-        };
-      });
-
-      // [한글 주석: 솔라피 다중 메시지 발송 API 엔드포인트 호출]
-      const response = await fetch("https://api.solapi.com/messages/v4/send-many", {
-        method: "POST",
-        headers: {
-          "Authorization": authHeader,
-          "Content-Type": "application/json"
-        },
-        // [한글 주석: API 공식 규격에 따라 autoTypePrevent 속성을 최상위 루트 레벨에 정의하여 전송]
-        body: JSON.stringify({ 
-          messages,
-          autoTypePrevent: false
-        })
-      });
-
-      const responseData = await response.json();
-      if (!response.ok) {
-        throw new Error(responseData.errorMessage || `HTTP status ${response.status}`);
-      }
-
-      console.log("카카오 파트너센터 상담톡 발송 완료:", responseData);
-      return { status: "success" };
-    } catch (err) {
-      console.error("카카오 파트너센터 상담톡 발송 중 예외 발생:", err);
-      return { status: "fail", error: err.message };
-    }
-  };
 
   const clinicNameText = document.getElementById("clinic-name-text");
   const reservationForm = document.getElementById("reservation-form");
@@ -1211,37 +1095,20 @@ document.addEventListener("DOMContentLoaded", () => {
         phone        // 연락처
       );
 
-      // [한글 주석: 카카오 파트너센터(채널 관리자 앱) 1:1 채팅방에 예약 상세 내역 메시지를 자동 생성하기 위한 상담톡(BizMessage) 전송 실행 (주간 실시간 발송 및 실패 시 문자 자동 대체)]
-      const biztalkResult = await sendSolapiBizMessage(
-        currentLang,
-        name,
-        selectedClinicLocalized || selectedClinic,
-        gender,
-        visaType,
-        dob,
-        reservationDate,
-        symptoms,
-        address,
-        phone
-      );
-
-      // [한글 주석: 알림톡 및 상담톡 발송 결과를 Firestore 예약 문서에 통합 업데이트 기록]
-      if (alimtalkResult || biztalkResult) {
+      // [한글 주석: 예약 알림톡 발송 결과를 Firestore 예약 문서에 업데이트 기록]
+      if (alimtalkResult) {
         try {
-          const updateData = {};
-          if (alimtalkResult) {
-            updateData.alimtalkStatus = alimtalkResult.status;
-            if (alimtalkResult.error) updateData.alimtalkError = alimtalkResult.error;
-          }
-          if (biztalkResult) {
-            updateData.biztalkStatus = biztalkResult.status;
-            if (biztalkResult.error) updateData.biztalkError = biztalkResult.error;
+          const updateData = {
+            alimtalkStatus: alimtalkResult.status
+          };
+          if (alimtalkResult.error) {
+            updateData.alimtalkError = alimtalkResult.error;
           }
           const docDocRef = doc(db, "reservations", docRef.id);
           await updateDoc(docDocRef, updateData);
-          console.log("Firestore 예약 문서에 알림톡 및 상담톡 상태 기록 완료:", updateData);
+          console.log("Firestore 예약 문서에 알림톡 상태 기록 완료:", updateData);
         } catch (updateErr) {
-          console.error("Firestore에 발송 상태를 기록하는 중 에러 발생:", updateErr);
+          console.error("Firestore에 알림톡 발송 상태를 기록하는 중 에러 발생:", updateErr);
         }
       }
 
