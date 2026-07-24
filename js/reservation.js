@@ -807,7 +807,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const SOLAPI_SENDER_NUMBER = "01028196392";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 01012345678)
 
   // [한글 주석: 새로운 예약 신청 알림톡을 실시간으로 전달받을 관리자 휴대폰 번호 목록 (여러 명 동시 지정 가능)]
-  const SOLAPI_ADMIN_PHONES = ["01028196392", "01048444115"]; // 예: ["01011112222", "01033334444"] 형태로 실제 관리자 번호를 기재합니다.
+  const SOLAPI_ADMIN_PHONES = ["01028196392", "01048444115", "01096011085"]; // 예: ["01011112222", "01033334444"] 형태로 실제 관리자 번호를 기재합니다.
 
   // [한글 주석: 솔라피 API 호출 시 사용할 HMAC-SHA256 인증 헤더 생성 함수 (Web Crypto API 활용)]
   const createSolapiAuthHeader = async (apiKey, apiSecret) => {
