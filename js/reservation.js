@@ -941,47 +941,43 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // [한글 주석: 솔라피 API를 호출하여 카카오 파트너센터(채널 관리자 앱) 1:1 채팅방에 예약 상세 내역을 자동 생성하는 상담톡(BizMessage) 전송 비동기 함수]
+  // [한글 주석: 2025년 12월 31일부로 카카오 친구톡/상담톡(CTA) 공식 서비스가 전면 폐지됨에 따라, 상담톡 발송 함수 정의부를 주석 처리 비활성화합니다]
+  /*
   const sendSolapiBizMessage = async (lang, name, clinicName, gender, visaType, dob, reservationDate, symptoms, address, phone) => {
-    // [한글 주석: API 연동 키 및 카카오 프로필 ID 유효성 검사]
     if (SOLAPI_API_KEY === "YOUR_SOLAPI_API_KEY" || !SOLAPI_PF_ID) {
       console.warn("솔라피 API Key 또는 카카오 프로필 ID가 설정되지 않아 상담톡을 전송하지 않습니다.");
       return { status: "not_configured", error: "솔라피 설정 미완료" };
     }
 
     try {
-      // [한글 주석: 솔라피 HMAC-SHA256 인증 헤더 생성]
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
-      // [한글 주석: 카카오 파트너센터 1:1 채팅 내역에 전송할 예약 정보 텍스트 포맷팅 (템플릿 일치 단어 수정 및 symptoms 가공 배제)]
-      const bizMessageText = "[새로운 진료 예약 접수 알림]\n" + // [한글 주석: 템플릿 검증 일치를 위해 '신규' -> '새로운'으로 단어 수정]
-        "• 예약언어: " + lang + "\n" + // [한글 주석: 템플릿 검증 일치를 위해 '선택언어' -> '예약언어'로 단어 수정]
+      const bizMessageText = "[새로운 진료 예약 접수 알림]\n" + 
+        "• 예약언어: " + lang + "\n" + 
         "• 환자이름: " + name + "\n" +
         "• 신청병원: " + clinicName + "\n" +
         "• 성별: " + gender + "\n" +
         "• 비자타입: " + visaType + "\n" +
         "• 생년월일: " + dob + "\n" +
         "• 예약희망일: " + reservationDate + "\n" +
-        "• 증상: " + symptoms + "\n" + // [한글 주석: 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전 배제]
+        "• 증상: " + symptoms + "\n" + 
         "• 주소: " + address + "\n" +
         "• 연락처: " + phone;
 
-      // [한글 주석: 등록된 관리자 휴대폰 번호별로 1:1 상담 메시지 객체 생성]
       const messages = SOLAPI_ADMIN_PHONES.map(adminPhone => {
         const cleanAdminPhone = adminPhone.replace(/[^0-9]/g, "");
         return {
           to: cleanAdminPhone,
           from: SOLAPI_SENDER_NUMBER,
-          type: "CTA", // [한글 주석: 카카오톡 1:1 상담 메시지 전송 규격 타입 지정]
+          type: "CTA",
           text: bizMessageText,
-          autoTypePrevent: true, // [한글 주석: 상담톡 전송 실패 시 일반 문자 메시지로 자동 대체 발송되는 것을 차단하는 설정]
+          autoTypePrevent: true,
           kakaoOptions: {
             pfId: SOLAPI_PF_ID
           }
         };
       });
 
-      // [한글 주석: 솔라피 다중 메시지 발송 API 엔드포인트 호출]
       const response = await fetch("https://api.solapi.com/messages/v4/send-many", {
         method: "POST",
         headers: {
@@ -1003,6 +999,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return { status: "fail", error: err.message };
     }
   };
+  */
 
   const clinicNameText = document.getElementById("clinic-name-text");
   const reservationForm = document.getElementById("reservation-form");
@@ -1207,7 +1204,8 @@ document.addEventListener("DOMContentLoaded", () => {
         phone        // 연락처
       );
 
-      // [한글 주석: 카카오 파트너센터(채널 관리자 앱) 1:1 채팅방에 예약 상세 내역 메시지를 자동 생성하기 위한 상담톡(BizMessage) 전송 실행]
+      // [한글 주석: 2025년 12월 31일 카카오 친구톡/상담톡(CTA) 공식 서비스 종료로 인해 파트너센터 1:1 메시지 전송 로직은 작동이 정지되어 호출을 완전히 비활성화합니다]
+      /*
       const biztalkResult = await sendSolapiBizMessage(
         currentLang,
         name,
@@ -1220,19 +1218,14 @@ document.addEventListener("DOMContentLoaded", () => {
         address,
         phone
       );
+      */
 
-      // [한글 주석: 알림톡 및 상담톡 발송 결과를 Firestore 예약 문서에 통합 업데이트 기록]
-      if (alimtalkResult || biztalkResult) {
+      // [한글 주석: 알림톡 발송 결과를 Firestore 예약 문서에 업데이트 기록]
+      if (alimtalkResult) {
         try {
           const updateData = {};
-          if (alimtalkResult) {
-            updateData.alimtalkStatus = alimtalkResult.status;
-            if (alimtalkResult.error) updateData.alimtalkError = alimtalkResult.error;
-          }
-          if (biztalkResult) {
-            updateData.biztalkStatus = biztalkResult.status;
-            if (biztalkResult.error) updateData.biztalkError = biztalkResult.error;
-          }
+          updateData.alimtalkStatus = alimtalkResult.status;
+          if (alimtalkResult.error) updateData.alimtalkError = alimtalkResult.error;
           const docDocRef = doc(db, "reservations", docRef.id);
           await updateDoc(docDocRef, updateData);
           console.log("Firestore 예약 문서에 알림톡 및 상담톡 상태 기록 완료:", updateData);
