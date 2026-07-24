@@ -807,7 +807,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const SOLAPI_SENDER_NUMBER = "01028196392";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 01012345678)
 
   // [한글 주석: 새로운 예약 신청 알림톡을 실시간으로 전달받을 관리자 휴대폰 번호 목록 (여러 명 동시 지정 가능)]
-  const SOLAPI_ADMIN_PHONES = ["01028196392", "01048444115", "01096011085"]; // 예: ["01011112222", "01033334444"] 형태로 실제 관리자 번호를 기재합니다.
+  const SOLAPI_ADMIN_PHONES = ["01028196392"]; // 예: ["01011112222", "01033334444"] 형태로 실제 관리자 번호를 기재합니다.
 
   // [한글 주석: 솔라피 API 호출 시 사용할 HMAC-SHA256 인증 헤더 생성 함수 (Web Crypto API 활용)]
   const createSolapiAuthHeader = async (apiKey, apiSecret) => {
@@ -879,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "• 비자타입: " + visaType + "\n" +
         "• 생년월일: " + dob + "\n" +
         "• 예약희망일: " + reservationDate + "\n" +
-        "• 주요증상: " + symptoms + "\n" + // [한글 주석: 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전히 배제]
+        "• 증상: " + symptoms + "\n" + // [한글 주석: 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전히 배제]
         "• 주소: " + address + "\n" +
         "• 연락처: " + phone;
 
@@ -953,18 +953,18 @@ document.addEventListener("DOMContentLoaded", () => {
       // [한글 주석: 솔라피 HMAC-SHA256 인증 헤더 생성]
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
-      // [한글 주석: 카카오 파트너센터 1:1 채팅 내역에 전송할 예약 정보 텍스트 포맷팅]
-      const bizMessageText = `[신규 진료 예약 접수 알림]\n` +
-        `• 선택언어: ${lang}\n` +
-        `• 환자이름: ${name}\n` +
-        `• 신청병원: ${clinicName}\n` +
-        `• 성별: ${gender}\n` +
-        `• 비자타입: ${visaType}\n` +
-        `• 생년월일: ${dob}\n` +
-        `• 예약희망일: ${reservationDate}\n` +
-        `• 주요증상: ${symptoms.length > 50 ? symptoms.substring(0, 50) + "..." : symptoms}\n` +
-        `• 주소: ${address}\n` +
-        `• 연락처: ${phone}`;
+      // [한글 주석: 카카오 파트너센터 1:1 채팅 내역에 전송할 예약 정보 텍스트 포맷팅 (템플릿 일치 단어 수정 및 symptoms 가공 배제)]
+      const bizMessageText = "[새로운 진료 예약 접수 알림]\n" + // [한글 주석: 템플릿 검증 일치를 위해 '신규' -> '새로운'으로 단어 수정]
+        "• 예약언어: " + lang + "\n" + // [한글 주석: 템플릿 검증 일치를 위해 '선택언어' -> '예약언어'로 단어 수정]
+        "• 환자이름: " + name + "\n" +
+        "• 신청병원: " + clinicName + "\n" +
+        "• 성별: " + gender + "\n" +
+        "• 비자타입: " + visaType + "\n" +
+        "• 생년월일: " + dob + "\n" +
+        "• 예약희망일: " + reservationDate + "\n" +
+        "• 증상: " + symptoms + "\n" + // [한글 주석: 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전 배제]
+        "• 주소: " + address + "\n" +
+        "• 연락처: " + phone;
 
       // [한글 주석: 등록된 관리자 휴대폰 번호별로 1:1 상담 메시지 객체 생성]
       const messages = SOLAPI_ADMIN_PHONES.map(adminPhone => {
