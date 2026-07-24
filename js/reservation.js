@@ -974,7 +974,7 @@ document.addEventListener("DOMContentLoaded", () => {
           from: SOLAPI_SENDER_NUMBER,
           type: "CTA", // [한글 주석: 카카오톡 1:1 상담 메시지 전송 규격 타입 지정]
           text: bizMessageText,
-          autoTypePrevent: false, // [한글 주석: 카카오톡 전송 실패 시 문자 메시지로 즉시 대체 전송을 허용하기 위해 false로 완화]
+          // [한글 주석: autoTypePrevent는 개별 메시지 객체 내부 필드가 아니므로 규격에 따라 제거합니다]
           kakaoOptions: {
             pfId: SOLAPI_PF_ID
           }
@@ -988,7 +988,11 @@ document.addEventListener("DOMContentLoaded", () => {
           "Authorization": authHeader,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ messages })
+        // [한글 주석: API 공식 규격에 따라 autoTypePrevent 속성을 최상위 루트 레벨에 정의하여 전송]
+        body: JSON.stringify({ 
+          messages,
+          autoTypePrevent: false
+        })
       });
 
       const responseData = await response.json();
