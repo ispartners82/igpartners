@@ -871,8 +871,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
       // [한글 주석: 각 예약 변수가 실제 데이터값으로 치환된 최종 발송용 텍스트 본문 생성 (줄바꿈 호환성을 위해 명시적 \n 결합 구조 사용)]
-      const messageText = "[신규 진료 예약 접수 알림]\n" +
-        "• 선택언어: " + lang + "\n" +
+      const messageText = "[새로운 진료 예약 접수 알림]\n" + // [한글 주석: 템플릿 검증 일치를 위해 '신규' -> '새로운'으로 단어 수정]
+        "• 예약언어: " + lang + "\n" + // [한글 주석: 템플릿 검증 일치를 위해 '선택언어' -> '예약언어'로 단어 수정]
         "• 환자이름: " + name + "\n" +
         "• 신청병원: " + clinicName + "\n" +
         "• 성별: " + gender + "\n" +
