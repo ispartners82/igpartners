@@ -4049,26 +4049,27 @@ body.home-page {
   position: relative;
 }
 
-/* 광고 카테고리 태그 뱃지 */
+/* [한글 주석: 광고 카테고리 태그 뱃지 (병원명/기관명 - 가장 크고 강조되는 최상위 타이포그래피 부여)] */
 .ad-tag {
-  font-size: 0.75rem;
+  font-size: 1.2rem;
   color: #00f3ff; /* 형광 시안 포인트 컬러 */
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-weight: 800;
+  letter-spacing: 0px;
+  line-height: 1.3;
 }
 
-/* 광고 타이틀 제목 */
+/* [한글 주석: 광고 타이틀 제목 - 병원명/기관명보다 작게 축소하여 가독성 위계 완성] */
 .ad-title {
-  font-size: 1.15rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
+  line-height: 1.35;
 }
 
-/* 광고 설명 텍스트 */
+/* [한글 주석: 광고 설명 텍스트 - 3단계 보조 텍스트 폰트 조율] */
 .ad-desc {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
