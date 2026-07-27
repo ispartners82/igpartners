@@ -59,5 +59,11 @@ service cloud.firestore {
       allow write: if request.auth != null && 
         getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
     }
+
+    // [한글 주석: settings (알림톡 수신 설정 등) 컬렉션 보안 규칙 - 예약 폼에서 관리자 번호 조회를 위해 로그인 유저에게 읽기 허용, 최고 관리자만 수정 가능]
+    match /settings/{settingId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && getUserRole() == "super_admin";
+    }
   }
 }

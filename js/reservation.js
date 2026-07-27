@@ -1,5 +1,5 @@
 import { db, auth } from "./firebase-db.js?v=2.0.7";
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /**
  * 폼 라벨, 힌트문구, 모달 및 다국어 팝업 얼럿을 다각도로 처리하기 위한 사전 정의
@@ -755,8 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const SOLAPI_TEMPLATE_ID = "KA01TP260722095342810ZFE6mOE5X5e";       // 등록 승인 완료된 알림톡 템플릿 ID (솔라피 콘솔에서 발급)
   const SOLAPI_SENDER_NUMBER = "01028196392";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 01012345678)
 
-  // [한글 주석: 새로운 예약 신청 알림톡을 실시간으로 전달받을 관리자 휴대폰 번호 목록 (여러 명 동시 지정 가능)]
-  const SOLAPI_ADMIN_PHONES = ["01028196392"]; // 예: ["01011112222", "01033334444"] 형태로 실제 관리자 번호를 기재합니다.
+  // [한글 주석: 새로운 예약 신청 알림톡을 실시간으로 전달받을 관리자 휴대폰 번호 목록 (DB 연동으로 변경됨에 따라 하드코딩 상수는 제거 처리)]
 
   // [한글 주석: 솔라피 API 호출 시 사용할 HMAC-SHA256 인증 헤더 생성 함수 (Web Crypto API 활용)]
   const createSolapiAuthHeader = async (apiKey, apiSecret) => {
@@ -796,9 +795,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return { status: "not_configured", error: "솔라피 API Key/Secret 미설정" };
     }
 
+    // [한글 주석: Firestore DB의 settings/solapi 문서에서 실시간으로 알림톡 수신 관리자 연락처 로드]
+    let adminPhones = [];
+    try {
+      const solapiDocRef = doc(db, "settings", "solapi");
+      const solapiDocSnap = await getDoc(solapiDocRef);
+      if (solapiDocSnap.exists() && solapiDocSnap.data().adminPhones) {
+        adminPhones = solapiDocSnap.data().adminPhones;
+      }
+    } catch (err) {
+      console.error("Firestore에서 알림톡 수신자 정보를 가져오는 데 실패했습니다:", err);
+    }
+
+    // [한글 주석: DB에 수신자 설정 데이터가 없으면 기존 소스코드에 하드코딩되었던 번호를 백업용(Fallback)으로 적용함]
+    if (adminPhones.length === 0) {
+      adminPhones = ["01028196392", "01096011085"];
+    }
+
     // [한글 주석: 알림 수신 대상인 관리자 전화번호 설정 유효성 검사]
-    if (!SOLAPI_ADMIN_PHONES || SOLAPI_ADMIN_PHONES.length === 0 || SOLAPI_ADMIN_PHONES[0] === "YOUR_ADMIN_PHONE") {
-      console.warn("알림을 수신할 관리자 연락처(SOLAPI_ADMIN_PHONES)가 설정되지 않았습니다.");
+    if (!adminPhones || adminPhones.length === 0) {
+      console.warn("알림을 수신할 관리자 연락처가 설정되지 않았습니다.");
       return { status: "not_configured", error: "관리자 연락처 미설정" };
     }
 
@@ -833,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "• 연락처: " + phone;
 
       // [한글 주석: 설정된 모든 관리자 연락처별로 전송할 메시지 객체 배열을 생성]
-      const messages = SOLAPI_ADMIN_PHONES.map(adminPhone => {
+      const messages = adminPhones.map(adminPhone => {
         // 전화번호 포맷 정규화 (솔라피 수신번호는 하이픈 제외 숫자로만 구성 권장)
         const cleanAdminPhone = adminPhone.replace(/[^0-9]/g, "");
 

@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // [한글 주석: 경로와 해시 분리 가드 엔진 - targetUrl에 해시가 붙어오더라도 순수 경로와 해시를 완전 분리 판별해 매칭 오류 원천 차단]
     const urlString = targetUrl || (window.location.pathname + window.location.hash);
     const [pathPart, hashPart] = urlString.split("#");
-    
+
     const currentPath = pathPart;
     const currentHash = hashPart ? `#${hashPart}` : "";
 
@@ -227,6 +227,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = "none";
         if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = "none";
         if (quickBtnLogin) quickBtnLogin.style.display = "inline-flex";
+
+        // [한글 주석: 비로그인 상태일 때 데스크톱용 상단 네비게이션 로그인 바인딩 영역도 즉시 리셋하여 이전 사용자의 프로필, 예약내역 배지 등이 노출되는 버그를 예방함]
+        if (authUserElem) authUserElem.style.display = "none";
+        if (btnLoginElem) {
+          btnLoginElem.style.display = "block";
+          btnLoginElem.disabled = false;
+          btnLoginElem.textContent = "로그인";
+        }
+        if (userNameElem) userNameElem.textContent = "";
+        if (userPhotoElem) userPhotoElem.src = "";
+        if (btnAdminElem) btnAdminElem.style.display = "none";
+        if (btnStatsElem) btnStatsElem.style.display = "none";
       }
     } catch (e) {
       console.warn("syncAuthBadgeInstantly warning:", e);
@@ -348,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="footer-bottom">
         <p>&copy; 2026 IGPartners Inc. All rights reserved.</p>
         <!-- [한글 주석: 캡처본 요구사항에 맞춰 일관성 있게 구성된 최신 법인명 및 법인등록번호 표기] -->
-        <p>법인명: 주식회사 아이지파트너스 | 대표: 황기수 | 법인등록번호: 167-86-04055 | 대구 수성구 알파시티 1로 4길 8</p>
+        <p>법인명: 주식회사 아이지파트너스 | 법인등록번호: 167-86-04055 | 대구 수성구 알파시티 1로 4길 8</p>
       </div>
     `;
   }
@@ -484,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (src.includes("navigation.js") || src.includes("auth.js") || src.includes("firebase-config.js")) {
             return;
           }
-          
+
           // 기존에 삽입되었던 동일한 경로의 스크립트 엘리먼트 제거 (메모리 및 DOM 정리)
           // 쿼리 스트링(?v=...) 부분을 무시하고 매칭하기 위해 src의 절대경로 패턴으로 확인
           const cleanSrc = src.split("?")[0];

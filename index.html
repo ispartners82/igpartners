@@ -163,28 +163,28 @@
   <!-- 신규 추가: 홈페이지용 광고 슬라이더 롤링 애니메이션 연동 -->
   <script type="module" src="/js/ad-slider.js?v=2.4.1"></script>
 
-  <!-- 로그인 안내 모달 팝업 -->
+  <!-- [한글 주석: 구글 로그인 유도 안내 모달 팝업 - 다국어 편의성을 위해 한국어와 영어를 병기하고 로그인 버튼 내 베트남어를 제거함] -->
   <div id="login-required-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-content" style="max-width: 450px;">
       <div class="modal-header">
-        <h2>🔒 로그인 필요 </h2>
+        <h2>🔒 로그인 필요<br><span style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); font-weight: 500;">Login Required</span></h2>
         <button id="btn-close-login-modal-x" class="modal-close-x">&times;</button>
       </div>
       <div class="modal-body" style="padding: 2rem; text-align: center;">
         <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.5;">
-          <br>
-          이 서비스는 구글 로그인이 필요합니다.
+          이 서비스는 구글 로그인이 필요합니다.<br>
+          <span style="font-size: 0.95rem; color: rgba(255,255,255,0.8); font-weight: 500;">This service requires Google Login.</span>
         </p>
         <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0;">
-          예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.
+          예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.<br>
+          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Please proceed with Google Login to request or check reservations.</span>
         </p>
       </div>
       <div class="modal-footer" style="gap: 0.75rem; justify-content: center; padding: 1.2rem 2rem;">
         <button id="btn-close-login-modal" class="btn btn-secondary"
-          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 90px;">닫기</button>
+          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 100px;">닫기 (Close)</button>
         <button id="btn-trigger-login" class="btn btn-primary"
-          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 110px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">Đăng
-          로그인</button>
+          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 120px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">로그인 (Login)</button>
       </div>
     </div>
   </div>

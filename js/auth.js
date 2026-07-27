@@ -78,6 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target.id === "btn-logout" || target.closest("#btn-logout")) {
       try {
         if (confirm("로그아웃 하시겠습니까?")) {
+          // [한글 주석: 명시적 로그아웃 시 세션스토리지에 저장된 유저 캐시와 역할 권한 캐시를 완전 초기화하여, Auth 변경 콜백이 즉각적으로 UI 복구 처리를 실행하도록 유도함]
+          sessionStorage.clear();
           await signOut(auth);
           console.log("User signed out.");
         }

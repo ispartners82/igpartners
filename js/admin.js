@@ -913,6 +913,8 @@ function initPage() {
     tabUsers.addEventListener("click", () => {
       switchTabSeamlessly(tabUsers, contentUsers, "tab-users", () => {
         initRolesAndListen();
+        // [한글 주석: 등급권한 관리 탭 진입 시 솔라피 수신 연락처 설정 데이터도 함께 로드]
+        loadSolapiSettings();
       });
     });
 
@@ -960,6 +962,85 @@ function initPage() {
     { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
     { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false }
   ];
+
+  // [한글 주석: 솔라피 알림톡 수신 설정 데이터를 Firestore에서 비동기 로드하여 입력 필드 및 하단 목록 렌더링 적용]
+  async function loadSolapiSettings() {
+    try {
+      const solapiDocRef = doc(db, "settings", "solapi");
+      const solapiDocSnap = await getDoc(solapiDocRef);
+      
+      const phonesInput = document.getElementById("solapi-admin-phones");
+      const listContainer = document.getElementById("solapi-phones-list-container");
+      const phonesList = document.getElementById("solapi-phones-list");
+      
+      if (solapiDocSnap.exists()) {
+        const data = solapiDocSnap.data();
+        const adminPhones = data.adminPhones || [];
+        
+        // 1. 입력창 값 갱신
+        if (phonesInput) {
+          phonesInput.value = adminPhones.join(", ");
+        }
+        
+        // 2. 하단 목록 렌더링
+        if (phonesList && listContainer) {
+          if (adminPhones.length > 0) {
+            listContainer.style.display = "block";
+            phonesList.innerHTML = adminPhones.map(phone => `
+              <li style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.04); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.06);">
+                <span style="color: #e2e8f0; font-family: monospace; font-size: 0.9rem; font-weight: 500;">📱 ${phone}</span>
+                <button type="button" class="btn-delete-phone" data-phone="${phone}" 
+                  style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: #fca5a5; padding: 3px 8px; font-size: 0.78rem; border-radius: 6px; cursor: pointer; transition: all 0.2s;">삭제</button>
+              </li>
+            `).join("");
+            
+            // [한글 주석: 각 개별 수신 번호 우측의 삭제 버튼 클릭 시 해당 번호를 배열에서 제외하고 DB에 재갱신 및 목록 리프레시 수행]
+            phonesList.querySelectorAll(".btn-delete-phone").forEach(btn => {
+              btn.addEventListener("click", async (e) => {
+                const targetPhone = e.target.getAttribute("data-phone");
+                if (!targetPhone) return;
+                
+                if (currentLoginUserRole !== "super_admin") {
+                  alert("삭제 권한이 없습니다.");
+                  return;
+                }
+                
+                if (confirm(`연락처 ${targetPhone}을(를) 알림톡 수신 목록에서 삭제하시겠습니까?`)) {
+                  const updatedPhones = adminPhones.filter(p => p !== targetPhone);
+                  
+                  e.target.disabled = true;
+                  e.target.textContent = "삭제 중...";
+                  
+                  try {
+                    await setDoc(doc(db, "settings", "solapi"), {
+                      adminPhones: updatedPhones,
+                      updatedAt: new Date().toISOString(),
+                      updatedBy: auth.currentUser ? auth.currentUser.uid : "unknown"
+                    });
+                    alert("성공적으로 삭제되었습니다.");
+                    loadSolapiSettings();
+                  } catch (err) {
+                    console.error("Delete Solapi phone failed:", err);
+                    alert("삭제에 실패했습니다: " + err.message);
+                    e.target.disabled = false;
+                    e.target.textContent = "삭제";
+                  }
+                }
+              });
+            });
+          } else {
+            listContainer.style.display = "none";
+            phonesList.innerHTML = "";
+          }
+        }
+      } else {
+        if (phonesInput) phonesInput.value = "";
+        if (listContainer) listContainer.style.display = "none";
+      }
+    } catch (error) {
+      console.error("Failed to load Solapi settings:", error);
+    }
+  }
 
   // 회원 등급 로드 및 초기 시드 처리
   async function initRolesAndListen() {
@@ -1335,6 +1416,55 @@ function initPage() {
       } finally {
         btnSubmit.disabled = false;
         btnSubmit.textContent = "등급 추가하기";
+      }
+    });
+  }
+
+  // [한글 주석: 알림톡 수신 설정 저장 처리 핸들러]
+  const solapiSettingsForm = document.getElementById("solapi-settings-form");
+  if (solapiSettingsForm) {
+    solapiSettingsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      if (currentLoginUserRole !== "super_admin") {
+        alert("설정 변경 권한이 없습니다. 최고 관리자 권한이 필요합니다.");
+        return;
+      }
+
+      const phonesInput = document.getElementById("solapi-admin-phones").value.trim();
+      if (!phonesInput) {
+        alert("수신 번호를 하나 이상 입력해 주세요.");
+        return;
+      }
+
+      // 쉼표로 분할하고 숫자만 남기는 전처리 수행
+      const phonesArray = phonesInput.split(",")
+        .map(p => p.replace(/[^0-9]/g, ""))
+        .filter(p => p !== "");
+
+      if (phonesArray.length === 0) {
+        alert("올바른 형태의 전화번호를 입력해 주세요.");
+        return;
+      }
+
+      const btnSubmit = solapiSettingsForm.querySelector("button[type='submit']");
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "저장 중...";
+
+      try {
+        await setDoc(doc(db, "settings", "solapi"), {
+          adminPhones: phonesArray,
+          updatedAt: new Date().toISOString(),
+          updatedBy: auth.currentUser ? auth.currentUser.uid : "unknown"
+        });
+        alert("알림톡 수신 설정이 성공적으로 저장되었습니다.");
+        loadSolapiSettings(); // [한글 주석: 저장 성공 후 화면의 번호 리스트 목록 및 입력 필드 동기화 수행]
+      } catch (error) {
+        console.error("Save Solapi settings failed:", error);
+        alert("설정 저장에 실패했습니다: " + error.message);
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "설정 저장";
       }
     });
   }
@@ -2360,16 +2490,30 @@ function initPage() {
     });
   };
 
-  // 광고 폼의 이미지 URL 행 템플릿 생성 헬퍼 함수 (파일 선택 컨트롤 결합)
+  // [한글 주석: 광고 폼의 이미지 URL 행 템플릿 생성 헬퍼 함수 - 파일 선택 컨트롤 및 48x48 썸네일 미리보기 결합]
   const createAdUrlRow = (urlValue = "") => {
     const row = document.createElement("div");
     row.className = "ad-url-row";
     row.style.display = "flex";
-    row.style.gap = "0.5rem";
+    row.style.gap = "0.75rem";
     row.style.alignItems = "center";
     row.style.flexWrap = "wrap";
+    row.style.background = "rgba(255, 255, 255, 0.02)";
+    row.style.padding = "8px 12px";
+    row.style.borderRadius = "8px";
+    row.style.border = "1px solid rgba(255, 255, 255, 0.05)";
+    row.style.width = "100%";
+    
+    const hasImage = urlValue.trim() !== "";
+    const imgDisplay = hasImage ? "block" : "none";
+    
     row.innerHTML = `
-      <input type="text" class="ad-image-url" required value="${urlValue}" placeholder="웹 이미지 주소(URL) 또는 우측 파일 업로드 이용" style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 200px;">
+      <!-- [한글 주석: 썸네일 미리보기 이미지 영역 추가 - 수정 및 입력 시 시각적인 이미지 확인 유도] -->
+      <div class="ad-thumbnail-container" style="width: 48px; height: 48px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <img class="ad-thumbnail-img" src="${urlValue}" style="width: 100%; height: 100%; object-fit: cover; display: ${imgDisplay};">
+        <span class="ad-thumbnail-placeholder" style="font-size: 0.65rem; color: rgba(255,255,255,0.3); display: ${hasImage ? "none" : "block"};">No Img</span>
+      </div>
+      <input type="text" class="ad-image-url" required value="${urlValue}" placeholder="웹 이미지 주소(URL) 또는 우측 파일 업로드 이용" style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 180px;">
       <div style="display: flex; gap: 0.35rem; align-items: center;">
         <label class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.6rem 0.8rem; min-width: auto; margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
           📁 파일 선택
@@ -2378,6 +2522,28 @@ function initPage() {
         <button type="button" class="btn btn-secondary btn-remove-ad-url" style="font-size: 0.75rem; padding: 0.6rem; min-width: auto; background: rgba(244, 63, 94, 0.1); color: #fda4af; border-color: rgba(244,63,94,0.3);">&times;</button>
       </div>
     `;
+
+    // [한글 주석: 텍스트 입력창 값 변경 시 실시간으로 썸네일 미리보기 이미지를 동기화하는 이벤트 추가]
+    const urlInput = row.querySelector(".ad-image-url");
+    const thumbnailImg = row.querySelector(".ad-thumbnail-img");
+    const placeholder = row.querySelector(".ad-thumbnail-placeholder");
+    
+    const updatePreview = () => {
+      const val = urlInput.value.trim();
+      if (val) {
+        thumbnailImg.src = val;
+        thumbnailImg.style.display = "block";
+        placeholder.style.display = "none";
+      } else {
+        thumbnailImg.src = "";
+        thumbnailImg.style.display = "none";
+        placeholder.style.display = "block";
+      }
+    };
+    
+    urlInput.addEventListener("input", updatePreview);
+    urlInput.addEventListener("change", updatePreview);
+
     return row;
   };
 
@@ -2420,6 +2586,15 @@ function initPage() {
           // 최대 가로폭 500px 및 압축 퀄리티 0.7 적용
           const compressedBase64 = await compressImage(file, 500);
           urlInput.value = compressedBase64;
+          
+          // [한글 주석: 이미지 업로드 성공 및 Base64 치환 시 해당 행의 썸네일 미리보기도 즉시 리프레시 반영]
+          const thumbnailImg = row.querySelector(".ad-thumbnail-img");
+          const placeholder = row.querySelector(".ad-thumbnail-placeholder");
+          if (thumbnailImg && placeholder) {
+            thumbnailImg.src = compressedBase64;
+            thumbnailImg.style.display = "block";
+            placeholder.style.display = "none";
+          }
         } catch (error) {
           console.error("Image compress error:", error);
           alert("이미지 변환 도중 에러가 발생했습니다: " + error.message);

@@ -16,11 +16,12 @@ const i18n = {
     pageTitle: "병원 선택",
     pageSubtitle: "진료 예약을 진행할 병원을 선택해 주세요.",
     changeLang: "언어 변경", /* 신규 추가: 언어선택 복원용 텍스트 */
-    modalTitle: "🔒 로그인 필요",
-    modalDescMain: "로그인이 필요한 서비스입니다.",
-    modalDescSub: "예약 신청 및 확인을 위해 구글 로그인을 완료해 주세요.",
-    modalClose: "닫기",
-    modalTrigger: "로그인"
+    // [한글 주석: 한국어 모드일 때도 글로벌 고객을 위해 줄바꿈 형태로 영어 번역 텍스트를 함께 병기하도록 리소스를 개편함]
+    modalTitle: "🔒 로그인 필요<br><span style='font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); font-weight: 500;'>Login Required</span>",
+    modalDescMain: "이 서비스는 구글 로그인이 필요합니다.<br><span style='font-size: 0.95rem; color: rgba(255,255,255,0.8); font-weight: 500;'>This service requires Google Login.</span>",
+    modalDescSub: "예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.<br><span style='font-size: 0.8rem; color: rgba(255,255,255,0.5);'>Please proceed with Google Login to request or check reservations.</span>",
+    modalClose: "닫기 (Close)",
+    modalTrigger: "로그인 (Login)"
   },
   // 베트남어 번역 리소스
   vi: {
