@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>IGPartners System Specification</title>
+  <!-- Marked.js (Markdown Parser) CDN 로드 -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Mermaid.js (Diagram Renderer) CDN 로드 -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  
+  <style>
+    /* 구글 폰트 로드 */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Outfit:wght@300;400;600;800&display=swap');
+    
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      line-height: 1.7;
+      color: #1e293b;
+      background-color: #ffffff;
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    /* 제목 스타일링 */
+    h1, h2, h3, h4 {
+      color: #0f172a;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+      font-weight: 700;
+    }
+    h1 {
+      font-size: 2.2rem;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 15px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 1.6rem;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    h3 {
+      font-size: 1.25rem;
+    }
+    
+    /* 본문 텍스트 및 레이아웃 */
+    p {
+      margin-bottom: 1.2em;
+    }
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: #0f172a;
+    }
+    pre {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5em 0;
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    
+    /* 표(Table) 스타일링 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2em 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 12px 15px;
+      text-align: left;
+    }
+    th {
+      background-color: #f8fafc;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    
+    /* 인쇄 전용 페이지 브레이크 세팅 */
+    @media print {
+      body {
+        padding: 20px;
+      }
+      h1, h2, h3 {
+        page-break-after: avoid;
+      }
+      table, pre, blockquote {
+        page-break-inside: avoid;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+    
+    /* 인용구(Blockquote) */
+    blockquote {
+      border-left: 4px solid #3b82f6;
+      background-color: #eff6ff;
+      padding: 15px 20px;
+      margin: 1.5em 0;
+      border-radius: 0 8px 8px 0;
+    }
+    blockquote p {
+      margin: 0;
+    }
+    
+    /* Mermaid 다이어그램 컨테이너 */
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      margin: 2.5em 0;
+      page-break-inside: avoid;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 마크다운 렌더링 컨테이너 -->
+  <div id="content"></div>
+
+  <!-- 파워쉘 스크립트에 의해 동적으로 마크다운 텍스트가 바인딩되는 플레이스홀더 영역 -->
+  <script type="text/markdown" id="markdown-source">__MARKDOWN_PLACEHOLDER__</script>
+
+  <script>
+    // [한글 주석: 페이지 로딩 완료 후 마크다운 파싱 및 Mermaid 다이어그램 렌더링 엔진 작동]
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. 마크다운 마크업 획득
+      const markdownText = document.getElementById("markdown-source").textContent;
+      
+      // 2. Marked.js 옵션 설정 (헤드리스 브라우저 안전 인쇄용)
+      marked.setOptions({
+        gfm: true,
+        breaks: true
+      });
+      
+      // 3. HTML로 변환하여 컨테이너에 주입
+      document.getElementById("content").innerHTML = marked.parse(markdownText);
+      
+      // 4. Mermaid.js 초기화 및 강제 렌더링 실행
+      mermaid.initialize({ 
+        startOnLoad: true,
+        theme: 'default',
+        securityLevel: 'loose'
+      });
+      
+      // 마크다운 파싱 결과 내의 'pre code.language-mermaid' 형태를 'div.mermaid' 구조로 스위칭
+      const mermaidCodes = document.querySelectorAll("pre code.language-mermaid");
+      mermaidCodes.forEach((codeEl) => {
+        const preEl = codeEl.parentElement;
+        const div = document.createElement("div");
+        div.className = "mermaid";
+        div.textContent = codeEl.textContent;
+        preEl.replaceWith(div);
+      });
+      
+      // 다이어그램 렌더러 구동
+      mermaid.init(undefined, document.querySelectorAll(".mermaid"));
+      
+      // [한글 주석: 헤드리스 엣지 브라우저가 렌더링 완료 상태를 인지할 수 있도록 window 객체에 상태값 기록]
+      window.renderComplete = true;
+    });
+  </script>
+</body>
+</html>

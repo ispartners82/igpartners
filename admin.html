@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- 메인 스타일시트 연동 -->
-  <link rel="stylesheet" href="/css/style.css?v=2.4.1">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260727_8)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260727_8">
 </head>
 
 <body>
@@ -33,6 +33,83 @@
           <span class="nav-brand-text">IGPartners</span>
         </a>
         <ul class="nav-menu" id="nav-menu">
+          <!-- [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치)] -->
+          <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
+            <div class="nav-lang-trigger" id="nav-lang-trigger" onclick="window.toggleLangDropdown(event)">
+              <img id="nav-lang-selected-flag" class="nav-lang-flag" src="https://flagcdn.com/w80/kr.png" alt="South Korea Flag">
+              <span id="nav-lang-selected-text" class="nav-lang-text">언어선택</span>
+              <span class="nav-lang-arrow">▾</span>
+            </div>
+            <div class="nav-lang-menu-panel" id="nav-lang-menu-panel">
+              <div class="nav-lang-panel-header">
+                <span>🌐 Select Language / 언어선택</span>
+              </div>
+              <div class="nav-lang-scroll-list" id="nav-lang-scroll-list">
+                <!-- [한글 주석: 15개국 언어 세로 수직 드롭다운 목록 정적 하드코딩 (JS 바인딩 랙 100% 원천 차단)] -->
+                <button class="lang-dropdown-item active" onclick="changeGlobalLanguage('ko')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/kr.png" alt="한국어">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">한국어</span><span class="lang-dropdown-ko">한국어</span></div>
+                  <span class="lang-dropdown-check">✓</span>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ja')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/jp.png" alt="日本語">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">日本語</span><span class="lang-dropdown-ko">일본어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('vi')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/vn.png" alt="Tiếng Việt">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Tiếng Việt</span><span class="lang-dropdown-ko">베트남어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('en')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/gb.png" alt="English">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">English</span><span class="lang-dropdown-ko">영어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('zh')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/cn.png" alt="中文 (简体)">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">中文 (简体)</span><span class="lang-dropdown-ko">중국어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ru')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/ru.png" alt="Русский">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Русский</span><span class="lang-dropdown-ko">러시아어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('my')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/mm.png" alt="မြန်မာစာ">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">မြန်မာစာ</span><span class="lang-dropdown-ko">미얀마어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('km')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/kh.png" alt="ភាសាខ្មែរ">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ភាសាខ្មែរ</span><span class="lang-dropdown-ko">캄보디아어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('mn')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/mn.png" alt="Монгол хэл">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Монгол хэл</span><span class="lang-dropdown-ko">몽골어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('th')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/th.png" alt="ภาษาไทย">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ภาษาไทย</span><span class="lang-dropdown-ko">태국어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('lo')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/la.png" alt="ພາສາລາວ">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ພາສາລາວ</span><span class="lang-dropdown-ko">라오스어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ne')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/np.png" alt="नेपाली">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">नेपाली</span><span class="lang-dropdown-ko">네팔어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('id')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/id.png" alt="Bahasa Indonesia">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Bahasa Indonesia</span><span class="lang-dropdown-ko">인도네시아어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('si')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/lk.png" alt="සිංහල">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">සිංහල</span><span class="lang-dropdown-ko">스리랑카어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('bn')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/bd.png" alt="বাংলা">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">বাংলা</span><span class="lang-dropdown-ko">방글라데시어</span></div>
+                </button>
+              </div>
+            </div>
+          </li>
           <li class="nav-item"><a href="/index.html" class="nav-link">홈</a></li>
           <li class="nav-item"><a href="/about.html" class="nav-link">회사소개</a></li>
           <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
@@ -68,8 +145,9 @@
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
         </div>
 
-        <!-- [한글 주석: 모바일 하단 고정 퀵 아이콘 네비게이션 바 - 데스크톱에서는 CSS로 비노출] -->
+        <!-- [한글 주석: 모바일 하단 고정 퀵 아이콘 네비게이션 바 - 홈 왼쪽에 언어선택(🌐) 아이콘 배치] -->
         <div class="nav-mobile-quick" id="nav-mobile-quick">
+          <button class="quick-icon-btn nav-lang-mobile-trigger" id="quick-btn-lang" title="언어선택">🌐</button>
           <a href="/index.html" class="quick-icon-btn" title="홈">🏠</a>
           <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
           <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
@@ -622,10 +700,10 @@
     </div>
   </div>
 
-  <!-- Firebase 및 관리 로직 로드 (ES Module) -->
-  <script type="module" src="/js/navigation.js?v=2.4.1"></script>
-  <script type="module" src="/js/admin.js?v=2.4.1"></script>
-  <script type="module" src="/js/auth.js?v=2.4.1"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260727_6)] -->
+  <script type="module" src="/js/navigation.js?v=260727_10"></script>
+  <script type="module" src="/js/admin.js?v=260727_6"></script>
+  <script type="module" src="/js/auth.js?v=260727_6"></script>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- 메인 스타일시트 연동 -->
-  <link rel="stylesheet" href="/css/style.css?v=2.4.1">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260727_8)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260727_8">
 </head>
 
 <body
@@ -25,8 +25,115 @@
     <div class="aurora-2"></div>
   </div>
 
-  <!-- 공통 상단 네비게이션 바 컴포넌트 동적 주입 -->
-  <header id="global-header"></header>
+  <!-- 공통 상단 네비게이션 바 컴포넌트 -->
+  <header id="global-header">
+    <nav class="common-navbar">
+      <div class="nav-container">
+        <a href="/index.html" class="nav-brand">
+          <img src="/img/logo.png" alt="IGPartners Logo" class="nav-logo">
+          <span class="nav-brand-text">IGPartners</span>
+        </a>
+        <ul class="nav-menu" id="nav-menu">
+          <!-- [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치)] -->
+          <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
+            <div class="nav-lang-trigger" id="nav-lang-trigger" onclick="window.toggleLangDropdown(event)">
+              <img id="nav-lang-selected-flag" class="nav-lang-flag" src="https://flagcdn.com/w80/kr.png" alt="South Korea Flag">
+              <span id="nav-lang-selected-text" class="nav-lang-text">언어선택</span>
+              <span class="nav-lang-arrow">▾</span>
+            </div>
+            <div class="nav-lang-menu-panel" id="nav-lang-menu-panel">
+              <div class="nav-lang-panel-header">
+                <span>🌐 Select Language / 언어선택</span>
+              </div>
+              <div class="nav-lang-scroll-list" id="nav-lang-scroll-list">
+                <!-- [한글 주석: 15개국 언어 세로 수직 드롭다운 목록 정적 하드코딩 (JS 바인딩 랙 100% 원천 차단)] -->
+                <button class="lang-dropdown-item active" onclick="changeGlobalLanguage('ko')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/kr.png" alt="한국어">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">한국어</span><span class="lang-dropdown-ko">한국어</span></div>
+                  <span class="lang-dropdown-check">✓</span>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ja')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/jp.png" alt="日本語">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">日本語</span><span class="lang-dropdown-ko">일본어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('vi')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/vn.png" alt="Tiếng Việt">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Tiếng Việt</span><span class="lang-dropdown-ko">베트남어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('en')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/gb.png" alt="English">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">English</span><span class="lang-dropdown-ko">영어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('zh')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/cn.png" alt="中文 (简体)">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">中文 (简体)</span><span class="lang-dropdown-ko">중국어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ru')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/ru.png" alt="Русский">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Русский</span><span class="lang-dropdown-ko">러시아어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('my')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/mm.png" alt="မြန်မာစာ">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">မြန်မာစာ</span><span class="lang-dropdown-ko">미얀마어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('km')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/kh.png" alt="ភាសាខ្មែរ">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ភាសាខ្មែរ</span><span class="lang-dropdown-ko">캄보디아어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('mn')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/mn.png" alt="Монгол хэл">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Монгол хэл</span><span class="lang-dropdown-ko">몽골어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('th')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/th.png" alt="ภาษาไทย">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ภาษาไทย</span><span class="lang-dropdown-ko">태국어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('lo')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/la.png" alt="ພາສາລາວ">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ພາສາລາວ</span><span class="lang-dropdown-ko">라오스어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ne')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/np.png" alt="नेपाली">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">नेपाली</span><span class="lang-dropdown-ko">네팔어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('id')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/id.png" alt="Bahasa Indonesia">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Bahasa Indonesia</span><span class="lang-dropdown-ko">인도네시아어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('si')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/lk.png" alt="සිංහල">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">සිංහල</span><span class="lang-dropdown-ko">스리랑카어</span></div>
+                </button>
+                <button class="lang-dropdown-item" onclick="changeGlobalLanguage('bn')" type="button">
+                  <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/bd.png" alt="বাংলা">
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">বাংলা</span><span class="lang-dropdown-ko">방글라데시어</span></div>
+                </button>
+              </div>
+            </div>
+          </li>
+          <li class="nav-item"><a href="/index.html" class="nav-link">홈</a></li>
+          <li class="nav-item"><a href="/about.html" class="nav-link">회사소개</a></li>
+          <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
+          <li class="nav-item"><a href="/about.html#services" class="nav-link btn-nav-booking">의료통역</a></li>
+          <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking active">진료 예약</a></li>
+          <li class="nav-item"><a href="/index.html#partners" class="nav-link">협력 회사</a></li>
+        </ul>
+        <div class="nav-auth-area" id="nav-auth-area">
+          <div id="auth-user" class="auth-user-badge">
+            <div class="user-capsule">
+              <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile" class="user-avatar">
+              <span id="user-name" class="user-nickname"></span>
+            </div>
+            <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res">📅 예약내역</a>
+            <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin" style="display: none;">👑 관리자</a>
+            <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin" style="display: none;">📊 예약통계</a>
+            <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
+          </div>
+          <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
+        </div>
+      </div>
+    </nav>
+  </header>
 
   <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 container 영역 -->
   <div class="container" style="margin-top: 100px;">
@@ -136,11 +243,10 @@
 
 
 
-  <!-- 공통 기능 처리를 위한 모듈형 자바스크립트 로드 -->
-  <script type="module" src="/js/navigation.js?v=2.1.9"></script>
-  <!-- [한글 주석: 알림톡 템플릿 정밀 동기화 최신 코드가 브라우저 캐시를 뚫고 강제 로드되도록 버전 쿼리 갱신] -->
-  <script type="module" src="/js/reservation.js?v=2.2.0"></script>
-  <script type="module" src="/js/auth.js?v=2.1.9"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260727_6)] -->
+  <script type="module" src="/js/navigation.js?v=260727_10"></script>
+  <script type="module" src="/js/reservation.js?v=260727_6"></script>
+  <script type="module" src="/js/auth.js?v=260727_6"></script>
 
   <!-- 개인정보 처리방침 모달 팝업 (reservation.js에서 언어에 맞게 콘텐츠 주입) -->
   <div id="privacy-modal" class="modal-backdrop" style="display: none;">

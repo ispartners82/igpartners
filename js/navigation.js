@@ -1,8 +1,214 @@
 /**
- * IGPartners 공통 상단 네비게이션 바 제어 스크립트
- * 모든 페이지에서 일관된 메뉴바와 로그인 상태 뱃지를 동적으로 주입합니다.
- * 화면 가로 크기에 반응하여 모바일 레이아웃 시 로그인 뱃지 영역을 서랍식 메뉴 내부에 자동 병합합니다.
+ * [한글 주석: 15개 국어 정보 정의 - 국기 이미지 URL, 원어명, 한국어명]
  */
+const LANG_LIST = [
+  { code: 'ko', native: '한국어', koName: '한국어', flag: 'https://flagcdn.com/w80/kr.png' },
+  { code: 'ja', native: '日本語', koName: '일본어', flag: 'https://flagcdn.com/w80/jp.png' },
+  { code: 'vi', native: 'Tiếng Việt', koName: '베트남어', flag: 'https://flagcdn.com/w80/vn.png' },
+  { code: 'en', native: 'English', koName: '영어', flag: 'https://flagcdn.com/w80/gb.png' },
+  { code: 'zh', native: '中文 (简体)', koName: '중국어', flag: 'https://flagcdn.com/w80/cn.png' },
+  { code: 'ru', native: 'Русский', koName: '러시아어', flag: 'https://flagcdn.com/w80/ru.png' },
+  { code: 'my', native: 'မြန်မာစာ', koName: '미얀마어', flag: 'https://flagcdn.com/w80/mm.png' },
+  { code: 'km', native: 'ភាសាខ្មែរ', koName: '캄보디아어', flag: 'https://flagcdn.com/w80/kh.png' },
+  { code: 'mn', native: 'Монгол хэл', koName: '몽골어', flag: 'https://flagcdn.com/w80/mn.png' },
+  { code: 'th', native: 'ภาษาไทย', koName: '태국어', flag: 'https://flagcdn.com/w80/th.png' },
+  { code: 'lo', native: 'ພາສາລາວ', koName: '라오스어', flag: 'https://flagcdn.com/w80/la.png' },
+  { code: 'ne', native: 'नेपाली', koName: '네팔어', flag: 'https://flagcdn.com/w80/np.png' },
+  { code: 'id', native: 'Bahasa Indonesia', koName: '인도네시아어', flag: 'https://flagcdn.com/w80/id.png' },
+  { code: 'si', native: 'සිංහල', koName: '스리랑카어', flag: 'https://flagcdn.com/w80/lk.png' },
+  { code: 'bn', native: 'বাংলা', koName: '방글라데시어', flag: 'https://flagcdn.com/w80/bd.png' }
+];
+
+/**
+ * [한글 주석: 상단 메뉴 항목별 15개국어 번역 딕셔너리 데이터베이스]
+ */
+const MENU_TRANSLATIONS = {
+  ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '의료통역', booking: '진료 예약', partners: '협력 회사', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
+  ja: { langSelect: '言語選択', home: 'ホーム', about: '会社紹介', services: '提供サービス', interpretation: '医療通訳', booking: '診療予約', partners: 'パートナー', myRes: '📅 予約履歴', admin: '👑 管理者', stats: '📊 予約統計', logout: 'ログアウト', login: 'ログイン' },
+  vi: { langSelect: 'Chọn ngôn ngữ', home: 'Trang chủ', about: 'Giới thiệu', services: 'Dịch vụ', interpretation: 'Thông dịch y tế', booking: 'Đặt lịch khám', partners: 'Đối tác', myRes: '📅 Lịch đặt', admin: '👑 Quản trị', stats: '📊 Thống kê', logout: 'Đăng xuất', login: 'Đăng nhập' },
+  en: { langSelect: 'Language', home: 'Home', about: 'About Us', services: 'Services', interpretation: 'Medical Interpretation', booking: 'Book Appointment', partners: 'Partners', myRes: '📅 My Bookings', admin: '👑 Admin', stats: '📊 Stats', logout: 'Logout', login: 'Login' },
+  zh: { langSelect: '选择语言', home: '首页', about: '公司介绍', services: '服务项目', interpretation: '医疗翻译', booking: '预约诊疗', partners: '合作伙伴', myRes: '📅 预约记录', admin: '👑 管理员', stats: '📊 统计', logout: '退出', login: '登录' },
+  ru: { langSelect: 'Выбор языка', home: 'Главная', about: 'О компании', services: 'Услуги', interpretation: 'Мед. перевод', booking: 'Запись на прием', partners: 'Партнеры', myRes: '📅 Мои записи', admin: '👑 Админ', stats: '📊 Статистика', logout: 'Выйти', login: 'Войти' },
+  my: { langSelect: 'ဘာသာစကား', home: 'ပင်မစာမျက်နှာ', about: 'ကုမ္ပဏီအကြောင်း', services: 'ဝန်ဆောင်မှုများ', interpretation: 'ဆေးဘက်ဆိုင်ရာစကားပြန်', booking: 'ရက်ချိန်းယူရန်', partners: 'မိတ်ဖက်များ', myRes: '📅 ရက်ချိန်းများ', admin: '👑 အဓိက', stats: '📊 စာရင်းအင်း', logout: 'ထွက်ရန်', login: 'ဝင်ရောက်ရန်' },
+  km: { langSelect: 'ជ្រើសរើសភាសា', home: 'ទំព័រដើម', about: 'អំពីក្រុមហ៊ុន', services: 'សេវាកម្ម', interpretation: 'អ្នកបកប្រែវេជ្ជសាស្ត្រ', booking: 'កក់ការជួបពិភាក្សា', partners: 'ដៃគូ', myRes: '📅 ការកក់របស់ខ្ញុំ', admin: '👑 អ្នកគ្រប់គ្រង', stats: '📊 ស្ថិតិ', logout: 'ចាកចេញ', login: 'ចូល' },
+  mn: { langSelect: 'Хэл сонгох', home: 'Нүүр', about: 'Компанийн тухай', services: 'Үйлчилгээ', interpretation: 'Эмнэлгийн орчуулга', booking: 'Цаг захиалах', partners: 'Харилцагч', myRes: '📅 Миний захиалга', admin: '👑 Админ', stats: '📊 Статистик', logout: 'Гарах', login: 'Нэвтрэх' },
+  th: { langSelect: 'เลือกภาษา', home: 'หน้าแรก', about: 'เกี่ยวกับเรา', services: 'บริการ', interpretation: 'ล่ามการแพทย์', booking: 'นัดหมายแพทย์', partners: 'พันธมิตร', myRes: '📅 การนัดหมายของฉัน', admin: '👑 ผู้ดูแลระบบ', stats: '📊 สถิติ', logout: 'ออกจากระบบ', login: 'เข้าสู่ระบบ' },
+  lo: { langSelect: 'ເລືອກພາສາ', home: 'ໜ້າທຳອິດ', about: 'ກ່ຽວກັບພວກເຮົາ', services: 'ບໍລິການ', interpretation: 'ລ່າມການແພດ', booking: 'ນັດໝາຍ', partners: 'ພັນທະມິດ', myRes: '📅 ການນັດໝາຍຂອງຂ້ອຍ', admin: '👑 ຜູ້ดูแลระบบ', stats: '📊 ສະຖິຕິ', logout: 'ອອກຈາກລະບົບ', login: 'ເຂົ້າสู่ລະບົບ' },
+  ne: { langSelect: 'भाषा छान्नुहोस्', home: 'गृहपृष्ठ', about: 'हाम्रो बारेमा', services: 'सेवाहरू', interpretation: 'मेडिकल दोभाषे', booking: 'अपोइन्टमेन्ट', partners: 'भागीदारहरू', myRes: '📅 मेरो अपोइन्टमेन्ट', admin: '👑 प्रशासक', stats: '📊 तथ्याङ्क', logout: 'लगआउट', login: 'लगइन' },
+  id: { langSelect: 'Pilih Bahasa', home: 'Beranda', about: 'Tentang Kami', services: 'Layanan', interpretation: 'Penerjemah Medis', booking: 'Buat Janji', partners: 'Mitra', myRes: '📅 Janji Saya', admin: '👑 Admin', stats: '📊 Statistik', logout: 'Keluar', login: 'Masuk' },
+  si: { langSelect: 'භාෂාව තෝරන්න', home: 'මුල් පිටුව', about: 'අප ගැන', services: 'සේවා', interpretation: 'වෛද්‍ය පරිවර්තක', booking: 'වෙන්කරවා ගැනීම', partners: 'පාර්ශවකරුවන්', myRes: '📅 මගේ වෙන්කිරීම්', admin: '👑 පරිපාලක', stats: '📊 සංඛ්‍යාලේඛන', logout: 'ලොග්අවුට්', login: 'ලොගින්' },
+  bn: { langSelect: 'ভাষা নির্বাচন', home: 'হোম', about: 'আমাদের সম্পর্কে', services: 'সেবাসমূহ', interpretation: 'মেডিকেল দোভাষী', booking: 'অ্যাপয়েন্টমেন্ট', partners: 'পার্টনার', myRes: '📅 আমার বুকিং', admin: '👑 অ্যাডমিন', stats: '📊 পরিসংখ্যান', logout: 'লগআউট', login: 'লগইন' }
+};
+
+/**
+ * [한글 주석: 전역 언어 변경 및 상단 메뉴 텍스트 실시간 동적 번역 적용 함수]
+ * @param {string} langCode 선택된 2글자 언어 코드 (ko, en, ja, vi 등)
+ */
+/**
+ * [한글 주석: 전역 언어 변경 및 상단 메뉴 텍스트 실시간 동적 번역 적용 함수]
+ * @param {string} langCode 선택된 2글자 언어 코드 (ko, en, ja, vi 등)
+ */
+window.changeGlobalLanguage = function(langCode) {
+  if (!langCode || !MENU_TRANSLATIONS[langCode]) langCode = 'ko';
+  localStorage.setItem("app_selected_language", langCode);
+
+  // 1. 메뉴 텍스트 및 국기/타이틀 실시간 다국어 번역 갱신
+  applyNavTranslations(langCode);
+
+  // 2. 15개국어 드롭다운 패널 내부의 선택 체크표시(✓) 및 active 스타일 이동
+  bindLangDropdownList();
+
+  // 3. 언어 선택 시 드롭다운 패널 자동 닫기
+  const langPanel = document.getElementById("nav-lang-menu-panel");
+  if (langPanel) {
+    langPanel.classList.remove("show", "active");
+  }
+};
+
+/**
+ * [한글 주석: 현재 선택된 언어에 맞춰 상단 네비게이션 메인 메뉴 DOM의 텍스트를 실시간으로 갱신하는 함수]
+ * @param {string} langCode 선택된 언어 코드
+ */
+function applyNavTranslations(langCode) {
+  const t = MENU_TRANSLATIONS[langCode] || MENU_TRANSLATIONS.ko;
+  const currentLang = LANG_LIST.find(l => l.code === langCode) || LANG_LIST[0];
+
+  // 1. 드롭다운 대표 텍스트 및 국기 아이콘 갱신
+  const langTextEl = document.getElementById("nav-lang-selected-text");
+  const langFlagEl = document.getElementById("nav-lang-selected-flag");
+  if (langTextEl) langTextEl.textContent = t.langSelect;
+  if (langFlagEl) langFlagEl.src = currentLang.flag;
+
+  // 2. 메인 네비게이션 메뉴 텍스트 번역 적용
+  const menuHome = document.querySelector("#nav-menu a[href='/index.html']:not(#btn-partners)");
+  const menuAbout = document.querySelector("#nav-menu a[href='/about.html']:not([href*='#'])");
+  const menuServices = document.querySelector("#nav-menu a[href='/about.html#services']:not(.btn-nav-booking)");
+  const menuInterpretation = document.querySelector("#nav-menu a[href='/about.html#services'].btn-nav-booking");
+  const menuBooking = document.querySelector("#nav-menu a[href='/booking-lang.html']");
+  const menuPartners = document.querySelector("#nav-menu a[href='/index.html#partners']");
+
+  if (menuHome) menuHome.textContent = t.home;
+  if (menuAbout) menuAbout.textContent = t.about;
+  if (menuServices) menuServices.textContent = t.services;
+  if (menuInterpretation) menuInterpretation.textContent = t.interpretation;
+  if (menuBooking) menuBooking.textContent = t.booking;
+  if (menuPartners) menuPartners.textContent = t.partners;
+
+  // 3. 우측 인증 뱃지 및 액션 버튼 번역 적용
+  const btnMyRes = document.getElementById("btn-my-reservations");
+  const btnAdmin = document.getElementById("btn-admin-dashboard");
+  const btnStats = document.getElementById("btn-stats-dashboard");
+  const btnLogout = document.getElementById("btn-logout");
+  const btnLogin = document.getElementById("btn-login");
+
+  if (btnMyRes) btnMyRes.textContent = t.myRes;
+  if (btnAdmin) btnAdmin.textContent = t.admin;
+  if (btnStats) btnStats.textContent = t.stats;
+  if (btnLogout) btnLogout.textContent = t.logout;
+  if (btnLogin) btnLogin.textContent = t.login;
+
+  // 4. 언어 변경 전역 이벤트 전파 (다른 컴포넌트 동기화용)
+  window.dispatchEvent(new CustomEvent("appLanguageChanged", { detail: { lang: langCode, t: t } }));
+}
+
+/**
+ * [한글 주석: 15개 언어 세로 수직 드롭다운 목록 HTML 조각 생성 함수]
+ */
+function createLangDropdownHTML() {
+  const currentLangCode = localStorage.getItem("app_selected_language") || "ko";
+  const currentLang = LANG_LIST.find(l => l.code === currentLangCode) || LANG_LIST[0];
+  const t = MENU_TRANSLATIONS[currentLangCode] || MENU_TRANSLATIONS.ko;
+
+  let listHtml = "";
+  LANG_LIST.forEach(l => {
+    const isSelected = l.code === currentLangCode;
+    listHtml += `
+      <button class="lang-dropdown-item ${isSelected ? 'active' : ''}" data-lang="${l.code}" onclick="window.changeGlobalLanguage('${l.code}')" type="button">
+        <img class="lang-dropdown-flag" src="${l.flag}" alt="${l.native}">
+        <div class="lang-dropdown-name-group">
+          <span class="lang-dropdown-native">${l.native}</span>
+          <span class="lang-dropdown-ko">${l.koName}</span>
+        </div>
+        ${isSelected ? '<span class="lang-dropdown-check">✓</span>' : ''}
+      </button>
+    `;
+  });
+
+  return `
+    <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
+      <div class="nav-lang-trigger" id="nav-lang-trigger">
+        <img id="nav-lang-selected-flag" class="nav-lang-flag" src="${currentLang.flag}" alt="${currentLang.native}">
+        <span id="nav-lang-selected-text" class="nav-lang-text">${t.langSelect}</span>
+        <span class="nav-lang-arrow">▾</span>
+      </div>
+      <div class="nav-lang-menu-panel" id="nav-lang-menu-panel">
+        <div class="nav-lang-panel-header">
+          <span>🌐 Select Language / 언어선택</span>
+        </div>
+        <div class="nav-lang-scroll-list" id="nav-lang-scroll-list">
+          ${listHtml}
+        </div>
+      </div>
+    </li>
+  `;
+}
+
+/**
+ * [한글 주석: 15개 언어 세로 목록을 정적/동적 드롭다운 영역에 동적으로 렌더링하고 이벤트를 바인딩하는 함수]
+ */
+function bindLangDropdownList() {
+  const scrollList = document.getElementById("nav-lang-scroll-list");
+  if (!scrollList) return;
+
+  const currentLangCode = localStorage.getItem("app_selected_language") || "ko";
+
+  let listHtml = "";
+  LANG_LIST.forEach(l => {
+    const isSelected = l.code === currentLangCode;
+    listHtml += `
+      <button class="lang-dropdown-item ${isSelected ? 'active' : ''}" data-lang="${l.code}" onclick="window.changeGlobalLanguage('${l.code}')" type="button">
+        <img class="lang-dropdown-flag" src="${l.flag}" alt="${l.native}">
+        <div class="lang-dropdown-name-group">
+          <span class="lang-dropdown-native">${l.native}</span>
+          <span class="lang-dropdown-ko">${l.koName}</span>
+        </div>
+        ${isSelected ? '<span class="lang-dropdown-check">✓</span>' : ''}
+      </button>
+    `;
+  });
+  scrollList.innerHTML = listHtml;
+
+  // [한글 주석: 이벤트 위임을 통한 클릭 확실 바인딩]
+  scrollList.onclick = function(e) {
+    const btn = e.target.closest(".lang-dropdown-item");
+    if (btn) {
+      const code = btn.getAttribute("data-lang");
+      if (code) {
+        window.changeGlobalLanguage(code);
+      }
+    }
+  };
+}
+
+/**
+ * [한글 주석: 언어 선택 드롭다운 패널 열기/닫기 토글 전용 전역 함수 (100% 무조건 작동 보장)]
+ * @param {Event} e 클릭 이벤트 객체
+ */
+window.toggleLangDropdown = function(e) {
+  if (e) {
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+  const langPanel = document.getElementById("nav-lang-menu-panel");
+  if (langPanel) {
+    const isShowing = langPanel.classList.contains("show") || langPanel.classList.contains("active");
+    if (isShowing) {
+      langPanel.classList.remove("show", "active");
+    } else {
+      langPanel.classList.add("show", "active");
+    }
+  }
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   // 공통 헤더 컨테이너 요소 조회
@@ -12,123 +218,37 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // [한글 주석: 현재 활성화된 페이지 경로 및 URL 해시 파악 (모든 메뉴의 active 하이라이트 처리에 활용)]
-  const currentPath = window.location.pathname;
-  const currentHash = window.location.hash;
+  // 15개 언어 목록 바인딩
+  bindLangDropdownList();
 
-  // [한글 주석: 홈 및 각 메뉴별 URL/해시 유무에 따른 active 탭 구분 식별자 정밀 정의]
-  const isIndexPage = (currentPath === "/" || currentPath.endsWith("index.html"));
-  const isPartnersHash = currentHash === "#partners";
-  const isHomeActive = isIndexPage && !isPartnersHash;
-  const isPartnersActive = isIndexPage && isPartnersHash;
+  // 저장된 언어로 메뉴 번역 적용
+  const savedLang = localStorage.getItem("app_selected_language") || "ko";
+  applyNavTranslations(savedLang);
 
-  const isAboutPage = currentPath.endsWith("about.html");
-  const isServicesHash = currentHash === "#services";
-  const isAboutActive = isAboutPage && !isServicesHash;
-  const isServicesActive = isAboutPage && isServicesHash;
+  // [한글 주석: 데스크톱 및 모바일 퀵 메뉴 언어선택 버튼 클릭 토글 이벤트 안전 바인딩]
+  const langTrigger = document.getElementById("nav-lang-trigger");
+  const quickLangTrigger = document.getElementById("quick-btn-lang");
+  const langPanel = document.getElementById("nav-lang-menu-panel");
 
-  // [한글 주석: 진료 예약 관련 페이지(booking-lang, booking-clinic, booking-form) 진입 여부 식별자]
-  const isBookingActive = currentPath.includes("booking-");
+  if (langPanel) {
+    if (langTrigger) {
+      // [한글 주석: 인라인 onclick과의 중복 이벤트를 예방하고 확실하게 토글 함수를 연결]
+      langTrigger.onclick = window.toggleLangDropdown;
+    }
 
-  // [한글 주석: 절대 동결 락 - 상단 헤더 DOM이 단 1ms도 파괴되거나 innerHTML로 다시 덮어씌워져 우측 뱃지가 사라지고 메뉴가 튀는 현상을 100% 완전 차단]
-  const existingNavbar = globalHeader.querySelector(".common-navbar");
-  if (existingNavbar && globalHeader.children.length > 0) {
-    // [한글 주석: 정적 HTML이 이미 존재하면 DOM을 파괴하지 않고 active 클래스만 스마트 업데이트]
-    // [한글 주석: 주의 - return을 제거하여 하단의 햄버거 이벤트/handleResponsiveLayout/syncAuthBadge 등 모바일 셋업 코드가 반드시 실행되도록 수정]
-    updateActiveNavLinks();
-    // return; ← [버그 수정] 이 줄이 있으면 모바일 이벤트 바인딩이 전혀 실행되지 않아 서랍 메뉴가 작동 불능 상태가 됨
-  }
+    if (quickLangTrigger) {
+      quickLangTrigger.onclick = window.toggleLangDropdown;
+    }
 
-  if (!existingNavbar) {
-    globalHeader.innerHTML = `
-      <nav class="common-navbar">
-        <div class="nav-container">
-          <!-- 좌측: 브랜드 로고 영역 -->
-          <a href="/index.html" class="nav-brand">
-            <img src="/img/logo.png" alt="IGPartners Logo" class="nav-logo">
-            <span class="nav-brand-text">IGPartners</span>
-          </a>
+    // [한글 주석: 언어 선택 패널 및 트리거 영역 외 외부 클릭 시 드롭다운 패널 자동으로 닫기 처리]
+    document.addEventListener("click", (e) => {
+      const target = e.target;
+      const isInsideTrigger = langTrigger && langTrigger.contains(target);
+      const isInsideQuick = quickLangTrigger && quickLangTrigger.contains(target);
+      const isInsidePanel = langPanel && langPanel.contains(target);
 
-          <!-- 중앙: 네비게이션 메뉴 링크 영역 (반응형 대응) -->
-          <ul class="nav-menu" id="nav-menu">
-            <li class="nav-item">
-              <a href="/index.html" class="nav-link ${isHomeActive ? "active" : ""}">홈</a>
-            </li>
-            <li class="nav-item">
-              <a href="/about.html" class="nav-link ${isAboutActive ? "active" : ""}">회사소개</a>
-            </li>
-            <li class="nav-item">
-              <a href="/about.html#services" class="nav-link ${isServicesActive ? "active" : ""}">제공 서비스</a>
-            </li>
-            <li class="nav-item">
-              <a href="/about.html#services" class="nav-link btn-nav-booking ${isServicesActive ? "active" : ""}">의료통역</a>
-            </li>
-            <li class="nav-item">
-              <a href="/booking-lang.html" class="nav-link btn-nav-booking ${isBookingActive ? "active" : ""}">진료 예약</a>
-            </li>
-            <li class="nav-item">
-              <a href="/index.html#partners" class="nav-link ${isPartnersActive ? "active" : ""}">협력 회사</a>
-            </li>
-          </ul>
-
-          <!-- 우측: 구글 로그인 상태 뱃지 및 인증 영역 (데스크톱 기준) -->
-          <div class="nav-auth-area" id="nav-auth-area">
-            <div id="auth-user" class="auth-user-badge" style="display: none;">
-              <div class="user-capsule">
-                <img id="user-photo" src="" alt="Profile" class="user-avatar">
-                <span id="user-name" class="user-nickname"></span>
-              </div>
-              <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res ${currentPath.endsWith("my-reservations.html") ? "active" : ""}">📅 예약내역</a>
-              <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin ${currentPath.endsWith("admin.html") ? "active" : ""}" style="display: none;">👑 관리자</a>
-              <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin ${currentPath.endsWith("stats.html") ? "active" : ""}" style="display: none;">📊 예약통계</a>
-              <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
-            </div>
-            <button id="btn-login" class="btn-nav-login">로그인</button>
-          </div>
-
-          <!-- 신규 추가: 모바일 전용 상단 퀵 메뉴 영역 (데스크톱 모드에서는 CSS로 비노출 제어) -->
-          <div class="nav-mobile-quick" id="nav-mobile-quick">
-            <a href="/index.html" class="quick-icon-btn ${isHomeActive ? "active" : ""}" title="홈">🏠</a>
-            <a href="/about.html" class="quick-icon-btn ${isAboutActive ? "active" : ""}" title="회사소개">🏢</a>
-            <a href="/about.html#services" class="quick-icon-btn ${isServicesActive ? "active" : ""}" title="제공 서비스">🛠️</a>
-            <a href="/about.html#services" class="quick-icon-btn ${isServicesActive ? "active" : ""}" title="의료통역">🌐</a>
-            <a href="/booking-lang.html" class="quick-icon-btn ${isBookingActive ? "active" : ""}" title="진료 예약">📅</a>
-            <a href="/index.html#partners" class="quick-icon-btn ${isPartnersActive ? "active" : ""}" title="협력 회사">🤝</a>
-            <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn ${currentPath.endsWith("my-reservations.html") ? "active" : ""}" style="display: none;" title="예약내역">📋</a>
-            <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn ${currentPath.endsWith("admin.html") ? "active" : ""}" style="display: none;" title="관리자">👑</a>
-            <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn ${currentPath.endsWith("stats.html") ? "active" : ""}" style="display: none;" title="예약통계">📊</a>
-            <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
-          </div>
-
-          <!-- 모바일 화면용 햄버거 토글 버튼 -->
-          <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-          </button>
-        </div>
-      </nav>
-    `;
-  } else {
-    // [성능 최적화] 이미 마크업이 존재하는 경우 DOM 파괴 없이 active 클래스만 0.001초 만에 스마트 스위칭
-    const links = existingNavbar.querySelectorAll("a");
-    links.forEach(link => {
-      const href = link.getAttribute("href");
-      if (!href) return;
-
-      let isActive = false;
-      if (href === "/index.html" && isHomeActive) isActive = true;
-      else if (href === "/about.html" && isAboutActive) isActive = true;
-      else if (href === "/about.html#services" && isServicesActive) isActive = true;
-      else if (href === "/booking-lang.html" && isBookingActive) isActive = true;
-      else if (href === "/index.html#partners" && isPartnersActive) isActive = true;
-      else if (href === "/my-reservations.html" && currentPath.endsWith("my-reservations.html")) isActive = true;
-      else if (href === "/admin.html" && currentPath.endsWith("admin.html")) isActive = true;
-      else if (href === "/stats.html" && currentPath.endsWith("stats.html")) isActive = true;
-
-      // [한글 주석: nav-link, quick-icon-btn, btn-nav-action 클래스를 가진 링크에만 active 토글 적용]
-      if (link.classList.contains("nav-link") || link.classList.contains("quick-icon-btn") || link.classList.contains("btn-nav-action")) {
-        link.classList.toggle("active", isActive);
+      if (!isInsideTrigger && !isInsideQuick && !isInsidePanel) {
+        langPanel.classList.remove("show", "active");
       }
     });
   }
