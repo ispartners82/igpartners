@@ -977,9 +977,9 @@ function initPage() {
         const data = solapiDocSnap.data();
         const adminPhones = data.adminPhones || [];
         
-        // 1. 입력창 값 갱신
+        // [한글 주석: 1. 입력창 값 초기화 - 추가할 번호만 전용으로 입력받기 위해 비워둠]
         if (phonesInput) {
-          phonesInput.value = adminPhones.join(", ");
+          phonesInput.value = "";
         }
         
         // 2. 하단 목록 렌더링
@@ -1420,7 +1420,7 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 알림톡 수신 설정 저장 처리 핸들러]
+  // [한글 주석: 알림톡 수신 번호 개별/다중 추가 처리 핸들러 - 기존 저장된 목록에 누적하여 추가]
   const solapiSettingsForm = document.getElementById("solapi-settings-form");
   if (solapiSettingsForm) {
     solapiSettingsForm.addEventListener("submit", async (e) => {
@@ -1431,40 +1431,62 @@ function initPage() {
         return;
       }
 
-      const phonesInput = document.getElementById("solapi-admin-phones").value.trim();
+      const phonesInputElement = document.getElementById("solapi-admin-phones");
+      const phonesInput = phonesInputElement ? phonesInputElement.value.trim() : "";
       if (!phonesInput) {
-        alert("수신 번호를 하나 이상 입력해 주세요.");
+        alert("추가할 수신 번호를 하나 이상 입력해 주세요.");
         return;
       }
 
-      // 쉼표로 분할하고 숫자만 남기는 전처리 수행
-      const phonesArray = phonesInput.split(",")
+      // [한글 주석: 쉼표로 분할하고 숫자만 남기는 전처리 수행]
+      const newPhonesArray = phonesInput.split(",")
         .map(p => p.replace(/[^0-9]/g, ""))
         .filter(p => p !== "");
 
-      if (phonesArray.length === 0) {
+      if (newPhonesArray.length === 0) {
         alert("올바른 형태의 전화번호를 입력해 주세요.");
         return;
       }
 
       const btnSubmit = solapiSettingsForm.querySelector("button[type='submit']");
       btnSubmit.disabled = true;
-      btnSubmit.textContent = "저장 중...";
+      btnSubmit.textContent = "추가 중...";
 
       try {
-        await setDoc(doc(db, "settings", "solapi"), {
-          adminPhones: phonesArray,
+        // [한글 주석: 기존 Firestore에 저장되어 있는 알림톡 수신 번호 목록 불러오기]
+        const solapiDocRef = doc(db, "settings", "solapi");
+        const solapiDocSnap = await getDoc(solapiDocRef);
+        let existingPhones = [];
+        if (solapiDocSnap.exists() && Array.isArray(solapiDocSnap.data().adminPhones)) {
+          existingPhones = solapiDocSnap.data().adminPhones;
+        }
+
+        // [한글 주석: 기존 번호 목록에 신규 입력 번호 병합 및 중복 번호 제거]
+        const mergedPhones = Array.from(new Set([...existingPhones, ...newPhonesArray]));
+
+        // [한글 주석: 새로 추가된 번호가 없는 경우 (이미 모두 존재하는 번호일 때)]
+        const addedCount = mergedPhones.length - existingPhones.length;
+        if (addedCount === 0) {
+          alert("입력하신 번호는 이미 수신 번호 목록에 모두 등록되어 있습니다.");
+          if (phonesInputElement) phonesInputElement.value = "";
+          return;
+        }
+
+        await setDoc(solapiDocRef, {
+          adminPhones: mergedPhones,
           updatedAt: new Date().toISOString(),
           updatedBy: auth.currentUser ? auth.currentUser.uid : "unknown"
         });
-        alert("알림톡 수신 설정이 성공적으로 저장되었습니다.");
-        loadSolapiSettings(); // [한글 주석: 저장 성공 후 화면의 번호 리스트 목록 및 입력 필드 동기화 수행]
+        
+        alert(`${addedCount}개의 수신 번호가 성공적으로 추가되었습니다.`);
+        if (phonesInputElement) phonesInputElement.value = "";
+        loadSolapiSettings(); // [한글 주석: 저장 성공 후 화면의 번호 리스트 목록 리프레시 수행]
       } catch (error) {
         console.error("Save Solapi settings failed:", error);
-        alert("설정 저장에 실패했습니다: " + error.message);
+        alert("수신 번호 추가에 실패했습니다: " + error.message);
       } finally {
         btnSubmit.disabled = false;
-        btnSubmit.textContent = "설정 저장";
+        btnSubmit.textContent = "수신 번호 추가";
       }
     });
   }

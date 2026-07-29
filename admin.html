@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -36,7 +36,8 @@
           <!-- [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치)] -->
           <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
             <div class="nav-lang-trigger" id="nav-lang-trigger" onclick="window.toggleLangDropdown(event)">
-              <img id="nav-lang-selected-flag" class="nav-lang-flag" src="https://flagcdn.com/w80/kr.png" alt="South Korea Flag">
+              <img id="nav-lang-selected-flag" class="nav-lang-flag" src="https://flagcdn.com/w80/kr.png"
+                alt="South Korea Flag">
               <span id="nav-lang-selected-text" class="nav-lang-text">언어선택</span>
               <span class="nav-lang-arrow">▾</span>
             </div>
@@ -48,64 +49,79 @@
                 <!-- [한글 주석: 15개국 언어 세로 수직 드롭다운 목록 정적 하드코딩 (JS 바인딩 랙 100% 원천 차단)] -->
                 <button class="lang-dropdown-item active" onclick="changeGlobalLanguage('ko')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/kr.png" alt="한국어">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">한국어</span><span class="lang-dropdown-ko">한국어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">한국어</span><span
+                      class="lang-dropdown-ko">한국어</span></div>
                   <span class="lang-dropdown-check">✓</span>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ja')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/jp.png" alt="日本語">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">日本語</span><span class="lang-dropdown-ko">일본어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">日本語</span><span
+                      class="lang-dropdown-ko">일본어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('vi')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/vn.png" alt="Tiếng Việt">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Tiếng Việt</span><span class="lang-dropdown-ko">베트남어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Tiếng Việt</span><span
+                      class="lang-dropdown-ko">베트남어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('en')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/gb.png" alt="English">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">English</span><span class="lang-dropdown-ko">영어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">English</span><span
+                      class="lang-dropdown-ko">영어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('zh')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/cn.png" alt="中文 (简体)">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">中文 (简体)</span><span class="lang-dropdown-ko">중국어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">中文 (简体)</span><span
+                      class="lang-dropdown-ko">중국어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ru')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/ru.png" alt="Русский">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Русский</span><span class="lang-dropdown-ko">러시아어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Русский</span><span
+                      class="lang-dropdown-ko">러시아어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('my')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/mm.png" alt="မြန်မာစာ">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">မြန်မာစာ</span><span class="lang-dropdown-ko">미얀마어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">မြန်မာစာ</span><span
+                      class="lang-dropdown-ko">미얀마어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('km')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/kh.png" alt="ភាសាខ្មែរ">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ភាសាខ្មែរ</span><span class="lang-dropdown-ko">캄보디아어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ភាសាខ្មែរ</span><span
+                      class="lang-dropdown-ko">캄보디아어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('mn')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/mn.png" alt="Монгол хэл">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Монгол хэл</span><span class="lang-dropdown-ko">몽골어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Монгол хэл</span><span
+                      class="lang-dropdown-ko">몽골어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('th')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/th.png" alt="ภาษาไทย">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ภาษาไทย</span><span class="lang-dropdown-ko">태국어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ภาษาไทย</span><span
+                      class="lang-dropdown-ko">태국어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('lo')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/la.png" alt="ພາສາລາວ">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ພາສາລາວ</span><span class="lang-dropdown-ko">라오스어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">ພາສາລາວ</span><span
+                      class="lang-dropdown-ko">라오스어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('ne')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/np.png" alt="नेपाली">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">नेपाली</span><span class="lang-dropdown-ko">네팔어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">नेपाली</span><span
+                      class="lang-dropdown-ko">네팔어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('id')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/id.png" alt="Bahasa Indonesia">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Bahasa Indonesia</span><span class="lang-dropdown-ko">인도네시아어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">Bahasa Indonesia</span><span
+                      class="lang-dropdown-ko">인도네시아어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('si')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/lk.png" alt="සිංහල">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">සිංහල</span><span class="lang-dropdown-ko">스리랑카어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">සිංහල</span><span
+                      class="lang-dropdown-ko">스리랑카어</span></div>
                 </button>
                 <button class="lang-dropdown-item" onclick="changeGlobalLanguage('bn')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/bd.png" alt="বাংলা">
-                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">বাংলা</span><span class="lang-dropdown-ko">방글라데시어</span></div>
+                  <div class="lang-dropdown-name-group"><span class="lang-dropdown-native">বাংলা</span><span
+                      class="lang-dropdown-ko">방글라데시어</span></div>
                 </button>
               </div>
             </div>
@@ -122,18 +138,19 @@
           <div id="auth-user" class="auth-user-badge">
             <!-- [한글 주석: HTML 파싱 0.00001초 순간 세션 스토리지에서 유저 이름/사진을 DOM에 즉시 박아 지워짐 100% 원천 차단] -->
             <div class="user-capsule">
-              <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile" class="user-avatar">
+              <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile"
+                class="user-avatar">
               <span id="user-name" class="user-nickname"></span>
               <script>
-                (function(){
+                (function () {
                   try {
                     var c = sessionStorage.getItem("auth_user_cache");
-                    if(c) {
+                    if (c) {
                       var u = JSON.parse(c);
-                      if(u.displayName) document.getElementById("user-name").textContent = u.displayName;
-                      if(u.photoURL) document.getElementById("user-photo").src = u.photoURL;
+                      if (u.displayName) document.getElementById("user-name").textContent = u.displayName;
+                      if (u.photoURL) document.getElementById("user-photo").src = u.photoURL;
                     }
-                  } catch(e){}
+                  } catch (e) { }
                 })();
               </script>
             </div>
@@ -154,12 +171,15 @@
           <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
           <a href="/booking-lang.html" class="quick-icon-btn" title="진료 예약">📅</a>
           <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
-          <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn" style="display: none;" title="예약내역">📋</a>
-          <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn active" style="display: none;" title="관리자">👑</a>
-          <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;" title="예약통계">📊</a>
+          <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn" style="display: none;"
+            title="예약내역">📋</a>
+          <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn active" style="display: none;"
+            title="관리자">👑</a>
+          <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;"
+            title="예약통계">📊</a>
           <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
           <script>
-            (function(){
+            (function () {
               try {
                 var c = sessionStorage.getItem("auth_user_cache");
                 if (c) {
@@ -179,7 +199,7 @@
                     }
                   }
                 }
-              } catch(e){}
+              } catch (e) { }
             })();
           </script>
         </div>
@@ -247,10 +267,13 @@
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <!-- 한글 주석: 예약 검색 필드 및 검색 버튼 추가 (실시간 검색 기능 대체) -->
             <div style="display: flex; gap: 4px; align-items: center; flex-wrap: nowrap;">
-              <input type="text" id="input-search-reservations" placeholder="이름, 연락처, 증상, 병원 검색..." style="background: #0c1020; color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; width: 220px; max-width: 100%; outline: none; transition: border-color 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
-              <button id="btn-search-reservations" style="background: #00f3ff; color: #0c1020; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; height: 36px; white-space: nowrap;">검색</button>
+              <input type="text" id="input-search-reservations" placeholder="이름, 연락처, 증상, 병원 검색..."
+                style="background: #0c1020; color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; width: 220px; max-width: 100%; outline: none; transition: border-color 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
+              <button id="btn-search-reservations"
+                style="background: #00f3ff; color: #0c1020; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; height: 36px; white-space: nowrap;">검색</button>
             </div>
-            <select id="select-lang-filter" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+            <select id="select-lang-filter" class="admin-select-limit"
+              style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
               <option value="all">전체보기</option>
               <option value="ko">🇰🇷 한국어</option>
               <option value="ja">🇯🇵 일본어</option>
@@ -268,7 +291,8 @@
               <option value="si">🇱🇰 스리랑카어</option>
               <option value="bn">🇧🇩 방글라데시어</option>
             </select>
-            <select id="select-limit-count" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+            <select id="select-limit-count" class="admin-select-limit"
+              style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
               <option value="10">10개씩 보기</option>
               <option value="20">20개씩 보기</option>
               <option value="50">50개씩 보기</option>
@@ -325,25 +349,31 @@
       <main class="admin-main">
         <div class="admin-users-full-layout">
 
-          <!-- [한글 주석: 알림톡 수신 번호 설정 폼 (상단 단독 영역) - 솔라피 수신 리스트가 늘어나도 타 레이아웃에 영향이 없도록 격리 배치함] -->
+          <!-- [한글 주석: 알림톡 수신 번호 설정 폼 (상단 단독 영역) - 번호 개별 추가 방식으로 UI 텍스트 및 안내 문구 업데이트] -->
           <section class="clinic-form-section" style="max-width: 480px; margin-bottom: 2rem;">
             <h2>알림톡 수신 번호 설정</h2>
             <form id="solapi-settings-form" class="admin-clinic-form"
               style="display: flex; flex-direction: column; gap: 12px;">
               <div class="form-group" style="margin-bottom: 0; display: flex; flex-direction: column; width: 100%;">
-                <label for="solapi-admin-phones" style="margin-bottom: 4px;">수신 휴대폰 번호 (쉼표로 구분) <span
+                <label for="solapi-admin-phones" style="margin-bottom: 4px;">추가할 수신 휴대폰 번호 (쉼표로 여러 개 입력 가능) <span
                     class="required">*</span></label>
-                <input type="text" id="solapi-admin-phones" required placeholder="예: 01028196392, 01096011085"
+                <input type="text" id="solapi-admin-phones" required
+                  placeholder="추가할 번호 입력 (예: 01048444115, 01096011085)"
                   style="padding: 0.6rem 0.8rem; font-size: 0.88rem; width: 100%; box-sizing: border-box;">
               </div>
               <button type="submit" class="btn btn-primary"
-                style="height: 38px; align-self: flex-start; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap;">설정 저장</button>
+                style="height: 38px; align-self: flex-start; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap;">수신
+                번호 추가</button>
             </form>
 
             <!-- [한글 주석: 현재 DB에 저장되어 있는 알림톡 수신 번호 목록 뷰 영역] -->
-            <div id="solapi-phones-list-container" style="margin-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.2rem; display: none;">
-              <h3 style="font-size: 0.9rem; color: #a5b4fc; margin: 0 0 10px 0; font-weight: 600; display: flex; align-items: center; gap: 6px;">📞 현재 등록된 수신 번호 목록</h3>
-              <ul id="solapi-phones-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+            <div id="solapi-phones-list-container"
+              style="margin-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.2rem; display: none;">
+              <h3
+                style="font-size: 0.9rem; color: #a5b4fc; margin: 0 0 10px 0; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                📞 현재 등록된 수신 번호 목록</h3>
+              <ul id="solapi-phones-list"
+                style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
                 <!-- 자바스크립트(admin.js)에서 동적 렌더링 -->
               </ul>
             </div>
@@ -354,17 +384,22 @@
             <h2>등록된 등급 종류 및 세부 기능 권한 설정</h2>
 
             <!-- [한글 주석: 회원 등급 종류 추가 폼 (테이블 상단에 단정하게 병합 배치) - UX 동선 효율화 및 레이아웃 찌그러짐 예방용 통합] -->
-            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); padding: 1.25rem 1.5rem; border-radius: 12px; margin-top: 1.2rem; margin-bottom: 1.5rem; max-width: 720px;">
+            <div
+              style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); padding: 1.25rem 1.5rem; border-radius: 12px; margin-top: 1.2rem; margin-bottom: 1.5rem; max-width: 720px;">
               <h3 style="font-size: 0.95rem; color: #a5b4fc; margin: 0 0 12px 0; font-weight: 700;">➕ 새 회원 등급 종류 추가</h3>
               <form id="role-register-form" class="admin-clinic-form"
                 style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: flex-end; width: 100%;">
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label for="reg-role-key" style="margin-bottom: 4px; font-size: 0.8rem; color: rgba(255,255,255,0.7);">등급 키 (영문 식별자) <span class="required">*</span></label>
+                  <label for="reg-role-key"
+                    style="margin-bottom: 4px; font-size: 0.8rem; color: rgba(255,255,255,0.7);">등급 키 (영문 식별자) <span
+                      class="required">*</span></label>
                   <input type="text" id="reg-role-key" required placeholder="예: vip, res_manager"
                     style="padding: 0.55rem 0.75rem; font-size: 0.85rem; width: 100%; box-sizing: border-box;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                  <label for="reg-role-label" style="margin-bottom: 4px; font-size: 0.8rem; color: rgba(255,255,255,0.7);">등급 표시이름 (한글 라벨) <span class="required">*</span></label>
+                  <label for="reg-role-label"
+                    style="margin-bottom: 4px; font-size: 0.8rem; color: rgba(255,255,255,0.7);">등급 표시이름 (한글 라벨) <span
+                      class="required">*</span></label>
                   <input type="text" id="reg-role-label" required placeholder="예: VIP 회원, 예약 매니저"
                     style="padding: 0.55rem 0.75rem; font-size: 0.85rem; width: 100%; box-sizing: border-box;">
                 </div>
@@ -419,13 +454,15 @@
               </svg>
               새로고침
             </button>
-            <select id="select-limit-users" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+            <select id="select-limit-users" class="admin-select-limit"
+              style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
               <option value="10">10개씩 보기</option>
               <option value="20">20개씩 보기</option>
               <option value="50">50개씩 보기</option>
               <option value="100">100개씩 보기</option>
             </select>
-            <select id="select-role-filter" class="admin-select-limit" style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+            <select id="select-role-filter" class="admin-select-limit"
+              style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
               <option value="all">전체보기</option>
             </select>
           </div>
@@ -460,10 +497,10 @@
           <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
             <h2>신규 병원 등록</h2>
             <form id="clinic-register-form" class="admin-clinic-form" style="width: 100%;">
-              
+
               <!-- [한글 주석: 데스크톱 가로 2열 대칭 정렬 및 모바일 자동 1열 반응형 레이아웃 컨테이너 추가] -->
               <div style="display: flex; gap: 2rem; flex-wrap: wrap; width: 100%;">
-                
+
                 <!-- [한글 주석: 기본 정보 입력 영역 (좌측 1열)] -->
                 <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 1rem;">
                   <div class="form-group" style="margin-bottom: 0;">
@@ -477,7 +514,8 @@
                   <div class="form-group" style="margin-bottom: 0;">
                     <label for="reg-clinic-image">병원사진 <span class="required">*</span></label>
                     <input type="file" id="reg-clinic-image" accept="image/*" required style="padding: 0.5rem;">
-                    <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem;">최대 10MB 이미지 파일. 업로드
+                    <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem;">최대 10MB 이미지 파일.
+                      업로드
                       시 가로 최대 800px로 자동 압축 최적화됩니다.</small>
                     <div id="clinic-image-preview-container" style="margin-top: 0.5rem; display: none;">
                       <img id="clinic-image-preview" src="" alt="Preview"
@@ -488,9 +526,11 @@
                     <label for="reg-clinic-depts">진료과목 (쉼표로 구분) <span class="required">*</span></label>
                     <input type="text" id="reg-clinic-depts" required placeholder="예: 미용 피부, 레이저, 임플란트">
                   </div>
-                  <div class="form-group" style="margin-bottom: 0; display: flex; flex-direction: column; flex-grow: 1;">
+                  <div class="form-group"
+                    style="margin-bottom: 0; display: flex; flex-direction: column; flex-grow: 1;">
                     <label for="reg-clinic-desc">병원설명 <span class="required">*</span></label>
-                    <textarea id="reg-clinic-desc" rows="4" required placeholder="병원에 대한 상세 설명을 작성해 주세요." style="flex-grow: 1; min-height: 110px; resize: none;"></textarea>
+                    <textarea id="reg-clinic-desc" rows="4" required placeholder="병원에 대한 상세 설명을 작성해 주세요."
+                      style="flex-grow: 1; min-height: 110px; resize: none;"></textarea>
                   </div>
                 </div>
 
@@ -506,71 +546,102 @@
                         검색</button>
                     </div>
                     <div id="clinic-map-preview-container" style="margin-top: 0.5rem; display: none;">
-                      <label style="font-size: 0.8rem; color: #a5b4fc; margin-bottom: 0.25rem; display: block;">📍 구글지도 위치
+                      <label style="font-size: 0.8rem; color: #a5b4fc; margin-bottom: 0.25rem; display: block;">📍 구글지도
+                        위치
                         미리보기</label>
                       <div
                         style="width: 100%; height: 180px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);">
-                        <iframe id="clinic-map-preview-iframe" width="100%" height="100%" frameborder="0" style="border:0;"
-                          allowfullscreen></iframe>
+                        <iframe id="clinic-map-preview-iframe" width="100%" height="100%" frameborder="0"
+                          style="border:0;" allowfullscreen></iframe>
                       </div>
                     </div>
                   </div>
 
                   <!-- [다국어 지원] 병원 다국어 번역 선택 입력란 (details 아코디언 형태로 평소엔 접어둠) -->
-                  <details class="form-group" style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem; margin: 0; background: rgba(255,255,255,0.01);">
-                    <summary style="font-weight: 600; color: #a5b4fc; cursor: pointer; outline: none; user-select: none;">🌐 다국어 번역 추가 입력 (선택사항)</summary>
+                  <details class="form-group"
+                    style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem; margin: 0; background: rgba(255,255,255,0.01);">
+                    <summary
+                      style="font-weight: 600; color: #a5b4fc; cursor: pointer; outline: none; user-select: none;">🌐
+                      다국어 번역 추가 입력 (선택사항)</summary>
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
-                      
+
                       <!-- 베트남어 (vi) 번역 입력 필드셋 -->
-                      <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
-                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇻🇳 베트남어 (Vietnamese)</legend>
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇻🇳 베트남어
+                          (Vietnamese)</legend>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-                          <input type="text" id="reg-clinic-name-vi" placeholder="Tên bệnh viện (베트남어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-depts-vi" placeholder="Khoa điều trị (베트남어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-address-vi" placeholder="Địa chỉ (베트남어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <textarea id="reg-clinic-desc-vi" rows="2" placeholder="Mô tả bệnh viện (베트남어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                          <input type="text" id="reg-clinic-name-vi" placeholder="Tên bệnh viện (베트남어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-vi" placeholder="Khoa điều trị (베트남어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-vi" placeholder="Địa chỉ (베트남어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-vi" rows="2" placeholder="Mô tả bệnh viện (베트남어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
                         </div>
                       </fieldset>
 
                       <!-- 일본어 (ja) 번역 입력 필드셋 -->
-                      <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
-                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇯🇵 일본어 (Japanese)</legend>
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇯🇵 일본어
+                          (Japanese)</legend>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-                          <input type="text" id="reg-clinic-name-ja" placeholder="病院名 (일본어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-depts-ja" placeholder="診療科目 (일본어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-address-ja" placeholder="住所 (일본어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <textarea id="reg-clinic-desc-ja" rows="2" placeholder="病院の説明 (일본어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                          <input type="text" id="reg-clinic-name-ja" placeholder="病院名 (일본어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-ja" placeholder="診療科目 (일본어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-ja" placeholder="住所 (일본어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-ja" rows="2" placeholder="病院の説明 (일본어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
                         </div>
                       </fieldset>
 
                       <!-- 중국어 (zh) 번역 입력 필드셋 -->
-                      <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
-                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇨🇳 중국어 (Chinese)</legend>
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇨🇳 중국어
+                          (Chinese)</legend>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-                          <input type="text" id="reg-clinic-name-zh" placeholder="医院名称 (중국어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-depts-zh" placeholder="诊疗科目 (중국어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-address-zh" placeholder="地址 (중국어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <textarea id="reg-clinic-desc-zh" rows="2" placeholder="医院介绍 (중국어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                          <input type="text" id="reg-clinic-name-zh" placeholder="医院名称 (중국어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-zh" placeholder="诊疗科目 (중국어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-zh" placeholder="地址 (중국어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-zh" rows="2" placeholder="医院介绍 (중국어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
                         </div>
                       </fieldset>
 
                       <!-- 러시아어 (ru) 번역 입력 필드셋 -->
-                      <fieldset style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
-                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇷🇺 러시아어 (Russian)</legend>
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇷🇺 러시아어
+                          (Russian)</legend>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-                          <input type="text" id="reg-clinic-name-ru" placeholder="Название клиники (러시아어 병원명)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-depts-ru" placeholder="Медицинские отделения (러시아어 진료과목 - 쉼표로 구분)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-address-ru" placeholder="Адрес клиники (러시아어 병원 주소)" style="padding: 0.5rem; font-size: 0.85rem;">
-                          <textarea id="reg-clinic-desc-ru" rows="2" placeholder="Описание клиники (러시아어 병원 설명)" style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                          <input type="text" id="reg-clinic-name-ru" placeholder="Название клиники (러시아어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-ru"
+                            placeholder="Медицинские отделения (러시아어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-ru" placeholder="Адрес клиники (러시아어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-ru" rows="2" placeholder="Описание клиники (러시아어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
                         </div>
                       </fieldset>
 
                     </div>
                   </details>
                   <!-- [한글 주석: 버튼이 세로로 무분별하게 거대화되는 현상을 차단하고, 타 등록 버튼과 동일하게 38px 높이에 왼쪽 정렬로 표준 크기 지정] -->
-                  <button type="submit" class="btn btn-primary" style="height: 38px; align-self: flex-start; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap; margin-top: auto;">병원 등록하기</button>
+                  <button type="submit" class="btn btn-primary"
+                    style="height: 38px; align-self: flex-start; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap; margin-top: auto;">병원
+                    등록하기</button>
                 </div>
-                
+
               </div>
             </form>
           </section>
@@ -600,79 +671,93 @@
             </div>
           </section>
         </div>
-      </div>
+    </div>
 
-      <!-- ==========================================================================
+    <!-- ==========================================================================
          5. 광고 배너 관리 탭 콘텐츠 (새로운 CRUD 패널)
          ========================================================================== -->
-      <div id="content-ads" class="admin-tab-content" style="display: none;">
-        <!-- [한글 주석: 다른 탭 패널들과 100% 동일한 레이아웃 구조를 갖추어 탭 전환 시 레이아웃 흔들림(Layout Shift) 랙을 방지하는 main 컨테이너 배치] -->
-        <main class="admin-main">
-          <!-- [한글 주석: 1열 배치로 전환하여 광고 현황 테이블이 100% 가로 폭을 확보해 데스크톱 화면에서 한눈에 보이도록 하고, 창이 줄어들면 스크롤이 생성되도록 레이아웃 정돈] -->
-          <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
-            <!-- 5-1. 광고 배너 등록/수정 폼 영역 (상단) -->
-            <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
-              <h2 id="ad-form-title">신규 광고 배너 등록</h2>
-              <form id="ad-manage-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
-                <input type="hidden" id="ad-edit-id"> <!-- 수정 모드 시 문서 ID 저장용 -->
+    <div id="content-ads" class="admin-tab-content" style="display: none;">
+      <!-- [한글 주석: 다른 탭 패널들과 100% 동일한 레이아웃 구조를 갖추어 탭 전환 시 레이아웃 흔들림(Layout Shift) 랙을 방지하는 main 컨테이너 배치] -->
+      <main class="admin-main">
+        <!-- [한글 주석: 1열 배치로 전환하여 광고 현황 테이블이 100% 가로 폭을 확보해 데스크톱 화면에서 한눈에 보이도록 하고, 창이 줄어들면 스크롤이 생성되도록 레이아웃 정돈] -->
+        <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
+          <!-- 5-1. 광고 배너 등록/수정 폼 영역 (상단) -->
+          <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
+            <h2 id="ad-form-title">신규 광고 배너 등록</h2>
+            <form id="ad-manage-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <input type="hidden" id="ad-edit-id"> <!-- 수정 모드 시 문서 ID 저장용 -->
 
-                <!-- 광고 태그 (병원명 등) -->
-                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
-                  <label for="ad-tag" style="font-size: 0.85rem; font-weight: 700;">태그 (예: 병원명/기관명)</label>
-                  <input type="text" id="ad-tag" required placeholder="예: 이심당치과, BL성형피부과 등" style="padding: 0.6rem; font-size: 0.9rem;">
-                </div>
+              <!-- 광고 태그 (병원명 등) -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-tag" style="font-size: 0.85rem; font-weight: 700;">태그 (예: 병원명/기관명)</label>
+                <input type="text" id="ad-tag" required placeholder="예: 이심당치과, BL성형피부과 등"
+                  style="padding: 0.6rem; font-size: 0.9rem;">
+              </div>
 
-                <!-- 광고 제목 -->
-                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
-                  <label for="ad-title" style="font-size: 0.85rem; font-weight: 700;">광고 제목</label>
-                  <input type="text" id="ad-title" required placeholder="예: 스마트 디지털 임플란트" style="padding: 0.6rem; font-size: 0.9rem;">
-                </div>
+              <!-- 광고 제목 -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-title" style="font-size: 0.85rem; font-weight: 700;">광고 제목</label>
+                <input type="text" id="ad-title" required placeholder="예: 스마트 디지털 임플란트"
+                  style="padding: 0.6rem; font-size: 0.9rem;">
+              </div>
 
-                <!-- 광고 설명 -->
-                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
-                  <label for="ad-desc" style="font-size: 0.85rem; font-weight: 700;">광고 상세 설명</label>
-                  <textarea id="ad-desc" rows="3" required placeholder="광고의 상세 설명 정보를 입력해 주세요." style="padding: 0.6rem; font-size: 0.9rem; line-height: 1.4; resize: none;"></textarea>
-                </div>
+              <!-- 광고 설명 -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-desc" style="font-size: 0.85rem; font-weight: 700;">광고 상세 설명</label>
+                <textarea id="ad-desc" rows="3" required placeholder="광고의 상세 설명 정보를 입력해 주세요."
+                  style="padding: 0.6rem; font-size: 0.9rem; line-height: 1.4; resize: none;"></textarea>
+              </div>
 
-                <!-- 이미지 슬라이드 전환 시간 -->
-                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
-                  <label for="ad-interval" style="font-size: 0.85rem; font-weight: 700;">슬라이드 사진 전환 시간 (초)</label>
-                  <input type="number" id="ad-interval" min="1" max="60" required value="4" placeholder="예: 4 (4초 간격으로 사진 롤링)" style="padding: 0.6rem; font-size: 0.9rem;">
-                </div>
+              <!-- 이미지 슬라이드 전환 시간 -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="ad-interval" style="font-size: 0.85rem; font-weight: 700;">슬라이드 사진 전환 시간 (초)</label>
+                <input type="number" id="ad-interval" min="1" max="60" required value="4"
+                  placeholder="예: 4 (4초 간격으로 사진 롤링)" style="padding: 0.6rem; font-size: 0.9rem;">
+              </div>
 
-                <!-- 이미지 URL 동적 리스트 폼 (최소 1장 이상 등록) -->
-                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <label style="font-size: 0.85rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
-                    <span>사진 이미지 URL 목록 (최소 1개)</span>
-                    <button type="button" id="btn-add-ad-url" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.6rem; min-width: auto;">+ 추가</button>
-                  </label>
-                  <!-- [한글 주석: 이미지 목록들을 세로로 길게 방치하지 않고 가로 다열 그리드로 렌더링되게 스타일 변경] -->
-                  <div id="ad-urls-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.75rem; width: 100%;">
-                    <!-- 자바스크립트로 동적 인풋 박스가 렌더링되며, 기본으로 최소 1개가 주어집니다 -->
-                    <div class="ad-url-row" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                      <input type="text" class="ad-image-url" required placeholder="웹 이미지 주소(URL) 또는 우측 파일 업로드 이용" style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 200px;">
-                      <div style="display: flex; gap: 0.35rem; align-items: center;">
-                        <!-- [한글 주석: 디자인 일관성을 지키는 숨김형 파일 업로드 버튼 및 가짜 뱃지 스타일 적용] -->
-                        <label class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.6rem 0.8rem; min-width: auto; margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
-                          📁 파일 선택
-                          <input type="file" class="ad-file-input" accept="image/*" style="display: none;">
-                        </label>
-                        <button type="button" class="btn btn-secondary btn-remove-ad-url" style="font-size: 0.75rem; padding: 0.6rem; min-width: auto; background: rgba(244, 63, 94, 0.1); color: #fda4af; border-color: rgba(244,63,94,0.3);">&times;</button>
-                      </div>
+              <!-- 이미지 URL 동적 리스트 폼 (최소 1장 이상 등록) -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label
+                  style="font-size: 0.85rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+                  <span>사진 이미지 URL 목록 (최소 1개)</span>
+                  <button type="button" id="btn-add-ad-url" class="btn btn-secondary"
+                    style="font-size: 0.75rem; padding: 0.25rem 0.6rem; min-width: auto;">+ 추가</button>
+                </label>
+                <!-- [한글 주석: 이미지 목록들을 세로로 길게 방치하지 않고 가로 다열 그리드로 렌더링되게 스타일 변경] -->
+                <div id="ad-urls-container"
+                  style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.75rem; width: 100%;">
+                  <!-- 자바스크립트로 동적 인풋 박스가 렌더링되며, 기본으로 최소 1개가 주어집니다 -->
+                  <div class="ad-url-row" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <input type="text" class="ad-image-url" required placeholder="웹 이미지 주소(URL) 또는 우측 파일 업로드 이용"
+                      style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 200px;">
+                    <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <!-- [한글 주석: 디자인 일관성을 지키는 숨김형 파일 업로드 버튼 및 가짜 뱃지 스타일 적용] -->
+                      <label class="btn btn-secondary"
+                        style="font-size: 0.75rem; padding: 0.6rem 0.8rem; min-width: auto; margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+                        📁 파일 선택
+                        <input type="file" class="ad-file-input" accept="image/*" style="display: none;">
+                      </label>
+                      <button type="button" class="btn btn-secondary btn-remove-ad-url"
+                        style="font-size: 0.75rem; padding: 0.6rem; min-width: auto; background: rgba(244, 63, 94, 0.1); color: #fda4af; border-color: rgba(244,63,94,0.3);">&times;</button>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- [한글 주석: 수정취소/수정완료 버튼의 크기를 줄이고 50:50으로 정확히 대칭 분할 정렬] -->
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; width: 100%;">
-                  <button type="button" id="btn-cancel-ad-edit" class="btn btn-secondary" style="flex: 1; display: none; padding: 0.5rem 0.75rem; font-size: 0.85rem; height: 38px; min-width: auto; line-height: 1.4;">수정 취소</button>
-                  <button type="submit" id="btn-submit-ad" class="btn btn-primary" style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.85rem; height: 38px; min-width: auto; line-height: 1.4;">광고 등록하기</button>
-                </div>
-              </form>
-            </section>
+              <!-- [한글 주석: 수정취소/수정완료 버튼의 크기를 줄이고 50:50으로 정확히 대칭 분할 정렬] -->
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; width: 100%;">
+                <button type="button" id="btn-cancel-ad-edit" class="btn btn-secondary"
+                  style="flex: 1; display: none; padding: 0.5rem 0.75rem; font-size: 0.85rem; height: 38px; min-width: auto; line-height: 1.4;">수정
+                  취소</button>
+                <button type="submit" id="btn-submit-ad" class="btn btn-primary"
+                  style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.85rem; height: 38px; min-width: auto; line-height: 1.4;">광고
+                  등록하기</button>
+              </div>
+            </form>
+          </section>
 
-            <!-- 5-2. 광고 목록 현황 테이블 (하단) -->
-            <section class="clinic-list-section" style="width: 100%;">
+          <!-- 5-2. 광고 목록 현황 테이블 (하단) -->
+          <section class="clinic-list-section" style="width: 100%;">
             <h2>등록된 광고 배너 현황</h2>
             <div class="table-responsive">
               <table class="admin-table">
