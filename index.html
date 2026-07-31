@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -35,8 +35,6 @@
         <ul class="nav-menu" id="nav-menu">
           <!-- [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치)] -->
           <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
-          <!-- [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치)] -->
-          <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
             <div class="nav-lang-trigger" id="nav-lang-trigger" onclick="window.toggleLangDropdown(event)">
               <img id="nav-lang-selected-flag" class="nav-lang-flag" src="https://flagcdn.com/w80/kr.png" alt="South Korea Flag">
               <span id="nav-lang-selected-text" class="nav-lang-text">언어선택</span>
@@ -46,6 +44,7 @@
               <div class="nav-lang-panel-header">
                 <span>🌐 Select Language / 언어선택</span>
               </div>
+              <div class="nav-lang-scroll-list" id="nav-lang-scroll-list">
                 <!-- [한글 주석: 15개국 언어 세로 수직 드롭다운 목록 정적 하드코딩 (JS 바인딩 랙 100% 원천 차단)] -->
                 <button class="lang-dropdown-item active" data-lang="ko" onclick="window.changeGlobalLanguage('ko')" type="button">
                   <img class="lang-dropdown-flag" src="https://flagcdn.com/w80/kr.png" alt="한국어">
