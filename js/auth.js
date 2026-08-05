@@ -3,7 +3,9 @@ import {
   signInWithPopup, 
   GoogleAuthProvider, 
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  setPersistence,
+  browserSessionPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -36,6 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
           btnLogin.textContent = "로그인 중...";
         }
         
+        // [한글 주석: 인터넷 창(브라우저) 종료 시 자동 로그아웃되도록 Firebase 세션 보존 방식(browserSessionPersistence)으로 인증 지속성을 설정합니다]
+        await setPersistence(auth, browserSessionPersistence);
+
         // 구글 팝업 로그인 시작
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
