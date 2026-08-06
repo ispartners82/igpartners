@@ -593,9 +593,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // [한글 주석: 무한 루프를 완전 차단하기 위해 popstate dispatch 이벤트를 제거하고 active 하이라이트만 직접 스마트 갱신]
       window.dispatchEvent(new Event("hashchange"));
-      // [한글 주석: 계정 프로필 노드 영구 보존 락 - 뷰 전환 시 구글 계정 이름("이희승") 및 프로필 사진이 0.001초도 비어있지 않도록 즉시 동기화 보존]
+      // [한글 주석: 계정 프로필 노드 영구 보존 락 - 뷰 전환 시 구글 계정 및 모바일 네비게이션이 0.001초도 비어있지 않도록 즉시 동기화 보존]
       updateActiveNavLinks(fullUrl);
       syncAuthBadgeInstantly();
+      if (typeof handleResponsiveLayout === "function") {
+        handleResponsiveLayout();
+      }
 
       // 5. 해시 앵커(#partners, #services 등)가 있을 경우 스무스 스크롤 이동
       if (hashTag) {
