@@ -4444,4 +4444,9 @@ body.home-page {
     transform: translateY(0);
   }
 }
+
+/* [한글 주석: 사용자 요청에 따라 모바일 상단 퀵 네비게이션 바 내 홈 옆 언어선택(🌐) 아이콘 숨김 처리 방어 코드] */
+.nav-lang-mobile-trigger {
+  display: none !important;
+}
 
