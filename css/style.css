@@ -4127,13 +4127,62 @@ body.home-page {
 }
 
 /* ==========================================================================
-   히어로 섹션 신규 추가: 진료예약하기 버튼 스타일
+   히어로 섹션 신규 추가: 카톡상담하기 및 진료예약하기 버튼 그룹 스타일
    ========================================================================== */
-/* 한글 주석: 버튼을 수직으로 상단 배치 및 중앙 정렬하기 위해 컨테이너 블록 추가 */
+/* [한글 주석: 카톡상담하기 및 진료예약하기 버튼을 나란히 수평 정렬하는 버튼 그룹 Flex 컨테이너] */
+.hero-btn-group,
 .hero-booking-btn-container {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   margin-bottom: 1.5rem; /* 배지 태그와의 세로 간격 확보 */
-  text-align: center;
+  flex-wrap: wrap;
+}
+
+/* [한글 주석: 카카오톡 파트너/비즈니스 1:1 상담용 브랜드 전용 노란색 버튼 스타일] */
+.hero-kakao-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #191919; /* 카카오 브랜드 시그니처 딥 다크 텍스트 컬러 */
+  text-decoration: none;
+  background: linear-gradient(135deg, #FEE500 0%, #FFD600 100%); /* 카카오 옐로우 프리미엄 그라데이션 */
+  border-radius: 100px;
+  box-shadow: 0 4px 20px rgba(254, 229, 0, 0.35); /* 카카오 옐로우 광채 글로우 효과 */
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  z-index: 10;
+  letter-spacing: -0.5px;
+}
+
+/* [한글 주석: 카카오톡 SVG 아이콘 애니메이션 및 변형 효과] */
+.hero-kakao-btn .kakao-icon {
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 호버 시 모션 및 노란색 글로우 극대화 연출 */
+.hero-kakao-btn:hover {
+  transform: translateY(-4px); /* 살짝 떠오르는 연출 */
+  background: linear-gradient(135deg, #FFD600 0%, #FEE500 100%);
+  box-shadow: 0 10px 30px rgba(254, 229, 0, 0.65), 0 0 15px rgba(255, 214, 0, 0.45);
+  color: #000000;
+}
+
+.hero-kakao-btn:hover .kakao-icon {
+  transform: scale(1.15) rotate(-6deg);
+}
+
+/* 클릭 액티브 시 피드백 */
+.hero-kakao-btn:active {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 5px 15px rgba(254, 229, 0, 0.4);
 }
 
 .hero-booking-btn {
@@ -4172,12 +4221,15 @@ body.home-page {
 
 /* 모바일 및 반응형 크기 조절 */
 @media (max-width: 768px) {
+  .hero-btn-group,
   .hero-booking-btn-container {
     margin-bottom: 1.2rem; /* 모바일 대응 마진 감축 */
+    gap: 0.6rem;
   }
   
+  .hero-kakao-btn,
   .hero-booking-btn {
-    padding: 0.7rem 1.8rem;
+    padding: 0.7rem 1.4rem;
     font-size: 0.95rem;
   }
 }
