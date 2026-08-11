@@ -1154,10 +1154,10 @@ function initPage() {
             <td>${makeToggleHTML(roleKey, "isAdmin", roleData.isAdmin, lockAdmin)}</td>
             <td>${makeToggleHTML(roleKey, "hasReservations", roleData.hasReservations, false)}</td>
             <td>${makeToggleHTML(roleKey, "hasClinics", roleData.hasClinics, false)}</td>
+            <!-- [한글 주석: 광고배너관리 권한 컬럼 스위치를 병원관리 바로 오른쪽에 배치] -->
+            <td>${makeToggleHTML(roleKey, "hasAds", roleData.hasAds, false)}</td>
             <td>${makeToggleHTML(roleKey, "hasRoles", roleData.hasRoles, lockAdmin)}</td>
             <td>${makeToggleHTML(roleKey, "hasPermissions", roleData.hasPermissions, false)}</td>
-            <!-- [한글 주석: 광고배너관리 권한 컬럼 스위치 주입] -->
-            <td>${makeToggleHTML(roleKey, "hasAds", roleData.hasAds, false)}</td>
             <td>${makeToggleHTML(roleKey, "hasStats", roleData.hasStats, false)}</td>
             <td>
               <div style="display:flex; gap:6px; align-items:center; justify-content:center;">
@@ -1193,17 +1193,107 @@ function initPage() {
   }
 
 
+  // [한글 주석] 가입 회원 상세 정보를 메모리에 보관하여 상세보기 모달에 전달하기 위한 맵 객체
+  let loadedUsersMap = {};
+
+  /**
+   * [한글 주석] 가입 회원 상세 정보 모달 표시 함수
+   * @param {Object} userData - 가입 회원의 12가지 상세 프로필 객체
+   */
+  function showUserDetailModal(userData) {
+    const modal = document.getElementById("user-detail-modal");
+    const content = document.getElementById("user-detail-content");
+    if (!modal || !content) return;
+
+    const countryLangLabels = {
+      ko: "🇰🇷 대한민국 (한국어)",
+      vi: "🇻🇳 베트남 (Tiếng Việt)",
+      en: "🇺🇸 미국/기타 (English)",
+      zh: "🇨🇳 중국 (中文)",
+      ru: "🇷🇺 러시아 (Русский)",
+      mn: "🇲🇳 몽골 (Mongolian)"
+    };
+
+    let regDate = "-";
+    if (userData.createdAt) {
+      const d = new Date(userData.createdAt);
+      regDate = isNaN(d) ? "-" : d.toLocaleString("ko-KR");
+    }
+
+    content.innerHTML = `
+      <div class="detail-item">
+        <div class="detail-label">아이디 (ID)</div>
+        <div class="detail-value">${userData.loginId || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">이메일 (Email)</div>
+        <div class="detail-value">${userData.email || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">이름 (여권 영문 성명)</div>
+        <div class="detail-value">${userData.name || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">국가 (선호언어)</div>
+        <div class="detail-value">${countryLangLabels[userData.countryLanguage] || userData.countryLanguage || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">생년월일</div>
+        <div class="detail-value">${userData.dob || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">외국인등록번호(주민번호)</div>
+        <div class="detail-value">${userData.alienNo || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">연락처</div>
+        <div class="detail-value">${userData.phone || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">비자 타입</div>
+        <div class="detail-value">${userData.visaType || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">체류(비자) 만료일</div>
+        <div class="detail-value">${userData.visaExpiry || "-"}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">현재 등급</div>
+        <div class="detail-value">${rolesCache[userData.role] || userData.role || "일반 회원"}</div>
+      </div>
+      <div class="detail-item detail-item-full">
+        <div class="detail-label">현재 체류 주소</div>
+        <div class="detail-value">${userData.address || "-"}</div>
+      </div>
+      <div class="detail-item detail-item-full">
+        <div class="detail-label">가입 일자</div>
+        <div class="detail-value">${regDate}</div>
+      </div>
+    `;
+
+    modal.style.display = "flex";
+  }
+
+  // 모달 닫기 이벤트 핸들러 바인딩
+  const btnCloseUserDetailModal = document.getElementById("btn-close-user-detail-modal");
+  const userDetailModal = document.getElementById("user-detail-modal");
+  if (btnCloseUserDetailModal && userDetailModal) {
+    btnCloseUserDetailModal.addEventListener("click", () => {
+      userDetailModal.style.display = "none";
+    });
+    userDetailModal.addEventListener("click", (e) => {
+      if (e.target === userDetailModal) userDetailModal.style.display = "none";
+    });
+  }
+
   // 가입 회원 목록 로드 및 동적 옵션 바인딩
   async function loadUsers() {
     if (!userList) return;
     
-    // [한글 주석: 기존 회원 목록 데이터가 이미 수집되어 있는 경우 탭 이동 시마다 테이블 전체를 지워서 대시보드 제목/탭 메뉴가 튀는 랙을 차단하도록 가드]
     if (!userList.children || userList.children.length === 0 || userList.innerHTML.includes("table-loading")) {
-      userList.innerHTML = `<tr><td colspan="5" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
+      userList.innerHTML = `<tr><td colspan="8" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
     }
 
-    // [레이스 컨디션 해결] rolesCache가 아직 Firestore 실시간 리스너로부터 수집되지 않은 경우
-    // 일시적으로 roles 컬렉션을 일회성(getDocs) 조회하여 캐시를 선제 빌드 (등급 미등록 노출 오류 완벽 방지)
     if (Object.keys(rolesCache).length === 0) {
       try {
         const rolesCol = collection(db, "roles");
@@ -1217,39 +1307,42 @@ function initPage() {
     }
 
     try {
-      // [복합색인 에러 회피] where와 orderBy를 엮으면 인덱스 에러가 발생하므로 단일 정렬 쿼리 후 클라이언트 필터링 진행
-      // 필터링 적용을 고려해 넉넉하게 최근 200개 목록을 가져옵니다.
       const userQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(200));
       const querySnapshot = await getDocs(userQuery);
 
       userList.innerHTML = "";
+      loadedUsersMap = {};
 
-      // 1. 수집 가공
       let rawUsers = [];
       querySnapshot.forEach((docSnap) => {
-        rawUsers.push({
-          id: docSnap.id,
-          ...docSnap.data()
-        });
+        const uData = { id: docSnap.id, ...docSnap.data() };
+        rawUsers.push(uData);
+        loadedUsersMap[docSnap.id] = uData;
       });
 
-      // 2. 등급 클라이언트 필터링
       let filteredUsers = rawUsers;
       if (currentRoleFilter !== "all") {
         filteredUsers = rawUsers.filter(user => user.role === currentRoleFilter);
       }
 
       if (filteredUsers.length === 0) {
-        userList.innerHTML = `<tr><td colspan="5" class="table-empty">가입된 회원이 없습니다.</td></tr>`;
+        userList.innerHTML = `<tr><td colspan="8" class="table-empty">가입된 회원이 없습니다.</td></tr>`;
         return;
       }
 
-      // 3. 제한 수량에 슬라이스 적용 렌더링
+      const countryLangFlags = {
+        ko: "🇰🇷 한국어",
+        vi: "🇻🇳 베트남어",
+        en: "🇺🇸 English",
+        zh: "🇨🇳 中文",
+        ru: "🇷🇺 Русский",
+        mn: "🇲🇳 몽골어"
+      };
+
       filteredUsers.slice(0, currentLimitUsers).forEach((userData) => {
         const userId = userData.id;
         const tr = document.createElement("tr");
 
-        // 가입 날짜 포맷팅
         let registerDate = "-";
         if (userData.createdAt) {
           const dateObj = new Date(userData.createdAt);
@@ -1260,31 +1353,25 @@ function initPage() {
           });
         }
 
-        // 캐시된 역할을 기반으로 라벨 매핑 및 동적 select 옵션 생성
         const currentRoleLabel = rolesCache[userData.role] || userData.role || "일반 회원";
 
         const isSuperAdmin = currentLoginUserRole === "super_admin";
         const isSelf = auth.currentUser && auth.currentUser.uid === userId;
         const isDisabled = (!isSuperAdmin || isSelf) ? "disabled" : "";
 
-        // 동적으로 rolesCache 기준 select options 생성
         let selectOptionsHTML = "";
         let roleExistsInCache = false;
 
         Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
           const isSelected = userData.role === roleKey ? "selected" : "";
-          if (userData.role === roleKey) {
-            roleExistsInCache = true;
-          }
+          if (userData.role === roleKey) roleExistsInCache = true;
           selectOptionsHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel}</option>`;
         });
 
-        // 만약 기존 사용자가 가졌던 등급이 rolesCache에 등록되어 있지 않은 경우, 기존 등급 유실 방지를 위해 임시 옵션 추가
         if (userData.role && !roleExistsInCache) {
           selectOptionsHTML += `<option value="${userData.role}" selected>${userData.role} (미등록)</option>`;
         }
 
-        // 변경 컨트롤 HTML
         const roleControlHTML = `
           <div class="role-control-wrapper">
             <select class="select-role" id="select-role-${userId}" ${isDisabled}>
@@ -1294,12 +1381,22 @@ function initPage() {
           </div>
         `;
 
+        const countryLangDisplay = countryLangFlags[userData.countryLanguage] || (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
+
         tr.innerHTML = `
+          <td>${countryLangDisplay}</td>
           <td class="font-bold">${userData.name || "-"}</td>
+          <td>${userData.phone || "-"}</td>
           <td>${userData.email || "-"}</td>
           <td>${registerDate}</td>
           <td><span class="role-badge ${userData.role || 'user'}">${currentRoleLabel}</span></td>
           <td>${roleControlHTML}</td>
+          <td>
+            <button class="btn-user-detail" data-uid="${userId}">상세보기</button>
+          </td>
+          <td>
+            <button class="btn-user-delete" data-uid="${userId}" ${isDisabled}>삭제</button>
+          </td>
         `;
 
         userList.appendChild(tr);
@@ -1307,7 +1404,33 @@ function initPage() {
 
     } catch (error) {
       console.error("Load users failed:", error);
-      userList.innerHTML = `<tr><td colspan="5" class="table-empty">회원 데이터를 로드하지 못했습니다. (권한 오류 등)</td></tr>`;
+      userList.innerHTML = `<tr><td colspan="9" class="table-empty">회원 데이터를 로드하지 못했습니다. (권한 오류 등)</td></tr>`;
+    }
+  }
+
+  /**
+   * [한글 주석] 가입 회원 프로필 데이터 Firestore DB 완전 삭제 함수
+   * @param {string} targetUid - 삭제 대상 사용자의 UID
+   */
+  async function deleteUserAccount(targetUid) {
+    if (currentLoginUserRole !== "super_admin") {
+      alert("회원 삭제 권한이 없습니다. (최고 관리자 전용 기능)");
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, "users", targetUid);
+      await deleteDoc(userDocRef);
+      
+      if (typeof window.clearUserRoleCache === "function") {
+        window.clearUserRoleCache(targetUid);
+      }
+      
+      alert("회원 데이터가 성공적으로 삭제되었습니다.");
+      loadUsers();
+    } catch (error) {
+      console.error("User deletion failed:", error);
+      alert("회원 데이터 삭제 중 오류가 발생했습니다: " + error.message);
     }
   }
 
@@ -1656,9 +1779,18 @@ function initPage() {
     });
   }
 
-  // 회원 테이블 이벤트 바인딩 (등급 변경 버튼 클릭 위임 처리)
+  // 회원 테이블 이벤트 바인딩 (등급 변경 및 상세보기 버튼 클릭 위임 처리)
   if (userList) {
     userList.addEventListener("click", async (e) => {
+      // 1. 상세보기 버튼 클릭 처리
+      if (e.target.classList.contains("btn-user-detail")) {
+        const uid = e.target.getAttribute("data-uid");
+        if (uid && loadedUsersMap[uid]) {
+          showUserDetailModal(loadedUsersMap[uid]);
+        }
+      }
+
+      // 2. 등급 변경 버튼 클릭 처리
       if (e.target.classList.contains("btn-update-role")) {
         const targetUid = e.target.getAttribute("data-uid");
         const selectBox = document.getElementById(`select-role-${targetUid}`);
@@ -1671,6 +1803,18 @@ function initPage() {
             await updateUserRole(targetUid, newRole);
             e.target.disabled = false;
             e.target.textContent = originalText;
+          }
+        }
+      }
+
+      // 3. 회원 삭제 버튼 클릭 처리
+      if (e.target.classList.contains("btn-user-delete")) {
+        const targetUid = e.target.getAttribute("data-uid");
+        if (targetUid) {
+          if (confirm("해당 회원의 데이터를 Firestore DB에서 완전히 삭제하시겠습니까?\n삭제된 회원 데이터는 복구할 수 없습니다.")) {
+            e.target.disabled = true;
+            e.target.textContent = "삭제중...";
+            await deleteUserAccount(targetUid);
           }
         }
       }

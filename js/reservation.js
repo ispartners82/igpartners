@@ -1,5 +1,6 @@
 import { db, auth } from "./firebase-db.js?v=2.0.7";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 /**
  * 폼 라벨, 힌트문구, 모달 및 다국어 팝업 얼럿을 다각도로 처리하기 위한 사전 정의
@@ -995,6 +996,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // 돌아가기 버튼 클릭 이벤트
   btnBack.addEventListener("click", () => {
     location.href = "/booking-clinic.html";
+  });
+
+  // =========================================================================
+  // [한글 주석] 로그인 사용자 프로필 데이터를 예약 폼에 자동 입력해주는 연동 함수
+  // =========================================================================
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const uData = userDocSnap.data();
+          const inputName = document.getElementById("input-name");
+          const inputVisaType = document.getElementById("input-visa-type");
+          const inputAlienNo = document.getElementById("input-alien-no");
+          const inputVisaExpiry = document.getElementById("input-visa-expiry");
+          const inputDob = document.getElementById("input-dob");
+          const inputAddress = document.getElementById("input-address");
+          const inputPhone = document.getElementById("input-phone");
+
+          if (inputName && uData.name && !inputName.value) inputName.value = uData.name;
+          if (inputVisaType && uData.visaType && !inputVisaType.value) inputVisaType.value = uData.visaType;
+          if (inputAlienNo && uData.alienNo && !inputAlienNo.value) inputAlienNo.value = uData.alienNo;
+          if (inputVisaExpiry && uData.visaExpiry && !inputVisaExpiry.value) inputVisaExpiry.value = uData.visaExpiry;
+          if (inputDob && uData.dob && !inputDob.value) inputDob.value = uData.dob;
+          if (inputAddress && uData.address && !inputAddress.value) inputAddress.value = uData.address;
+          if (inputPhone && uData.phone && !inputPhone.value) inputPhone.value = uData.phone;
+          
+          console.log("로그인 회원 프로필 정보 예약 폼 자동 완성 완료:", user.uid);
+        }
+      } catch (err) {
+        console.error("예약 폼 프로필 정보 자동 채우기 중 예외 발생:", err);
+      }
+    }
   });
 
   // =========================================================================

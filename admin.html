@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260806_3)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260806_3">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260811_11)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260811_11">
 </head>
 
 <body>
@@ -227,10 +227,10 @@
     <div class="admin-tabs">
       <button id="tab-reservations" class="tab-btn active">예약 내역 관리</button>
       <button id="tab-clinics" class="tab-btn" style="display: none;">병원 관리</button>
+      <!-- 신규 추가: 광고 배너 CRUD 관리 탭 (병원 관리 바로 오른쪽 위치) -->
+      <button id="tab-ads" class="tab-btn" style="display: none;">광고 배너 관리</button>
       <button id="tab-users" class="tab-btn" style="display: none;">등급,권한 관리</button>
       <button id="tab-permissions" class="tab-btn" style="display: none;">회원 리스트</button>
-      <!-- 신규 추가: 광고 배너 CRUD 관리 탭 (권한이 활성화되었을 때만 노출) -->
-      <button id="tab-ads" class="tab-btn" style="display: none;">광고 배너 관리</button>
     </div>
 
     <!-- 예약 내역 관리 탭 콘텐츠 -->
@@ -417,10 +417,10 @@
                     <th>관리자</th>
                     <th>예약내역관리</th>
                     <th>병원관리</th>
+                    <!-- [한글 주석: 등급 권한 토글 제어를 위한 광고배너관리 열을 병원관리 바로 오른쪽으로 배치] -->
+                    <th>광고배너관리</th>
                     <th>등급권한관리</th>
                     <th>회원리스트</th>
-                    <!-- [한글 주석: 등급 권한 토글 제어를 위한 신규 광고배너관리 열 추가] -->
-                    <th>광고배너관리</th>
                     <th>예약통계</th>
                     <th>등급명 변경</th> <!-- 사용자 요청에 맞춰 '등급변경' 컬럼명으로 복원 -->
                   </tr>
@@ -470,16 +470,20 @@
           <table class="admin-table">
             <thead>
               <tr>
+                <th>국가(선호언어)</th>
                 <th>이름</th>
+                <th>연락처</th>
                 <th>이메일</th>
                 <th>가입일</th>
                 <th>현재 등급</th>
                 <th>등급 관리</th>
+                <th>상세보기</th>
+                <th>삭제</th>
               </tr>
             </thead>
             <tbody id="user-list">
               <tr>
-                <td colspan="5" class="table-loading">사용자 데이터를 불러오는 중입니다...</td>
+                <td colspan="9" class="table-loading">사용자 데이터를 불러오는 중입니다...</td>
               </tr>
             </tbody>
           </table>
@@ -784,10 +788,23 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260805_1)] -->
-  <script type="module" src="/js/navigation.js?v=260727_10"></script>
-  <script type="module" src="/js/admin.js?v=260727_6"></script>
-  <script type="module" src="/js/auth.js?v=260805_1"></script>
+  <!-- 회원 상세보기 모달 팝업 -->
+  <div id="user-detail-modal" class="auth-modal-backdrop" style="display: none;">
+    <div class="user-detail-card">
+      <button type="button" class="auth-modal-close" id="btn-close-user-detail-modal">&times;</button>
+      <h2 style="color: #00f3ff; font-size: 1.3rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(0, 243, 255, 0.2); padding-bottom: 0.5rem;">
+        👤 가입 회원 상세 정보
+      </h2>
+      <div id="user-detail-content" class="detail-grid">
+        <!-- js/admin.js에서 동적으로 바인딩됩니다 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260811_12)] -->
+  <script type="module" src="/js/navigation.js?v=260811_12"></script>
+  <script type="module" src="/js/admin.js?v=260811_12"></script>
+  <script type="module" src="/js/auth.js?v=260811_12"></script>
 </body>
 
 </html>
