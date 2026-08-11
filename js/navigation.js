@@ -73,6 +73,17 @@ function applyNavTranslations(langCode) {
   const t = MENU_TRANSLATIONS[langCode] || MENU_TRANSLATIONS.ko;
   const currentLang = LANG_LIST.find(l => l.code === langCode) || LANG_LIST[0];
 
+  // 0. [한글 주석] 긴 다국어(미얀마, 스리랑카, 캄보디아, 라오스, 네팔, 태국, 방글라데시) 컴팩트 모드 클래스 토글
+  const longLanguages = ['my', 'si', 'km', 'lo', 'ne', 'th', 'bn'];
+  const globalHeader = document.getElementById("global-header");
+  if (longLanguages.includes(langCode)) {
+    if (globalHeader) globalHeader.classList.add("lang-compact-mode");
+    document.body.classList.add("lang-compact-mode");
+  } else {
+    if (globalHeader) globalHeader.classList.remove("lang-compact-mode");
+    document.body.classList.remove("lang-compact-mode");
+  }
+
   // 1. 드롭다운 대표 텍스트 및 국기 아이콘 갱신
   const langTextEl = document.getElementById("nav-lang-selected-text");
   const langFlagEl = document.getElementById("nav-lang-selected-flag");

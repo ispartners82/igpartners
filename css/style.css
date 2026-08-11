@@ -2598,7 +2598,7 @@ body.modal-open {
   border-bottom: 1px solid rgba(139, 92, 246, 0.6); /* 밝고 신비로운 형광 퍼플 네온 실선 */
 }
 
-/* 중앙 정렬용 내부 컨테이너 (여유 가용 영역 확보 및 3단 밸런스 구도) */
+/* 상단 헤더 내부 통합 컨테이너 (모든 요소들이 화면 중앙을 기준으로 조화로운 균형 간격 형성) */
 .nav-container {
   width: 100%;
   max-width: 1440px;
@@ -2606,12 +2606,12 @@ body.modal-open {
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: center; /* 전체 구성 요소를 중앙 밸런스로 모아 로고 벌어짐 원천 차단 */
+  gap: clamp(0.75rem, 1.8vw, 2.2rem); /* 로고, 언어선택, 메뉴, 우측 버튼 간 유연한 황금 비율 간격 */
   position: relative;
 }
 
-/* 브랜드 로고 링크 (좌측 영역 고정) */
+/* 브랜드 로고 링크 (자연스러운 밸런스 배치) */
 .nav-brand {
   display: flex;
   align-items: center;
@@ -2619,11 +2619,11 @@ body.modal-open {
   text-decoration: none;
   color: var(--text-primary);
   font-weight: 800;
-  font-size: 1.55rem;
+  font-size: 1.5rem;
   letter-spacing: -0.5px;
   transition: var(--transition-smooth);
   white-space: nowrap;
-  flex: 0 0 auto; /* 좌측 영역 고정 */
+  flex: 0 0 auto;
 }
 
 .nav-brand:hover {
@@ -2643,32 +2643,44 @@ body.modal-open {
   -webkit-text-fill-color: transparent;
 }
 
-/* 중앙 네비게이션 메뉴 목록 (헤더 중앙 완벽 정렬 및 가변 폰트/간격 레이아웃 적용) */
+/* 중앙 네비게이션 메뉴 목록 */
 .nav-menu {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   list-style: none;
-  gap: clamp(0.35rem, 0.9vw, 1.1rem); /* 텍스트 길이에 맞춰 자동으로 간격 가변 조율 */
+  gap: clamp(0.35rem, 0.8vw, 1.1rem);
   align-items: center;
-  justify-content: center; /* 메뉴들이 헤더 전체의 완벽한 중앙에 위치하도록 보장 */
-  margin: 0 0.75rem;
+  justify-content: center;
+  margin: 0;
   padding: 0;
   transition: var(--transition-smooth);
-  max-width: 100%;
 }
 
-/* 메뉴 링크 스타일 (다국어 텍스트 길이에 반응하는 Fluid Typography 적용) */
+/* 메뉴 링크 스타일 */
 .nav-link {
   text-decoration: none;
   color: var(--text-secondary);
   font-weight: 600;
-  font-size: clamp(0.82rem, 0.9vw, 1.02rem); /* 텍스트 길이가 길어도 줄바꿈 및 오른쪽 쏠림 방지 */
+  font-size: clamp(0.85rem, 0.9vw, 1.05rem);
   padding: 0.4rem 0.65rem;
   border-radius: var(--radius-sm);
   transition: var(--transition-smooth);
   position: relative;
   white-space: nowrap;
   letter-spacing: -0.2px;
+}
+
+/* 긴 다국어 (미얀마, 스리랑카, 캄보디아, 라오스, 네팔, 태국, 방글라데시) 전용 컴팩트 모드 */
+.lang-compact-mode .nav-container {
+  gap: clamp(0.4rem, 1.2vw, 1.4rem) !important;
+}
+.lang-compact-mode .nav-link {
+  font-size: 0.83rem !important;
+  padding: 0.35rem 0.5rem !important;
+  letter-spacing: -0.3px !important;
+}
+.lang-compact-mode .nav-lang-text {
+  font-size: 0.82rem !important;
 }
   font-size: 1.1rem; /* 메뉴 링크 폰트 확대 */
   font-weight: 600; /* 가독성을 위해 굵기를 500 -> 600으로 보완 */
