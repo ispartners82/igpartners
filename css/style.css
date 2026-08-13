@@ -69,8 +69,9 @@ body {
   font-family: var(--font-display);
   min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column; /* [한글 주석: 모든 페이지에서 헤더 -> 본문 -> 푸터 세로 수직 정렬 보증] */
+  align-items: stretch;
+  justify-content: flex-start;
   overflow-x: hidden;
   position: relative;
 }
@@ -4789,6 +4790,489 @@ body.home-page {
   color: #f8fafc;
   font-weight: 500;
   word-break: break-all;
+}
+
+/* =========================================================================
+   [한글 주석] 로그인 회원 전용 상단 네비게이션 커뮤니티 메뉴 스타일
+   ========================================================================= */
+.nav-community-item {
+  display: none; /* [한글 주석: 기본 비로그인 상태 시 메뉴 숨김 처리] */
+}
+.nav-community-item.show,
+.nav-community-item.logged-in {
+  display: inline-block !important; /* [한글 주석: 로그인 확인 시 인라인 블록으로 노출] */
+}
+
+/* =========================================================================
+   [한글 주석] 네이버 카페 스타일 커뮤니티 레이아웃 & 게시판 폼 디자인 시스템
+   ========================================================================= */
+.cafe-layout-container {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 6.5rem 1.5rem 4rem; /* [한글 주석: 상단 고정 네비게이션 헤더(80px)에 콘텐츠가 가려지지 않도록 상단 패딩 104px 적용] */
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.75rem;
+}
+
+@media (max-width: 992px) {
+  .cafe-layout-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- 좌측 카페 사이드바 --- */
+.cafe-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cafe-profile-card {
+  background: linear-gradient(145deg, rgba(16, 24, 48, 0.9), rgba(8, 12, 28, 0.95));
+  border: 1px solid rgba(0, 243, 255, 0.15);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.cafe-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.cafe-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #00f3ff;
+  object-fit: cover;
+}
+
+.cafe-user-name {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.cafe-user-badge {
+  display: inline-block;
+  background: rgba(0, 243, 255, 0.15);
+  color: #00f3ff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+}
+
+.btn-cafe-write {
+  width: 100%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 0.5rem;
+}
+
+.btn-cafe-write:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}
+
+.cafe-menu-card {
+  background: linear-gradient(145deg, rgba(16, 24, 48, 0.9), rgba(8, 12, 28, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.cafe-menu-title {
+  color: #00f3ff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cafe-menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cafe-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cafe-menu-item:hover, .cafe-menu-item.active {
+  background: rgba(0, 243, 255, 0.12);
+  color: #ffffff;
+  border-left: 3px solid #00f3ff;
+}
+
+.cafe-menu-count {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* --- 우측 메인 영역 --- */
+.cafe-main-card {
+  background: linear-gradient(145deg, rgba(16, 24, 48, 0.9), rgba(8, 12, 28, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.cafe-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 2px solid rgba(0, 243, 255, 0.2);
+  margin-bottom: 1rem;
+}
+
+.cafe-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+}
+
+.cafe-board-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cafe-total-count {
+  font-size: 0.9rem;
+  color: #00f3ff;
+  font-weight: 600;
+}
+
+.cafe-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cafe-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cafe-select-perpage {
+  background: rgba(10, 15, 30, 0.8);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  color: #ffffff;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+/* --- 게시글 목록 테이블 --- */
+.cafe-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+.cafe-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.cafe-table th {
+  background: rgba(15, 23, 42, 0.8);
+  color: #94a3b8;
+  font-size: 0.83rem;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+}
+
+.cafe-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  vertical-align: middle;
+}
+
+.cafe-table tr:hover td {
+  background: rgba(0, 243, 255, 0.03);
+  color: #ffffff;
+}
+
+.cafe-post-no {
+  color: #64748b;
+  font-size: 0.82rem;
+  width: 60px;
+}
+
+.badge-must-read {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-right: 0.4rem;
+}
+
+.badge-notice {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-right: 0.4rem;
+}
+
+.badge-general {
+  background: rgba(0, 243, 255, 0.1);
+  color: #00f3ff;
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-right: 0.4rem;
+}
+
+.cafe-post-link {
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.cafe-post-link:hover {
+  color: #00f3ff;
+}
+
+.cafe-comment-cnt {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 0.82rem;
+  margin-left: 0.35rem;
+}
+
+.cafe-new-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  border-radius: 50%;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+}
+
+.cafe-author-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cafe-author-role {
+  font-size: 0.72rem;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+/* --- 하단 액션바 & 페이지네이션 & 검색 --- */
+.cafe-bottom-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.cafe-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.cafe-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 auto;
+}
+
+.page-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  min-width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover, .page-btn.active {
+  background: #00f3ff;
+  color: #080c1c;
+  border-color: #00f3ff;
+  font-weight: 800;
+}
+
+.cafe-search-container {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.cafe-search-select {
+  height: 42px;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  color: #ffffff;
+  padding: 0 0.85rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.cafe-search-input-wrap {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 400px;
+  height: 42px;
+}
+
+.cafe-search-input {
+  width: 100%;
+  height: 42px;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  padding: 0 0.85rem;
+  color: #ffffff;
+  font-size: 0.88rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.btn-cafe-search {
+  height: 42px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  border-radius: 0 10px 10px 0;
+  padding: 0 1.2rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  gap: 0.45rem;
+  box-sizing: border-box;
+}
+
+/* --- 글쓰기 에디터 폼 스타일 --- */
+.editor-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(0, 243, 255, 0.2);
+  border-radius: 10px;
+  padding: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.tb-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.tb-btn:hover {
+  background: rgba(0, 243, 255, 0.2);
+  color: #ffffff;
 }
 
 

@@ -716,15 +716,47 @@ document.addEventListener("DOMContentLoaded", () => {
       if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
       if (quickBtnLogin) quickBtnLogin.style.display = "none";
 
+      // [한글 주석: 로그인한 회원에게만 상단 '커뮤니티' 메뉴 노출 처리]
+      const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
+      communityMenuItems.forEach(item => {
+        item.style.display = "inline-block";
+        item.classList.add("logged-in");
+      });
+
       try {
         const userRole = await getCachedUserRole(user.uid);
         let isAdmin = false;
         let hasStats = false;
+        let roleLabel = "일반회원";
+
         if (userRole) {
           const perms = await getCachedRolePermissions(userRole);
           isAdmin = perms.isAdmin;
           hasStats = perms.hasStats;
+
+          // 역할 키별 한국어 명칭 동적 결정
+          try {
+            const roleDocSnap = await getDoc(doc(db, "roles", userRole));
+            if (roleDocSnap.exists() && roleDocSnap.data().label) {
+              roleLabel = roleDocSnap.data().label;
+            } else {
+              if (userRole === "super_admin") roleLabel = "최고관리자";
+              else if (userRole === "admin") roleLabel = "관리자";
+              else if (userRole === "partner") roleLabel = "협력사";
+              else if (userRole === "regular") roleLabel = "정회원";
+            }
+          } catch (rErr) {
+            if (userRole === "super_admin") roleLabel = "최고관리자";
+            else if (userRole === "admin") roleLabel = "관리자";
+            else if (userRole === "partner") roleLabel = "협력사";
+          }
         }
+
+        // 커뮤니티 전용 사이드바 프로필 실시간 동기화
+        const sidebarNameEl = document.getElementById("sidebar-user-name");
+        const sidebarBadgeEl = document.getElementById("sidebar-user-badge");
+        if (sidebarNameEl && displayName) sidebarNameEl.textContent = displayName;
+        if (sidebarBadgeEl) sidebarBadgeEl.textContent = roleLabel;
 
         const currentAdminBtn = document.getElementById("btn-admin-dashboard");
         const currentStatsBtn = document.getElementById("btn-stats-dashboard");
@@ -754,6 +786,13 @@ document.addEventListener("DOMContentLoaded", () => {
           btnLogin.textContent = "로그인";
         }
       }
+
+      // [한글 주석: 비로그인/로그아웃 상태 시 상단 '커뮤니티' 메뉴 숨김 처리]
+      const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
+      communityMenuItems.forEach(item => {
+        item.style.display = "none";
+        item.classList.remove("logged-in");
+      });
 
       if (quickBtnMyReservations) quickBtnMyReservations.style.display = "none";
       if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = "none";

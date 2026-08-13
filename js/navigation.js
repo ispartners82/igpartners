@@ -23,21 +23,21 @@ const LANG_LIST = [
  * [한글 주석: 상단 메뉴 항목별 15개국어 번역 딕셔너리 데이터베이스]
  */
 const MENU_TRANSLATIONS = {
-  ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '의료통역', booking: '진료 예약', partners: '협력 회사', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
-  ja: { langSelect: '言語選択', home: 'ホーム', about: '会社紹介', services: '提供サービス', interpretation: '医療通訳', booking: '診療予約', partners: 'パートナー', myRes: '📅 予約履歴', admin: '👑 管理者', stats: '📊 予約統計', logout: 'ログアウト', login: 'ログイン' },
-  vi: { langSelect: 'Chọn ngôn ngữ', home: 'Trang chủ', about: 'Giới thiệu', services: 'Dịch vụ', interpretation: 'Thông dịch y tế', booking: 'Đặt lịch khám', partners: 'Đối tác', myRes: '📅 Lịch đặt', admin: '👑 Quản trị', stats: '📊 Thống kê', logout: 'Đăng xuất', login: 'Đăng nhập' },
-  en: { langSelect: 'Language', home: 'Home', about: 'About Us', services: 'Services', interpretation: 'Medical Interpretation', booking: 'Book Appointment', partners: 'Partners', myRes: '📅 My Bookings', admin: '👑 Admin', stats: '📊 Stats', logout: 'Logout', login: 'Login' },
-  zh: { langSelect: '选择语言', home: '首页', about: '公司介绍', services: '服务项目', interpretation: '医疗翻译', booking: '预约诊疗', partners: '合作伙伴', myRes: '📅 预约记录', admin: '👑 管理员', stats: '📊 统计', logout: '退出', login: '登录' },
-  ru: { langSelect: 'Выбор языка', home: 'Главная', about: 'О компании', services: 'Услуги', interpretation: 'Мед. перевод', booking: 'Запись на прием', partners: 'Партнеры', myRes: '📅 Мои записи', admin: '👑 Админ', stats: '📊 Статистика', logout: 'Выйти', login: 'Войти' },
-  my: { langSelect: 'ဘာသာစကား', home: 'ပင်မစာမျက်နှာ', about: 'ကုမ္ပဏီအကြောင်း', services: 'ဝန်ဆောင်မှုများ', interpretation: 'ဆေးဘက်ဆိုင်ရာစကားပြန်', booking: 'ရက်ချိန်းယူရန်', partners: 'မိတ်ဖက်များ', myRes: '📅 ရက်ချိန်းများ', admin: '👑 အဓိက', stats: '📊 စာရင်းအင်း', logout: 'ထွက်ရန်', login: 'ဝင်ရောက်ရန်' },
-  km: { langSelect: 'ជ្រើសរើសភាសា', home: 'ទំព័រដើម', about: 'អំពីក្រុមហ៊ុន', services: 'សេវាកម្ម', interpretation: 'អ្នកបកប្រែវេជ្ជសាស្ត្រ', booking: 'កក់ការជួបពិភាក្សា', partners: 'ដៃគូ', myRes: '📅 ការកក់របស់ខ្ញុំ', admin: '👑 អ្នកគ្រប់គ្រង', stats: '📊 ស្ថិតិ', logout: 'ចាកចេញ', login: 'ចូល' },
-  mn: { langSelect: 'Хэл сонгох', home: 'Нүүр', about: 'Компанийн тухай', services: 'Үйлчилгээ', interpretation: 'Эмнэлгийн орчуулга', booking: 'Цаг захиалах', partners: 'Харилцагч', myRes: '📅 Миний захиалга', admin: '👑 Админ', stats: '📊 Статистик', logout: 'Гарах', login: 'Нэвтрэх' },
-  th: { langSelect: 'เลือกภาษา', home: 'หน้าแรก', about: 'เกี่ยวกับเรา', services: 'บริการ', interpretation: 'ล่ามการแพทย์', booking: 'นัดหมายแพทย์', partners: 'พันธมิตร', myRes: '📅 การนัดหมายของฉัน', admin: '👑 ผู้ดูแลระบบ', stats: '📊 สถิติ', logout: 'ออกจากระบบ', login: 'เข้าสู่ระบบ' },
-  lo: { langSelect: 'ເລືອກພາສາ', home: 'ໜ້າທຳອິດ', about: 'ກ່ຽວກັບພວກເຮົາ', services: 'ບໍລິການ', interpretation: 'ລ່າມການແພດ', booking: 'ນັດໝາຍ', partners: 'ພັນທະມິດ', myRes: '📅 ການນັດໝາຍຂອງຂ້ອຍ', admin: '👑 ຜູ້ดูแลระบบ', stats: '📊 ສະຖິຕິ', logout: 'ອອກຈາກລະບົບ', login: 'ເຂົ້າสู่ລະບົບ' },
-  ne: { langSelect: 'भाषा छान्नुहोस्', home: 'गृहपृष्ठ', about: 'हाम्रो बारेमा', services: 'सेवाहरू', interpretation: 'मेडिकल दोभाषे', booking: 'अपोइन्टमेन्ट', partners: 'भागीदारहरू', myRes: '📅 मेरो अपोइन्टमेन्ट', admin: '👑 प्रशासक', stats: '📊 तथ्याङ्क', logout: 'लगआउट', login: 'लगइन' },
-  id: { langSelect: 'Pilih Bahasa', home: 'Beranda', about: 'Tentang Kami', services: 'Layanan', interpretation: 'Penerjemah Medis', booking: 'Buat Janji', partners: 'Mitra', myRes: '📅 Janji Saya', admin: '👑 Admin', stats: '📊 Statistik', logout: 'Keluar', login: 'Masuk' },
-  si: { langSelect: 'භාෂාව තෝරන්න', home: 'මුල් පිටුව', about: 'අප ගැන', services: 'සේවා', interpretation: 'වෛද්‍ය පරිවර්තක', booking: 'වෙන්කරවා ගැනීම', partners: 'පාර්ශවකරුවන්', myRes: '📅 මගේ වෙන්කිරීම්', admin: '👑 පරිපාලක', stats: '📊 සංඛ්‍යාලේඛන', logout: 'ලොග්අවුට්', login: 'ලොගින්' },
-  bn: { langSelect: 'ভাষা নির্বাচন', home: 'হোম', about: 'আমাদের সম্পর্কে', services: 'সেবাসমূহ', interpretation: 'মেডিকেল দোভাষী', booking: 'অ্যাপয়েন্টমেন্ট', partners: 'পার্টনার', myRes: '📅 আমার বুকিং', admin: '👑 অ্যাডমিন', stats: '📊 পরিসংখ্যান', logout: 'লগআউট', login: 'লগইন' }
+  ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '의료통역', booking: '진료 예약', partners: '협력 회사', community: '커뮤니티', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
+  ja: { langSelect: '言語選択', home: 'ホーム', about: '会社紹介', services: '提供サービス', interpretation: '医療通訳', booking: '診療予約', partners: 'パートナー', community: 'コミュニティ', myRes: '📅 予約履歴', admin: '👑 관리자', stats: '📊 予約統計', logout: 'ログアウト', login: 'ログイン' },
+  vi: { langSelect: 'Chọn ngôn ngữ', home: 'Trang chủ', about: 'Giới thiệu', services: 'Dịch vụ', interpretation: 'Thông dịch y tế', booking: 'Đặt lịch khám', partners: 'Đối tác', community: 'Cộng đồng', myRes: '📅 Lịch đặt', admin: '👑 Quản trị', stats: '📊 Thống kê', logout: 'Đăng xuất', login: 'Đăng nhập' },
+  en: { langSelect: 'Language', home: 'Home', about: 'About Us', services: 'Services', interpretation: 'Medical Interpretation', booking: 'Book Appointment', partners: 'Partners', community: 'Community', myRes: '📅 My Bookings', admin: '👑 Admin', stats: '📊 Stats', logout: 'Logout', login: 'Login' },
+  zh: { langSelect: '选择语言', home: '首页', about: '公司介绍', services: '服务项目', interpretation: '医疗翻译', booking: '预约诊疗', partners: '合作伙伴', community: '社区', myRes: '📅 预约记录', admin: '👑 管理员', stats: '📊 统计', logout: '退出', login: '登录' },
+  ru: { langSelect: 'Выбор языка', home: 'Главная', about: 'О компании', services: 'Услуги', interpretation: 'Мед. перевод', booking: 'Запись на прием', partners: 'Партнеры', community: 'Сообщество', myRes: '📅 Мои записи', admin: '👑 Админ', stats: '📊 Статистика', logout: 'Выйти', login: 'Войти' },
+  my: { langSelect: 'ဘာသာစကား', home: 'ပင်မစာမျက်နှာ', about: 'ကုမ္ပဏီအကြောင်း', services: 'ဝန်ဆောင်မှုများ', interpretation: 'ဆေးဘက်ဆိုင်ရာစကားပြန်', booking: 'ရက်ချိန်းယူရန်', partners: 'မိတ်ဖက်များ', community: 'အသိုင်းအဝိုင်း', myRes: '📅 ရက်ချိန်းများ', admin: '👑 အဓိက', stats: '📊 စာရင်းအင်း', logout: 'ထွက်ရန်', login: 'ဝင်ရောက်ရန်' },
+  km: { langSelect: 'ជ្រើសរើសភាសា', home: 'ទំព័រដើម', about: 'អំពីក្រុមហ៊ុន', services: 'សេវាកម្ម', interpretation: 'អ្នកបកប្រែវេជ្ជសាស្ត្រ', booking: 'កក់ការជួបពិភាក្សា', partners: 'ដៃគូ', community: 'សហគមន៍', myRes: '📅 ការកក់របស់ខ្ញុំ', admin: '👑 អ្នកគ្រប់គ្រង', stats: '📊 ស្ថិតិ', logout: 'ចាកចេញ', login: 'ចូល' },
+  mn: { langSelect: 'Хэл сонгох', home: 'Нүүр', about: 'Компанийн тухай', services: 'Үйлчилгээ', interpretation: 'Эмнελгийн орчуулга', booking: 'Цаг захиалах', partners: 'Харилцагч', community: 'Бүлгэм', myRes: '📅 Миний захиалга', admin: '👑 Админ', stats: '📊 Статистик', logout: 'Гарах', login: 'Нэвтрэх' },
+  th: { langSelect: 'เลือกภาษา', home: 'หน้าแรก', about: 'เกี่ยวกับเรา', services: 'บริการ', interpretation: 'ล่ามการแพทย์', booking: 'นัดหมายแพทย์', partners: 'พันธมิตร', community: 'ชุมชน', myRes: '📅 การนัดหมายของฉัน', admin: '👑 ผู้ดูแลระบบ', stats: '📊 สถิติ', logout: 'ออกจากระบบ', login: 'เข้าสู่ระบบ' },
+  lo: { langSelect: 'ເລືອກພາສາ', home: 'ໜ້າທຳອິດ', about: 'ກ່ຽວກັບພວກເຮົາ', services: 'ບໍລິການ', interpretation: 'ລ່າມການແພດ', booking: 'ນັດໝາຍ', partners: 'ພັນທະມິດ', community: 'ຊຸມຊົນ', myRes: '📅 ການນັດໝາຍຂອງຂ້ອຍ', admin: '👑 ຜູ້ดูแลระบบ', stats: '📊 ສະຖິຕິ', logout: 'ອອກຈາກລະບົບ', login: 'ເຂົ້າสู่ລະບົບ' },
+  ne: { langSelect: 'भाषा छान्नुहोस्', home: 'गृहपृष्ठ', about: 'हाम्रो बारेमा', services: 'सेवाहरू', interpretation: 'मेडिकल दोभाषे', booking: 'अपोइन्टमेन्ट', partners: 'भागीदारहरू', community: 'समुदाय', myRes: '📅 मेरो अपोइन्टमेन्ट', admin: '👑 प्रशासक', stats: '📊 तथ्याङ्क', logout: 'लगआउट', login: 'लगइन' },
+  id: { langSelect: 'Pilih Bahasa', home: 'Beranda', about: 'Tentang Kami', services: 'Layanan', interpretation: 'Penerjemah Medis', booking: 'Buat Janji', partners: 'Mitra', community: 'Komunitas', myRes: '📅 Janji Saya', admin: '👑 Admin', stats: '📊 Statistik', logout: 'Keluar', login: 'Masuk' },
+  si: { langSelect: 'භාෂාව තෝරන්න', home: 'මුල් පිටුව', about: 'අප ගැන', services: 'සේවා', interpretation: 'වෛද්‍ය පරිවර්තක', booking: 'වෙන්කරවා ගැනීම', partners: 'පාර්ශවකරුවන්', community: 'ප්‍රජාව', myRes: '📅 මගේ වෙන්කිරීම්', admin: '👑 පරිපාලක', stats: '📊 සංඛ්‍යාලේඛන', logout: 'ලොග්අවුට්', login: 'ලොගින්' },
+  bn: { langSelect: 'ভাষা নির্বাচন', home: 'হোম', about: 'আমাদের সম্পর্কে', services: 'সেবাসমূহ', interpretation: 'মেডিকেল দোভাষী', booking: 'অ্যাপয়েন্টমেন্ট', partners: 'পার্টনার', community: 'কম্যুনিটি', myRes: '📅 আমার বুকিং', admin: '👑 অ্যাডমিন', stats: '📊 পরিসংখ্যান', logout: 'লগআউট', login: 'লগইন' }
 };
 
 /**
@@ -97,6 +97,7 @@ function applyNavTranslations(langCode) {
   const menuInterpretation = document.querySelector("#nav-menu a[href='/about.html#services'].btn-nav-booking");
   const menuBooking = document.querySelector("#nav-menu a[href='/booking-lang.html']");
   const menuPartners = document.querySelector("#nav-menu a[href='/index.html#partners']");
+  const menuCommunity = document.querySelector("#nav-menu a[href='/community.html']");
 
   if (menuHome) menuHome.textContent = t.home;
   if (menuAbout) menuAbout.textContent = t.about;
@@ -104,6 +105,7 @@ function applyNavTranslations(langCode) {
   if (menuInterpretation) menuInterpretation.textContent = t.interpretation;
   if (menuBooking) menuBooking.textContent = t.booking;
   if (menuPartners) menuPartners.textContent = t.partners;
+  if (menuCommunity) menuCommunity.textContent = t.community;
 
   // 3. 우측 인증 뱃지 및 액션 버튼 번역 적용
   const btnMyRes = document.getElementById("btn-my-reservations");
@@ -697,16 +699,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 2) 다른 뷰(.html)로 이동 시 상단 메뉴 파괴를 차단하고 SPA 동적 뷰 스위칭 실행!
-    if (targetPath.endsWith(".html") || targetPath === "/") {
-      e.preventDefault();
-      loadViewSeamlessly(targetPath, targetHash);
-    }
-  });
-
-  // 뒤로가기 / 앞으로가기 브라우저 버튼 대응
-  window.addEventListener("popstate", () => {
-    loadViewSeamlessly(window.location.pathname, window.location.hash);
+    // 2) 다른 HTML 페이지로 이동 시 브라우저 표준 고속 페이지 이동 수행 (페이지별 독립적인 body 클래스 및 DOM 구조 100% 보증)
+    // [한글 주석: AJAX 파싱 뷰 교체로 인한 body 클래스 유실 및 2단 카페 레이아웃 붕괴 현상을 원천 차단]
+    // 브라우저 기본 링크 이동 동작(native navigation)이 수행되도록 기본 이벤트를 방지하지 않습니다.
   });
 
   // [한글 주석: 동일 페이지 해시 이동(pushState) 시에도 탭 하이라이트가 누락 없이 스마트 동기화되도록 전역 hashchange 이벤트 연결]

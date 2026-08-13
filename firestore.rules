@@ -29,8 +29,14 @@ service cloud.firestore {
         getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"]
       );
       
-      // 예약 수정/삭제는 관리자 권한이 있는 경우만 가능
-      allow update, delete: if request.auth != null && 
+      // [한글 주석: 예약 수정은 본인 소유 예약(알림톡 상태 후속 기록용)이거나 관리자 권한이 있는 경우 허용]
+      allow update: if request.auth != null && (
+        resource.data.uid == request.auth.uid ||
+        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"]
+      );
+      
+      // [한글 주석: 예약 삭제는 관리자 권한이 있는 경우만 허용]
+      allow delete: if request.auth != null && 
         getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
     }
 
@@ -60,6 +66,17 @@ service cloud.firestore {
     match /settings/{settingId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && getUserRole() == "super_admin";
+    }
+
+    // [한글 주석: community_posts (회원전용 커뮤니티 게시판) 보안 규칙 - 누구나 읽기, 작성, 수정, 삭제 허용]
+    match /community_posts/{postId} {
+      allow read: if true; // [한글 주석: 커뮤니티 게시글 전체 읽기 허용]
+      allow create, update, delete, write: if true; // [한글 주석: 게시글 작성, 수정, 삭제 허용]
+    }
+
+    // [한글 주석: deleted_community_posts (삭제 게시글 백업 보관소) 보안 규칙 - 누구나 백업 생성 및 읽기 허용]
+    match /deleted_community_posts/{postId} {
+      allow read, create, update, delete, write: if true;
     }
   }
 }

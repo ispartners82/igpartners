@@ -191,19 +191,20 @@ function initPage() {
         statusBadgeClass = "badge-cancelled";
       }
 
-      // [한글 주석: 알림톡 상태 배지 생성]
+      // [한글 주석: 알림톡 상태 배지 생성 - success, sent 등 다양한 정상/실패 상태 대소문자 무관 안전 지원]
       let alimtalkBadgeText = "대기";
       let alimtalkBadgeClass = "badge-alimtalk-none";
       let alimtalkTitleAttr = "";
 
-      if (data.alimtalkStatus === "success") {
+      const statusLower = (data.alimtalkStatus || "").toLowerCase();
+      if (statusLower === "success" || statusLower === "sent" || statusLower === "ok") {
         alimtalkBadgeText = "발송성공";
         alimtalkBadgeClass = "badge-alimtalk-success";
-      } else if (data.alimtalkStatus === "fail") {
+      } else if (statusLower === "fail" || statusLower === "failed" || statusLower === "error") {
         alimtalkBadgeText = "발송실패";
         alimtalkBadgeClass = "badge-alimtalk-fail";
         alimtalkTitleAttr = `title="에러 원인: ${data.alimtalkError || '알 수 없는 오류'}"`;
-      } else if (data.alimtalkStatus === "not_configured") {
+      } else if (statusLower === "not_configured") {
         alimtalkBadgeText = "미설정";
         alimtalkBadgeClass = "badge-alimtalk-none";
         alimtalkTitleAttr = `title="안내: ${data.alimtalkError || '솔라피 API 연동 설정이 플레이스홀더 상태입니다.'}"`;
@@ -1197,81 +1198,94 @@ function initPage() {
   let loadedUsersMap = {};
 
   /**
-   * [한글 주석] 가입 회원 상세 정보 모달 표시 함수
+   * [한글 주석] 가입 회원 상세 정보 모달 표시 함수 (Firestore Timestamp 및 일반 날짜 포맷 안전 처리)
    * @param {Object} userData - 가입 회원의 12가지 상세 프로필 객체
    */
   function showUserDetailModal(userData) {
-    const modal = document.getElementById("user-detail-modal");
-    const content = document.getElementById("user-detail-content");
-    if (!modal || !content) return;
+    try {
+      const modal = document.getElementById("user-detail-modal");
+      const content = document.getElementById("user-detail-content");
+      if (!modal || !content) return;
 
-    const countryLangLabels = {
-      ko: "🇰🇷 대한민국 (한국어)",
-      vi: "🇻🇳 베트남 (Tiếng Việt)",
-      en: "🇺🇸 미국/기타 (English)",
-      zh: "🇨🇳 중국 (中文)",
-      ru: "🇷🇺 러시아 (Русский)",
-      mn: "🇲🇳 몽골 (Mongolian)"
-    };
+      const countryLangLabels = {
+        ko: "🇰🇷 대한민국 (한국어)",
+        vi: "🇻🇳 베트남 (Tiếng Việt)",
+        en: "🇺🇸 미국/기타 (English)",
+        zh: "🇨🇳 중국 (中文)",
+        ru: "🇷🇺 러시아 (Русский)",
+        mn: "🇲🇳 몽골 (Mongolian)"
+      };
 
-    let regDate = "-";
-    if (userData.createdAt) {
-      const d = new Date(userData.createdAt);
-      regDate = isNaN(d) ? "-" : d.toLocaleString("ko-KR");
+      let regDate = "-";
+      if (userData.createdAt) {
+        // [한글 주석: Firestore Timestamp 객체, Date 객체, 숫자/문자열 날짜 형식 유연 지원]
+        let d = null;
+        if (typeof userData.createdAt.toDate === "function") {
+          d = userData.createdAt.toDate();
+        } else if (userData.createdAt.seconds) {
+          d = new Date(userData.createdAt.seconds * 1000);
+        } else {
+          d = new Date(userData.createdAt);
+        }
+        regDate = (d && !isNaN(d.getTime())) ? d.toLocaleString("ko-KR") : "-";
+      }
+
+      content.innerHTML = `
+        <div class="detail-item">
+          <div class="detail-label">아이디 (ID)</div>
+          <div class="detail-value">${userData.loginId || userData.id || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">이메일 (Email)</div>
+          <div class="detail-value">${userData.email || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">이름 (여권 영문 성명)</div>
+          <div class="detail-value">${userData.name || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">국가 (선호언어)</div>
+          <div class="detail-value">${countryLangLabels[userData.countryLanguage] || userData.countryLanguage || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">생년월일</div>
+          <div class="detail-value">${userData.dob || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">외국인등록번호(주민번호)</div>
+          <div class="detail-value">${userData.alienNo || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">연락처</div>
+          <div class="detail-value">${userData.phone || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">비자 타입</div>
+          <div class="detail-value">${userData.visaType || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">체류(비자) 만료일</div>
+          <div class="detail-value">${userData.visaExpiry || "-"}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">현재 등급</div>
+          <div class="detail-value">${rolesCache[userData.role] || userData.role || "일반 회원"}</div>
+        </div>
+        <div class="detail-item detail-item-full">
+          <div class="detail-label">현재 체류 주소</div>
+          <div class="detail-value">${userData.address || "-"}</div>
+        </div>
+        <div class="detail-item detail-item-full">
+          <div class="detail-label">가입 일자</div>
+          <div class="detail-value">${regDate}</div>
+        </div>
+      `;
+
+      modal.style.display = "flex";
+    } catch (error) {
+      console.error("Show user detail modal failed:", error);
+      alert("회원 상세 정보를 모달에 표시하는 중 오류가 발생했습니다.");
     }
-
-    content.innerHTML = `
-      <div class="detail-item">
-        <div class="detail-label">아이디 (ID)</div>
-        <div class="detail-value">${userData.loginId || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">이메일 (Email)</div>
-        <div class="detail-value">${userData.email || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">이름 (여권 영문 성명)</div>
-        <div class="detail-value">${userData.name || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">국가 (선호언어)</div>
-        <div class="detail-value">${countryLangLabels[userData.countryLanguage] || userData.countryLanguage || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">생년월일</div>
-        <div class="detail-value">${userData.dob || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">외국인등록번호(주민번호)</div>
-        <div class="detail-value">${userData.alienNo || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">연락처</div>
-        <div class="detail-value">${userData.phone || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">비자 타입</div>
-        <div class="detail-value">${userData.visaType || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">체류(비자) 만료일</div>
-        <div class="detail-value">${userData.visaExpiry || "-"}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">현재 등급</div>
-        <div class="detail-value">${rolesCache[userData.role] || userData.role || "일반 회원"}</div>
-      </div>
-      <div class="detail-item detail-item-full">
-        <div class="detail-label">현재 체류 주소</div>
-        <div class="detail-value">${userData.address || "-"}</div>
-      </div>
-      <div class="detail-item detail-item-full">
-        <div class="detail-label">가입 일자</div>
-        <div class="detail-value">${regDate}</div>
-      </div>
-    `;
-
-    modal.style.display = "flex";
   }
 
   // 모달 닫기 이벤트 핸들러 바인딩
@@ -1313,9 +1327,10 @@ function initPage() {
       userList.innerHTML = "";
       loadedUsersMap = {};
 
+      // [한글 주석: Firestore 데이터 내부에 id 필드가 존재하더라도 docSnap.id(문서 식별자)가 덮어씌워지지 않도록 정합성 보장]
       let rawUsers = [];
       querySnapshot.forEach((docSnap) => {
-        const uData = { id: docSnap.id, ...docSnap.data() };
+        const uData = { ...docSnap.data(), id: docSnap.id, uid: docSnap.id };
         rawUsers.push(uData);
         loadedUsersMap[docSnap.id] = uData;
       });
@@ -1345,12 +1360,20 @@ function initPage() {
 
         let registerDate = "-";
         if (userData.createdAt) {
-          const dateObj = new Date(userData.createdAt);
-          registerDate = isNaN(dateObj) ? "-" : dateObj.toLocaleDateString("ko-KR", {
+          // [한글 주석: Timestamp 객체 및 일반 Date 포맷 안전 변환]
+          let dateObj = null;
+          if (typeof userData.createdAt.toDate === "function") {
+            dateObj = userData.createdAt.toDate();
+          } else if (userData.createdAt.seconds) {
+            dateObj = new Date(userData.createdAt.seconds * 1000);
+          } else {
+            dateObj = new Date(userData.createdAt);
+          }
+          registerDate = (dateObj && !isNaN(dateObj.getTime())) ? dateObj.toLocaleDateString("ko-KR", {
             year: "numeric",
             month: "short",
             day: "numeric"
-          });
+          }) : "-";
         }
 
         const currentRoleLabel = rolesCache[userData.role] || userData.role || "일반 회원";
@@ -1782,11 +1805,30 @@ function initPage() {
   // 회원 테이블 이벤트 바인딩 (등급 변경 및 상세보기 버튼 클릭 위임 처리)
   if (userList) {
     userList.addEventListener("click", async (e) => {
-      // 1. 상세보기 버튼 클릭 처리
-      if (e.target.classList.contains("btn-user-detail")) {
-        const uid = e.target.getAttribute("data-uid");
-        if (uid && loadedUsersMap[uid]) {
-          showUserDetailModal(loadedUsersMap[uid]);
+      // 1. 상세보기 버튼 클릭 처리 (e.target.closest를 활용해 캡처 안정성 확보 및 Fallback 조회 추가)
+      const detailBtn = e.target.closest(".btn-user-detail");
+      if (detailBtn) {
+        const uid = detailBtn.getAttribute("data-uid");
+        if (uid) {
+          if (loadedUsersMap[uid]) {
+            showUserDetailModal(loadedUsersMap[uid]);
+          } else {
+            // [한글 주석: 메모리 맵에 해당 회원 정보가 없는 경우 Firestore 직접 조회를 통한 Fallback 보장]
+            try {
+              const userDocRef = doc(db, "users", uid);
+              const userDocSnap = await getDoc(userDocRef);
+              if (userDocSnap.exists()) {
+                const fetchedUserData = { ...userDocSnap.data(), id: userDocSnap.id, uid: userDocSnap.id };
+                loadedUsersMap[uid] = fetchedUserData;
+                showUserDetailModal(fetchedUserData);
+              } else {
+                alert("해당 회원의 상세 정보 데이터를 찾을 수 없습니다.");
+              }
+            } catch (fallbackError) {
+              console.error("Fallback load user detail failed:", fallbackError);
+              alert("회원 상세 정보를 불러오는 중 오류가 발생했습니다.");
+            }
+          }
         }
       }
 

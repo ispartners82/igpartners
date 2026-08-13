@@ -1109,8 +1109,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // Firestore에 예약 데이터 저장 (선택된 예약언어 정보 lang 필드 매핑)
-      const docRef = await addDoc(collection(db, "reservations"), {
+      // [한글 주석: 예약 알림톡 선발송 - 솔라피 API를 통해 알림톡을 전송하고 발송 상태 결과를 사전에 획득함]
+      const alimtalkResult = await sendSolapiAlimtalk(
+        currentLang, // 선택언어
+        name,        // 이름
+        selectedClinicLocalized || selectedClinic, // 선택병원
+        gender,      // 성별
+        visaType,    // 비자타입
+        dob,         // 생년월일
+        reservationDate, // 예약희망일
+        symptoms,    // 증상
+        address,     // 주소
+        phone        // 연락처
+      );
+
+      // [한글 주석: Firestore에 예약 데이터 저장 - alimtalkStatus 및 alimtalkError를 문서 최초 생성 시 원자적(Atomic)으로 저장하여 단일 트랜잭션 기록 완료]
+      const reservationPayload = {
         uid: userUid,
         clinic: selectedClinic, // 영문 식별 병원명 저장
         name: name,
@@ -1127,26 +1141,15 @@ document.addEventListener("DOMContentLoaded", () => {
         phone: phone,
         lang: currentLang, // 예약 진행 언어셋
         status: "pending",
+        alimtalkStatus: alimtalkResult ? alimtalkResult.status : "fail",
+        alimtalkError: (alimtalkResult && alimtalkResult.error) ? alimtalkResult.error : null,
         createdAt: serverTimestamp()
-      });
+      };
 
-      console.log("Reservation recorded with ID: ", docRef.id);
+      const docRef = await addDoc(collection(db, "reservations"), reservationPayload);
+      console.log("Reservation recorded with ID: ", docRef.id, "alimtalkStatus:", reservationPayload.alimtalkStatus);
 
-      // [한글 주석: 예약 신청 완료 후, 입력된 정보를 기반으로 솔라피 API를 통해 관리자 알림톡(CTA) 자동 다중 전송 실행]
-      const alimtalkResult = await sendSolapiAlimtalk(
-        currentLang, // 선택언어
-        name,        // 이름
-        selectedClinicLocalized || selectedClinic, // 선택병원
-        gender,      // 성별
-        visaType,    // 비자타입
-        dob,         // 생년월일
-        reservationDate, // 예약희망일
-        symptoms,    // 증상
-        address,     // 주소
-        phone        // 연락처
-      );
-
-      // [한글 주석: 예약 알림톡 발송 결과를 Firestore 예약 문서에 업데이트 기록]
+      // [한글 주석: 백업용 후속 문서 업데이트 로직 - 단일 기록 성공 후 동기화 보장]
       if (alimtalkResult) {
         try {
           const updateData = {
@@ -1157,9 +1160,9 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           const docDocRef = doc(db, "reservations", docRef.id);
           await updateDoc(docDocRef, updateData);
-          console.log("Firestore 예약 문서에 알림톡 상태 기록 완료:", updateData);
+          console.log("Firestore 예약 문서에 알림톡 상태 보조 업데이트 완료:", updateData);
         } catch (updateErr) {
-          console.error("Firestore에 알림톡 발송 상태를 기록하는 중 에러 발생:", updateErr);
+          console.log("Firestore 보조 업데이트 건너뜀 (이미 addDoc에 원자적 기록됨):", updateErr.message);
         }
       }
 
