@@ -5275,4 +5275,408 @@ body.home-page {
   color: #ffffff;
 }
 
+/* --- [한글 주석: 게시판 모바일 반응형 카드리스트 레이아웃 스타일] --- */
+/* [한글 주석: 기본 데스크톱 환경에서는 모바일 메타 영역을 숨김] */
+.cafe-mobile-meta {
+  display: none;
+}
+
+.cafe-title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* [한글 주석: 모바일 화면 (768px 이하) 전용 반응형 카드리스트 전환] */
+@media (max-width: 768px) {
+  /* [한글 주석: 모바일에서 테이블 헤더 숨김] */
+  .cafe-table thead {
+    display: none;
+  }
+
+  /* [한글 주석: 테이블 구성요소를 블록/플렉스 구조로 변경하여 카드 형태 생성] */
+  .cafe-table,
+  .cafe-table tbody,
+  .cafe-table tr,
+  .cafe-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* [한글 주석: 각 게시글 행 카드 스타일 지정] */
+  .cafe-table tr {
+    padding: 0.85rem 0.65rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.2s;
+  }
+
+  /* [한글 주석: 데스크톱 전용 4개 컬럼(번호, 작성자, 작성일, 조회수) 모바일 숨김] */
+  .cafe-col-no,
+  .cafe-col-author,
+  .cafe-col-date,
+  .cafe-col-views {
+    display: none !important;
+  }
+
+  /* [한글 주석: 제목 셀을 카드 전체 레이아웃 용도로 활용] */
+  .cafe-col-title {
+    padding: 0 !important;
+    border-bottom: none !important;
+  }
+
+  /* [한글 주석: 1번째 줄 - 제목 라인 (한 줄 고정 및 overflow ellipsis 말줄임)] */
+  .cafe-title-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    gap: 0.35rem;
+  }
+
+  .cafe-title-line .cafe-post-link {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  /* [한글 주석: 2번째 줄 - 모바일 전용 메타 정보 (작성자 / 작성일 / 조회수)] */
+  .cafe-mobile-meta {
+    display: flex !important;
+    align-items: center;
+    gap: 0.4rem;
+    color: #64748b;
+    font-size: 0.78rem;
+    margin-top: 0.4rem;
+    flex-wrap: nowrap;
+  }
+
+  .cafe-mobile-meta .meta-author {
+    color: #cbd5e1;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+  }
+
+  .cafe-mobile-meta .meta-divider {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.7rem;
+  }
+
+  .cafe-mobile-meta .meta-date,
+  .cafe-mobile-meta .meta-views {
+    color: #64748b;
+    white-space: nowrap;
+  }
+}
+
+/* ==========================================================================
+   [한글 주석: 네이버 카페 스타일 커뮤니티 댓글 & 대댓글(답글) 디자인 시스템]
+   ========================================================================== */
+.cafe-comment-section {
+  margin-top: 2rem;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* [한글 주석: 댓글 상단 헤더 바 (댓글 수 및 새로고침 버튼)] */
+.cafe-comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.comment-header-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comment-count-num {
+  color: #00f3ff;
+  font-weight: 800;
+}
+
+.btn-refresh-comments {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s;
+}
+
+.btn-refresh-comments:hover {
+  background: rgba(0, 243, 255, 0.15);
+  color: #00f3ff;
+  border-color: rgba(0, 243, 255, 0.3);
+}
+
+/* [한글 주석: 댓글 목록 컨테이너] */
+.cafe-comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.comment-empty-msg,
+.comment-loading-msg {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #64748b;
+  font-size: 0.92rem;
+  background: rgba(10, 15, 30, 0.4);
+  border-radius: 10px;
+}
+
+/* [한글 주석: 개별 댓글 카드 아이템] */
+.cafe-comment-item {
+  background: rgba(10, 15, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+  transition: background 0.2s, border-color 0.2s;
+  position: relative;
+}
+
+.cafe-comment-item:hover {
+  background: rgba(10, 15, 30, 0.95);
+  border-color: rgba(0, 243, 255, 0.15);
+}
+
+/* [한글 주석: 네이버 카페 스타일 대댓글(답글) 들여쓰기 및 시각적 계층 구조] */
+.cafe-comment-item.is-reply {
+  margin-left: 2rem;
+  background: rgba(15, 23, 42, 0.85);
+  border-left: 3px solid #00f3ff;
+}
+
+.comment-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.comment-author-info {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.comment-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  object-fit: cover;
+}
+
+.comment-author-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #f1f5f9;
+}
+
+.comment-role-badge {
+  font-size: 0.7rem;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.comment-role-badge.author {
+  color: #00f3ff;
+  background: rgba(0, 243, 255, 0.15);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+}
+
+.comment-date {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.comment-content-body {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #cbd5e1;
+  margin-top: 0.6rem;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* [한글 주석: 댓글 하단 버튼 바 (답글달기, 삭제)] */
+.comment-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.btn-comment-action {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-comment-action:hover {
+  color: #00f3ff;
+  background: rgba(0, 243, 255, 0.08);
+}
+
+.btn-comment-action.delete:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* [한글 주석: 대댓글(답글) 작성 인라인 폼 컨테이너] */
+.cafe-reply-form-wrap {
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  background: rgba(10, 15, 30, 0.95);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  border-radius: 8px;
+}
+
+/* [한글 주석: 메인 댓글 작성 상자] */
+.cafe-comment-form-box {
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  border-radius: 12px;
+  padding: 1.15rem;
+}
+
+.comment-form-author-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.cafe-comment-textarea {
+  width: 100%;
+  min-height: 80px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  color: #ffffff;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.cafe-comment-textarea:focus {
+  border-color: #00f3ff;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+}
+
+.cafe-comment-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.65rem;
+}
+
+.btn-comment-submit {
+  background: linear-gradient(135deg, #00f3ff 0%, #0284c7 100%);
+  color: #080c1c;
+  border: none;
+  padding: 0.45rem 1.35rem;
+  font-weight: 800;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-comment-submit:hover {
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* [한글 주석: 비로그인 사용자용 댓글 로그인 유도 배너] */
+.cafe-comment-login-prompt {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px dashed rgba(0, 243, 255, 0.35);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.btn-login-inline-trigger {
+  color: #00f3ff;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-decoration: underline;
+  margin-left: 0.4rem;
+  font-size: 0.92rem;
+}
+
+.btn-login-inline-trigger:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .cafe-comment-section {
+    padding: 1rem 0.85rem;
+  }
+  .cafe-comment-item.is-reply {
+    margin-left: 1rem;
+  }
+}
+
+
+
 

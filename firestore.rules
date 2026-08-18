@@ -68,10 +68,10 @@ service cloud.firestore {
       allow write: if request.auth != null && getUserRole() == "super_admin";
     }
 
-    // [한글 주석: community_posts (회원전용 커뮤니티 게시판) 보안 규칙 - 누구나 읽기, 작성, 수정, 삭제 허용]
-    match /community_posts/{postId} {
-      allow read: if true; // [한글 주석: 커뮤니티 게시글 전체 읽기 허용]
-      allow create, update, delete, write: if true; // [한글 주석: 게시글 작성, 수정, 삭제 허용]
+    // [한글 주석: community_posts (커뮤니티 게시판 및 하위 comments 댓글 서브컬렉션) 보안 규칙 - 누구나 읽기, 작성, 수정, 삭제 허용]
+    match /community_posts/{postId}/{document=**} {
+      allow read: if true; // [한글 주석: 커뮤니티 게시글 및 댓글 전체 읽기 허용]
+      allow create, update, delete, write: if true; // [한글 주석: 게시글 및 댓글 작성, 수정, 삭제 허용]
     }
 
     // [한글 주석: deleted_community_posts (삭제 게시글 백업 보관소) 보안 규칙 - 누구나 백업 생성 및 읽기 허용]

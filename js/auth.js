@@ -787,10 +787,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // [한글 주석: 비로그인/로그아웃 상태 시 상단 '커뮤니티' 메뉴 숨김 처리]
+      // [한글 주석: 비로그인/로그아웃 상태 시에도 상단 '커뮤니티' 메뉴는 항상 노출되도록 유지]
       const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
       communityMenuItems.forEach(item => {
-        item.style.display = "none";
+        item.style.display = "inline-block";
         item.classList.remove("logged-in");
       });
 

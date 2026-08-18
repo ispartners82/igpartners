@@ -108,18 +108,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1. 페이지 로드 즉시 다이렉트로 단 한 번 게시글 3개 최우선 1순위 로드
   fetchCommunityPosts();
 
-  // 2. Auth 로그인 세션 수신 - 오직 프로필 사이드바 텍스트만 업데이트 (중복 쿼리 제거)
+  // 2. Auth 로그인 세션 수신 - 비로그인 시에도 커뮤니티 목록 및 글 열람은 상시 허용
   onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      if (guardOverlay) guardOverlay.style.display = "none";
-      if (mainContent) mainContent.style.display = "grid";
+    // [한글 주석: 비로그인 회원도 커뮤니티 목록 및 글을 자유롭게 열람할 수 있도록 메인 콘텐츠를 상시 표시]
+    if (guardOverlay) guardOverlay.style.display = "none";
+    if (mainContent) mainContent.style.display = "grid";
 
+    const photoEl = document.getElementById("sidebar-user-photo");
+    const nameEl = document.getElementById("sidebar-user-name");
+    const badgeEl = document.getElementById("sidebar-user-badge");
+
+    if (user) {
       window.currentUserUid = user.uid;
       window.currentUserRole = "user";
-
-      const photoEl = document.getElementById("sidebar-user-photo");
-      const nameEl = document.getElementById("sidebar-user-name");
-      const badgeEl = document.getElementById("sidebar-user-badge");
 
       if (photoEl && user.photoURL) photoEl.src = user.photoURL;
 
@@ -145,8 +146,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (nameEl) nameEl.textContent = userName;
       if (badgeEl) badgeEl.textContent = userTier;
     } else {
-      if (guardOverlay) guardOverlay.style.display = "block";
-      if (mainContent) mainContent.style.display = "none";
+      // [한글 주석: 비로그인 방문자일 때 프로필 카드 안내 처리]
+      window.currentUserUid = "";
+      window.currentUserRole = "";
+      if (photoEl) photoEl.src = "https://lh3.googleusercontent.com/a/default-user=s96-c";
+      if (nameEl) nameEl.textContent = "방문자님";
+      if (badgeEl) badgeEl.textContent = "로그인 필요";
     }
   });
 
@@ -356,27 +361,51 @@ function renderCommunityTable() {
     const commentHtml = post.commentCount > 0 ? `<span class="cafe-comment-cnt">[${post.commentCount}]</span>` : "";
     const newHtml = post.isNew ? `<span class="cafe-new-icon">N</span>` : "";
 
+    // [한글 주석: 게시글 목록 테이블 행 생성 - 반응형 카드리스트 레이아웃 지원을 위한 모바일 메타 영역 및 클래스 적용]
     return `
       <tr>
-        <td class="cafe-post-no">${displayNo}</td>
-        <td>
-          ${badgeHtml}
-          ${secretBadge}
-          <a href="#" class="cafe-post-link" onclick="window.showCafeDetailSection(${globalIdx}); return false;">
-            ${escapeHtml(post.title)}
-          </a>
-          ${mediaBadges}
-          ${commentHtml}
-          ${newHtml}
+        <!-- [한글 주석: 데스크톱 글 번호 컬럼 (모바일 768px 이하 숨김)] -->
+        <td class="cafe-col-no cafe-post-no">${displayNo}</td>
+        
+        <!-- [한글 주석: 글 제목 컬럼 (모바일 768px 이하에서는 카드리스트 전체 영역 역할)] -->
+        <td class="cafe-col-title">
+          <div class="cafe-title-line">
+            ${badgeHtml}
+            ${secretBadge}
+            <a href="#" class="cafe-post-link" onclick="window.showCafeDetailSection(${globalIdx}); return false;">
+              ${escapeHtml(post.title)}
+            </a>
+            ${mediaBadges}
+            ${commentHtml}
+            ${newHtml}
+          </div>
+          
+          <!-- [한글 주석: 모바일 전용 2번째 줄 메타 정보 영역 (768px 이하에서만 표시)] -->
+          <div class="cafe-mobile-meta">
+            <span class="meta-author">
+              ${escapeHtml(post.authorName)}
+              <span class="cafe-author-role">${post.authorRole || "U"}</span>
+            </span>
+            <span class="meta-divider">·</span>
+            <span class="meta-date">${post.date}</span>
+            <span class="meta-divider">·</span>
+            <span class="meta-views">조회 ${post.views}</span>
+          </div>
         </td>
-        <td>
+        
+        <!-- [한글 주석: 데스크톱 전용 작성자 컬럼 (모바일 768px 이하 숨김)] -->
+        <td class="cafe-col-author">
           <div class="cafe-author-box">
             <span>${escapeHtml(post.authorName)}</span>
             <span class="cafe-author-role">${post.authorRole || "U"}</span>
           </div>
         </td>
-        <td style="color: #64748b;">${post.date}</td>
-        <td style="color: #64748b;">${post.views}</td>
+        
+        <!-- [한글 주석: 데스크톱 전용 작성일 컬럼 (모바일 768px 이하 숨김)] -->
+        <td class="cafe-col-date" style="color: #64748b;">${post.date}</td>
+        
+        <!-- [한글 주석: 데스크톱 전용 조회수 컬럼 (모바일 768px 이하 숨김)] -->
+        <td class="cafe-col-views" style="color: #64748b;">${post.views}</td>
       </tr>
     `;
   }).join("");
@@ -599,6 +628,29 @@ function showCafeDetailSection(postIndex) {
       ${tagsHtml}
     </div>
 
+    <!-- [한글 주석: 네이버 카페 스타일 댓글 시스템 섹션] -->
+    <div class="cafe-comment-section" id="cafe-comment-section">
+      <!-- 댓글 상단 헤더 (댓글 수 및 새로고침 버튼) -->
+      <div class="cafe-comment-header">
+        <div class="comment-header-title">
+          <i class="fa-regular fa-comment-dots" style="color: #00f3ff;"></i> 댓글 <span id="detail-comment-count" class="comment-count-num">${post.commentCount || 0}</span>
+        </div>
+        <button type="button" class="btn-refresh-comments" onclick="window.loadPostComments('${post.id || ''}', ${postIndex})" title="댓글 새로고침">
+          <i class="fa-solid fa-rotate-right"></i> 새로고침
+        </button>
+      </div>
+
+      <!-- 댓글 목록 컨테이너 -->
+      <div class="cafe-comment-list" id="cafe-comment-list">
+        <div class="comment-loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> 댓글을 불러오는 중입니다...</div>
+      </div>
+
+      <!-- 메인 댓글 작성 폼 박스 -->
+      <div class="cafe-comment-form-box" id="cafe-comment-form-box">
+        <!-- renderCommentForm()에서 로그인 상태에 맞춰 렌더링 -->
+      </div>
+    </div>
+
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; gap: 0.75rem;">
       <button type="button" onclick="showCafeListSection()" class="btn-action cancel"
         style="padding: 0.6rem 1.4rem; font-size: 0.92rem; border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.1); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 0.4rem;">
@@ -614,11 +666,373 @@ function showCafeDetailSection(postIndex) {
     </div>
   `;
 
+  // [한글 주석: 상세 화면 진입 시 해당 게시글의 댓글 목록 및 작성 폼 비동기 로딩]
+  loadPostComments(post.id || "", postIndex);
+
   const mainCard = document.querySelector(".cafe-main-card");
   if (mainCard) mainCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/**
+ * [한글 주석: 네이버 카페 스타일 게시글 댓글/대댓글 실시간 로딩 및 렌더링 함수]
+ */
+async function loadPostComments(postId, postIndex) {
+  const commentListEl = document.getElementById("cafe-comment-list");
+  const countEl = document.getElementById("detail-comment-count");
+  if (!commentListEl) return;
+
+  const post = window.combinedPosts ? window.combinedPosts[postIndex] : null;
+  const currentUid = auth.currentUser ? auth.currentUser.uid : (window.currentUserUid || "");
+  const sidebarNameEl = document.getElementById("sidebar-user-name");
+  const sidebarRoleBadgeEl = document.getElementById("sidebar-user-badge");
+  const currentUserName = sidebarNameEl ? sidebarNameEl.textContent.trim() : "";
+  const currentUserBadge = sidebarRoleBadgeEl ? sidebarRoleBadgeEl.textContent.trim() : "";
+  const userRole = (window.currentUserRole || "").toLowerCase();
+  const allowedAdminRoles = ["super_admin", "admin", "admin_user"];
+  const isAllowedAdmin = allowedAdminRoles.includes(userRole) ||
+                         currentUserBadge.includes("관리자") ||
+                         currentUserBadge.includes("최고관리자") ||
+                         currentUserName === "최고관리자" ||
+                         currentUserName === "관리자";
+
+  let comments = [];
+
+  if (postId && !postId.startsWith("local-")) {
+    try {
+      const commentsRef = collection(db, "community_posts", postId, "comments");
+      const snap = await getDocs(commentsRef);
+      snap.forEach(d => {
+        comments.push({ id: d.id, ...d.data() });
+      });
+
+      // 등록순으로 정렬
+      comments.sort((a, b) => {
+        const timeA = a.createdAtMs || (a.createdAt && a.createdAt.seconds ? a.createdAt.seconds * 1000 : 0) || 0;
+        const timeB = b.createdAtMs || (b.createdAt && b.createdAt.seconds ? b.createdAt.seconds * 1000 : 0) || 0;
+        return timeA - timeB;
+      });
+    } catch (err) {
+      console.warn("댓글 불러오기 실패 (로컬 메모리 확인):", err);
+      comments = (post && post.comments) ? post.comments : [];
+    }
+  } else {
+    comments = (post && post.comments) ? post.comments : [];
+  }
+
+  // 총 댓글 수 업데이트
+  const totalComments = comments.length;
+  if (countEl) countEl.textContent = totalComments;
+  if (post) {
+    post.commentCount = totalComments;
+    if (typeof window.renderCommunityTable === "function") {
+      window.renderCommunityTable();
+    }
+  }
+
+  if (comments.length === 0) {
+    commentListEl.innerHTML = `
+      <div class="comment-empty-msg">
+        등록된 댓글이 없습니다. 첫 번째 댓글을 남겨보세요!
+      </div>
+    `;
+    renderCommentForm(postId, postIndex);
+    return;
+  }
+
+  // [한글 주석: 부모 댓글과 대댓글(답글) 구조 분리]
+  const rootComments = comments.filter(c => !c.parentId);
+  const replyMap = {};
+  comments.filter(c => c.parentId).forEach(r => {
+    if (!replyMap[r.parentId]) replyMap[r.parentId] = [];
+    replyMap[r.parentId].push(r);
+  });
+
+  let html = "";
+  rootComments.forEach(c => {
+    html += renderSingleCommentHtml(c, false, postId, postIndex, currentUid, currentUserName, isAllowedAdmin);
+    
+    // 해당 댓글의 대댓글(답글) 렌더링
+    const replies = replyMap[c.id] || [];
+    replies.forEach(reply => {
+      html += renderSingleCommentHtml(reply, true, postId, postIndex, currentUid, currentUserName, isAllowedAdmin);
+    });
+  });
+
+  commentListEl.innerHTML = html;
+  renderCommentForm(postId, postIndex);
+}
+
+window.loadPostComments = loadPostComments;
+
+/**
+ * [한글 주석: 단일 댓글 / 대댓글 HTML 렌더링 헬퍼 함수]
+ */
+function renderSingleCommentHtml(c, isReply, postId, postIndex, currentUid, currentUserName, isAllowedAdmin) {
+  const isCommentAuthor = (currentUid && c.authorUid && currentUid === c.authorUid) ||
+                          (currentUserName && c.authorName && currentUserName === c.authorName);
+  const canDelete = isCommentAuthor || isAllowedAdmin;
+
+  const roleBadge = c.authorRoleLabel ? `<span class="comment-role-badge">${escapeHtml(c.authorRoleLabel)}</span>` : (c.authorRole ? `<span class="comment-role-badge">${escapeHtml(c.authorRole)}</span>` : "");
+  const postAuthorBadge = (window.combinedPosts && window.combinedPosts[postIndex] && window.combinedPosts[postIndex].authorName === c.authorName)
+    ? `<span class="comment-role-badge author">작성자</span>` : "";
+
+  const avatar = c.authorPhoto || "https://lh3.googleusercontent.com/a/default-user=s96-c";
+
+  let deleteBtnHtml = "";
+  if (canDelete) {
+    deleteBtnHtml = `
+      <button type="button" class="btn-comment-action delete" onclick="window.deletePostComment('${postId}', ${postIndex}, '${c.id}')" title="댓글 삭제">
+        <i class="fa-regular fa-trash-can"></i> 삭제
+      </button>
+    `;
+  }
+
+  let replyBtnHtml = "";
+  if (!isReply) {
+    replyBtnHtml = `
+      <button type="button" class="btn-comment-action" onclick="window.toggleReplyForm('${c.id}', '${postId}', ${postIndex})" title="답글 달기">
+        <i class="fa-solid fa-reply"></i> 답글
+      </button>
+    `;
+  }
+
+  return `
+    <div class="cafe-comment-item ${isReply ? 'is-reply' : ''}" id="comment-item-${c.id}">
+      <div class="comment-top-row">
+        <div class="comment-author-info">
+          ${isReply ? '<span style="color: #00f3ff; font-weight: 800; font-size: 0.9rem; margin-right: 0.2rem;">↳</span>' : ''}
+          <img src="${avatar}" class="comment-avatar" alt="Avatar">
+          <span class="comment-author-name">${escapeHtml(c.authorName || '회원')}</span>
+          ${postAuthorBadge}
+          ${roleBadge}
+        </div>
+        <span class="comment-date">${c.dateStr || ''}</span>
+      </div>
+      <div class="comment-content-body">${escapeHtml(c.content || '').replace(/\n/g, '<br>')}</div>
+      <div class="comment-actions-bar">
+        ${replyBtnHtml}
+        ${deleteBtnHtml}
+      </div>
+      <!-- [한글 주석: 대댓글 작성 폼 컨테이너 (토글 방식으로 오픈)] -->
+      <div class="cafe-reply-form-wrap" id="reply-form-wrap-${c.id}" style="display: none;">
+        <textarea id="reply-input-${c.id}" class="cafe-comment-textarea" placeholder="답글을 남겨보세요." style="min-height: 60px;"></textarea>
+        <div class="cafe-comment-form-footer">
+          <button type="button" class="btn-comment-action" onclick="window.toggleReplyForm('${c.id}', '${postId}', ${postIndex})" style="color: #94a3b8;">취소</button>
+          <button type="button" class="btn-comment-submit" onclick="window.submitPostComment('${postId}', ${postIndex}, '${c.id}')" style="padding: 0.35rem 1rem; font-size: 0.82rem;">
+            답글 등록
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * [한글 주석: 댓글 작성 폼 렌더링 (로그인 여부에 따라 분기)]
+ */
+function renderCommentForm(postId, postIndex) {
+  const formBox = document.getElementById("cafe-comment-form-box");
+  if (!formBox) return;
+
+  const sidebarNameEl = document.getElementById("sidebar-user-name");
+  const sidebarRoleBadgeEl = document.getElementById("sidebar-user-badge");
+  const currentUserName = sidebarNameEl ? sidebarNameEl.textContent.trim() : "";
+  const currentUserBadge = sidebarRoleBadgeEl ? sidebarRoleBadgeEl.textContent.trim() : "";
+  const isLoggedIn = Boolean(auth.currentUser || window.isLoggedIn || currentUserName);
+
+  if (!isLoggedIn) {
+    formBox.innerHTML = `
+      <div class="cafe-comment-login-prompt">
+        <i class="fa-solid fa-lock" style="color: #00f3ff; margin-right: 0.35rem;"></i>
+        댓글을 작성하려면 로그인이 필요합니다.
+        <button type="button" class="btn-login-inline-trigger" onclick="if(typeof window.showAuthModal === 'function') window.showAuthModal('login');">
+          로그인하기
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const userAvatar = (auth.currentUser && auth.currentUser.photoURL) ? auth.currentUser.photoURL : "https://lh3.googleusercontent.com/a/default-user=s96-c";
+
+  formBox.innerHTML = `
+    <div class="comment-form-author-line">
+      <img src="${userAvatar}" class="comment-avatar" alt="Avatar">
+      <span>${escapeHtml(currentUserName || '회원')}</span>
+      <span class="comment-role-badge">${escapeHtml(currentUserBadge || '일반회원')}</span>
+    </div>
+    <textarea id="cafe-main-comment-input" class="cafe-comment-textarea" placeholder="댓글을 남겨보세요. 매너 있는 대화를 부탁드립니다."></textarea>
+    <div class="cafe-comment-form-footer">
+      <span style="font-size: 0.75rem; color: #64748b;"><i class="fa-regular fa-face-smile"></i> 건전한 소통 문화를 만들어가요</span>
+      <button type="button" class="btn-comment-submit" onclick="window.submitPostComment('${postId}', ${postIndex}, null)">
+        <i class="fa-solid fa-paper-plane"></i> 댓글 등록
+      </button>
+    </div>
+  `;
+}
+
+/**
+ * [한글 주석: 댓글 및 대댓글 Firestore 저장 및 상태 갱신]
+ */
+async function submitPostComment(postId, postIndex, parentId = null) {
+  const sidebarNameEl = document.getElementById("sidebar-user-name");
+  const sidebarRoleBadgeEl = document.getElementById("sidebar-user-badge");
+  const currentUserName = sidebarNameEl ? sidebarNameEl.textContent.trim() : "";
+  const currentUserBadge = sidebarRoleBadgeEl ? sidebarRoleBadgeEl.textContent.trim() : "";
+  const isLoggedIn = Boolean(auth.currentUser || window.isLoggedIn || currentUserName);
+
+  if (!isLoggedIn) {
+    if (typeof window.showAuthModal === "function") {
+      window.showAuthModal("login");
+    } else {
+      alert("댓글 작성을 위해 먼저 로그인해 주세요.");
+    }
+    return;
+  }
+
+  let content = "";
+  let inputEl = null;
+
+  if (parentId) {
+    inputEl = document.getElementById(`reply-input-${parentId}`);
+    if (inputEl) content = inputEl.value.trim();
+  } else {
+    inputEl = document.getElementById("cafe-main-comment-input");
+    if (inputEl) content = inputEl.value.trim();
+  }
+
+  if (!content) {
+    alert("댓글 내용을 입력해 주세요.");
+    if (inputEl) inputEl.focus();
+    return;
+  }
+
+  const currentUid = auth.currentUser ? auth.currentUser.uid : (window.currentUserUid || "");
+  const userAvatar = (auth.currentUser && auth.currentUser.photoURL) ? auth.currentUser.photoURL : "https://lh3.googleusercontent.com/a/default-user=s96-c";
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}. ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  const commentData = {
+    content: content,
+    authorName: currentUserName || "회원",
+    authorUid: currentUid,
+    authorPhoto: userAvatar,
+    authorRole: window.currentUserRole || "U",
+    authorRoleLabel: currentUserBadge || "일반회원",
+    parentId: parentId || null,
+    createdAtMs: Date.now(),
+    dateStr: dateStr
+  };
+
+  const post = window.combinedPosts ? window.combinedPosts[postIndex] : null;
+
+  if (postId && !postId.startsWith("local-")) {
+    try {
+      const commentsRef = collection(db, "community_posts", postId, "comments");
+      await addDoc(commentsRef, {
+        ...commentData,
+        createdAt: serverTimestamp()
+      });
+
+      // [한글 주석: 게시글 총 댓글 수 카운트 실시간 업데이트]
+      const snap = await getDocs(commentsRef);
+      const count = snap.size;
+      await updateDoc(doc(db, "community_posts", postId), {
+        commentCount: count
+      }).catch(() => {});
+
+      if (post) post.commentCount = count;
+    } catch (err) {
+      console.error("댓글 저장 실패:", err);
+      alert("댓글 저장 중 오류가 발생했습니다: " + err.message);
+      return;
+    }
+  } else {
+    if (post) {
+      post.comments = post.comments || [];
+      post.comments.push({ id: "local-comment-" + Date.now(), ...commentData });
+      post.commentCount = post.comments.length;
+    }
+  }
+
+  if (inputEl) inputEl.value = "";
+  await loadPostComments(postId, postIndex);
+}
+
+window.submitPostComment = submitPostComment;
+
+/**
+ * [한글 주석: 댓글 삭제 함수]
+ */
+async function deletePostComment(postId, postIndex, commentId) {
+  if (!confirm("댓글을 삭제하시겠습니까?")) return;
+
+  const post = window.combinedPosts ? window.combinedPosts[postIndex] : null;
+
+  if (postId && !postId.startsWith("local-")) {
+    try {
+      await deleteDoc(doc(db, "community_posts", postId, "comments", commentId));
+      
+      const commentsRef = collection(db, "community_posts", postId, "comments");
+      const snap = await getDocs(commentsRef);
+      const count = snap.size;
+      await updateDoc(doc(db, "community_posts", postId), {
+        commentCount: count
+      }).catch(() => {});
+
+      if (post) post.commentCount = count;
+    } catch (err) {
+      console.error("댓글 삭제 실패:", err);
+      alert("댓글 삭제 중 오류가 발생했습니다: " + err.message);
+      return;
+    }
+  } else {
+    if (post && post.comments) {
+      post.comments = post.comments.filter(c => c.id !== commentId && c.parentId !== commentId);
+      post.commentCount = post.comments.length;
+    }
+  }
+
+  await loadPostComments(postId, postIndex);
+}
+
+window.deletePostComment = deletePostComment;
+
+/**
+ * [한글 주석: 대댓글 작성 폼 토글 함수]
+ */
+function toggleReplyForm(commentId, postId, postIndex) {
+  const wrap = document.getElementById(`reply-form-wrap-${commentId}`);
+  if (!wrap) return;
+
+  const isHidden = wrap.style.display === "none" || !wrap.style.display;
+  wrap.style.display = isHidden ? "block" : "none";
+
+  if (isHidden) {
+    const input = document.getElementById(`reply-input-${commentId}`);
+    if (input) input.focus();
+  }
+}
+
+window.toggleReplyForm = toggleReplyForm;
+
+
 function showCafeWriteSection() {
+  const currentUid = auth.currentUser ? auth.currentUser.uid : (window.currentUserUid || "");
+  const sidebarNameEl = document.getElementById("sidebar-user-name");
+  const currentUserName = sidebarNameEl ? sidebarNameEl.textContent.trim() : "";
+  const isLoggedIn = Boolean(auth.currentUser || window.isLoggedIn || (currentUid && currentUserName && currentUserName !== "방문자님" && currentUserName !== "로그인 필요"));
+
+  // [한글 주석: 비로그인 사용자가 글쓰기 시도 시 로그인 모달 팝업으로 자연스럽게 유도]
+  if (!isLoggedIn) {
+    if (typeof window.showAuthModal === "function") {
+      window.showAuthModal("login");
+    } else {
+      alert("글쓰기는 로그인 후 이용하실 수 있습니다.");
+    }
+    return;
+  }
+
   const postListSection = document.getElementById("cafe-post-list-section");
   const postWriteSection = document.getElementById("cafe-post-write-section");
   const postDetailSection = document.getElementById("cafe-post-detail-section");

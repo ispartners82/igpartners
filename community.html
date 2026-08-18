@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가] -->
-  <link rel="stylesheet" href="css/style.css?v=260814_15">
+  <link rel="stylesheet" href="css/style.css?v=260818_3">
 
   <!-- [한글 주석: 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장] -->
   <script>
@@ -261,21 +261,7 @@
     </nav>
   </header>
 
-  <!-- [한글 주석: 비로그인 회원 접근 차단 가드 뷰] -->
-  <div id="community-login-guard" class="community-guard-overlay" style="display: none; margin: 7rem auto 4rem;">
-    <i class="fa-solid fa-lock" style="font-size: 3rem; color: #00f3ff; margin-bottom: 1rem;"></i>
-    <h2 style="color: #ffffff; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem;">로그인이 필요한 서비스입니다</h2>
-    <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 1.8rem; line-height: 1.6;">
-      커뮤니티는 IGPartners 회원 전용 공간입니다.<br>
-      로그인 후 다양한 의료/비자 소식 및 구인구직 정보에 참여해 보세요.
-    </p>
-    <button id="btn-guard-login" class="btn-write-post"
-      style="margin: 0 auto; background: linear-gradient(135deg, #00f3ff 0%, #0066ff 100%); padding: 0.75rem 2rem; font-size: 1rem;">
-      <i class="fa-solid fa-right-to-bracket"></i> 로그인 진행하기
-    </button>
-  </div>
-
-  <!-- [한글 주석: 네이버 카페 스타일 2열 레이아웃 커뮤니티 메인 컨테이너] -->
+  <!-- [한글 주석: 네이버 카페 스타일 2열 레이아웃 커뮤니티 메인 컨테이너 - 비로그인 방문자도 상시 열람 가능] -->
   <main class="cafe-layout-container" id="community-main-content">
 
     <!-- 1. 좌측 카테고리 사이드바 -->
@@ -541,10 +527,10 @@
 
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260814_15)] -->
-  <script type="module" src="/js/navigation.js?v=260814_15"></script>
-  <script type="module" src="/js/auth.js?v=260814_15"></script>
-  <script type="module" src="/js/community.js?v=260814_15"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260818_3)] -->
+  <script type="module" src="/js/navigation.js?v=260818_3"></script>
+  <script type="module" src="/js/auth.js?v=260818_3"></script>
+  <script type="module" src="/js/community.js?v=260818_3"></script>
 </body>
 
 </html>

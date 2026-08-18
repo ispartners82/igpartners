@@ -14,8 +14,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260813_27)] -->
-  <link rel="stylesheet" href="css/style.css?v=260813_27">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260818_2)] -->
+  <link rel="stylesheet" href="css/style.css?v=260818_2">
 </head>
 
 <body class="home-page">
@@ -116,8 +116,8 @@
           <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
           <li class="nav-item"><a href="/about.html#services" class="nav-link btn-nav-booking">의료통역</a></li>
           <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking">진료 예약</a></li>
-          <li class="nav-item"><a href="/index.html#partners" class="nav-link">협력 회사</a></li>
-          <li class="nav-item nav-community-item" id="nav-item-community" style="display: none;"><a href="/community.html" class="nav-link">커뮤니티</a></li>
+          <!-- [한글 주석: 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출] -->
+          <li class="nav-item nav-community-item" id="nav-item-community"><a href="/community.html" class="nav-link">커뮤니티</a></li>
         </ul>
         <!-- [한글 주석: HTML 정적 파싱 순간 뱃지가 지워졌다 생기던 랙을 원천 차단하기 위해 display:none 구문 전면 제거] -->
         <div class="nav-auth-area" id="nav-auth-area">
@@ -311,9 +311,9 @@
   <!-- [한글 주석: 유지보수 용이성을 위해 푸터 내용을 공통 JS(navigation.js)에서 동적 주입하도록 구조 개선] -->
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260813_27)] -->
-  <script type="module" src="/js/navigation.js?v=260813_27"></script>
-  <script type="module" src="/js/auth.js?v=260813_27"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260818_2)] -->
+  <script type="module" src="/js/navigation.js?v=260818_2"></script>
+  <script type="module" src="/js/auth.js?v=260818_2"></script>
 
   <!-- [한글 주석: 구글 로그인 유도 안내 모달 팝업 - 다국어 편의성을 위해 한국어와 영어를 병기하고 로그인 버튼 내 베트남어를 제거함] -->
   <div id="login-required-modal" class="modal-backdrop" style="display: none;">
