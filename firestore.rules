@@ -62,7 +62,13 @@ service cloud.firestore {
         getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
     }
 
-    // [한글 주석: settings (알림톡 수신 설정 등) 컬렉션 보안 규칙 - 예약 폼에서 관리자 번호 조회를 위해 로그인 유저에게 읽기 허용, 최고 관리자만 수정 가능]
+    // [한글 주석: settings/community_categories (커뮤니티 카테고리 및 열람 권한 설정) 보안 규칙 - 비로그인 방문자도 카테고리 목록과 열람 권한을 조회할 수 있도록 전체 읽기 허용]
+    match /settings/community_categories {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // [한글 주석: settings (알림톡 수신 설정 등 일반 설정) 컬렉션 보안 규칙 - 예약 폼에서 관리자 번호 조회를 위해 로그인 유저에게 읽기 허용, 최고 관리자만 수정 가능]
     match /settings/{settingId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && getUserRole() == "super_admin";

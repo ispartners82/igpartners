@@ -951,17 +951,17 @@ function initPage() {
   let unsubscribeRoles = null;
   let rolesCache = {}; // { super_admin: "최고 관리자", ... }
 
-  // [한글 주석: 기본 등급 데이터셋 선언 - hasAds(광고배너관리) 기능 권한을 super_admin에만 기본 부여]
+  // [한글 주석: 기본 등급 데이터셋 선언 - hasAds(광고배너관리), hasCommunitySettings(커뮤니티설정) 권한 정의]
   const defaultRoles = [
-    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasAds: true },
-    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false },
-    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false },
-    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
-    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
-    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
-    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
-    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false },
-    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false }
+    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasAds: true, hasCommunitySettings: true },
+    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: true },
+    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: true },
+    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
+    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
+    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
+    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
+    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
+    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false }
   ];
 
   // [한글 주석: 솔라피 알림톡 수신 설정 데이터를 Firestore에서 비동기 로드하여 입력 필드 및 하단 목록 렌더링 적용]
@@ -1053,16 +1053,16 @@ function initPage() {
     const rolesCol = collection(db, "roles");
 
     // [성능 최적화] 초기 시드 등급 적재 검사는 백그라운드 비동기로 실행
-    // 마이그레이션은 roles 컬렉션이 비어있거나 isAdmin 필드 누락 시에만 1회 실행됩니다.
+    // 마이그레이션은 roles 컬렉션이 비어있거나 isAdmin / hasCommunitySettings 필드 누락 시에만 1회 실행됩니다.
     (async () => {
       try {
         const snap = await getDocs(rolesCol);
         
-        // roles 컬렉션이 아예 비어있거나, 기존 데이터에 권한 필드(isAdmin)가 누락된 경우 마이그레이션 필요로 판정
+        // roles 컬렉션이 아예 비어있거나, 기존 데이터에 권한 필드가 누락된 경우 마이그레이션 필요로 판정
         let needsMigration = snap.empty;
         if (!snap.empty) {
           const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
-          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined || superAdminSnap.data().hasAds === undefined) {
+          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined || superAdminSnap.data().hasAds === undefined || superAdminSnap.data().hasCommunitySettings === undefined) {
             needsMigration = true;
           }
         }
@@ -1084,6 +1084,7 @@ function initPage() {
                 hasRoles: r.hasRoles,
                 hasPermissions: r.hasPermissions,
                 hasAds: r.hasAds,
+                hasCommunitySettings: r.hasCommunitySettings,
                 createdAt: new Date().toISOString()
               });
             } else {
@@ -1095,7 +1096,8 @@ function initPage() {
                 hasClinics: existingData.hasClinics !== undefined ? existingData.hasClinics : r.hasClinics,
                 hasRoles: existingData.hasRoles !== undefined ? existingData.hasRoles : r.hasRoles,
                 hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions,
-                hasAds: existingData.hasAds !== undefined ? existingData.hasAds : r.hasAds
+                hasAds: existingData.hasAds !== undefined ? existingData.hasAds : r.hasAds,
+                hasCommunitySettings: existingData.hasCommunitySettings !== undefined ? existingData.hasCommunitySettings : (r.hasCommunitySettings || false)
               });
             }
           }
@@ -1160,6 +1162,8 @@ function initPage() {
             <td>${makeToggleHTML(roleKey, "hasRoles", roleData.hasRoles, lockAdmin)}</td>
             <td>${makeToggleHTML(roleKey, "hasPermissions", roleData.hasPermissions, false)}</td>
             <td>${makeToggleHTML(roleKey, "hasStats", roleData.hasStats, false)}</td>
+            <!-- [한글 주석: 예약통계 오른쪽 옆에 커뮤니티설정 권한 컬럼 스위치 배치] -->
+            <td>${makeToggleHTML(roleKey, "hasCommunitySettings", roleData.hasCommunitySettings, false)}</td>
             <td>
               <div style="display:flex; gap:6px; align-items:center; justify-content:center;">
                 <button class="btn-action confirm btn-edit-role" data-key="${roleKey}" data-label="${roleData.label.replace(/"/g, '&quot;')}">수정</button>
@@ -1188,7 +1192,7 @@ function initPage() {
     }, (error) => {
       console.error("Roles subscription error:", error);
       if (roleList) {
-        roleList.innerHTML = `<tr><td colspan="9" class="table-error" style="color:#fda4af; text-align:center; padding:1.5rem; background:rgba(244,63,94,0.05); border-radius:8px;">등급 정보를 불러올 수 없습니다. (Firestore 보안 규칙 배포 확인 필요)</td></tr>`;
+        roleList.innerHTML = `<tr><td colspan="11" class="table-error" style="color:#fda4af; text-align:center; padding:1.5rem; background:rgba(244,63,94,0.05); border-radius:8px;">등급 정보를 불러올 수 없습니다. (Firestore 보안 규칙 배포 확인 필요)</td></tr>`;
       }
     });
   }

@@ -15,8 +15,8 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가] -->
-  <link rel="stylesheet" href="css/style.css?v=260818_3">
+  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260819_4)] -->
+  <link rel="stylesheet" href="css/style.css?v=260819_4">
 
   <!-- [한글 주석: 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장] -->
   <script>
@@ -26,7 +26,11 @@
     function showCafeWriteSection() {
       var listEl = document.getElementById("cafe-post-list-section");
       var writeEl = document.getElementById("cafe-post-write-section");
+      var detailEl = document.getElementById("cafe-post-detail-section");
+      var catEl = document.getElementById("cafe-category-manage-section");
       if (listEl) listEl.style.display = "none";
+      if (detailEl) detailEl.style.display = "none";
+      if (catEl) catEl.style.display = "none";
       if (writeEl) writeEl.style.display = "block";
 
       var writeBoardSelect = document.getElementById("write-board-select");
@@ -41,8 +45,31 @@
     function showCafeListSection() {
       var listEl = document.getElementById("cafe-post-list-section");
       var writeEl = document.getElementById("cafe-post-write-section");
+      var detailEl = document.getElementById("cafe-post-detail-section");
+      var catEl = document.getElementById("cafe-category-manage-section");
       if (writeEl) writeEl.style.display = "none";
+      if (detailEl) detailEl.style.display = "none";
+      if (catEl) catEl.style.display = "none";
       if (listEl) listEl.style.display = "block";
+    }
+
+    // [한글 주석: 카테고리 관리 · 설정 인라인 편집 화면으로 전환하는 함수]
+    function showCafeCategoryManageSection() {
+      var listEl = document.getElementById("cafe-post-list-section");
+      var writeEl = document.getElementById("cafe-post-write-section");
+      var detailEl = document.getElementById("cafe-post-detail-section");
+      var catEl = document.getElementById("cafe-category-manage-section");
+      if (listEl) listEl.style.display = "none";
+      if (writeEl) writeEl.style.display = "none";
+      if (detailEl) detailEl.style.display = "none";
+      if (catEl) catEl.style.display = "block";
+
+      if (typeof window.initCategoryManageEditor === "function") {
+        window.initCategoryManageEditor();
+      }
+
+      var mainCard = document.querySelector(".cafe-main-card");
+      if (mainCard) mainCard.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function renderPhotoPreviews() {
@@ -167,36 +194,9 @@
       return false;
     }
 
-    function showCafeWriteSection() {
-      var postListSection = document.getElementById("cafe-post-list-section");
-      var postWriteSection = document.getElementById("cafe-post-write-section");
-      var postDetailSection = document.getElementById("cafe-post-detail-section");
-
-      if (postListSection) postListSection.style.display = "none";
-      if (postDetailSection) postDetailSection.style.display = "none";
-      if (postWriteSection) postWriteSection.style.display = "block";
-
-      var writeBoardSelect = document.getElementById("write-board-select");
-      if (writeBoardSelect && window.currentBoard && window.currentBoard !== "all") {
-        writeBoardSelect.value = window.currentBoard;
-      }
-
-      var mainCard = document.querySelector(".cafe-main-card");
-      if (mainCard) mainCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function showCafeListSection() {
-      var postListSection = document.getElementById("cafe-post-list-section");
-      var postWriteSection = document.getElementById("cafe-post-write-section");
-      var postDetailSection = document.getElementById("cafe-post-detail-section");
-
-      if (postWriteSection) postWriteSection.style.display = "none";
-      if (postDetailSection) postDetailSection.style.display = "none";
-      if (postListSection) postListSection.style.display = "block";
-    }
-
     window.showCafeWriteSection = showCafeWriteSection;
     window.showCafeListSection = showCafeListSection;
+    window.showCafeCategoryManageSection = showCafeCategoryManageSection;
     window.renderPhotoPreviews = renderPhotoPreviews;
     window.renderFilePreviews = renderFilePreviews;
     window.handlePhotoSelect = handlePhotoSelect;
@@ -276,9 +276,15 @@
             <span class="cafe-user-badge" id="sidebar-user-badge">일반회원</span>
           </div>
         </div>
-        <button type="button" id="btn-sidebar-write" class="btn-cafe-write" onclick="showCafeWriteSection()">
-          <i class="fa-solid fa-pen"></i> 글쓰기
-        </button>
+        <!-- [한글 주석: 프로필 카드 액션 버튼 그룹 - 권한에 따라 설정 버튼이 동적 표시됨] -->
+        <div class="cafe-profile-btn-group">
+          <button type="button" id="btn-sidebar-write" class="btn-cafe-write" onclick="showCafeWriteSection()">
+            <i class="fa-solid fa-pen"></i> 글쓰기
+          </button>
+          <button type="button" id="btn-sidebar-setting" class="btn-cafe-setting" onclick="showCafeCategoryManageSection()" style="display: none;" title="커뮤니티 카테고리 관리 · 설정">
+            <i class="fa-solid fa-gear"></i> 설정
+          </button>
+        </div>
       </div>
 
       <!-- 게시판 메뉴 카드 -->
@@ -287,7 +293,7 @@
           <span>★ 즐겨찾는 게시판</span>
           <i class="fa-solid fa-chevron-down"></i>
         </div>
-        <ul class="cafe-menu-list">
+        <ul class="cafe-menu-list" id="cafe-sidebar-menu-list">
           <li class="cafe-menu-item active" data-board="all">
             <span>📋 전체글보기</span>
             <span class="cafe-menu-count" id="count-all">0</span>
@@ -522,15 +528,210 @@
         <!-- js/community.js에서 동적 바인딩됩니다 -->
       </div>
 
+      <!-- 4. 우측 메인 카테고리 관리 · 설정 에디터 뷰 영역 (프로필 설정 버튼 클릭 시 인라인 표출) -->
+      <div id="cafe-category-manage-section" style="display: none; padding: 0.5rem 0.25rem;">
+        <!-- 상단 헤더 바 -->
+        <div class="cat-editor-header-bar">
+          <h2 class="cat-editor-title">
+            <i class="fa-solid fa-folder-tree" style="color: #00f3ff;"></i> 카테고리 관리 · 설정
+          </h2>
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <button type="button" id="btn-cancel-cat-manage-top" onclick="showCafeListSection()" class="btn-action cancel"
+              style="padding: 0.45rem 1.1rem; font-size: 0.88rem; border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.1); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2);">
+              취소
+            </button>
+            <button type="button" id="btn-save-cat-manage-top" onclick="window.saveCategoryManageChanges()" class="btn-cafe-write"
+              style="width: auto; padding: 0.45rem 1.4rem; font-size: 0.9rem;">
+              확인
+            </button>
+          </div>
+        </div>
+
+        <!-- 2열 에디터 본문 컨테이너 -->
+        <div class="cat-editor-grid-container">
+          
+          <!-- [좌측 1열] 카테고리 트리 목록 및 상단 조작 툴바 -->
+          <div class="cat-editor-left-box">
+            <div class="cat-toolbar-btns">
+              <button type="button" class="btn-cat-tool" id="btn-add-category" onclick="window.addNewCategoryItem()">
+                <i class="fa-solid fa-plus"></i> 카테고리 추가
+              </button>
+              <button type="button" class="btn-cat-tool" id="btn-add-divider" onclick="window.addNewDividerItem()">
+                <i class="fa-solid fa-minus"></i> 구분선 추가
+              </button>
+              <button type="button" class="btn-cat-tool danger" id="btn-delete-category" onclick="window.deleteSelectedCategoryItem()">
+                <i class="fa-solid fa-trash-can"></i> 삭제
+              </button>
+            </div>
+
+            <!-- 카테고리 트리 목록 박스 (드래그앤드롭 지원) -->
+            <div class="cat-tree-container">
+              <div class="cat-tree-header">
+                <span><i class="fa-regular fa-folder-open"></i> 카테고리 전체보기</span>
+                <span id="cat-tree-total-count" style="color: #00f3ff; font-weight: 700;">(0)</span>
+              </div>
+              <ul id="cat-tree-item-list" class="cat-tree-item-list">
+                <!-- js/community.js에서 드래그앤드롭 가능한 li 항목들로 동적 렌더링 -->
+              </ul>
+            </div>
+
+            <div class="cat-editor-tip">
+              <p>• 마우스 드래그 앤 드롭으로 카테고리 순서를 자유롭게 변경할 수 있습니다.</p>
+              <p>• 구분선을 추가하여 관련 카테고리끼리 시각적으로 묶을 수 있습니다.</p>
+            </div>
+          </div>
+
+          <!-- [우측 2열] 선택된 카테고리 세부 설정 폼 패널 -->
+          <div class="cat-editor-right-box" id="cat-detail-panel">
+            <div id="cat-empty-notice" style="display: none; text-align: center; padding: 4rem 1rem; color: #64748b;">
+              <i class="fa-solid fa-hand-pointer" style="font-size: 2rem; margin-bottom: 1rem; color: #00f3ff;"></i>
+              <p>좌측 목록에서 설정할 카테고리를 선택해 주세요.</p>
+            </div>
+
+            <form id="form-cat-detail" onsubmit="event.preventDefault();">
+              
+              <!-- 1. 카테고리명 및 아이콘 선택 -->
+              <div class="cat-form-row">
+                <label class="cat-form-label" for="cat-detail-name">카테고리명</label>
+                <div style="display: flex; gap: 0.5rem; width: 100%;">
+                  <!-- 아이콘 선택 버튼 및 드롭다운 -->
+                  <div class="cat-icon-picker-wrap">
+                    <button type="button" id="btn-cat-icon-picker" class="btn-cat-icon-picker" onclick="window.toggleCatIconPicker(event)">
+                      <span id="cat-selected-icon-preview">📢</span> ▾
+                    </button>
+                    <div id="cat-icon-picker-dropdown" class="cat-icon-picker-dropdown" style="display: none;">
+                      <div class="cat-icon-grid">
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('📢')">📢</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('🏥')">🏥</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('🛡️')">🛡️</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('🛂')">🛂</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('💼')">💼</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('📄')">📄</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('💬')">💬</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('📌')">📌</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('💡')">💡</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('⭐')">⭐</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('🌐')">🌐</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('📋')">📋</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('💊')">💊</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('🩺')">🩺</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('❓')">❓</button>
+                        <button type="button" class="icon-opt" onclick="window.selectCategoryIcon('🎉')">🎉</button>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="text" id="cat-detail-name" class="cat-input-text" placeholder="카테고리명을 입력하세요" oninput="window.handleCatNameInput(this.value)">
+                </div>
+              </div>
+
+              <!-- 글 개수 표시 체크박스 -->
+              <div class="cat-form-row indent">
+                <label class="cat-checkbox-label">
+                  <input type="checkbox" id="cat-detail-show-count" onchange="window.handleCatSettingChange()">
+                  <span>카테고리 옆에 글 개수 표시</span>
+                </label>
+              </div>
+
+              <!-- 2. 공개설정 (메뉴 노출 여부) -->
+              <div class="cat-form-row">
+                <span class="cat-form-label">메뉴 노출</span>
+                <div class="cat-radio-group">
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-public" id="cat-public-yes" value="true" onchange="window.handleCatSettingChange()">
+                    <span>공개</span>
+                  </label>
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-public" id="cat-public-no" value="false" onchange="window.handleCatSettingChange()">
+                    <span>비공개</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 3. [신규 추가] 글 열람 권한 (전체공개 / 회원전용 / 비밀글·관리자전용) -->
+              <div class="cat-form-row" style="align-items: flex-start;">
+                <span class="cat-form-label" style="margin-top: 0.2rem;">글 열람 권한</span>
+                <div class="cat-radio-group cat-perm-radio-vertical">
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-read-perm" id="cat-read-perm-all" value="all" onchange="window.handleCatSettingChange()">
+                    <span>🌐 <strong>전체 공개</strong> <small style="color: #94a3b8; font-size: 0.78rem;">(비로그인 방문자 포함 누구나 열람)</small></span>
+                  </label>
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-read-perm" id="cat-read-perm-member" value="member" onchange="window.handleCatSettingChange()">
+                    <span>👥 <strong>회원 전용</strong> <small style="color: #94a3b8; font-size: 0.78rem;">(로그인한 가입 회원만 열람 가능)</small></span>
+                  </label>
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-read-perm" id="cat-read-perm-admin" value="admin" onchange="window.handleCatSettingChange()">
+                    <span>🔒 <strong>비밀글 / 관리자 전용</strong> <small style="color: #fca5a5; font-size: 0.78rem;">(작성자 본인 및 관리자만 열람 - 이력서 방식)</small></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 4. 글보기 형식 -->
+              <div class="cat-form-row">
+                <span class="cat-form-label">글보기</span>
+                <div class="cat-radio-group">
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-view-type" id="cat-view-list" value="list" onchange="window.handleCatSettingChange()">
+                    <span><i class="fa-solid fa-list"></i> 목록형</span>
+                  </label>
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-view-type" id="cat-view-card" value="card" onchange="window.handleCatSettingChange()">
+                    <span><i class="fa-solid fa-newspaper"></i> 블로그형</span>
+                  </label>
+                  <label class="cat-radio-label">
+                    <input type="radio" name="cat-view-type" id="cat-view-album" value="album" onchange="window.handleCatSettingChange()">
+                    <span><i class="fa-solid fa-table-cells"></i> 앨범형</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 5. 카테고리 순서 정렬 버튼 -->
+              <div class="cat-form-row">
+                <span class="cat-form-label">카테고리 정렬</span>
+                <div class="cat-btn-order-group">
+                  <button type="button" class="btn-cat-order" onclick="window.moveCategoryOrder('up')" title="한 단계 위로"><i class="fa-solid fa-arrow-up"></i> 위</button>
+                  <button type="button" class="btn-cat-order" onclick="window.moveCategoryOrder('down')" title="한 단계 아래로"><i class="fa-solid fa-arrow-down"></i> 아래</button>
+                  <button type="button" class="btn-cat-order" onclick="window.moveCategoryOrder('top')" title="맨 위로"><i class="fa-solid fa-angles-up"></i> 맨위</button>
+                  <button type="button" class="btn-cat-order" onclick="window.moveCategoryOrder('bottom')" title="맨 아래로"><i class="fa-solid fa-angles-down"></i> 맨아래</button>
+                </div>
+              </div>
+
+              <!-- 6. 기본 카테고리 설정 -->
+              <div class="cat-form-row indent" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem;">
+                <label class="cat-checkbox-label">
+                  <input type="checkbox" id="cat-detail-is-default" onchange="window.handleCatSettingChange()">
+                  <span>커뮤니티 접속 시 이 카테고리를 기본으로 보여줍니다.</span>
+                </label>
+              </div>
+
+            </form>
+          </div>
+
+        </div>
+
+        <!-- 하단 액션 버튼 바 -->
+        <div class="cat-editor-bottom-bar">
+          <button type="button" id="btn-cancel-cat-manage-bottom" onclick="showCafeListSection()" class="btn-action cancel"
+            style="padding: 0.6rem 1.6rem; font-size: 0.95rem; border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.1); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2);">
+            취소
+          </button>
+          <button type="button" id="btn-save-cat-manage-bottom" onclick="window.saveCategoryManageChanges()" class="btn-cafe-write"
+            style="width: auto; padding: 0.6rem 2rem; font-size: 0.95rem;">
+            확인
+          </button>
+        </div>
+
+      </div>
+
     </section>
   </main>
 
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260818_3)] -->
-  <script type="module" src="/js/navigation.js?v=260818_3"></script>
-  <script type="module" src="/js/auth.js?v=260818_3"></script>
-  <script type="module" src="/js/community.js?v=260818_3"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260819_4)] -->
+  <script type="module" src="/js/navigation.js?v=260819_4"></script>
+  <script type="module" src="/js/auth.js?v=260819_4"></script>
+  <script type="module" src="/js/community.js?v=260819_4"></script>
 </body>
 
 </html>

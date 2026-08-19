@@ -7,7 +7,7 @@
 
 import { auth, db } from "./firebase-db.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // [한글 주석: Firestore SDK 전역 객체 바인딩]
 window.db = db;
@@ -15,9 +15,25 @@ window.collection = collection;
 window.addDoc = addDoc;
 window.doc = doc;
 window.getDoc = getDoc;
+window.setDoc = setDoc;
 window.updateDoc = updateDoc;
 window.deleteDoc = deleteDoc;
 window.serverTimestamp = serverTimestamp;
+
+// [한글 주석: 기본 6대 커뮤니티 카테고리 정의 - readPermission(all: 전체공개, member: 회원전용, admin: 비밀글·관리자전용)]
+const DEFAULT_CATEGORIES = [
+  { id: "notice", name: "공지사항", icon: "📢", isPublic: true, readPermission: "all", showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "clinic", name: "병원정보", icon: "🏥", isPublic: true, readPermission: "all", showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "insurance", name: "보험정보", icon: "🛡️", isPublic: true, readPermission: "all", showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "visa", name: "비자정보", icon: "🛂", isPublic: true, readPermission: "all", showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "job", name: "구인구직", icon: "💼", isPublic: true, readPermission: "all", showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "resume", name: "이력서업로드", icon: "📄", isPublic: true, readPermission: "admin", showCount: true, viewType: "list", isDefault: false, type: "category" }
+];
+
+let currentCategories = [...DEFAULT_CATEGORIES];
+let editingCategories = [];
+let selectedCatIndex = 0;
+window.canCommunitySetting = false;
 
 // [한글 주석: 전역 상태 변수 정돈]
 let currentBoard = "all";
@@ -105,10 +121,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const mainContent = document.getElementById("community-main-content");
   const btnGuardLogin = document.getElementById("btn-guard-login");
 
-  // 1. 페이지 로드 즉시 다이렉트로 단 한 번 게시글 3개 최우선 1순위 로드
+  // 1. 카테고리 목록 로드 및 사이드바 메뉴/글쓰기 셀렉트 동적 초기화
+  loadCommunityCategories();
+
+  // 2. 페이지 로드 즉시 다이렉트로 단 한 번 게시글 최우선 로드
   fetchCommunityPosts();
 
-  // 2. Auth 로그인 세션 수신 - 비로그인 시에도 커뮤니티 목록 및 글 열람은 상시 허용
+  // 3. Auth 로그인 세션 수신 - 비로그인 시에도 커뮤니티 목록 및 글 열람은 상시 허용
   onAuthStateChanged(auth, async (user) => {
     // [한글 주석: 비로그인 회원도 커뮤니티 목록 및 글을 자유롭게 열람할 수 있도록 메인 콘텐츠를 상시 표시]
     if (guardOverlay) guardOverlay.style.display = "none";
@@ -117,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const photoEl = document.getElementById("sidebar-user-photo");
     const nameEl = document.getElementById("sidebar-user-name");
     const badgeEl = document.getElementById("sidebar-user-badge");
+    const btnSidebarSetting = document.getElementById("btn-sidebar-setting");
 
     if (user) {
       window.currentUserUid = user.uid;
@@ -126,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let userName = user.displayName || user.email?.split("@")[0] || "회원";
       let userTier = "일반회원";
+      let canCommunitySetting = false;
 
       try {
         const userDocSnap = await getDoc(doc(db, "users", user.uid));
@@ -141,19 +162,56 @@ document.addEventListener("DOMContentLoaded", () => {
           else if (uData.role === "admin") userTier = "관리자";
           else if (uData.role === "partner") userTier = "협력사";
         }
-      } catch (e) {}
+
+        // [한글 주석: 로그인한 사용자의 등급(role)에 부여된 '커뮤니티설정(hasCommunitySettings)' 권한 조회]
+        const roleKey = window.currentUserRole || "user";
+        if (roleKey === "super_admin") {
+          canCommunitySetting = true;
+        } else {
+          const roleDocSnap = await getDoc(doc(db, "roles", roleKey));
+          if (roleDocSnap.exists()) {
+            const rData = roleDocSnap.data();
+            canCommunitySetting = rData.hasCommunitySettings === true;
+          }
+        }
+      } catch (e) {
+        console.warn("[Community] 권한 로드 중 예외 발생:", e);
+      }
+
+      window.canCommunitySetting = canCommunitySetting;
 
       if (nameEl) nameEl.textContent = userName;
       if (badgeEl) badgeEl.textContent = userTier;
+
+      // [한글 주석: '커뮤니티설정' 권한이 켜져 있으면 프로필 타일의 '설정' 버튼 표시, 꺼져 있으면 숨김]
+      if (btnSidebarSetting) {
+        btnSidebarSetting.style.display = canCommunitySetting ? "inline-flex" : "none";
+      }
+
+      // [한글 주석: 관리자/설정 권한 여부에 따라 비공개 카테고리 표시 동기화]
+      renderSidebarMenu();
     } else {
-      // [한글 주석: 비로그인 방문자일 때 프로필 카드 안내 처리]
+      // [한글 주석: 비로그인 방문자일 때 프로필 카드 안내 처리 및 설정 버튼 숨김]
       window.currentUserUid = "";
       window.currentUserRole = "";
+      window.canCommunitySetting = false;
       if (photoEl) photoEl.src = "https://lh3.googleusercontent.com/a/default-user=s96-c";
       if (nameEl) nameEl.textContent = "방문자님";
       if (badgeEl) badgeEl.textContent = "로그인 필요";
+      if (btnSidebarSetting) {
+        btnSidebarSetting.style.display = "none";
+      }
+      renderSidebarMenu();
     }
   });
+
+  // [한글 주석: 프로필 타일의 커뮤니티 '설정' 버튼 클릭 시 우측 메인 영역을 카테고리 관리 에디터 화면으로 전환]
+  const btnSidebarSetting = document.getElementById("btn-sidebar-setting");
+  if (btnSidebarSetting) {
+    btnSidebarSetting.addEventListener("click", () => {
+      showCafeCategoryManageSection();
+    });
+  }
 
   if (btnGuardLogin) {
     btnGuardLogin.addEventListener("click", () => {
@@ -162,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 3. UI 컨트롤러 이벤트 등록
+  // 4. UI 컨트롤러 이벤트 등록
   initEventHandlers();
 });
 
@@ -216,7 +274,9 @@ async function fetchCommunityPosts() {
         }
 
         const targetBoard = data.board || data.category || "notice";
-        const isSecretPost = data.isSecret || targetBoard === "resume";
+        const catConfig = currentCategories.find(c => c.id === targetBoard);
+        const isCatSecret = catConfig ? catConfig.readPermission === "admin" : (targetBoard === "resume");
+        const isSecretPost = data.isSecret === true || isCatSecret;
 
         fetched.push({
           id: docSnap.id,
@@ -268,21 +328,8 @@ function renderCommunityTable() {
   const totalCountEl = document.getElementById("total-count-display");
   if (!tbody) return;
 
-  const countAllEl = document.getElementById("count-all");
-  const countNoticeEl = document.getElementById("count-notice");
-  const countClinicEl = document.getElementById("count-clinic");
-  const countInsuranceEl = document.getElementById("count-insurance");
-  const countVisaEl = document.getElementById("count-visa");
-  const countJobEl = document.getElementById("count-job");
-  const countResumeEl = document.getElementById("count-resume");
-
-  if (countAllEl) countAllEl.textContent = posts.length.toLocaleString();
-  if (countNoticeEl) countNoticeEl.textContent = posts.filter(p => p.board === "notice").length.toLocaleString();
-  if (countClinicEl) countClinicEl.textContent = posts.filter(p => p.board === "clinic").length.toLocaleString();
-  if (countInsuranceEl) countInsuranceEl.textContent = posts.filter(p => p.board === "insurance").length.toLocaleString();
-  if (countVisaEl) countVisaEl.textContent = posts.filter(p => p.board === "visa").length.toLocaleString();
-  if (countJobEl) countJobEl.textContent = posts.filter(p => p.board === "job").length.toLocaleString();
-  if (countResumeEl) countResumeEl.textContent = posts.filter(p => p.board === "resume").length.toLocaleString();
+  // [한글 주석: 동적 카테고리별 글 수 집계 및 뱃지 업데이트]
+  updateCategoryCounts();
 
   let filtered = posts.filter(post => {
     if (currentBoard !== "all" && post.board !== currentBoard) return false;
@@ -354,8 +401,12 @@ function renderCommunityTable() {
     }
 
     let secretBadge = "";
-    if (post.isSecret || post.board === "resume") {
+    const postCatConfig = currentCategories.find(c => c.id === post.board);
+    const postCatPerm = postCatConfig ? (postCatConfig.readPermission || "all") : (post.board === "resume" ? "admin" : "all");
+    if (post.isSecret || postCatPerm === "admin") {
       secretBadge = `<span style="color: #f59e0b; font-size: 0.8rem; margin-right: 0.3rem;"><i class="fa-solid fa-lock"></i> 비밀글</span>`;
+    } else if (postCatPerm === "member") {
+      secretBadge = `<span style="color: #a5b4fc; font-size: 0.8rem; margin-right: 0.3rem;"><i class="fa-solid fa-user-group"></i> 회원전용</span>`;
     }
 
     const commentHtml = post.commentCount > 0 ? `<span class="cafe-comment-cnt">[${post.commentCount}]</span>` : "";
@@ -456,7 +507,7 @@ window.changeCommunityPage = function(pageNum) {
 };
 
 /**
- * [한글 주석: 게시글 상세 보기 뷰 및 비밀글/이력서 권한 검증 모듈]
+ * [한글 주석: 게시글 상세 보기 뷰 및 카테고리별 글 열람 권한 검증 모듈]
  */
 function showCafeDetailSection(postIndex) {
   const postListSection = document.getElementById("cafe-post-list-section");
@@ -485,11 +536,24 @@ function showCafeDetailSection(postIndex) {
                          currentUserName === "최고관리자" ||
                          currentUserName === "관리자";
 
-  const isSecretPost = post.isSecret || post.board === "resume";
+  // [한글 주석: 해당 게시글이 속한 카테고리의 글 열람 권한(readPermission) 동적 판별]
+  const targetBoard = post.board || "notice";
+  const catConfig = currentCategories.find(c => c.id === targetBoard);
+  const catReadPerm = catConfig ? (catConfig.readPermission || "all") : (targetBoard === "resume" ? "admin" : "all");
 
-  // [한글 주석: 이력서업로드 및 비밀글 열람 권한 차단 - 작성자 본인 및 지정 관리자(super_admin, admin, admin_user) 전용]
+  const isSecretPost = post.isSecret === true || catReadPerm === "admin";
+
+  // [한글 주석: 1단계 - 비밀글 / 관리자 전용 게시판 열람 권한 체크: 작성자 본인 및 관리자만 허용]
   if (isSecretPost && !isAuthor && !isAllowedAdmin) {
     alert("🔒 비밀글입니다. 작성자 본인과 지정된 관리자(super_admin, admin, admin_user) 등급만 열람하실 수 있습니다.");
+    return;
+  }
+
+  // [한글 주석: 2단계 - 로그인 회원 전용 게시판 열람 권한 체크: 비로그인 사용자 차단 및 로그인 유도]
+  if (catReadPerm === "member" && !currentUid) {
+    alert("👥 회원 전용 게시판입니다. 로그인 후 열람해 주시기 바랍니다.");
+    const btnLogin = document.getElementById("btn-login");
+    if (btnLogin) btnLogin.click();
     return;
   }
 
@@ -513,15 +577,8 @@ function showCafeDetailSection(postIndex) {
     } catch (e) {}
   }
 
-  const boardNames = {
-    notice: "📢 공지사항",
-    clinic: "🏥 병원정보",
-    insurance: "🛡️ 보험정보",
-    visa: "🛂 비자정보",
-    job: "💼 구인구직",
-    resume: "📄 이력서업로드"
-  };
-  const boardLabel = boardNames[post.board] || "📋 커뮤니티";
+  // [한글 주석: 동적 카테고리 설정에 기반한 게시판 라벨 매핑]
+  const boardLabel = getBoardLabel(post.board);
 
   let authorActionsHtml = "";
   if (isAuthor || isAllowedAdmin) {
@@ -1234,34 +1291,6 @@ async function submitNewPost() {
 window.submitNewPost = submitNewPost;
 
 function initEventHandlers() {
-  const menuItems = document.querySelectorAll(".cafe-menu-item");
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
-      menuItems.forEach(m => m.classList.remove("active"));
-      item.classList.add("active");
-
-      currentBoard = item.getAttribute("data-board");
-      currentPage = 1;
-
-      showCafeListSection();
-
-      const boardNames = {
-        all: "전체글보기",
-        notice: "📢 공지사항",
-        clinic: "🏥 병원정보",
-        insurance: "🛡️ 보험정보",
-        visa: "🛂 비자정보",
-        job: "💼 구인구직",
-        resume: "📄 이력서업로드"
-      };
-
-      const titleEl = document.getElementById("board-title-display");
-      if (titleEl) titleEl.textContent = boardNames[currentBoard] || "전체글보기";
-
-      renderCommunityTable();
-    });
-  });
-
   const chkNotice = document.getElementById("chk-hide-notice");
   if (chkNotice) {
     chkNotice.addEventListener("change", (e) => {
@@ -1400,3 +1429,548 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+/* ==========================================================================
+   [한글 주석: 카테고리 관리 · 설정 에디터 마스터 비즈니스 로직]
+   - Firestore settings/community_categories 문서 연동
+   - HTML5 드래그 앤 드롭 순서 변경 및 세부 설정 폼 바인딩
+   - 좌측 사이드바 메뉴 및 글쓰기 드롭다운 실시간 동적 렌더링
+   ========================================================================== */
+
+/**
+ * [한글 주석] Firestore에서 카테고리 설정 로드 함수
+ */
+async function loadCommunityCategories() {
+  try {
+    const catDocRef = doc(db, "settings", "community_categories");
+    const catDocSnap = await getDoc(catDocRef);
+    if (catDocSnap.exists()) {
+      const data = catDocSnap.data();
+      if (Array.isArray(data.categories) && data.categories.length > 0) {
+        // [한글 주석: Firestore에 저장된 카테고리 데이터에 readPermission 필드가 누락된 경우 기본값으로 안전 보정]
+        currentCategories = data.categories.map(c => {
+          if (c.type === "divider") return c;
+          return {
+            ...c,
+            readPermission: c.readPermission || (c.id === "resume" ? "admin" : "all")
+          };
+        });
+      } else {
+        currentCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      }
+    } else {
+      currentCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      // [성능 최적화] 백그라운드 1회 시딩
+      setDoc(catDocRef, {
+        categories: DEFAULT_CATEGORIES,
+        updatedAt: serverTimestamp()
+      }).catch(console.error);
+    }
+  } catch (e) {
+    console.warn("[Category] 카테고리 로드 중 예외 발생:", e);
+    currentCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+  }
+
+  renderSidebarMenu();
+  renderWriteBoardSelect();
+  updateCategoryCounts();
+  updateBoardTitleDisplay();
+}
+
+/**
+ * [한글 주석] 좌측 사이드바 메뉴 목록 동적 렌더링 함수
+ */
+function renderSidebarMenu() {
+  const menuList = document.getElementById("cafe-sidebar-menu-list");
+  if (!menuList) return;
+
+  let html = `
+    <li class="cafe-menu-item ${currentBoard === 'all' ? 'active' : ''}" data-board="all">
+      <span>📋 전체글보기</span>
+      <span class="cafe-menu-count" id="count-all">0</span>
+    </li>
+  `;
+
+  currentCategories.forEach((cat) => {
+    if (cat.type === "divider") {
+      html += `<li class="cafe-menu-divider"></li>`;
+      return;
+    }
+    // [한글 주석: 비공개 카테고리는 일반 사용자에게 숨김 처리, 관리자/설정 권한자에게는 표출]
+    if (!cat.isPublic && !window.canCommunitySetting) {
+      return;
+    }
+    const countDisplay = cat.showCount !== false ? `<span class="cafe-menu-count" id="count-${cat.id}">0</span>` : "";
+    const isActive = currentBoard === cat.id ? "active" : "";
+    const privateBadge = !cat.isPublic ? `<span class="cat-item-private-badge">비공개</span>` : "";
+
+    html += `
+      <li class="cafe-menu-item ${isActive}" data-board="${cat.id}">
+        <span>${cat.icon || '📁'} ${escapeHtml(cat.name)}${privateBadge}</span>
+        ${countDisplay}
+      </li>
+    `;
+  });
+
+  menuList.innerHTML = html;
+
+  // 사이드바 메뉴 클릭 이벤트 바인딩
+  menuList.querySelectorAll(".cafe-menu-item").forEach(item => {
+    item.addEventListener("click", () => {
+      menuList.querySelectorAll(".cafe-menu-item").forEach(m => m.classList.remove("active"));
+      item.classList.add("active");
+      currentBoard = item.getAttribute("data-board");
+      currentPage = 1;
+      showCafeListSection();
+      updateBoardTitleDisplay();
+      renderCommunityTable();
+    });
+  });
+}
+
+/**
+ * [한글 주석] 글쓰기 폼 내 카테고리(게시판) 선택 셀렉트 박스 동적 빌드 함수
+ */
+function renderWriteBoardSelect() {
+  const selectEl = document.getElementById("write-board-select");
+  if (!selectEl) return;
+
+  let html = "";
+  currentCategories.forEach(cat => {
+    if (cat.type === "divider") return;
+    html += `<option value="${cat.id}">${cat.icon || '📁'} ${escapeHtml(cat.name)}</option>`;
+  });
+
+  selectEl.innerHTML = html;
+  if (currentBoard && currentBoard !== "all") {
+    selectEl.value = currentBoard;
+  }
+}
+
+/**
+ * [한글 주석] 카테고리 ID로부터 라벨 문자열 조회 함수
+ */
+function getBoardLabel(boardId) {
+  if (boardId === "all") return "전체글보기";
+  const cat = currentCategories.find(c => c.id === boardId);
+  if (cat) return `${cat.icon || '📁'} ${cat.name}`;
+  return "📋 커뮤니티";
+}
+
+/**
+ * [한글 주석] 상단 게시판 제목 헤더 업데이트 함수
+ */
+function updateBoardTitleDisplay() {
+  const titleEl = document.getElementById("board-title-display");
+  if (titleEl) {
+    titleEl.textContent = getBoardLabel(currentBoard);
+  }
+}
+
+/**
+ * [한글 주석] 동적 카테고리별 글 수 집계 및 뱃지 업데이트 함수
+ */
+function updateCategoryCounts() {
+  const allPosts = window.combinedPosts || [];
+  const countAllEl = document.getElementById("count-all");
+  if (countAllEl) countAllEl.textContent = allPosts.length.toLocaleString();
+
+  currentCategories.forEach(cat => {
+    if (cat.type === "divider") return;
+    const countEl = document.getElementById(`count-${cat.id}`);
+    if (countEl) {
+      const c = allPosts.filter(p => p.board === cat.id).length;
+      countEl.textContent = c.toLocaleString();
+    }
+  });
+
+  const totalDisplay = document.getElementById("total-count-display");
+  if (totalDisplay) {
+    if (currentBoard === "all") {
+      totalDisplay.textContent = `${allPosts.length}개의 글`;
+    } else {
+      const filtered = allPosts.filter(p => p.board === currentBoard);
+      totalDisplay.textContent = `${filtered.length}개의 글`;
+    }
+  }
+}
+
+/**
+ * [한글 주석] 카테고리 관리 · 설정 인라인 에디터 초기화 함수
+ */
+function initCategoryManageEditor() {
+  editingCategories = JSON.parse(JSON.stringify(currentCategories));
+  if (editingCategories.length > 0) {
+    selectedCatIndex = 0;
+  } else {
+    selectedCatIndex = -1;
+  }
+  renderCategoryEditorList();
+  bindCategoryDetailForm();
+}
+window.initCategoryManageEditor = initCategoryManageEditor;
+
+/**
+ * [한글 주석] 에디터 좌측 카테고리 트리 목록 렌더링 함수
+ */
+function renderCategoryEditorList() {
+  const listEl = document.getElementById("cat-tree-item-list");
+  const countEl = document.getElementById("cat-tree-total-count");
+  if (!listEl) return;
+
+  const validCats = editingCategories.filter(c => c.type !== "divider");
+  if (countEl) countEl.textContent = `(${validCats.length})`;
+
+  listEl.innerHTML = "";
+
+  if (editingCategories.length === 0) {
+    listEl.innerHTML = `<li style="text-align:center; padding:2rem 1rem; color:#64748b; font-size:0.85rem;">카테고리가 없습니다. 상단 '카테고리 추가'를 눌러주세요.</li>`;
+    bindCategoryDetailForm();
+    return;
+  }
+
+  editingCategories.forEach((cat, idx) => {
+    const li = document.createElement("li");
+    li.className = `cat-tree-item ${idx === selectedCatIndex ? 'active' : ''} ${cat.type === 'divider' ? 'is-divider' : ''}`;
+    li.draggable = true;
+    li.dataset.index = idx;
+
+    if (cat.type === "divider") {
+      li.innerHTML = `
+        <div class="cat-item-left" style="width: 100%;">
+          <i class="fa-solid fa-grip-vertical cat-drag-handle" title="드래그하여 순서 이동"></i>
+          <span style="color: #64748b; font-size: 0.78rem; font-weight:700;">구분선</span>
+          <div class="cat-tree-divider-line"></div>
+        </div>
+      `;
+    } else {
+      const privateBadge = !cat.isPublic ? `<span class="cat-item-private-badge">비공개</span>` : "";
+      const defaultBadge = cat.isDefault ? `<span style="background: rgba(16,185,129,0.2); color:#34d399; font-size:0.68rem; padding:0.1rem 0.35rem; border-radius:4px; margin-left:0.25rem;">대표</span>` : "";
+      
+      // [한글 주석: 카테고리별 글 열람 권한 뱃지 (all: 전체공개, member: 회원전용, admin: 비밀글·관리자)]
+      let permBadge = "";
+      const rp = cat.readPermission || (cat.id === "resume" ? "admin" : "all");
+      if (rp === "admin") {
+        permBadge = `<span class="cat-item-perm-badge admin"><i class="fa-solid fa-lock"></i> 관리자</span>`;
+      } else if (rp === "member") {
+        permBadge = `<span class="cat-item-perm-badge member"><i class="fa-solid fa-user-group"></i> 회원</span>`;
+      }
+
+      li.innerHTML = `
+        <div class="cat-item-left">
+          <i class="fa-solid fa-grip-vertical cat-drag-handle" title="드래그하여 순서 이동"></i>
+          <span class="cat-item-icon">${cat.icon || '📁'}</span>
+          <span class="cat-item-name">${escapeHtml(cat.name)}</span>
+          ${permBadge}
+          ${privateBadge}
+          ${defaultBadge}
+        </div>
+        <span class="cat-item-count">${cat.showCount !== false ? '●' : '○'}</span>
+      `;
+    }
+
+    li.addEventListener("click", () => {
+      selectedCatIndex = idx;
+      renderCategoryEditorList();
+      bindCategoryDetailForm();
+    });
+
+    li.addEventListener("dragstart", handleCatDragStart);
+    li.addEventListener("dragover", handleCatDragOver);
+    li.addEventListener("dragleave", handleCatDragLeave);
+    li.addEventListener("drop", handleCatDrop);
+    li.addEventListener("dragend", handleCatDragEnd);
+
+    listEl.appendChild(li);
+  });
+}
+
+// [한글 주석: HTML5 드래그 앤 드롭 순서 변경 이벤트 핸들러]
+let dragSrcIndex = null;
+function handleCatDragStart(e) {
+  dragSrcIndex = parseInt(this.dataset.index, 10);
+  this.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+}
+function handleCatDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  this.classList.add("drag-over");
+}
+function handleCatDragLeave() {
+  this.classList.remove("drag-over");
+}
+function handleCatDrop(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  this.classList.remove("drag-over");
+  const targetIndex = parseInt(this.dataset.index, 10);
+  if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+    const moved = editingCategories.splice(dragSrcIndex, 1)[0];
+    editingCategories.splice(targetIndex, 0, moved);
+    selectedCatIndex = targetIndex;
+    renderCategoryEditorList();
+    bindCategoryDetailForm();
+  }
+}
+function handleCatDragEnd() {
+  this.classList.remove("dragging");
+  document.querySelectorAll(".cat-tree-item").forEach(el => el.classList.remove("drag-over"));
+  dragSrcIndex = null;
+}
+
+/**
+ * [한글 주석] 우측 세부 설정 폼 바인딩 함수
+ */
+function bindCategoryDetailForm() {
+  const formEl = document.getElementById("form-cat-detail");
+  const emptyNotice = document.getElementById("cat-empty-notice");
+  if (!formEl) return;
+
+  if (selectedCatIndex < 0 || selectedCatIndex >= editingCategories.length) {
+    formEl.style.display = "none";
+    if (emptyNotice) {
+      emptyNotice.style.display = "block";
+      emptyNotice.innerHTML = `
+        <i class="fa-solid fa-hand-pointer" style="font-size: 2rem; margin-bottom: 1rem; color: #00f3ff;"></i>
+        <p>좌측 목록에서 설정할 카테고리를 선택해 주세요.</p>
+      `;
+    }
+    return;
+  }
+
+  const cat = editingCategories[selectedCatIndex];
+  if (cat.type === "divider") {
+    formEl.style.display = "none";
+    if (emptyNotice) {
+      emptyNotice.style.display = "block";
+      emptyNotice.innerHTML = `
+        <i class="fa-solid fa-minus" style="font-size: 2rem; margin-bottom: 1rem; color: #00f3ff;"></i>
+        <p>선택된 항목은 '구분선'입니다.<br>드래그하거나 순서 정렬 버튼으로 위치를 변경할 수 있습니다.</p>
+        <button type="button" class="btn-cat-tool danger" onclick="window.deleteSelectedCategoryItem()" style="margin-top:1rem;">
+          <i class="fa-solid fa-trash-can"></i> 이 구분선 삭제
+        </button>
+      `;
+    }
+    return;
+  }
+
+  formEl.style.display = "block";
+  if (emptyNotice) emptyNotice.style.display = "none";
+
+  const nameInput = document.getElementById("cat-detail-name");
+  const iconPreview = document.getElementById("cat-selected-icon-preview");
+  const showCountChk = document.getElementById("cat-detail-show-count");
+  const isDefaultChk = document.getElementById("cat-detail-is-default");
+  const publicYes = document.getElementById("cat-public-yes");
+  const publicNo = document.getElementById("cat-public-no");
+  const readPermAll = document.getElementById("cat-read-perm-all");
+  const readPermMember = document.getElementById("cat-read-perm-member");
+  const readPermAdmin = document.getElementById("cat-read-perm-admin");
+  const viewList = document.getElementById("cat-view-list");
+  const viewCard = document.getElementById("cat-view-card");
+  const viewAlbum = document.getElementById("cat-view-album");
+
+  if (nameInput) nameInput.value = cat.name || "";
+  if (iconPreview) iconPreview.textContent = cat.icon || "📢";
+  if (showCountChk) showCountChk.checked = cat.showCount !== false;
+  if (isDefaultChk) isDefaultChk.checked = cat.isDefault === true;
+
+  if (cat.isPublic !== false) {
+    if (publicYes) publicYes.checked = true;
+  } else {
+    if (publicNo) publicNo.checked = true;
+  }
+
+  // [한글 주석: 글 열람 권한 라디오 선택 바인딩]
+  const rp = cat.readPermission || (cat.id === "resume" ? "admin" : "all");
+  if (rp === "admin" && readPermAdmin) readPermAdmin.checked = true;
+  else if (rp === "member" && readPermMember) readPermMember.checked = true;
+  else if (readPermAll) readPermAll.checked = true;
+
+  const vt = cat.viewType || "list";
+  if (vt === "card" && viewCard) viewCard.checked = true;
+  else if (vt === "album" && viewAlbum) viewAlbum.checked = true;
+  else if (viewList) viewList.checked = true;
+}
+
+window.handleCatNameInput = function(val) {
+  if (selectedCatIndex >= 0 && selectedCatIndex < editingCategories.length) {
+    editingCategories[selectedCatIndex].name = val;
+    const activeItem = document.querySelector(`.cat-tree-item[data-index="${selectedCatIndex}"] .cat-item-name`);
+    if (activeItem) activeItem.textContent = val || "이름 없음";
+  }
+};
+
+window.handleCatSettingChange = function() {
+  if (selectedCatIndex < 0 || selectedCatIndex >= editingCategories.length) return;
+  const cat = editingCategories[selectedCatIndex];
+  if (cat.type === "divider") return;
+
+  const showCountChk = document.getElementById("cat-detail-show-count");
+  const isDefaultChk = document.getElementById("cat-detail-is-default");
+  const publicYes = document.getElementById("cat-public-yes");
+  const readPermMember = document.getElementById("cat-read-perm-member");
+  const readPermAdmin = document.getElementById("cat-read-perm-admin");
+  const viewCard = document.getElementById("cat-view-card");
+  const viewAlbum = document.getElementById("cat-view-album");
+
+  cat.showCount = showCountChk ? showCountChk.checked : true;
+  cat.isPublic = publicYes ? publicYes.checked : true;
+  
+  // [한글 주석: 글 열람 권한 상태 저장 (all / member / admin)]
+  if (readPermAdmin && readPermAdmin.checked) cat.readPermission = "admin";
+  else if (readPermMember && readPermMember.checked) cat.readPermission = "member";
+  else cat.readPermission = "all";
+
+  if (isDefaultChk && isDefaultChk.checked) {
+    editingCategories.forEach(c => c.isDefault = false);
+    cat.isDefault = true;
+  } else if (isDefaultChk) {
+    cat.isDefault = false;
+  }
+
+  if (viewCard && viewCard.checked) cat.viewType = "card";
+  else if (viewAlbum && viewAlbum.checked) cat.viewType = "album";
+  else cat.viewType = "list";
+
+  renderCategoryEditorList();
+};
+
+window.toggleCatIconPicker = function(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById("cat-icon-picker-dropdown");
+  if (dropdown) {
+    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+  }
+};
+
+window.selectCategoryIcon = function(icon) {
+  if (selectedCatIndex >= 0 && selectedCatIndex < editingCategories.length) {
+    editingCategories[selectedCatIndex].icon = icon;
+    const iconPreview = document.getElementById("cat-selected-icon-preview");
+    if (iconPreview) iconPreview.textContent = icon;
+    const dropdown = document.getElementById("cat-icon-picker-dropdown");
+    if (dropdown) dropdown.style.display = "none";
+    renderCategoryEditorList();
+  }
+};
+
+document.addEventListener("click", (e) => {
+  const pickerWrap = document.querySelector(".cat-icon-picker-wrap");
+  const dropdown = document.getElementById("cat-icon-picker-dropdown");
+  if (dropdown && pickerWrap && !pickerWrap.contains(e.target)) {
+    dropdown.style.display = "none";
+  }
+});
+
+window.addNewCategoryItem = function() {
+  const newId = "cat_" + Date.now().toString(36);
+  const newItem = {
+    id: newId,
+    name: "새 카테고리",
+    icon: "📁",
+    isPublic: true,
+    readPermission: "all",
+    showCount: true,
+    viewType: "list",
+    isDefault: false,
+    type: "category"
+  };
+  editingCategories.push(newItem);
+  selectedCatIndex = editingCategories.length - 1;
+  renderCategoryEditorList();
+  bindCategoryDetailForm();
+  const nameInput = document.getElementById("cat-detail-name");
+  if (nameInput) {
+    nameInput.focus();
+    nameInput.select();
+  }
+};
+
+window.addNewDividerItem = function() {
+  const newDivider = {
+    id: "div_" + Date.now().toString(36),
+    type: "divider"
+  };
+  if (selectedCatIndex >= 0 && selectedCatIndex < editingCategories.length) {
+    editingCategories.splice(selectedCatIndex + 1, 0, newDivider);
+    selectedCatIndex = selectedCatIndex + 1;
+  } else {
+    editingCategories.push(newDivider);
+    selectedCatIndex = editingCategories.length - 1;
+  }
+  renderCategoryEditorList();
+  bindCategoryDetailForm();
+};
+
+window.deleteSelectedCategoryItem = function() {
+  if (selectedCatIndex < 0 || selectedCatIndex >= editingCategories.length) {
+    alert("삭제할 카테고리를 먼저 선택해 주세요.");
+    return;
+  }
+  const item = editingCategories[selectedCatIndex];
+  const label = item.type === "divider" ? "구분선" : `[${item.name}] 카테고리`;
+  if (confirm(`${label}을(를) 삭제하시겠습니까?`)) {
+    editingCategories.splice(selectedCatIndex, 1);
+    if (selectedCatIndex >= editingCategories.length) {
+      selectedCatIndex = editingCategories.length - 1;
+    }
+    renderCategoryEditorList();
+    bindCategoryDetailForm();
+  }
+};
+
+window.moveCategoryOrder = function(dir) {
+  if (selectedCatIndex < 0 || selectedCatIndex >= editingCategories.length) return;
+  const cur = selectedCatIndex;
+  if (dir === "up" && cur > 0) {
+    const item = editingCategories.splice(cur, 1)[0];
+    editingCategories.splice(cur - 1, 0, item);
+    selectedCatIndex = cur - 1;
+  } else if (dir === "down" && cur < editingCategories.length - 1) {
+    const item = editingCategories.splice(cur, 1)[0];
+    editingCategories.splice(cur + 1, 0, item);
+    selectedCatIndex = cur + 1;
+  } else if (dir === "top" && cur > 0) {
+    const item = editingCategories.splice(cur, 1)[0];
+    editingCategories.unshift(item);
+    selectedCatIndex = 0;
+  } else if (dir === "bottom" && cur < editingCategories.length - 1) {
+    const item = editingCategories.splice(cur, 1)[0];
+    editingCategories.push(item);
+    selectedCatIndex = editingCategories.length - 1;
+  }
+  renderCategoryEditorList();
+  bindCategoryDetailForm();
+};
+
+/**
+ * [한글 주석] 에디터에서 변경한 카테고리 목록을 Firestore에 저장하고 화면을 즉시 동기화하는 함수
+ */
+async function saveCategoryManageChanges() {
+  try {
+    const validCats = editingCategories.filter(c => c.type !== "divider");
+    if (validCats.length === 0) {
+      alert("카테고리가 최소 1개 이상 존재해야 합니다.");
+      return;
+    }
+    const catDocRef = doc(db, "settings", "community_categories");
+    await setDoc(catDocRef, {
+      categories: editingCategories,
+      updatedAt: serverTimestamp(),
+      updatedBy: window.currentUserUid || "admin"
+    });
+    currentCategories = JSON.parse(JSON.stringify(editingCategories));
+    renderSidebarMenu();
+    renderWriteBoardSelect();
+    updateCategoryCounts();
+    updateBoardTitleDisplay();
+    alert("카테고리 설정이 성공적으로 저장되었습니다.");
+    showCafeListSection();
+  } catch (e) {
+    console.error("카테고리 저장 중 오류:", e);
+    alert("저장에 실패했습니다: " + e.message);
+  }
+}
+window.saveCategoryManageChanges = saveCategoryManageChanges;
