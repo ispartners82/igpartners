@@ -203,6 +203,11 @@ function bindLangDropdownList() {
   };
 }
 
+// [한글 주석: DOM 트리가 이미 로드되어 있거나 빠른 파싱 환경에서 0ms 만에 즉시 언어 목록 주입]
+try {
+  bindLangDropdownList();
+} catch (e) {}
+
 /**
  * [한글 주석: 언어 선택 드롭다운 패널 열기/닫기 토글 전용 전역 함수 (100% 무조건 작동 보장)]
  * @param {Event} e 클릭 이벤트 객체
