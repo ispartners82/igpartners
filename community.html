@@ -15,8 +15,8 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260820_19)] -->
-  <link rel="stylesheet" href="css/style.css?v=260820_19">
+  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260820_21)] -->
+  <link rel="stylesheet" href="css/style.css?v=260820_21">
 
   <!-- [한글 주석: 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장] -->
   <script>
@@ -244,12 +244,25 @@
           </li>
         </ul>
 
+        <!-- [한글 주석: HTML 정적 파싱 순간 뱃지가 지워졌다 생기던 랙을 원천 차단하기 위해 일관된 유저 캡슐 구조 적용] -->
         <div class="nav-auth-area" id="nav-auth-area">
           <div id="auth-user" class="auth-user-badge">
             <div class="user-capsule">
-              <img id="user-photo" src="" alt="User Photo" class="user-avatar"
-                onerror="this.src='https://lh3.googleusercontent.com/a/default-user=s96-c'">
-              <span id="user-name" class="user-display-name"></span>
+              <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile"
+                class="user-avatar">
+              <span id="user-name" class="user-nickname"></span>
+              <script>
+                (function () {
+                  try {
+                    var c = sessionStorage.getItem("auth_user_cache");
+                    if (c) {
+                      var u = JSON.parse(c);
+                      if (u.displayName) document.getElementById("user-name").textContent = u.displayName;
+                      if (u.photoURL) document.getElementById("user-photo").src = u.photoURL;
+                    }
+                  } catch (e) { }
+                })();
+              </script>
             </div>
             <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res">📅 예약내역</a>
             <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin">👑 관리자</a>
@@ -258,6 +271,55 @@
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
         </div>
+
+        <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함 및 active 적용] -->
+        <div class="nav-mobile-quick" id="nav-mobile-quick">
+          <a href="/index.html" class="quick-icon-btn" title="홈">🏠</a>
+          <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
+          <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
+          <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
+          <a href="/booking-lang.html" class="quick-icon-btn" title="진료 예약">📅</a>
+          <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
+          <a href="/community.html" class="quick-icon-btn active" title="커뮤니티">💬</a>
+          <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn" style="display: none;"
+            title="예약내역">📋</a>
+          <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn" style="display: none;"
+            title="관리자">👑</a>
+          <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;"
+            title="예약통계">📊</a>
+          <button id="quick-btn-login" class="quick-icon-btn" title="로그인">👤</button>
+          <script>
+            (function () {
+              try {
+                var c = sessionStorage.getItem("auth_user_cache");
+                if (c) {
+                  var u = JSON.parse(c);
+                  document.getElementById("quick-btn-login").style.display = "none";
+                  document.getElementById("quick-btn-my-reservations").style.display = "inline-flex";
+                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
+                  if (p) {
+                    var perm = JSON.parse(p);
+                    if (perm && perm.permissions) {
+                      if (perm.permissions.isAdmin) {
+                        document.getElementById("quick-btn-admin-dashboard").style.display = "inline-flex";
+                      }
+                      if (perm.permissions.hasStats || perm.permissions.isAdmin) {
+                        document.getElementById("quick-btn-stats-dashboard").style.display = "inline-flex";
+                      }
+                    }
+                  }
+                }
+              } catch (e) { }
+            })();
+          </script>
+        </div>
+
+        <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
+        <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
       </div>
     </nav>
   </header>
@@ -729,10 +791,10 @@
 
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260820_19)] -->
-  <script type="module" src="/js/navigation.js?v=260820_19"></script>
-  <script type="module" src="/js/auth.js?v=260820_19"></script>
-  <script type="module" src="/js/community.js?v=260820_19"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260820_21)] -->
+  <script type="module" src="/js/navigation.js?v=260820_21"></script>
+  <script type="module" src="/js/auth.js?v=260820_21"></script>
+  <script type="module" src="/js/community.js?v=260820_21"></script>
 </body>
 
 </html>

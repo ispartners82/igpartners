@@ -305,6 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (href === "/my-reservations.html" && currentPath.endsWith("my-reservations.html")) isActive = true;
       else if (href === "/admin.html" && currentPath.endsWith("admin.html")) isActive = true;
       else if (href === "/stats.html" && currentPath.endsWith("stats.html")) isActive = true;
+      else if (href === "/community.html" && currentPath.includes("community.html")) isActive = true;
 
       if (link.classList.contains("nav-link") || link.classList.contains("quick-icon-btn") || link.classList.contains("btn-nav-action")) {
         link.classList.toggle("active", isActive);

@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260820_19)] -->
-  <link rel="stylesheet" href="css/style.css?v=260820_19">
+  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260820_21)] -->
+  <link rel="stylesheet" href="css/style.css?v=260820_21">
 </head>
 
 <body class="home-page">
@@ -87,7 +87,7 @@
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
         </div>
 
-        <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 사용자 요청에 따라 홈 왼쪽의 언어선택(🌐) 아이콘을 삭제함] -->
+        <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함] -->
         <div class="nav-mobile-quick" id="nav-mobile-quick">
           <a href="/index.html" class="quick-icon-btn active" title="홈">🏠</a>
           <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
@@ -95,6 +95,7 @@
           <a href="/about.html#services" class="quick-icon-btn" title="의료통역">🌐</a>
           <a href="/booking-lang.html" class="quick-icon-btn" title="진료 예약">📅</a>
           <a href="/index.html#partners" class="quick-icon-btn" title="협력 회사">🤝</a>
+          <a href="/community.html" class="quick-icon-btn" title="커뮤니티">💬</a>
           <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn" style="display: none;"
             title="예약내역">📋</a>
           <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn" style="display: none;"
@@ -190,10 +191,10 @@
   <!-- [한글 주석: 유지보수 용이성을 위해 푸터 내용을 공통 JS(navigation.js)에서 동적 주입하도록 구조 개선] -->
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260820_19)] -->
-  <script type="module" src="js/navigation.js?v=260820_19"></script>
-  <script type="module" src="/js/auth.js?v=260820_19"></script>
-  <script type="module" src="/js/ad-slider.js?v=260820_19"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260820_21)] -->
+  <script type="module" src="js/navigation.js?v=260820_21"></script>
+  <script type="module" src="/js/auth.js?v=260820_21"></script>
+  <script type="module" src="/js/ad-slider.js?v=260820_21"></script>
 
   <!-- [한글 주석: 구글 로그인 유도 안내 모달 팝업 - 다국어 편의성을 위해 한국어와 영어를 병기하고 로그인 버튼 내 베트남어를 제거함] -->
   <div id="login-required-modal" class="modal-backdrop" style="display: none;">
