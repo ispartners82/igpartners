@@ -2979,10 +2979,12 @@ body.home-page {
   pointer-events: none;
 }
 
+/* [한글 주석: 메인 히어로 섹션 컨텐츠 래퍼 - 데스크톱 전체화면에서 타이틀이 한 줄로 시원하게 배치되도록 너비 확장] */
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
+  max-width: 1200px;
+  margin: 0 auto;
   animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -2999,15 +3001,17 @@ body.home-page {
   letter-spacing: 0.5px;
 }
 
+/* [한글 주석: 메인 히어로 타이틀 - 데스크톱 전체화면에서 한 줄로 정돈되어 표시되고 단어 잘림 방지] */
 .hero-title {
-  font-size: 4.25rem;
+  font-size: clamp(2.2rem, 3.8vw, 3.6rem);
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -2px;
+  line-height: 1.25;
+  letter-spacing: -1.5px;
   margin-bottom: 1.5rem;
   background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 60%, #c084fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  word-break: keep-all;
 }
 
 .hero-desc {
@@ -3725,8 +3729,10 @@ body.home-page {
      ========================================================================== */
 
 
+  /* [한글 주석: 모바일 화면에서의 타이틀 크기 및 가독성 최적화] */
   .hero-title {
-    font-size: 2.75rem;
+    font-size: 2.1rem;
+    line-height: 1.35;
   }
 
   .hero-desc {

@@ -23,7 +23,7 @@ const LANG_LIST = [
  * [한글 주석: 상단 메뉴 항목별 15개국어 번역 딕셔너리 데이터베이스]
  */
 const MENU_TRANSLATIONS = {
-  ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '의료통역', booking: '진료 예약', partners: '협력 회사', community: '커뮤니티', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
+  ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '의료통역', booking: '진료 예약', partners: '파트너스', community: '커뮤니티', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
   ja: { langSelect: '言語選択', home: 'ホーム', about: '会社紹介', services: '提供サービス', interpretation: '医療通訳', booking: '診療予約', partners: 'パートナー', community: 'コミュニティ', myRes: '📅 予約履歴', admin: '👑 관리자', stats: '📊 予約統計', logout: 'ログアウト', login: 'ログイン' },
   vi: { langSelect: 'Chọn ngôn ngữ', home: 'Trang chủ', about: 'Giới thiệu', services: 'Dịch vụ', interpretation: 'Thông dịch y tế', booking: 'Đặt lịch khám', partners: 'Đối tác', community: 'Cộng đồng', myRes: '📅 Lịch đặt', admin: '👑 Quản trị', stats: '📊 Thống kê', logout: 'Đăng xuất', login: 'Đăng nhập' },
   en: { langSelect: 'Language', home: 'Home', about: 'About Us', services: 'Services', interpretation: 'Medical Interpretation', booking: 'Book Appointment', partners: 'Partners', community: 'Community', myRes: '📅 My Bookings', admin: '👑 Admin', stats: '📊 Stats', logout: 'Logout', login: 'Login' },
