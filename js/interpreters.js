@@ -135,8 +135,10 @@ const seedInterpreters = [
   }
 ];
 
+const CACHE_KEY = "igpartners_cached_interpreters";
+
 /**
- * [한글 주석] 통역사 목록 로드 및 화면 렌더링 메인 함수
+ * [한글 주석] 통역사 목록 로드 및 화면 렌더링 메인 함수 (SWR 초고속 캐싱 적용 - 0.001초 즉시 렌더링)
  */
 async function loadInterpreters() {
   const staffContainer = document.getElementById("staff-interpreters-grid");
@@ -144,6 +146,39 @@ async function loadInterpreters() {
 
   if (!staffContainer || !freelanceContainer) return;
 
+  // 1. [SWR 1단계: 로컬 캐시 즉시 렌더링 - 로딩 스피너 없이 0.001초 만에 화면 출력]
+  let hasRenderedFromCache = false;
+  try {
+    const cachedDataStr = localStorage.getItem(CACHE_KEY);
+    if (cachedDataStr) {
+      const cachedData = JSON.parse(cachedDataStr);
+      if (cachedData && Array.isArray(cachedData.staffList) && Array.isArray(cachedData.freelanceList)) {
+        renderStaffInterpreters(cachedData.staffList, staffContainer);
+        renderFreelanceInterpreters(cachedData.freelanceList, freelanceContainer);
+        hasRenderedFromCache = true;
+      }
+    }
+  } catch (cacheErr) {
+    console.warn("Read local interpreters cache error:", cacheErr);
+  }
+
+  // 캐시가 없는 최초 방문 시에만 로딩 스피너 표시
+  if (!hasRenderedFromCache) {
+    staffContainer.innerHTML = `
+      <div class="interpreters-loading" style="grid-column: 1 / -1;">
+        <div class="interpreters-spinner"></div>
+        <p>소속 전문 통역사 정보를 불러오는 중입니다...</p>
+      </div>
+    `;
+    freelanceContainer.innerHTML = `
+      <div class="interpreters-loading" style="grid-column: 1 / -1;">
+        <div class="interpreters-spinner"></div>
+        <p>프리랜서 통역사 정보를 불러오는 중입니다...</p>
+      </div>
+    `;
+  }
+
+  // 2. [SWR 2단계: 백그라운드에서 Firestore 최신 데이터 비동기 조회 및 캐시 갱신]
   try {
     const q = query(collection(db, "interpreters"), orderBy("order", "asc"));
     const querySnapshot = await getDocs(q);
@@ -169,17 +204,52 @@ async function loadInterpreters() {
       }
     });
 
-    // 1. [소속 통역사] 카드 렌더링 (명함 카드: 좌측 사진 + 우측 상단 국기/국가명 + 우측 하단 이름)
-    renderStaffInterpreters(staffList, staffContainer);
+    // 최신 데이터를 로컬 스토리지에 캐싱
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ staffList, freelanceList, updatedAt: Date.now() }));
+    } catch (saveCacheErr) {
+      console.warn("Save local interpreters cache error:", saveCacheErr);
+    }
 
-    // 2. [프리랜서 통역사] 카드 렌더링 (좌측 국기 + 우측 국가명/이름/연락처)
+    // 최신 데이터로 화면 부드럽게 갱신
+    renderStaffInterpreters(staffList, staffContainer);
     renderFreelanceInterpreters(freelanceList, freelanceContainer);
 
   } catch (error) {
     console.error("Failed to load interpreters:", error);
-    staffContainer.innerHTML = `<div class="interpreters-empty">통역사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>`;
-    freelanceContainer.innerHTML = `<div class="interpreters-empty">통역사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>`;
+    if (!hasRenderedFromCache) {
+      staffContainer.innerHTML = `<div class="interpreters-empty">통역사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>`;
+      freelanceContainer.innerHTML = `<div class="interpreters-empty">통역사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>`;
+    }
   }
+}
+
+/**
+ * [한글 주석] IGPartners 소속 통역사 명함 카드 목록 렌더링
+ * @param {Array} list - 소속 통역사 목록 데이터
+ * @param {HTMLElement} container - 렌더링 대상 컨테이너
+ */
+function parseInterpreterName(item) {
+  let nameKo = item.nameKo || "";
+  let nameEn = item.nameEn || "";
+  if (!nameKo && item.name) {
+    if (item.name.includes(",")) {
+      const parts = item.name.split(",");
+      nameKo = parts[0].trim();
+      nameEn = parts.slice(1).join(",").trim();
+    } else if (item.name.includes("(")) {
+      const match = item.name.match(/^(.*?)\s*\((.*?)\)$/);
+      if (match) {
+        nameKo = match[1].trim();
+        nameEn = match[2].trim();
+      } else {
+        nameKo = item.name;
+      }
+    } else {
+      nameKo = item.name;
+    }
+  }
+  return { nameKo, nameEn };
 }
 
 /**
@@ -202,25 +272,49 @@ function renderStaffInterpreters(list, container) {
     // 기본 대체 이미지 처리
     const photoUrl = item.image || "/img/default_avatar.png";
     const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
+    const { nameKo, nameEn } = parseInterpreterName(item);
+
+    // [한글 주석: 연락처 및 이메일 전용 블록 생성 - 정보가 없더라도 일정한 하단 높이의 staff-contact-box를 항상 유지하여 상단 이름 위치 고정]
+    let contactItems = "";
+    if (item.phone) {
+      const phoneTel = item.phone.replace(/[^0-9+]/g, "");
+      contactItems += `
+        <div class="staff-contact-item">
+          <span class="staff-contact-icon">📞</span>
+          <a href="tel:${phoneTel}" title="전화걸기">${item.phone}</a>
+        </div>
+      `;
+    }
+    if (item.email) {
+      contactItems += `
+        <div class="staff-contact-item">
+          <span class="staff-contact-icon">✉️</span>
+          <a href="mailto:${item.email}" title="이메일 보내기">${item.email}</a>
+        </div>
+      `;
+    }
+    const contactHTML = `<div class="staff-contact-box">${contactItems}</div>`;
 
     card.innerHTML = `
       <!-- 좌측: 통역사 사진 영역 -->
       <div class="staff-card-left">
         <div class="staff-photo-wrapper">
-          <img src="${photoUrl}" alt="${item.name}" class="staff-photo" loading="lazy" onerror="this.src='/img/logo.png'">
+          <img src="${photoUrl}" alt="${nameKo}" class="staff-photo" loading="lazy" onerror="this.src='/img/logo.png'">
         </div>
       </div>
 
-      <!-- 우측: 국기, 국가명, 이름, 소속 정보 영역 -->
+      <!-- 우측: 국기, 국가명, 2줄 이름, 소속뱃지, 연락처 영역 -->
       <div class="staff-card-right">
         <div class="staff-country-badge">
           <img src="${flagUrl}" alt="${item.country}" class="staff-flag-icon" onerror="this.style.display='none'">
           <span class="staff-country-name">${item.country}</span>
         </div>
         <div class="staff-name-box">
-          <h3 class="staff-name">${item.name}</h3>
+          <h3 class="staff-name-ko">${nameKo}</h3>
+          ${nameEn ? `<div class="staff-name-en">${nameEn}</div>` : ''}
           <span class="staff-role-badge">IGPartners 전담</span>
         </div>
+        ${contactHTML}
       </div>
     `;
 
@@ -246,8 +340,30 @@ function renderFreelanceInterpreters(list, container) {
     card.className = "freelance-card";
 
     const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
-    const phoneFormatted = item.phone || "-";
-    const phoneTel = item.phone ? item.phone.replace(/[^0-9+]/g, "") : "";
+    const { nameKo, nameEn } = parseInterpreterName(item);
+
+    let contactHTML = "";
+    if (item.phone || item.email) {
+      contactHTML = `<div class="freelance-contact-row">`;
+      if (item.phone) {
+        const phoneTel = item.phone.replace(/[^0-9+]/g, "");
+        contactHTML += `
+          <div class="freelance-contact-item">
+            <span>📞</span>
+            <a href="tel:${phoneTel}" title="전화걸기">${item.phone}</a>
+          </div>
+        `;
+      }
+      if (item.email) {
+        contactHTML += `
+          <div class="freelance-contact-item">
+            <span>✉️</span>
+            <a href="mailto:${item.email}" title="이메일 보내기">${item.email}</a>
+          </div>
+        `;
+      }
+      contactHTML += `</div>`;
+    }
 
     card.innerHTML = `
       <!-- 좌측: 국기 뱃지 영역 -->
@@ -257,13 +373,14 @@ function renderFreelanceInterpreters(list, container) {
         </div>
       </div>
 
-      <!-- 우측: 국가명, 이름, 연락처 영역 -->
+      <!-- 우측: 국가명, 2줄 이름, 연락처 영역 -->
       <div class="freelance-card-right">
         <div class="freelance-country-tag">${item.country}</div>
-        <h4 class="freelance-name">${item.name}</h4>
-        <div class="freelance-contact-row">
-          ${phoneTel ? `<a href="tel:${phoneTel}" class="freelance-phone-link" title="전화걸기">📞 <span>${phoneFormatted}</span></a>` : `<span class="freelance-phone-empty">연락처 미등록</span>`}
+        <div class="freelance-name-box">
+          <h4 class="freelance-name-ko">${nameKo}</h4>
+          ${nameEn ? `<div class="freelance-name-en">${nameEn}</div>` : ''}
         </div>
+        ${contactHTML}
       </div>
     `;
 

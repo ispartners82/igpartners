@@ -3472,14 +3472,16 @@ function initPage() {
       e.preventDefault();
 
       const type = regInterpreterType ? regInterpreterType.value : "staff";
-      const name = regInterpreterName ? regInterpreterName.value.trim() : "";
+      const nameKo = regInterpreterNameKo ? regInterpreterNameKo.value.trim() : (regInterpreterName ? regInterpreterName.value.trim() : "");
+      const nameEn = regInterpreterNameEn ? regInterpreterNameEn.value.trim() : "";
+      const name = nameEn ? `${nameKo}, ${nameEn}` : nameKo;
       const country = regInterpreterCountry ? regInterpreterCountry.value.trim() : "";
       const phone = regInterpreterPhone ? regInterpreterPhone.value.trim() : "";
       const email = regInterpreterEmail ? regInterpreterEmail.value.trim() : "";
       const order = regInterpreterOrder ? parseInt(regInterpreterOrder.value, 10) || 1 : 1;
 
-      if (!name || !country) {
-        alert("통역사 이름과 국가는 필수 입력 항목입니다.");
+      if (!nameKo || !country) {
+        alert("한글 성명과 국가는 필수 입력 항목입니다.");
         return;
       }
 
@@ -3498,6 +3500,8 @@ function initPage() {
       const newInterpreterData = {
         type: type,
         name: name,
+        nameKo: nameKo,
+        nameEn: nameEn,
         country: country,
         countryCode: countryCode,
         flag: flag,
@@ -3516,6 +3520,9 @@ function initPage() {
         }
 
         await addDoc(collection(db, "interpreters"), newInterpreterData);
+        try {
+          localStorage.removeItem("igpartners_cached_interpreters");
+        } catch (cacheErr) { }
         alert("전문 통역사가 성공적으로 등록되었습니다!");
 
         // 폼 초기화
@@ -3551,6 +3558,9 @@ function initPage() {
     editModal.style.cssText = "position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center;";
 
     let editBase64Photo = data.image || "";
+    const currentNameKo = data.nameKo || (data.name ? data.name.split(',')[0].trim() : "");
+    const currentNameEn = data.nameEn || (data.name && data.name.includes(',') ? data.name.split(',').slice(1).join(',').trim() : "");
+    const currentCountryCode = (data.countryCode || 'kr').toLowerCase();
 
     editModal.innerHTML = `
       <div style="background:#0c1020; border:1px solid #00f3ff; border-radius:16px; padding:2rem; width:min(540px, 94vw); max-height:90vh; overflow-y:auto; box-shadow:0 0 30px rgba(0,243,255,0.25);">
@@ -3568,20 +3578,49 @@ function initPage() {
             </select>
           </div>
 
-          <div style="margin-bottom:1rem;">
-            <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">통역사 이름 *</label>
-            <input type="text" id="edit-interpreter-name" value="${data.name || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;" required>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:1rem;">
+            <div>
+              <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">한글 성명 *</label>
+              <input type="text" id="edit-interpreter-name-ko" value="${currentNameKo}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;" required>
+            </div>
+            <div>
+              <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">영문 / 현지 성명</label>
+              <input type="text" id="edit-interpreter-name-en" value="${currentNameEn}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
+            </div>
           </div>
 
-          <div style="margin-bottom:1rem;">
-            <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">국가 / 국적 표기 *</label>
-            <input type="text" id="edit-interpreter-country" value="${data.country || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;" required>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:1rem;">
+            <div>
+              <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">국가 (선택) *</label>
+              <select id="edit-interpreter-country-select" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#e2e8f0;">
+                <option value="kr|한국 (Korea)|https://flagcdn.com/w80/kr.png" ${currentCountryCode === 'kr' ? 'selected' : ''}>KR 대한민국 (한국어)</option>
+                <option value="vn|베트남 (Vietnam)|https://flagcdn.com/w80/vn.png" ${currentCountryCode === 'vn' ? 'selected' : ''}>VN 베트남 (Tiếng Việt)</option>
+                <option value="cn|중국 (China)|https://flagcdn.com/w80/cn.png" ${currentCountryCode === 'cn' ? 'selected' : ''}>CN 중국 (中文)</option>
+                <option value="ru|러시아 (Russia)|https://flagcdn.com/w80/ru.png" ${currentCountryCode === 'ru' ? 'selected' : ''}>RU 러시아 (Русский)</option>
+                <option value="mn|몽골 (Mongolia)|https://flagcdn.com/w80/mn.png" ${currentCountryCode === 'mn' ? 'selected' : ''}>MN 몽골 (Монгол хэл)</option>
+                <option value="jp|일본 (Japan)|https://flagcdn.com/w80/jp.png" ${currentCountryCode === 'jp' ? 'selected' : ''}>JP 일본 (日本語)</option>
+                <option value="us|미국/영어권 (English)|https://flagcdn.com/w80/gb.png" ${currentCountryCode === 'us' || currentCountryCode === 'gb' ? 'selected' : ''}>US 미국/영어 (English)</option>
+                <option value="th|태국 (Thailand)|https://flagcdn.com/w80/th.png" ${currentCountryCode === 'th' ? 'selected' : ''}>TH 태국 (ภาษาไทย)</option>
+                <option value="mm|미얀마 (Myanmar)|https://flagcdn.com/w80/mm.png" ${currentCountryCode === 'mm' ? 'selected' : ''}>MM 미얀마 (မြန်မာစာ)</option>
+                <option value="kh|캄보디아 (Cambodia)|https://flagcdn.com/w80/kh.png" ${currentCountryCode === 'kh' ? 'selected' : ''}>KH 캄보디아 (ភាសាខ្មែរ)</option>
+                <option value="la|라오스 (Laos)|https://flagcdn.com/w80/la.png" ${currentCountryCode === 'la' ? 'selected' : ''}>LA 라오스 (ພາສາລາວ)</option>
+                <option value="np|네팔 (Nepal)|https://flagcdn.com/w80/np.png" ${currentCountryCode === 'np' ? 'selected' : ''}>NP 네팔 (नेपाली)</option>
+                <option value="id|인도네시아 (Indonesia)|https://flagcdn.com/w80/id.png" ${currentCountryCode === 'id' ? 'selected' : ''}>ID 인도네시아 (Bahasa)</option>
+                <option value="lk|스리랑카 (Sri Lanka)|https://flagcdn.com/w80/lk.png" ${currentCountryCode === 'lk' ? 'selected' : ''}>LK 스리랑카 (සිංහල)</option>
+                <option value="bd|방글라데시 (Bangladesh)|https://flagcdn.com/w80/bd.png" ${currentCountryCode === 'bd' ? 'selected' : ''}>BD 방글라데시 (বাংলা)</option>
+                <option value="custom|직접 입력|">직접 입력 (Custom)</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">국가 / 국적 표기 *</label>
+              <input type="text" id="edit-interpreter-country" value="${data.country || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;" required>
+            </div>
           </div>
 
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:1rem;">
             <div>
               <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">연락처</label>
-              <input type="text" id="edit-interpreter-phone" value="${data.phone || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
+              <input type="text" id="edit-interpreter-phone" value="${data.phone || ''}" placeholder="예: 010-1234-5678" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
             </div>
             <div>
               <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">노출 순서</label>
@@ -3591,7 +3630,7 @@ function initPage() {
 
           <div style="margin-bottom:1rem;">
             <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">이메일</label>
-            <input type="email" id="edit-interpreter-email" value="${data.email || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
+            <input type="email" id="edit-interpreter-email" value="${data.email || ''}" placeholder="예: interpreter@igpartners.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
           </div>
 
           <div id="edit-interpreter-photo-section" style="margin-bottom:1.5rem; display:${data.type === 'staff' ? 'block' : 'none'};">
@@ -3620,6 +3659,8 @@ function initPage() {
     const closeBtn = document.getElementById("btn-close-edit-interpreter-modal");
     const cancelBtn = document.getElementById("btn-cancel-edit-interpreter");
     const editTypeSelect = document.getElementById("edit-interpreter-type");
+    const editCountrySelect = document.getElementById("edit-interpreter-country-select");
+    const editCountryInput = document.getElementById("edit-interpreter-country");
     const editPhotoSection = document.getElementById("edit-interpreter-photo-section");
     const editPhotoTrigger = document.getElementById("btn-edit-interpreter-photo-trigger");
     const editPhotoFile = document.getElementById("edit-interpreter-photo-file");
@@ -3630,6 +3671,22 @@ function initPage() {
 
     if (closeBtn) closeBtn.onclick = () => editModal.remove();
     if (cancelBtn) cancelBtn.onclick = () => editModal.remove();
+
+    // [한글 주석: 수정 팝업에서 국가 선택 변경 시 국가명 텍스트 자동 동기화]
+    if (editCountrySelect && editCountryInput) {
+      editCountrySelect.onchange = (e) => {
+        const val = e.target.value;
+        if (val.startsWith("custom|")) {
+          editCountryInput.value = "";
+          editCountryInput.focus();
+        } else {
+          const parts = val.split("|");
+          if (parts.length >= 2) {
+            editCountryInput.value = parts[1];
+          }
+        }
+      };
+    }
 
     if (editTypeSelect && editPhotoSection) {
       editTypeSelect.onchange = (e) => {
@@ -3660,27 +3717,48 @@ function initPage() {
       editForm.onsubmit = async (e) => {
         e.preventDefault();
         const updatedType = editTypeSelect.value;
-        const updatedName = document.getElementById("edit-interpreter-name").value.trim();
-        const updatedCountry = document.getElementById("edit-interpreter-country").value.trim();
+        const updatedNameKo = document.getElementById("edit-interpreter-name-ko").value.trim();
+        const updatedNameEn = document.getElementById("edit-interpreter-name-en").value.trim();
+        const updatedName = updatedNameEn ? `${updatedNameKo}, ${updatedNameEn}` : updatedNameKo;
+        const updatedCountry = editCountryInput.value.trim();
         const updatedPhone = document.getElementById("edit-interpreter-phone").value.trim();
         const updatedEmail = document.getElementById("edit-interpreter-email").value.trim();
         const updatedOrder = parseInt(document.getElementById("edit-interpreter-order").value, 10) || 1;
 
-        if (!updatedName || !updatedCountry) {
-          alert("이름과 국가는 필수입니다.");
+        if (!updatedNameKo || !updatedCountry) {
+          alert("한글 성명과 국가는 필수입니다.");
           return;
+        }
+
+        // [한글 주석: 수정 시 선택된 국가 코드 및 국기 이미지 URL 계산]
+        let updatedCountryCode = data.countryCode || "kr";
+        let updatedFlag = data.flag || "https://flagcdn.com/w80/kr.png";
+        if (editCountrySelect) {
+          const selectVal = editCountrySelect.value;
+          const parts = selectVal.split("|");
+          if (parts.length >= 3 && parts[0] !== "custom") {
+            updatedCountryCode = parts[0];
+            updatedFlag = parts[2];
+          }
         }
 
         try {
           await updateDoc(doc(db, "interpreters", data.id), {
             type: updatedType,
             name: updatedName,
+            nameKo: updatedNameKo,
+            nameEn: updatedNameEn,
             country: updatedCountry,
+            countryCode: updatedCountryCode,
+            flag: updatedFlag,
             phone: updatedPhone,
             email: updatedEmail,
             image: (updatedType === "staff") ? editBase64Photo : "",
             order: updatedOrder
           });
+          try {
+            localStorage.removeItem("igpartners_cached_interpreters");
+          } catch (cacheErr) { }
           alert("통역사 정보가 성공적으로 수정되었습니다.");
           editModal.remove();
           loadAdminInterpreters();
@@ -3712,6 +3790,9 @@ function initPage() {
           e.target.textContent = "삭제중...";
           try {
             await deleteDoc(doc(db, "interpreters", id));
+            try {
+              localStorage.removeItem("igpartners_cached_interpreters");
+            } catch (cacheErr) { }
             alert("통역사 데이터가 삭제되었습니다.");
             loadAdminInterpreters();
           } catch (err) {

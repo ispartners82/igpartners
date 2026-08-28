@@ -6322,25 +6322,26 @@ body.home-page {
 }
 
 /* 3. [상단 섹션] IGPartners 소속 통역 - 명함 카드 그리드 및 카드 디자인 */
+/* 3. [상단 섹션] IGPartners 소속 통역 - 명함 카드 그리드 및 카드 디자인 */
 .staff-interpreters-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.75rem;
   max-width: 1240px;
   margin: 0 auto;
 }
 
-/* 소속 통역사 명함 카드 본체 */
+/* [한글 주석: 소속 통역사 프리미엄 명함 카드 본체 (불필요한 공백 최소화 및 꽉 찬 밀도감)] */
 .staff-card {
   display: flex;
   align-items: stretch;
-  gap: 1.25rem;
-  background: linear-gradient(135deg, rgba(16, 24, 48, 0.85) 0%, rgba(8, 12, 28, 0.95) 100%);
-  border: 1px solid rgba(0, 243, 255, 0.3);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  gap: 1.35rem;
+  background: linear-gradient(135deg, rgba(16, 24, 48, 0.88) 0%, rgba(8, 12, 28, 0.96) 100%);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  border-radius: 18px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
@@ -6361,27 +6362,27 @@ body.home-page {
 .staff-card:hover {
   transform: translateY(-4px);
   border-color: #00f3ff;
-  box-shadow: 0 14px 40px rgba(0, 243, 255, 0.22), 0 0 15px rgba(0, 243, 255, 0.15);
+  box-shadow: 0 14px 40px rgba(0, 243, 255, 0.25), 0 0 18px rgba(0, 243, 255, 0.18);
 }
 
 .staff-card:hover::before {
   opacity: 1;
 }
 
-/* 좌측: 통역사 사진 영역 (스케치 완벽 구현) */
+/* 좌측: 통역사 사진 영역 */
 .staff-card-left {
   flex-shrink: 0;
-  width: 120px;
+  width: 135px;
 }
 
 .staff-photo-wrapper {
   width: 100%;
   height: 100%;
-  min-height: 140px;
-  border-radius: 12px;
+  min-height: 175px;
+  border-radius: 14px;
   overflow: hidden;
-  border: 1px solid rgba(0, 243, 255, 0.25);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
   background: #0c1020;
 }
 
@@ -6397,53 +6398,71 @@ body.home-page {
   transform: scale(1.05);
 }
 
-/* 우측: 국기, 국가명, 이름, 뱃지 영역 */
+/* 우측: 국기, 국가명, 2줄 이름, 소속뱃지, 연락처/이메일 영역 (상단 기준 고정 정렬) */
 .staff-card-right {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 0.25rem 0;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  padding: 0.1rem 0;
 }
 
+/* [한글 주석: 국기 사이즈 및 국가명 폰트 대폭 확대] */
 .staff-country-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 0.6rem;
+  gap: 10px;
+  margin-bottom: 0.15rem;
 }
 
 .staff-flag-icon {
-  width: 28px;
-  height: 19px;
-  border-radius: 3px;
+  width: 44px;
+  height: 30px;
+  border-radius: 4px;
   object-fit: cover;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
 }
 
 .staff-country-name {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: #38bdf8;
   letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
+/* [한글 주석: 한글이름과 영문이름 2줄 표시 영역 - 상단 일관 정렬] */
 .staff-name-box {
-  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.staff-name {
-  font-size: 1.25rem;
+.staff-name-ko {
+  font-size: 1.3rem;
   font-weight: 800;
   color: #ffffff;
-  margin: 0 0 0.5rem 0;
-  line-height: 1.3;
+  margin: 0;
+  line-height: 1.25;
   letter-spacing: -0.02em;
+}
+
+.staff-name-en {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.3;
+  min-height: 1.25rem;
 }
 
 .staff-role-badge {
   display: inline-block;
+  align-self: flex-start;
   font-size: 0.72rem;
   font-weight: 700;
   color: #00f3ff;
@@ -6451,13 +6470,55 @@ body.home-page {
   border: 1px solid rgba(0, 243, 255, 0.35);
   border-radius: 12px;
   padding: 0.15rem 0.55rem;
+  margin-top: 4px;
+}
+
+/* [한글 주석: 연락처 및 이메일 표시 영역 - 연락처가 없어도 일정한 하단 여백 및 높이(min-height)를 유지하여 이름 위치 고정] */
+.staff-contact-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  margin-top: auto;
+  min-height: 44px;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.staff-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-contact-item a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: color 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-contact-item a:hover {
+  color: #00f3ff;
+  text-decoration: underline;
+}
+
+.staff-contact-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
 /* 4. [하단 섹션] 프리랜서 통역사 - 카드 그리드 및 컴팩트 카드 디자인 */
 .freelance-interpreters-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.35rem;
   max-width: 1240px;
   margin: 0 auto;
 }
@@ -6465,77 +6526,118 @@ body.home-page {
 .freelance-card {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 1.1rem;
+  gap: 1.1rem;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.15rem 1.25rem;
   transition: all 0.25s ease;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
 }
 
 .freelance-card:hover {
   background: rgba(15, 23, 42, 0.95);
   border-color: #60a5fa;
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.18);
+  box-shadow: 0 10px 28px rgba(96, 165, 250, 0.2);
 }
 
-/* 좌측: 국기 뱃지 박스 */
+/* 좌측: 국기 뱃지 박스 (확대) */
 .freelance-card-left {
   flex-shrink: 0;
 }
 
 .freelance-flag-box {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
 
 .freelance-card:hover .freelance-flag-box {
-  border-color: rgba(96, 165, 250, 0.5);
-  background: rgba(96, 165, 250, 0.08);
+  border-color: rgba(96, 165, 250, 0.6);
+  background: rgba(96, 165, 250, 0.1);
 }
 
 .freelance-flag-img {
-  width: 34px;
-  height: 23px;
+  width: 44px;
+  height: 30px;
   border-radius: 4px;
   object-fit: cover;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* 우측: 국가명, 이름, 연락처 */
+/* 우측: 국가명, 2줄 이름, 연락처/이메일 */
 .freelance-card-right {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .freelance-country-tag {
-  font-size: 0.78rem;
-  color: #94a3b8;
-  font-weight: 600;
-  margin-bottom: 2px;
+  font-size: 0.95rem;
+  color: #60a5fa;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
-.freelance-name {
-  font-size: 1.1rem;
-  font-weight: 700;
+.freelance-name-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.freelance-name-ko {
+  font-size: 1.15rem;
+  font-weight: 800;
   color: #f8fafc;
-  margin: 0 0 0.35rem 0;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.freelance-name-en {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.freelance-contact-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  font-size: 0.82rem;
+}
+
+.freelance-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #cbd5e1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.freelance-contact-row {
-  font-size: 0.85rem;
+.freelance-contact-item a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.freelance-contact-item a:hover {
+  color: #60a5fa;
+  text-decoration: underline;
 }
 
 .freelance-phone-link {
@@ -6611,8 +6713,116 @@ body.home-page {
   }
 }
 
+/* [한글 주석: 관리자 폼 행 다단 그리드 레이아웃 (3열 균등 배치 및 우측 공백 제거)] */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
 
+.form-row-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
 
+@media (max-width: 1024px) {
+  .form-row-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
+@media (max-width: 640px) {
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}
 
-
+.form-row .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.form-row .form-group label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.form-row .form-group .form-input,
+.form-row .form-group input,
+.form-row .form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  background: #0c1020;
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.form-row .form-group .form-input:focus,
+.form-row .form-group input:focus,
+.form-row .form-group select:focus {
+  border-color: #00f3ff;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+  background: #141a30;
+}
+
+/* [한글 주석: 전문통역 관리 탭 100% Full-Width 화면 확장 및 테이블 최적화] */
+#content-interpreters .clinic-form-section,
+#content-interpreters .clinic-list-section {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+#content-interpreters .table-responsive {
+  overflow-x: auto;
+  max-width: 100%;
+  width: 100%;
+}
+
+#content-interpreters .admin-table {
+  min-width: 100% !important;
+  width: 100% !important;
+  table-layout: auto;
+}
+
+#content-interpreters .admin-table th,
+#content-interpreters .admin-table td {
+  padding: 1rem 0.85rem;
+}
+
+#content-interpreters .admin-table th:nth-child(1),
+#content-interpreters .admin-table td:nth-child(1) {
+  width: 70px;
+  text-align: center;
+}
+
+#content-interpreters .admin-table th:nth-child(2),
+#content-interpreters .admin-table td:nth-child(2) {
+  width: 200px;
+}
+
+#content-interpreters .admin-table th:nth-child(3),
+#content-interpreters .admin-table td:nth-child(3) {
+  width: 200px;
+}
+
+#content-interpreters .admin-table th:nth-child(5),
+#content-interpreters .admin-table td:nth-child(5) {
+  width: 80px;
+  text-align: center;
+}
+
+#content-interpreters .admin-table th:last-child,
+#content-interpreters .admin-table td:last-child {
+  width: 140px;
+  white-space: nowrap;
+  text-align: center;
+}
