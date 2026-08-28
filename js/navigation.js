@@ -94,7 +94,7 @@ function applyNavTranslations(langCode) {
   const menuHome = document.querySelector("#nav-menu a[href='/index.html']:not(#btn-partners)");
   const menuAbout = document.querySelector("#nav-menu a[href='/about.html']:not([href*='#'])");
   const menuServices = document.querySelector("#nav-menu a[href='/about.html#services']:not(.btn-nav-booking)");
-  const menuInterpretation = document.querySelector("#nav-menu a[href='/about.html#services'].btn-nav-booking");
+  const menuInterpretation = document.querySelector("#nav-menu a[href='/interpreters.html'], #nav-menu a[href='/about.html#services'].btn-nav-booking");
   const menuBooking = document.querySelector("#nav-menu a[href='/booking-lang.html']");
   const menuPartners = document.querySelector("#nav-menu a[href='/index.html#partners']");
   const menuCommunity = document.querySelector("#nav-menu a[href='/community.html']");

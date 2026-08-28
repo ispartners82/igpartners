@@ -6168,6 +6168,451 @@ body.home-page {
   }
 }
 
+/* ==========================================================================
+   [한글 주석] 관리자 페이지 테이블 전용 페이지네이션 컨트롤러 스타일 정의
+   - 사이버 네이비/시안(#00f3ff) 테마와 완벽하게 일치하는 반응형 페이징 UI
+   - 이전/다음/첫페이지/마지막페이지 및 개별 번호 버튼 지원
+   ========================================================================== */
+.admin-pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-pagination-info {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.admin-pagination-info strong {
+  color: #00f3ff;
+  font-weight: 700;
+}
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.admin-page-btn {
+  background: rgba(12, 16, 32, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  color: #cbd5e1;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.admin-page-btn:hover:not(:disabled):not(.active) {
+  background: rgba(0, 243, 255, 0.15);
+  border-color: #00f3ff;
+  color: #00f3ff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.25);
+}
+
+.admin-page-btn.active {
+  background: #00f3ff;
+  color: #080c1c;
+  border-color: #00f3ff;
+  font-weight: 800;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
+  cursor: default;
+}
+
+.admin-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .admin-pagination-container {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+}
+
+/* ==========================================================================
+   [한글 주석] 전문 의료 통역 전용 페이지 (interpreters.html) 스타일 정의
+   - 상단 히어로 배너, IGPartners 소속 통역 명함 카드, 프리랜서 통역사 카드 UI
+   ========================================================================== */
+
+/* 1. 전문통역 상단 히어로 섹션 */
+.interpreters-hero-section {
+  position: relative;
+  text-align: center;
+  padding: 4rem 1.5rem 3rem;
+  overflow: hidden;
+}
+
+.interpreters-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* 2. 전문통역 공통 섹션 레이아웃 */
+.interpreters-section {
+  padding: 3rem 1.5rem 4rem;
+  position: relative;
+}
+
+.interpreters-section.freelance-section {
+  background: rgba(12, 16, 32, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.interpreters-section-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.interpreters-section-header .badge-tag {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #00f3ff;
+  background: rgba(0, 243, 255, 0.1);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  border-radius: 20px;
+  padding: 0.25rem 0.85rem;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.interpreters-section-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.interpreters-section-desc {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* 3. [상단 섹션] IGPartners 소속 통역 - 명함 카드 그리드 및 카드 디자인 */
+.staff-interpreters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.75rem;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* 소속 통역사 명함 카드 본체 */
+.staff-card {
+  display: flex;
+  align-items: stretch;
+  gap: 1.25rem;
+  background: linear-gradient(135deg, rgba(16, 24, 48, 0.85) 0%, rgba(8, 12, 28, 0.95) 100%);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.staff-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00f3ff, transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.staff-card:hover {
+  transform: translateY(-4px);
+  border-color: #00f3ff;
+  box-shadow: 0 14px 40px rgba(0, 243, 255, 0.22), 0 0 15px rgba(0, 243, 255, 0.15);
+}
+
+.staff-card:hover::before {
+  opacity: 1;
+}
+
+/* 좌측: 통역사 사진 영역 (스케치 완벽 구현) */
+.staff-card-left {
+  flex-shrink: 0;
+  width: 120px;
+}
+
+.staff-photo-wrapper {
+  width: 100%;
+  height: 100%;
+  min-height: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background: #0c1020;
+}
+
+.staff-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.staff-card:hover .staff-photo {
+  transform: scale(1.05);
+}
+
+/* 우측: 국기, 국가명, 이름, 뱃지 영역 */
+.staff-card-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+
+.staff-country-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.6rem;
+}
+
+.staff-flag-icon {
+  width: 28px;
+  height: 19px;
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.staff-country-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: -0.01em;
+}
+
+.staff-name-box {
+  margin-top: auto;
+}
+
+.staff-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.staff-role-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #00f3ff;
+  background: rgba(0, 243, 255, 0.12);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  border-radius: 12px;
+  padding: 0.15rem 0.55rem;
+}
+
+/* 4. [하단 섹션] 프리랜서 통역사 - 카드 그리드 및 컴팩트 카드 디자인 */
+.freelance-interpreters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.freelance-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.1rem;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.freelance-card:hover {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: #60a5fa;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.18);
+}
+
+/* 좌측: 국기 뱃지 박스 */
+.freelance-card-left {
+  flex-shrink: 0;
+}
+
+.freelance-flag-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.25s;
+}
+
+.freelance-card:hover .freelance-flag-box {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: rgba(96, 165, 250, 0.08);
+}
+
+.freelance-flag-img {
+  width: 34px;
+  height: 23px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* 우측: 국가명, 이름, 연락처 */
+.freelance-card-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.freelance-country-tag {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.freelance-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 0.35rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.freelance-contact-row {
+  font-size: 0.85rem;
+}
+
+.freelance-phone-link {
+  color: #00f3ff;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.freelance-phone-link:hover {
+  color: #38bdf8;
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+
+.freelance-phone-empty {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+/* 로딩 및 빈 목록 공통 */
+.interpreters-loading,
+.interpreters-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(0, 243, 255, 0.2);
+  border-top-color: #00f3ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 0.75rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 모바일 반응형 처리 */
+@media (max-width: 768px) {
+  .interpreters-hero-section {
+    padding: 2.5rem 1rem 2rem;
+  }
+  .interpreters-section {
+    padding: 2rem 1rem 2.5rem;
+  }
+  .staff-interpreters-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .freelance-interpreters-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .staff-card-left {
+    width: 105px;
+  }
+  .staff-name {
+    font-size: 1.15rem;
+  }
+}
+
+
+
 
 
 

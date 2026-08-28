@@ -26,12 +26,17 @@ function initPage() {
   const tabUsers = document.getElementById("tab-users");
   // [디자인/기능 개편] 광고 배너 관리를 위한 신규 탭 버튼 및 패널 요소 캐싱
   const tabAds = document.getElementById("tab-ads");
+  // [한글 주석: 전문 의료 통역 관리 탭 버튼 및 콘텐츠 패널 요소 캐싱]
+  const tabInterpreters = document.getElementById("tab-interpreters");
   const contentReservations = document.getElementById("content-reservations");
   const contentUsers = document.getElementById("content-users");
   const contentAds = document.getElementById("content-ads");
+  const contentInterpreters = document.getElementById("content-interpreters");
 
   const userList = document.getElementById("user-list");
   const btnRefreshUsers = document.getElementById("btn-refresh-users");
+  // [한글 주석: 회원 목록 전용 페이지네이션 컨테이너 DOM 요소]
+  const usersPagination = document.getElementById("users-pagination");
 
   let currentLoginUserRole = "user"; // 현재 로그인한 사용자의 등급 저장
 
@@ -45,6 +50,8 @@ function initPage() {
   let currentLimit = parseInt(localStorage.getItem("admin_reservation_limit") || "10", 10);
   // [회원 개수 제한 필터] 로컬 상태 보존 관리 변수 정의 (기본값: 10개)
   let currentLimitUsers = parseInt(localStorage.getItem("admin_user_limit") || "10", 10);
+  // [한글 주석: 회원 목록 현재 페이지 번호 관리 상태 변수 (기본값: 1페이지)]
+  let currentUserPage = 1;
   // [회원 등급 필터] 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
   let currentRoleFilter = localStorage.getItem("admin_user_role_filter") || "all";
   // [예약 언어 필터] 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
@@ -675,6 +682,7 @@ function initPage() {
     const tabPermissions = document.getElementById("tab-permissions");
     const tabClinics = document.getElementById("tab-clinics");
     const tabAds = document.getElementById("tab-ads");
+    const tabInterpreters = document.getElementById("tab-interpreters");
 
     // [한글 주석: 상단 네비게이션 뱃지 영구 락 - 한 번 노출된 관리자/통계 뱃지는 뷰 스위칭 시 절대로 display: none으로 끄지 않고 영구 띄워둠]
     const btnAdminDashboard = document.getElementById("btn-admin-dashboard");
@@ -701,6 +709,10 @@ function initPage() {
     if (tabAds) {
       tabAds.style.display = permissions.hasAds ? "inline-block" : "none";
     }
+    // [한글 주석: 전문통역 관리 탭 권한 노출 제어 (광고권한 또는 최고관리자 권한 연동)]
+    if (tabInterpreters) {
+      tabInterpreters.style.display = (permissions.hasInterpreters !== false && (permissions.hasAds || permissions.isAdmin)) ? "inline-block" : "none";
+    }
 
     // 활성화 탭 강제 튕김 보정
     const activeTab = document.querySelector(".tab-btn.active");
@@ -708,6 +720,8 @@ function initPage() {
       if (activeTab.id === "tab-clinics" && !permissions.hasClinics) {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-ads" && !permissions.hasAds) {
+        if (tabReservations) tabReservations.click();
+      } else if (activeTab.id === "tab-interpreters" && !permissions.hasAds && !permissions.isAdmin) {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-users" && !permissions.hasRoles) {
         if (tabReservations) tabReservations.click();
@@ -838,18 +852,22 @@ function initPage() {
           } else if (savedTab === "tab-ads") {
             // [한글 주석: 세션 상에 광고 탭이 기록되어 있을 경우, 진입 시 광고 리스트 로드 함수 호출]
             loadAds();
+          } else if (savedTab === "tab-interpreters") {
+            // [한글 주석: 전문통역 관리 탭이 기록되어 있을 경우, 진입 시 통역사 목록 로드 함수 호출]
+            loadAdminInterpreters();
           }
         } else {
           // 저장된 탭 정보가 없거나 비노출 상태인 경우 우선순위에 따라 탭 활성화 및 로드
-          // 우선순위: 예약내역관리(hasReservations) -> 병원관리(hasClinics) -> 광고배너(hasClinics) -> 등급권한관리(hasRoles) -> 회원리스트(hasPermissions)
+          // 우선순위: 예약내역관리(hasReservations) -> 병원관리(hasClinics) -> 광고배너(hasAds) -> 전문통역(hasInterpreters) -> 등급권한관리(hasRoles) -> 회원리스트(hasPermissions)
           if (permissions.hasReservations && tabReservations) {
             tabReservations.click();
             loadReservations(true);
           } else if (permissions.hasClinics && tabClinics) {
             tabClinics.click();
           } else if (permissions.hasAds && tabAds) {
-            // [한글 주석: 광고 배너 관리 탭 권한 복원 처리]
             tabAds.click();
+          } else if (tabInterpreters && tabInterpreters.style.display !== "none") {
+            tabInterpreters.click();
           } else if (permissions.hasRoles && tabUsers) {
             tabUsers.click();
           } else if (permissions.hasPermissions && tabPermissions) {
@@ -880,8 +898,8 @@ function initPage() {
   // [한글 주석: 탭 전환 시 메뉴 영역 랙 및 깜빡임(Layout Shift)을 방지하는 통합 탭 스위칭 헬퍼 함수]
   function switchTabSeamlessly(activeBtn, activeContent, tabStorageKey, fetchCallback) {
     // 1. 모든 탭 버튼 및 패널 스위칭 처리 (메뉴는 고정되고 내용만 즉각 변경됨)
-    const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds];
-    const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds];
+    const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabInterpreters];
+    const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds, contentInterpreters];
 
     tabs.forEach(t => { if (t) t.classList.remove("active"); });
     contents.forEach(c => { if (c) c.style.display = "none"; });
@@ -942,6 +960,15 @@ function initPage() {
       tabAds.addEventListener("click", () => {
         switchTabSeamlessly(tabAds, contentAds, "tab-ads", () => {
           loadAds();
+        });
+      });
+    }
+
+    // [한글 주석: 전문통역 관리 탭 클릭 시 스위칭 및 목록 로드]
+    if (tabInterpreters) {
+      tabInterpreters.addEventListener("click", () => {
+        switchTabSeamlessly(tabInterpreters, contentInterpreters, "tab-interpreters", () => {
+          loadAdminInterpreters();
         });
       });
     }
@@ -1304,12 +1331,213 @@ function initPage() {
     });
   }
 
+  // [한글 주석: 현재 조회된 필터링 회원 목록 캐시 저장 변수]
+  let cachedFilteredUsers = [];
+
+  /**
+   * [한글 주석] 회원 목록 페이지네이션 컨트롤러 렌더링 함수
+   * @param {number} totalItems - 전체 회원 수
+   * @param {number} itemsPerPage - 페이지당 노출 개수
+   * @param {number} currentPage - 현재 선택된 페이지 번호
+   * @param {function} onPageChange - 페이지 변경 시 호출되는 콜백 함수
+   */
+  function renderUsersPagination(totalItems, itemsPerPage, currentPage, onPageChange) {
+    if (!usersPagination) return;
+    
+    // 전체 회원 수가 0 이하일 경우 페이지네이션 영역을 비웁니다.
+    if (totalItems <= 0) {
+      usersPagination.innerHTML = "";
+      return;
+    }
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+    
+    // [한글 주석: 페이지 번호 범위 계산 (최대 5개 번호 버튼 표출)]
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    let paginationHTML = `
+      <div class="admin-pagination-info">
+        전체 <strong>${totalItems}</strong>명 (페이지 <strong>${currentPage}</strong> / ${totalPages})
+      </div>
+      <div class="admin-pagination">
+        <!-- 첫 페이지로 이동 버튼 -->
+        <button type="button" class="admin-page-btn btn-first" ${currentPage <= 1 ? "disabled" : ""} title="첫 페이지">«</button>
+        <!-- 이전 페이지로 이동 버튼 -->
+        <button type="button" class="admin-page-btn btn-prev" ${currentPage <= 1 ? "disabled" : ""} title="이전 페이지">‹</button>
+    `;
+
+    for (let p = startPage; p <= endPage; p++) {
+      const isActive = (p === currentPage) ? "active" : "";
+      paginationHTML += `
+        <button type="button" class="admin-page-btn btn-num ${isActive}" data-page="${p}">${p}</button>
+      `;
+    }
+
+    paginationHTML += `
+        <!-- 다음 페이지로 이동 버튼 -->
+        <button type="button" class="admin-page-btn btn-next" ${currentPage >= totalPages ? "disabled" : ""} title="다음 페이지">›</button>
+        <!-- 마지막 페이지로 이동 버튼 -->
+        <button type="button" class="admin-page-btn btn-last" ${currentPage >= totalPages ? "disabled" : ""} title="마지막 페이지">»</button>
+      </div>
+    `;
+
+    usersPagination.innerHTML = paginationHTML;
+
+    // [한글 주석: 페이지네이션 버튼 클릭 이벤트 리스너 바인딩]
+    const btnFirst = usersPagination.querySelector(".btn-first");
+    const btnPrev = usersPagination.querySelector(".btn-prev");
+    const btnNext = usersPagination.querySelector(".btn-next");
+    const btnLast = usersPagination.querySelector(".btn-last");
+    const numBtns = usersPagination.querySelectorAll(".btn-num");
+
+    if (btnFirst && !btnFirst.disabled) {
+      btnFirst.addEventListener("click", () => onPageChange(1));
+    }
+    if (btnPrev && !btnPrev.disabled) {
+      btnPrev.addEventListener("click", () => onPageChange(Math.max(1, currentPage - 1)));
+    }
+    if (btnNext && !btnNext.disabled) {
+      btnNext.addEventListener("click", () => onPageChange(Math.min(totalPages, currentPage + 1)));
+    }
+    if (btnLast && !btnLast.disabled) {
+      btnLast.addEventListener("click", () => onPageChange(totalPages));
+    }
+    numBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetPage = parseInt(btn.getAttribute("data-page"), 10);
+        if (targetPage && targetPage !== currentPage) {
+          onPageChange(targetPage);
+        }
+      });
+    });
+  }
+
+  /**
+   * [한글 주석] 현재 페이지에 해당하는 회원 목록 슬라이스 및 테이블 렌더링 함수
+   * @param {Array} usersToRender - 필터링된 전체 회원 데이터 배열
+   */
+  function renderUsersPage(usersToRender) {
+    if (!userList) return;
+
+    userList.innerHTML = "";
+    const totalUsers = usersToRender.length;
+
+    if (totalUsers === 0) {
+      userList.innerHTML = `<tr><td colspan="9" class="table-empty">가입된 회원이 없습니다.</td></tr>`;
+      if (usersPagination) usersPagination.innerHTML = "";
+      return;
+    }
+
+    // [한글 주석: 현재 페이지 번호 유효 범위 자동 보정]
+    const totalPages = Math.ceil(totalUsers / currentLimitUsers) || 1;
+    if (currentUserPage > totalPages) currentUserPage = totalPages;
+    if (currentUserPage < 1) currentUserPage = 1;
+
+    const startIndex = (currentUserPage - 1) * currentLimitUsers;
+    const endIndex = startIndex + currentLimitUsers;
+    const pageUsers = usersToRender.slice(startIndex, endIndex);
+
+    const countryLangFlags = {
+      ko: "🇰🇷 한국어",
+      vi: "🇻🇳 베트남어",
+      en: "🇺🇸 English",
+      zh: "🇨🇳 中文",
+      ru: "🇷🇺 Русский",
+      mn: "🇲🇳 몽골어"
+    };
+
+    pageUsers.forEach((userData) => {
+      const userId = userData.id;
+      const tr = document.createElement("tr");
+
+      let registerDate = "-";
+      if (userData.createdAt) {
+        // [한글 주석: Timestamp 객체 및 일반 Date 포맷 안전 변환]
+        let dateObj = null;
+        if (typeof userData.createdAt.toDate === "function") {
+          dateObj = userData.createdAt.toDate();
+        } else if (userData.createdAt.seconds) {
+          dateObj = new Date(userData.createdAt.seconds * 1000);
+        } else {
+          dateObj = new Date(userData.createdAt);
+        }
+        registerDate = (dateObj && !isNaN(dateObj.getTime())) ? dateObj.toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        }) : "-";
+      }
+
+      const currentRoleLabel = rolesCache[userData.role] || userData.role || "일반 회원";
+
+      const isSuperAdmin = currentLoginUserRole === "super_admin";
+      const isSelf = auth.currentUser && auth.currentUser.uid === userId;
+      const isDisabled = (!isSuperAdmin || isSelf) ? "disabled" : "";
+
+      let selectOptionsHTML = "";
+      let roleExistsInCache = false;
+
+      Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
+        const isSelected = userData.role === roleKey ? "selected" : "";
+        if (userData.role === roleKey) roleExistsInCache = true;
+        selectOptionsHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel}</option>`;
+      });
+
+      if (userData.role && !roleExistsInCache) {
+        selectOptionsHTML += `<option value="${userData.role}" selected>${userData.role} (미등록)</option>`;
+      }
+
+      const roleControlHTML = `
+        <div class="role-control-wrapper">
+          <select class="select-role" id="select-role-${userId}" ${isDisabled}>
+            ${selectOptionsHTML}
+          </select>
+          <button class="btn-action confirm btn-update-role" data-uid="${userId}" ${isDisabled}>변경</button>
+        </div>
+      `;
+
+      const countryLangDisplay = countryLangFlags[userData.countryLanguage] || (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
+
+      tr.innerHTML = `
+        <td>${countryLangDisplay}</td>
+        <td class="font-bold">${userData.name || "-"}</td>
+        <td>${userData.phone || "-"}</td>
+        <td>${userData.email || "-"}</td>
+        <td>${registerDate}</td>
+        <td><span class="role-badge ${userData.role || 'user'}">${currentRoleLabel}</span></td>
+        <td>${roleControlHTML}</td>
+        <td>
+          <button class="btn-user-detail" data-uid="${userId}">상세보기</button>
+        </td>
+        <td>
+          <button class="btn-user-delete" data-uid="${userId}" ${isDisabled}>삭제</button>
+        </td>
+      `;
+
+      userList.appendChild(tr);
+    });
+
+    // [한글 주석: 페이지네이션 바 컨트롤러 렌더링]
+    renderUsersPagination(totalUsers, currentLimitUsers, currentUserPage, (newPage) => {
+      currentUserPage = newPage;
+      renderUsersPage(usersToRender);
+    });
+  }
+
   // 가입 회원 목록 로드 및 동적 옵션 바인딩
-  async function loadUsers() {
+  async function loadUsers(resetPage = false) {
     if (!userList) return;
     
+    if (resetPage) {
+      currentUserPage = 1;
+    }
+
     if (!userList.children || userList.children.length === 0 || userList.innerHTML.includes("table-loading")) {
-      userList.innerHTML = `<tr><td colspan="8" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
+      userList.innerHTML = `<tr><td colspan="9" class="table-loading">회원 데이터를 불러오는 중입니다...</td></tr>`;
     }
 
     if (Object.keys(rolesCache).length === 0) {
@@ -1325,10 +1553,9 @@ function initPage() {
     }
 
     try {
-      const userQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(200));
+      const userQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(500));
       const querySnapshot = await getDocs(userQuery);
 
-      userList.innerHTML = "";
       loadedUsersMap = {};
 
       // [한글 주석: Firestore 데이터 내부에 id 필드가 존재하더라도 docSnap.id(문서 식별자)가 덮어씌워지지 않도록 정합성 보장]
@@ -1344,94 +1571,13 @@ function initPage() {
         filteredUsers = rawUsers.filter(user => user.role === currentRoleFilter);
       }
 
-      if (filteredUsers.length === 0) {
-        userList.innerHTML = `<tr><td colspan="8" class="table-empty">가입된 회원이 없습니다.</td></tr>`;
-        return;
-      }
-
-      const countryLangFlags = {
-        ko: "🇰🇷 한국어",
-        vi: "🇻🇳 베트남어",
-        en: "🇺🇸 English",
-        zh: "🇨🇳 中文",
-        ru: "🇷🇺 Русский",
-        mn: "🇲🇳 몽골어"
-      };
-
-      filteredUsers.slice(0, currentLimitUsers).forEach((userData) => {
-        const userId = userData.id;
-        const tr = document.createElement("tr");
-
-        let registerDate = "-";
-        if (userData.createdAt) {
-          // [한글 주석: Timestamp 객체 및 일반 Date 포맷 안전 변환]
-          let dateObj = null;
-          if (typeof userData.createdAt.toDate === "function") {
-            dateObj = userData.createdAt.toDate();
-          } else if (userData.createdAt.seconds) {
-            dateObj = new Date(userData.createdAt.seconds * 1000);
-          } else {
-            dateObj = new Date(userData.createdAt);
-          }
-          registerDate = (dateObj && !isNaN(dateObj.getTime())) ? dateObj.toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-          }) : "-";
-        }
-
-        const currentRoleLabel = rolesCache[userData.role] || userData.role || "일반 회원";
-
-        const isSuperAdmin = currentLoginUserRole === "super_admin";
-        const isSelf = auth.currentUser && auth.currentUser.uid === userId;
-        const isDisabled = (!isSuperAdmin || isSelf) ? "disabled" : "";
-
-        let selectOptionsHTML = "";
-        let roleExistsInCache = false;
-
-        Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
-          const isSelected = userData.role === roleKey ? "selected" : "";
-          if (userData.role === roleKey) roleExistsInCache = true;
-          selectOptionsHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel}</option>`;
-        });
-
-        if (userData.role && !roleExistsInCache) {
-          selectOptionsHTML += `<option value="${userData.role}" selected>${userData.role} (미등록)</option>`;
-        }
-
-        const roleControlHTML = `
-          <div class="role-control-wrapper">
-            <select class="select-role" id="select-role-${userId}" ${isDisabled}>
-              ${selectOptionsHTML}
-            </select>
-            <button class="btn-action confirm btn-update-role" data-uid="${userId}" ${isDisabled}>변경</button>
-          </div>
-        `;
-
-        const countryLangDisplay = countryLangFlags[userData.countryLanguage] || (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
-
-        tr.innerHTML = `
-          <td>${countryLangDisplay}</td>
-          <td class="font-bold">${userData.name || "-"}</td>
-          <td>${userData.phone || "-"}</td>
-          <td>${userData.email || "-"}</td>
-          <td>${registerDate}</td>
-          <td><span class="role-badge ${userData.role || 'user'}">${currentRoleLabel}</span></td>
-          <td>${roleControlHTML}</td>
-          <td>
-            <button class="btn-user-detail" data-uid="${userId}">상세보기</button>
-          </td>
-          <td>
-            <button class="btn-user-delete" data-uid="${userId}" ${isDisabled}>삭제</button>
-          </td>
-        `;
-
-        userList.appendChild(tr);
-      });
+      cachedFilteredUsers = filteredUsers;
+      renderUsersPage(cachedFilteredUsers);
 
     } catch (error) {
       console.error("Load users failed:", error);
       userList.innerHTML = `<tr><td colspan="9" class="table-empty">회원 데이터를 로드하지 못했습니다. (권한 오류 등)</td></tr>`;
+      if (usersPagination) usersPagination.innerHTML = "";
     }
   }
 
@@ -1496,7 +1642,7 @@ function initPage() {
   // 회원 목록 새로고침 버튼 이벤트
   if (btnRefreshUsers) {
     btnRefreshUsers.addEventListener("click", () => {
-      loadUsers();
+      loadUsers(true); // 새로고침 시 1페이지로 리셋
     });
   }
 
@@ -1509,7 +1655,7 @@ function initPage() {
     selectLimitUsers.addEventListener("change", (e) => {
       currentLimitUsers = parseInt(e.target.value, 10);
       localStorage.setItem("admin_user_limit", currentLimitUsers.toString());
-      loadUsers(); // 필터 선택값 변경 시 즉각 Firestore limit 재조회 및 렌더링
+      loadUsers(true); // 필터 선택값 변경 시 1페이지로 리셋 및 목록 재렌더링
     });
   }
 
@@ -1519,7 +1665,7 @@ function initPage() {
     selectRoleFilter.addEventListener("change", (e) => {
       currentRoleFilter = e.target.value;
       localStorage.setItem("admin_user_role_filter", currentRoleFilter);
-      loadUsers(); // 등급 필터 선택 변경 시 즉시 목록 재조회 렌더링
+      loadUsers(true); // 등급 필터 선택 변경 시 1페이지로 리셋 및 목록 재렌더링
     });
   }
 
@@ -3142,6 +3288,453 @@ function initPage() {
 
   // 탭 클릭 시 리소스 전역 로드 연동을 위해 window 스코프 배포
   window.loadAds = loadAds;
+
+  // ==========================================================================
+  // [한글 주석] 전문 의료 통역 관리 (소속 통역사 & 프리랜서 통역사) CRUD 구현
+  // ==========================================================================
+
+  const interpreterRegisterForm = document.getElementById("interpreter-register-form");
+  const regInterpreterType = document.getElementById("reg-interpreter-type");
+  const regInterpreterName = document.getElementById("reg-interpreter-name");
+  const regInterpreterCountrySelect = document.getElementById("reg-interpreter-country-select");
+  const regInterpreterCountry = document.getElementById("reg-interpreter-country");
+  const regInterpreterPhone = document.getElementById("reg-interpreter-phone");
+  const regInterpreterEmail = document.getElementById("reg-interpreter-email");
+  const regInterpreterPhotoGroup = document.getElementById("reg-interpreter-photo-group");
+  const regInterpreterPhotoFile = document.getElementById("reg-interpreter-photo-file");
+  const btnRegInterpreterPhotoTrigger = document.getElementById("btn-reg-interpreter-photo-trigger");
+  const regInterpreterPhotoFilename = document.getElementById("reg-interpreter-photo-filename");
+  const regInterpreterPhotoPreview = document.getElementById("reg-interpreter-photo-preview");
+  const regInterpreterPhotoPreviewContainer = document.getElementById("reg-interpreter-photo-preview-container");
+  const regInterpreterOrder = document.getElementById("reg-interpreter-order");
+  const btnRefreshInterpreters = document.getElementById("btn-refresh-interpreters");
+
+  const adminStaffInterpreterList = document.getElementById("admin-staff-interpreter-list");
+  const adminFreelanceInterpreterList = document.getElementById("admin-freelance-interpreter-list");
+
+  let regInterpreterBase64Photo = "";
+  let loadedInterpretersMap = {};
+
+  // [한글 주석: 통역사 구분 변경 시 사진 업로드 영역 노출/숨김 토글]
+  if (regInterpreterType && regInterpreterPhotoGroup) {
+    regInterpreterType.addEventListener("change", (e) => {
+      if (e.target.value === "staff") {
+        regInterpreterPhotoGroup.style.display = "block";
+      } else {
+        regInterpreterPhotoGroup.style.display = "none";
+      }
+    });
+  }
+
+  // [한글 주석: 국가 셀렉트 변경 시 국가명 및 국기 자동 매핑]
+  if (regInterpreterCountrySelect && regInterpreterCountry) {
+    regInterpreterCountrySelect.addEventListener("change", (e) => {
+      const val = e.target.value;
+      if (val.startsWith("custom|")) {
+        regInterpreterCountry.value = "";
+        regInterpreterCountry.focus();
+      } else {
+        const parts = val.split("|");
+        if (parts.length >= 2) {
+          regInterpreterCountry.value = parts[1];
+        }
+      }
+    });
+  }
+
+  // [한글 주석: 통역사 프로필 사진 파일 선택 및 Base64 인코딩 미리보기]
+  if (btnRegInterpreterPhotoTrigger && regInterpreterPhotoFile) {
+    btnRegInterpreterPhotoTrigger.addEventListener("click", () => {
+      regInterpreterPhotoFile.click();
+    });
+
+    regInterpreterPhotoFile.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        regInterpreterPhotoFilename.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = (loadEvt) => {
+          regInterpreterBase64Photo = loadEvt.target.result;
+          if (regInterpreterPhotoPreview && regInterpreterPhotoPreviewContainer) {
+            regInterpreterPhotoPreview.src = regInterpreterBase64Photo;
+            regInterpreterPhotoPreviewContainer.style.display = "block";
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        regInterpreterBase64Photo = "";
+        regInterpreterPhotoFilename.textContent = "선택된 파일 없음";
+        if (regInterpreterPhotoPreviewContainer) {
+          regInterpreterPhotoPreviewContainer.style.display = "none";
+        }
+      }
+    });
+  }
+
+  /**
+   * [한글 주석] Firestore DB에서 전문 통역사 목록을 조회하여 관리자 테이블에 렌더링하는 함수
+   */
+  async function loadAdminInterpreters() {
+    if (!adminStaffInterpreterList || !adminFreelanceInterpreterList) return;
+
+    adminStaffInterpreterList.innerHTML = `<tr><td colspan="6" class="table-loading">소속 통역사 데이터를 불러오는 중입니다...</td></tr>`;
+    adminFreelanceInterpreterList.innerHTML = `<tr><td colspan="6" class="table-loading">프리랜서 통역사 데이터를 불러오는 중입니다...</td></tr>`;
+
+    try {
+      const q = query(collection(db, "interpreters"), orderBy("order", "asc"));
+      const querySnapshot = await getDocs(q);
+
+      loadedInterpretersMap = {};
+      const staffList = [];
+      const freelanceList = [];
+
+      querySnapshot.forEach((docSnap) => {
+        const data = { ...docSnap.data(), id: docSnap.id };
+        loadedInterpretersMap[docSnap.id] = data;
+        if (data.type === "staff") {
+          staffList.push(data);
+        } else {
+          freelanceList.push(data);
+        }
+      });
+
+      // 1. 소속 통역사 테이블 렌더링
+      adminStaffInterpreterList.innerHTML = "";
+      if (staffList.length === 0) {
+        adminStaffInterpreterList.innerHTML = `<tr><td colspan="6" class="table-empty">등록된 소속 통역사가 없습니다.</td></tr>`;
+      } else {
+        staffList.forEach((item) => {
+          const tr = document.createElement("tr");
+          const photoUrl = item.image || "/img/default_avatar.png";
+          const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
+
+          tr.innerHTML = `
+            <td>
+              <img src="${photoUrl}" alt="${item.name}" style="width: 48px; height: 56px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(0,243,255,0.4);" onerror="this.src='/img/logo.png'">
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="${flagUrl}" alt="${item.country}" style="width: 24px; height: 16px; border-radius: 2px;" onerror="this.style.display='none'">
+                <span>${item.country}</span>
+              </div>
+            </td>
+            <td class="font-bold">${item.name}</td>
+            <td>
+              <div>${item.phone || "-"}</div>
+              <small style="color: #94a3b8;">${item.email || ""}</small>
+            </td>
+            <td><span class="role-badge" style="background: rgba(0,243,255,0.15); color: #00f3ff;">${item.order || 1}</span></td>
+            <td>
+              <button class="btn-action confirm btn-edit-interpreter" data-id="${item.id}" style="margin-right: 6px;">수정</button>
+              <button class="btn-action cancel btn-delete-interpreter" data-id="${item.id}">삭제</button>
+            </td>
+          `;
+          adminStaffInterpreterList.appendChild(tr);
+        });
+      }
+
+      // 2. 프리랜서 통역사 테이블 렌더링
+      adminFreelanceInterpreterList.innerHTML = "";
+      if (freelanceList.length === 0) {
+        adminFreelanceInterpreterList.innerHTML = `<tr><td colspan="6" class="table-empty">등록된 프리랜서 통역사가 없습니다.</td></tr>`;
+      } else {
+        freelanceList.forEach((item) => {
+          const tr = document.createElement("tr");
+          const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
+
+          tr.innerHTML = `
+            <td>
+              <img src="${flagUrl}" alt="${item.country}" style="width: 28px; height: 18px; border-radius: 3px; box-shadow: 0 0 6px rgba(0,0,0,0.5);" onerror="this.style.display='none'">
+            </td>
+            <td class="font-bold">${item.country}</td>
+            <td>${item.name}</td>
+            <td>${item.phone || "-"}</td>
+            <td><span class="role-badge" style="background: rgba(96,165,250,0.15); color: #60a5fa;">${item.order || 1}</span></td>
+            <td>
+              <button class="btn-action confirm btn-edit-interpreter" data-id="${item.id}" style="margin-right: 6px;">수정</button>
+              <button class="btn-action cancel btn-delete-interpreter" data-id="${item.id}">삭제</button>
+            </td>
+          `;
+          adminFreelanceInterpreterList.appendChild(tr);
+        });
+      }
+
+    } catch (error) {
+      console.error("Load admin interpreters failed:", error);
+      adminStaffInterpreterList.innerHTML = `<tr><td colspan="6" class="table-empty">통역사 데이터를 불러오지 못했습니다.</td></tr>`;
+      adminFreelanceInterpreterList.innerHTML = `<tr><td colspan="6" class="table-empty">통역사 데이터를 불러오지 못했습니다.</td></tr>`;
+    }
+  }
+
+  // [한글 주석: 통역사 신규 등록 폼 제출 이벤트 처리]
+  if (interpreterRegisterForm) {
+    interpreterRegisterForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const type = regInterpreterType ? regInterpreterType.value : "staff";
+      const name = regInterpreterName ? regInterpreterName.value.trim() : "";
+      const country = regInterpreterCountry ? regInterpreterCountry.value.trim() : "";
+      const phone = regInterpreterPhone ? regInterpreterPhone.value.trim() : "";
+      const email = regInterpreterEmail ? regInterpreterEmail.value.trim() : "";
+      const order = regInterpreterOrder ? parseInt(regInterpreterOrder.value, 10) || 1 : 1;
+
+      if (!name || !country) {
+        alert("통역사 이름과 국가는 필수 입력 항목입니다.");
+        return;
+      }
+
+      // 국가 코드 및 국기 URL 추출
+      let countryCode = "kr";
+      let flag = "https://flagcdn.com/w80/kr.png";
+      if (regInterpreterCountrySelect) {
+        const selectVal = regInterpreterCountrySelect.value;
+        const parts = selectVal.split("|");
+        if (parts.length >= 3 && parts[0] !== "custom") {
+          countryCode = parts[0];
+          flag = parts[2];
+        }
+      }
+
+      const newInterpreterData = {
+        type: type,
+        name: name,
+        country: country,
+        countryCode: countryCode,
+        flag: flag,
+        phone: phone,
+        email: email,
+        image: (type === "staff") ? regInterpreterBase64Photo : "",
+        order: order,
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        const submitBtn = interpreterRegisterForm.querySelector("button[type='submit']");
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "등록 처리 중...";
+        }
+
+        await addDoc(collection(db, "interpreters"), newInterpreterData);
+        alert("전문 통역사가 성공적으로 등록되었습니다!");
+
+        // 폼 초기화
+        interpreterRegisterForm.reset();
+        regInterpreterBase64Photo = "";
+        if (regInterpreterPhotoFilename) regInterpreterPhotoFilename.textContent = "선택된 파일 없음";
+        if (regInterpreterPhotoPreviewContainer) regInterpreterPhotoPreviewContainer.style.display = "none";
+        if (regInterpreterCountry) regInterpreterCountry.value = "한국 (Korea)";
+
+        // 목록 새로고침
+        loadAdminInterpreters();
+      } catch (error) {
+        console.error("Register interpreter failed:", error);
+        alert("통역사 등록 중 오류가 발생했습니다: " + error.message);
+      } finally {
+        const submitBtn = interpreterRegisterForm.querySelector("button[type='submit']");
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "✨ 전문 통역사 등록하기";
+        }
+      }
+    });
+  }
+
+  // [한글 주석: 통역사 정보 수정 모달 표시 함수]
+  function showInterpreterEditModal(data) {
+    let editModal = document.getElementById("interpreter-edit-modal");
+    if (editModal) editModal.remove();
+
+    editModal = document.createElement("div");
+    editModal.id = "interpreter-edit-modal";
+    editModal.className = "auth-modal-backdrop";
+    editModal.style.cssText = "position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center;";
+
+    let editBase64Photo = data.image || "";
+
+    editModal.innerHTML = `
+      <div style="background:#0c1020; border:1px solid #00f3ff; border-radius:16px; padding:2rem; width:min(540px, 94vw); max-height:90vh; overflow-y:auto; box-shadow:0 0 30px rgba(0,243,255,0.25);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid rgba(0,243,255,0.2); padding-bottom:0.75rem;">
+          <h3 style="margin:0; color:#00f3ff; font-size:1.2rem;">✏️ 통역사 정보 수정</h3>
+          <button type="button" id="btn-close-edit-interpreter-modal" style="background:none; border:none; color:#cbd5e1; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <form id="form-edit-interpreter">
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">통역사 구분</label>
+            <select id="edit-interpreter-type" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#00f3ff; font-weight:bold;">
+              <option value="staff" ${data.type === 'staff' ? 'selected' : ''}>🏥 IGPartners 소속 통역 (사진 포함)</option>
+              <option value="freelance" ${data.type === 'freelance' ? 'selected' : ''}>🌐 프리랜서 통역사 (사진 미포함)</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">통역사 이름 *</label>
+            <input type="text" id="edit-interpreter-name" value="${data.name || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;" required>
+          </div>
+
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">국가 / 국적 표기 *</label>
+            <input type="text" id="edit-interpreter-country" value="${data.country || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;" required>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:1rem;">
+            <div>
+              <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">연락처</label>
+              <input type="text" id="edit-interpreter-phone" value="${data.phone || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
+            </div>
+            <div>
+              <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">노출 순서</label>
+              <input type="number" id="edit-interpreter-order" value="${data.order || 1}" min="1" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
+            </div>
+          </div>
+
+          <div style="margin-bottom:1rem;">
+            <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">이메일</label>
+            <input type="email" id="edit-interpreter-email" value="${data.email || ''}" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid rgba(0,243,255,0.3); background:#161c30; color:#fff;">
+          </div>
+
+          <div id="edit-interpreter-photo-section" style="margin-bottom:1.5rem; display:${data.type === 'staff' ? 'block' : 'none'};">
+            <label style="display:block; color:#94a3b8; font-size:0.85rem; margin-bottom:4px;">프로필 사진 수정</label>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input type="file" id="edit-interpreter-photo-file" accept="image/*" style="display:none;">
+              <button type="button" id="btn-edit-interpreter-photo-trigger" class="btn btn-secondary" style="padding:0.4rem 0.9rem; font-size:0.8rem; border-radius:6px; cursor:pointer;">사진 변경</button>
+              <span id="edit-interpreter-photo-filename" style="color:#94a3b8; font-size:0.8rem;">기존 사진 유지</span>
+            </div>
+            <div id="edit-interpreter-preview-wrap" style="margin-top:0.8rem; display:${editBase64Photo ? 'block' : 'none'};">
+              <img id="edit-interpreter-photo-preview" src="${editBase64Photo}" style="max-width:120px; max-height:150px; border-radius:8px; border:1px solid #00f3ff; object-fit:cover;">
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:1.5rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
+            <button type="button" id="btn-cancel-edit-interpreter" class="btn btn-secondary" style="padding:0.6rem 1.2rem; cursor:pointer;">취소</button>
+            <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.5rem; background:#00f3ff; color:#080c1c; font-weight:bold; cursor:pointer;">저장 완료</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(editModal);
+
+    // 이벤트 바인딩
+    const closeBtn = document.getElementById("btn-close-edit-interpreter-modal");
+    const cancelBtn = document.getElementById("btn-cancel-edit-interpreter");
+    const editTypeSelect = document.getElementById("edit-interpreter-type");
+    const editPhotoSection = document.getElementById("edit-interpreter-photo-section");
+    const editPhotoTrigger = document.getElementById("btn-edit-interpreter-photo-trigger");
+    const editPhotoFile = document.getElementById("edit-interpreter-photo-file");
+    const editPhotoFilename = document.getElementById("edit-interpreter-photo-filename");
+    const editPhotoPreview = document.getElementById("edit-interpreter-photo-preview");
+    const editPhotoPreviewWrap = document.getElementById("edit-interpreter-preview-wrap");
+    const editForm = document.getElementById("form-edit-interpreter");
+
+    if (closeBtn) closeBtn.onclick = () => editModal.remove();
+    if (cancelBtn) cancelBtn.onclick = () => editModal.remove();
+
+    if (editTypeSelect && editPhotoSection) {
+      editTypeSelect.onchange = (e) => {
+        editPhotoSection.style.display = e.target.value === "staff" ? "block" : "none";
+      };
+    }
+
+    if (editPhotoTrigger && editPhotoFile) {
+      editPhotoTrigger.onclick = () => editPhotoFile.click();
+      editPhotoFile.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          editPhotoFilename.textContent = file.name;
+          const reader = new FileReader();
+          reader.onload = (loadEvt) => {
+            editBase64Photo = loadEvt.target.result;
+            if (editPhotoPreview && editPhotoPreviewWrap) {
+              editPhotoPreview.src = editBase64Photo;
+              editPhotoPreviewWrap.style.display = "block";
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+    }
+
+    if (editForm) {
+      editForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const updatedType = editTypeSelect.value;
+        const updatedName = document.getElementById("edit-interpreter-name").value.trim();
+        const updatedCountry = document.getElementById("edit-interpreter-country").value.trim();
+        const updatedPhone = document.getElementById("edit-interpreter-phone").value.trim();
+        const updatedEmail = document.getElementById("edit-interpreter-email").value.trim();
+        const updatedOrder = parseInt(document.getElementById("edit-interpreter-order").value, 10) || 1;
+
+        if (!updatedName || !updatedCountry) {
+          alert("이름과 국가는 필수입니다.");
+          return;
+        }
+
+        try {
+          await updateDoc(doc(db, "interpreters", data.id), {
+            type: updatedType,
+            name: updatedName,
+            country: updatedCountry,
+            phone: updatedPhone,
+            email: updatedEmail,
+            image: (updatedType === "staff") ? editBase64Photo : "",
+            order: updatedOrder
+          });
+          alert("통역사 정보가 성공적으로 수정되었습니다.");
+          editModal.remove();
+          loadAdminInterpreters();
+        } catch (err) {
+          console.error("Update interpreter error:", err);
+          alert("수정 중 오류 발생: " + err.message);
+        }
+      };
+    }
+  }
+
+  // [한글 주석: 관리자 테이블 내 수정 / 삭제 버튼 클릭 이벤트 위임 바인딩]
+  function bindInterpreterTableEvents(container) {
+    if (!container) return;
+    container.addEventListener("click", async (e) => {
+      // 수정 버튼
+      if (e.target.classList.contains("btn-edit-interpreter")) {
+        const id = e.target.getAttribute("data-id");
+        if (id && loadedInterpretersMap[id]) {
+          showInterpreterEditModal(loadedInterpretersMap[id]);
+        }
+      }
+
+      // 삭제 버튼
+      if (e.target.classList.contains("btn-delete-interpreter")) {
+        const id = e.target.getAttribute("data-id");
+        if (id && confirm("해당 통역사 정보를 정말로 삭제하시겠습니까?")) {
+          e.target.disabled = true;
+          e.target.textContent = "삭제중...";
+          try {
+            await deleteDoc(doc(db, "interpreters", id));
+            alert("통역사 데이터가 삭제되었습니다.");
+            loadAdminInterpreters();
+          } catch (err) {
+            console.error("Delete interpreter error:", err);
+            alert("삭제 실패: " + err.message);
+            e.target.disabled = false;
+            e.target.textContent = "삭제";
+          }
+        }
+      }
+    });
+  }
+
+  bindInterpreterTableEvents(adminStaffInterpreterList);
+  bindInterpreterTableEvents(adminFreelanceInterpreterList);
+
+  if (btnRefreshInterpreters) {
+    btnRefreshInterpreters.addEventListener("click", () => {
+      loadAdminInterpreters();
+    });
+  }
+
+  window.loadAdminInterpreters = loadAdminInterpreters;
 }
 
 // [한글 주석: 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]

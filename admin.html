@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260826_4)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260826_4">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260828_3)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260828_3">
 </head>
 
 <body>
@@ -156,6 +156,8 @@
       <button id="tab-clinics" class="tab-btn" style="display: none;">병원 관리</button>
       <!-- 신규 추가: 광고 배너 CRUD 관리 탭 (병원 관리 바로 오른쪽 위치) -->
       <button id="tab-ads" class="tab-btn" style="display: none;">광고 배너 관리</button>
+      <!-- [한글 주석: 전문 의료 통역사(소속/프리랜서) CRUD 관리 탭 (광고 배너 관리 바로 오른쪽 위치)] -->
+      <button id="tab-interpreters" class="tab-btn" style="display: none;">전문통역 관리</button>
       <button id="tab-users" class="tab-btn" style="display: none;">등급,권한 관리</button>
       <button id="tab-permissions" class="tab-btn" style="display: none;">회원 리스트</button>
     </div>
@@ -417,6 +419,8 @@
             </tbody>
           </table>
         </div>
+        <!-- [한글 주석: 회원 목록 전용 페이지네이션 컨트롤러 영역] -->
+        <div id="users-pagination" class="admin-pagination-container"></div>
       </main>
     </div>
 
@@ -715,6 +719,165 @@
         </div>
       </main>
     </div>
+
+    <!-- [한글 주석: 전문 의료 통역 관리 탭 콘텐츠 (소속/프리랜서 통역사 CRUD)] -->
+    <div id="content-interpreters" class="admin-tab-content" style="display: none;">
+      <main class="admin-main">
+        <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
+          
+          <!-- 통역사 등록 폼 (상단) -->
+          <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
+            <h2>신규 전문 통역사 등록</h2>
+            <form id="interpreter-register-form" class="clinic-form">
+              <div class="form-row">
+                <!-- 통역사 구분 (소속 통역 vs 프리랜서) -->
+                <div class="form-group">
+                  <label for="reg-interpreter-type">통역사 구분 *</label>
+                  <select id="reg-interpreter-type" class="form-input" style="font-weight: bold; color: #00f3ff; background: #0c1020;" required>
+                    <option value="staff">🏥 IGPartners 소속 통역 (사진 포함 명함형)</option>
+                    <option value="freelance">🌐 프리랜서 통역사 (사진 미포함)</option>
+                  </select>
+                </div>
+                <!-- 통역사 성명 -->
+                <div class="form-group">
+                  <label for="reg-interpreter-name">통역사 이름 *</label>
+                  <input type="text" id="reg-interpreter-name" class="form-input" placeholder="예: 박지안, Nguyễn Thị Mai" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <!-- 국가 / 국적 선택 -->
+                <div class="form-group">
+                  <label for="reg-interpreter-country-select">국가 (선택) *</label>
+                  <select id="reg-interpreter-country-select" class="form-input" style="background: #0c1020; color: #e2e8f0;">
+                    <option value="kr|한국 (Korea)|https://flagcdn.com/w80/kr.png">🇰🇷 대한민국 (한국어)</option>
+                    <option value="vn|베트남 (Vietnam)|https://flagcdn.com/w80/vn.png">🇻🇳 베트남 (Tiếng Việt)</option>
+                    <option value="cn|중국 (China)|https://flagcdn.com/w80/cn.png">🇨🇳 중국 (中文)</option>
+                    <option value="ru|러시아 (Russia)|https://flagcdn.com/w80/ru.png">🇷🇺 러시아 (Русский)</option>
+                    <option value="mn|몽골 (Mongolia)|https://flagcdn.com/w80/mn.png">🇲🇳 몽골 (Монгол хэл)</option>
+                    <option value="jp|일본 (Japan)|https://flagcdn.com/w80/jp.png">🇯🇵 일본 (日本語)</option>
+                    <option value="us|미국/영어권 (English)|https://flagcdn.com/w80/gb.png">🇺🇸 미국/영어 (English)</option>
+                    <option value="th|태국 (Thailand)|https://flagcdn.com/w80/th.png">🇹🇭 태국 (ภาษาไทย)</option>
+                    <option value="mm|미얀마 (Myanmar)|https://flagcdn.com/w80/mm.png">🇲🇲 미얀마 (မြန်မာစာ)</option>
+                    <option value="kh|캄보디아 (Cambodia)|https://flagcdn.com/w80/kh.png">🇰🇭 캄보디아 (ភាសាខ្មែរ)</option>
+                    <option value="la|라오스 (Laos)|https://flagcdn.com/w80/la.png">🇱🇦 라오스 (ພາສາລາວ)</option>
+                    <option value="np|네팔 (Nepal)|https://flagcdn.com/w80/np.png">🇳🇵 네팔 (नेपाली)</option>
+                    <option value="id|인도네시아 (Indonesia)|https://flagcdn.com/w80/id.png">🇮🇩 인도네시아 (Bahasa)</option>
+                    <option value="lk|스리랑카 (Sri Lanka)|https://flagcdn.com/w80/lk.png">🇱🇰 스리랑카 (සිංහල)</option>
+                    <option value="bd|방글라데시 (Bangladesh)|https://flagcdn.com/w80/bd.png">🇧🇩 방글라데시 (বাংলা)</option>
+                    <option value="custom|직접 입력|">직접 입력 (Custom)</option>
+                  </select>
+                </div>
+                <!-- 국가명 직접 입력 (선택 시 자동 채움 또는 수정) -->
+                <div class="form-group">
+                  <label for="reg-interpreter-country">국가 / 국적명 표기 *</label>
+                  <input type="text" id="reg-interpreter-country" class="form-input" value="한국 (Korea)" placeholder="예: 베트남 (Vietnam)" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <!-- 연락처 (전화번호) -->
+                <div class="form-group">
+                  <label for="reg-interpreter-phone">연락처 (전화번호)</label>
+                  <input type="text" id="reg-interpreter-phone" class="form-input" placeholder="예: 010-1234-5678">
+                </div>
+                <!-- 이메일 -->
+                <div class="form-group">
+                  <label for="reg-interpreter-email">이메일</label>
+                  <input type="email" id="reg-interpreter-email" class="form-input" placeholder="예: interpreter@igpartners.com">
+                </div>
+              </div>
+
+              <!-- 통역사 사진 업로드 (소속 통역사 전용) -->
+              <div id="reg-interpreter-photo-group" class="form-group" style="margin-bottom: 1.5rem;">
+                <label>통역사 프로필 사진 (소속 통역 전용)</label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <input type="file" id="reg-interpreter-photo-file" accept="image/*" style="display: none;">
+                  <button type="button" id="btn-reg-interpreter-photo-trigger" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 6px; cursor: pointer;">사진 선택</button>
+                  <span id="reg-interpreter-photo-filename" style="color: rgba(255, 255, 255, 0.5); font-size: 0.85rem;">선택된 파일 없음</span>
+                </div>
+                <!-- 실시간 사진 미리보기 -->
+                <div id="reg-interpreter-photo-preview-container" style="margin-top: 0.8rem; display: none;">
+                  <img id="reg-interpreter-photo-preview" src="" alt="Preview" style="max-width: 140px; max-height: 180px; border-radius: 8px; border: 1px solid #00f3ff; object-fit: cover;">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <!-- 노출 순서 -->
+                <div class="form-group" style="max-width: 200px;">
+                  <label for="reg-interpreter-order">노출 순서 (숫자)</label>
+                  <input type="number" id="reg-interpreter-order" class="form-input" value="1" min="1">
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem; font-weight: bold; background: linear-gradient(135deg, #00f3ff 0%, #0077ff 100%); color: #080c1c;">
+                  ✨ 전문 통역사 등록하기
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- 통역사 목록 관리 테이블 (하단) -->
+          <section class="clinic-list-section" style="max-width: 1200px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h2>등록된 전문 통역사 목록</h2>
+              <button id="btn-refresh-interpreters" class="btn-refresh">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                </svg>
+                새로고침
+              </button>
+            </div>
+
+            <!-- 서브 타이틀 및 소속 통역사 테이블 -->
+            <h3 style="color: #00f3ff; font-size: 1.1rem; margin: 1.5rem 0 0.8rem;">🏥 IGPartners 소속 통역사 목록</h3>
+            <div class="table-responsive" style="margin-bottom: 2rem;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>사진</th>
+                    <th>국가(국기)</th>
+                    <th>이름</th>
+                    <th>연락처 / 이메일</th>
+                    <th>순서</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-staff-interpreter-list">
+                  <tr>
+                    <td colspan="6" class="table-loading">소속 통역사 데이터를 불러오는 중입니다...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 프리랜서 통역사 테이블 -->
+            <h3 style="color: #60a5fa; font-size: 1.1rem; margin: 1.5rem 0 0.8rem;">🌐 프리랜서 통역사 목록</h3>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>국기</th>
+                    <th>국가명</th>
+                    <th>이름</th>
+                    <th>연락처</th>
+                    <th>순서</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-freelance-interpreter-list">
+                  <tr>
+                    <td colspan="6" class="table-loading">프리랜서 통역사 데이터를 불러오는 중입니다...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
   </div>
 
   <!-- 회원 상세보기 모달 팝업 -->
@@ -730,10 +893,10 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260826_4)] -->
-  <script type="module" src="/js/navigation.js?v=260826_4"></script>
-  <script type="module" src="/js/admin.js?v=260826_4"></script>
-  <script type="module" src="/js/auth.js?v=260826_4"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260828_3)] -->
+  <script type="module" src="/js/navigation.js?v=260828_3"></script>
+  <script type="module" src="/js/admin.js?v=260828_3"></script>
+  <script type="module" src="/js/auth.js?v=260828_3"></script>
 </body>
 
 </html>

@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IGPartners - 글로벌 헬스케어 메디컬 파트너</title>
+  <!-- [한글 주석: 전문통역 전용 페이지 타이틀 및 메타 태그 정의] -->
+  <title>전문 의료 통역 서비스 - IGPartners</title>
 
   <!-- Google 폰트 로드 (Outfit 및 Noto Sans KR) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,12 +14,12 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260828_3)] -->
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260828_3)] -->
   <link rel="stylesheet" href="css/style.css?v=260828_3">
 </head>
 
 <body class="home-page">
-  <!-- 백그라운드 퍼짐 효과용 오로라 장식 요소 -->
+  <!-- [한글 주석: 백그라운드 퍼짐 효과용 오로라 장식 요소] -->
   <div class="bg-decorations">
     <div class="aurora-1"></div>
     <div class="aurora-2"></div>
@@ -50,10 +51,10 @@
               </div>
             </div>
           </li>
-          <li class="nav-item"><a href="/index.html" class="nav-link active">홈</a></li>
+          <li class="nav-item"><a href="/index.html" class="nav-link">홈</a></li>
           <li class="nav-item"><a href="/about.html" class="nav-link">회사소개</a></li>
           <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
-          <li class="nav-item"><a href="/interpreters.html" class="nav-link btn-nav-booking">전문통역</a></li>
+          <li class="nav-item"><a href="/interpreters.html" class="nav-link btn-nav-booking active">전문통역</a></li>
           <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking">진료 예약</a></li>
           <li class="nav-item"><a href="/index.html#partners" class="nav-link">파트너스</a></li>
           <!-- [한글 주석: 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출] -->
@@ -91,10 +92,10 @@
 
         <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함] -->
         <div class="nav-mobile-quick" id="nav-mobile-quick">
-          <a href="/index.html" class="quick-icon-btn active" title="홈">🏠</a>
+          <a href="/index.html" class="quick-icon-btn" title="홈">🏠</a>
           <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
           <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
-          <a href="/interpreters.html" class="quick-icon-btn" title="전문통역">🌐</a>
+          <a href="/interpreters.html" class="quick-icon-btn active" title="전문통역">🌐</a>
           <a href="/booking-lang.html" class="quick-icon-btn" title="진료 예약">📅</a>
           <a href="/index.html#partners" class="quick-icon-btn" title="파트너스">🤝</a>
           <a href="/community.html" class="quick-icon-btn" title="커뮤니티">💬</a>
@@ -131,7 +132,7 @@
           </script>
         </div>
 
-        <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
+        <!-- 모바일 햄버거 토글 버튼 -->
         <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
           <span class="bar"></span>
           <span class="bar"></span>
@@ -141,93 +142,72 @@
     </nav>
   </header>
 
-  <!-- [한글 주석: SPA 동적 뷰 스위처 엔진이 이 영역을 감지하여 1:1 교체함으로써 헤더 파괴 및 튐현상을 100% 방지하는 본문 컨테이너] -->
-  <div id="app-view-container">
-    <!-- 1. 히어로 섹션 (웅장한 웰컴 영역) -->
-    <section class="hero-section">
+  <!-- 메인 뷰 컨테이너 -->
+  <div id="app-view-container" class="container">
+
+    <!-- 1. 전문통역 상단 히어로 배너 섹션 -->
+    <section class="interpreters-hero-section">
       <div class="hero-glow"></div>
-      <div class="hero-content">
-        <!-- [한글 주석: 사용자의 빠른 카톡 1:1 상담 및 진료 예약을 지원하기 위해 나란히 배치된 히어로 버튼 그룹 (좌: 카톡상담하기, 우: 진료예약하기)] -->
-        <div class="hero-btn-group">
-          <!-- [한글 주석: 카카오톡 파트너/비즈니스 1:1 채팅상담 연결 버튼 (카카오 브랜드 전용 옐로우 컬러 및 SVG 아이콘 적용)] -->
-          <!-- [주의: 공식 카카오톡 채널 주소가 확정되면 href="https://pf.kakao.com/" 부분을 해당 채널 URL(예: https://pf.kakao.com/_xxxx/chat)로 업데이트하세요] -->
-          <a href="http://pf.kakao.com/_YxoxjfX/chat" target="_blank" rel="noopener noreferrer" class="hero-kakao-btn">
-            <svg class="kakao-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd"
-                d="M12 3C6.47715 3 2 6.47715 2 10.7647C2 13.468 3.75475 15.8361 6.42551 17.2023C6.23075 17.8967 5.53982 20.3705 5.48512 20.6698C5.41438 21.0568 5.72753 21.0505 5.92209 20.9225C6.18241 20.7513 10.0249 18.1723 11.2721 17.3292C11.5126 17.3501 11.7547 17.3614 12 17.3614C17.5228 17.3614 22 13.8842 22 9.59666C22 5.30911 17.5228 3 12 3Z"
-                fill="#191919" />
-            </svg>
-            <span>카톡상담하기</span>
-          </a>
-          <a href="/booking-lang.html" class="hero-booking-btn">진료예약하기</a>
-        </div>
-        <span class="hero-tag">The Global Life with IGPartners</span>
-        <!-- [한글 주석: 데스크톱 및 모바일 전 화면에서 한 줄로 균형 있게 표시되는 메인 히어로 타이틀] -->
-        <h1 class="hero-title">제휴 협력 업체 및 라이프 솔루션</h1>
+      <div class="interpreters-hero-content">
+        <span class="hero-tag">Global Medical Interpretation</span>
+        <h1 class="hero-title">전문 의료 통역 서비스</h1>
+        <p class="hero-desc">
+          IGPartners 전담 의료통역사 및 검증된 프리랜서 통역사 네트워크를 지원합니다.
+        </p>
       </div>
     </section>
 
-    <!-- 한글 주석: 홈 화면 레이아웃 간소화 요청에 따라 기존 #about 및 #services 섹션을 제거함. 상세 내용은 독립된 약속된 페이지(about.html, services.html)에서 제공함 -->
-
-    <!-- 4. 협력 회사 섹션 (Partners Network) -> 프리미엄 광고 타일 그리드로 개편 -->
-    <section id="partners" class="content-section">
+    <!-- 2. [상단 섹션] IGPartners 소속 통역 섹션 (명함 카드 스타일) -->
+    <section id="staff-interpreters-section" class="interpreters-section">
       <div class="section-container">
-        <!--<div class="section-header">
-          <span class="section-tag">The Global Life with IGPartners</span>
-          <h2 class="section-title">제휴 협력 병원 및 추천 의료 솔루션</h2>
-          <p class="section-desc">국내 거주 외국인 환자들에게 정밀 의료 서비스와 신뢰를 제공하는 실시간 파트너 네트워크입니다.</p>
-        </div>-->
+        <div class="interpreters-section-header">
+          <div class="badge-tag">In-house Medical Interpreters</div>
+          <h2 class="interpreters-section-title">IGPartners 소속 통역</h2>
+          <p class="interpreters-section-desc">
+          </p>
+        </div>
 
-        <!-- 실시간 DB 연동을 위해 자바스크립트로 동적 로드되는 광고 그리드 -->
-        <div class="ad-grid" id="ad-grid-container">
-          <!-- [한글 주석] 데이터 로딩이 시작되기 전 노출되는 인디케이터 -->
-          <div
-            style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: #00f3ff; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.05em;">
-            🌐 실시간 파트너 솔루션을 불러오는 중입니다...
+        <!-- 소속 통역사 카드 그리드 컨테이너 -->
+        <div class="staff-interpreters-grid" id="staff-interpreters-grid">
+          <!-- [한글 주석: js/interpreters.js에서 Firestore DB 데이터를 기반으로 동적 렌더링됩니다] -->
+          <div class="interpreters-loading">
+            <span class="loading-spinner"></span>
+            <p>소속 전문 통역사 정보를 불러오는 중입니다...</p>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- 3. [하단 섹션] 프리랜서 통역사 섹션 (사진 제외 국기/국가명/이름/연락처 카드 스타일) -->
+    <section id="freelance-interpreters-section" class="interpreters-section freelance-section">
+      <div class="section-container">
+        <div class="interpreters-section-header">
+          <div class="badge-tag">Certified Freelance Network</div>
+          <h2 class="interpreters-section-title">프리랜서 통역사</h2>
+          <p class="interpreters-section-desc">
+          </p>
+        </div>
+
+        <!-- 프리랜서 통역사 카드 그리드 컨테이너 -->
+        <div class="freelance-interpreters-grid" id="freelance-interpreters-grid">
+          <!-- [한글 주석: js/interpreters.js에서 Firestore DB 데이터를 기반으로 동적 렌더링됩니다] -->
+          <div class="interpreters-loading">
+            <span class="loading-spinner"></span>
+            <p>프리랜서 통역사 정보를 불러오는 중입니다...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <!-- [한글 주석: 유지보수 용이성을 위해 푸터 내용을 공통 JS(navigation.js)에서 동적 주입하도록 구조 개선] -->
+  <!-- 공통 푸터 -->
   <footer id="global-footer" class="global-footer"></footer>
 
   <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260828_3)] -->
-  <script type="module" src="js/navigation.js?v=260828_3"></script>
+  <script type="module" src="/js/navigation.js?v=260828_3"></script>
   <script type="module" src="/js/auth.js?v=260828_3"></script>
-  <script type="module" src="/js/ad-slider.js?v=260828_3"></script>
-
-  <!-- [한글 주석: 구글 로그인 유도 안내 모달 팝업 - 다국어 편의성을 위해 한국어와 영어를 병기하고 로그인 버튼 내 베트남어를 제거함] -->
-  <div id="login-required-modal" class="modal-backdrop" style="display: none;">
-    <div class="modal-content" style="max-width: 450px;">
-      <div class="modal-header">
-        <h2>🔒 로그인 필요<br><span style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); font-weight: 500;">Login
-            Required</span></h2>
-        <button id="btn-close-login-modal-x" class="modal-close-x">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 2rem; text-align: center;">
-        <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.5;">
-          이 서비스는 구글 로그인이 필요합니다.<br>
-          <span style="font-size: 0.95rem; color: rgba(255,255,255,0.8); font-weight: 500;">This service requires Google
-            Login.</span>
-        </p>
-        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0;">
-          예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.<br>
-          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Please proceed with Google Login to request or
-            check reservations.</span>
-        </p>
-      </div>
-      <div class="modal-footer" style="gap: 0.75rem; justify-content: center; padding: 1.2rem 2rem;">
-        <button id="btn-close-login-modal" class="btn btn-secondary"
-          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 100px;">닫기 (Close)</button>
-        <button id="btn-trigger-login" class="btn btn-primary"
-          style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 120px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">로그인
-          (Login)</button>
-      </div>
-    </div>
-  </div>
+  <script type="module" src="/js/interpreters.js?v=260828_3"></script>
 </body>
 
 </html>
