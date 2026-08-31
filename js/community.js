@@ -428,10 +428,8 @@ function renderCommunityTable() {
   // [한글 주석: 동적 카테고리별 글 수 집계 및 뱃지 업데이트]
   updateCategoryCounts();
 
-  let filtered = posts.filter(post => {
-    if (currentBoard !== "all" && post.board !== currentBoard) return false;
-    if (hideNotice && (post.prefix === "공지" || post.prefix === "필독")) return false;
-
+  // 1. 기간 및 검색어 필터가 적용된 전체 유효 게시글 추출
+  const searchFiltered = posts.filter(post => {
     if (periodFilter !== "all") {
       const now = Date.now();
       const diffMs = now - post.timestampMs;
@@ -454,10 +452,42 @@ function renderCommunityTable() {
     return true;
   });
 
-  const totalCount = filtered.length;
+  // [한글 주석: 공지글 판별 헬퍼 - 공지사항 카테고리 글 또는 isNotice:true 또는 공지/필독 말머리]
+  const checkIsNotice = (p) => p.isNotice === true || p.board === "notice" || p.prefix === "공지" || p.prefix === "필독";
+
+  // 2. [한글 주석: 상단 고정 공지 목록 추출 (Pinned Notices)]
+  let pinnedNotices = [];
+  if (!hideNotice) {
+    if (currentBoard === "all") {
+      pinnedNotices = searchFiltered.filter(p => checkIsNotice(p));
+    } else if (currentBoard === "notice") {
+      pinnedNotices = searchFiltered.filter(p => checkIsNotice(p));
+    } else {
+      pinnedNotices = searchFiltered.filter(p => p.board === currentBoard && checkIsNotice(p));
+    }
+    // 최신순 정렬
+    pinnedNotices.sort((a, b) => b.timestampMs - a.timestampMs);
+  }
+
+  // 3. [한글 주석: 하단 일반 시간순 게시글 피드 목록 추출 (General Feed)]
+  let normalPosts = [];
+  if (currentBoard === "all") {
+    // 전체글보기: 공지사항 전용 카테고리를 제외한 모든 일반 글 (공지 등록된 타 카테고리 글도 일반 번호로 동시 노출)
+    normalPosts = searchFiltered.filter(p => p.board !== "notice");
+  } else if (currentBoard === "notice") {
+    // 공지사항 탭: 공지사항 카테고리 글 + 타 카테고리 공지글
+    normalPosts = searchFiltered.filter(p => checkIsNotice(p));
+  } else {
+    // 특정 카테고리(비자정보 등): 해당 카테고리에 속한 모든 글 (공지 등록된 글도 자신의 일반 번호로 동시 노출)
+    normalPosts = searchFiltered.filter(p => p.board === currentBoard);
+  }
+  // 최신 작성일자순 정렬
+  normalPosts.sort((a, b) => b.timestampMs - a.timestampMs);
+
+  const totalCount = normalPosts.length;
   if (totalCountEl) totalCountEl.textContent = `${totalCount.toLocaleString()}개의 글`;
 
-  if (totalCount === 0) {
+  if (pinnedNotices.length === 0 && normalPosts.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="5" style="text-align: center; padding: 3.5rem 1rem; color: #64748b; font-size: 0.95rem;">
@@ -469,21 +499,21 @@ function renderCommunityTable() {
     return;
   }
 
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-  if (currentPage > totalPages) currentPage = totalPages;
+  const totalPages = Math.ceil(normalPosts.length / itemsPerPage);
+  if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
   if (currentPage < 1) currentPage = 1;
 
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const pagePosts = filtered.slice(startIndex, startIndex + itemsPerPage);
+  const pageNormalPosts = normalPosts.slice(startIndex, startIndex + itemsPerPage);
 
-  tbody.innerHTML = pagePosts.map((post, pIdx) => {
+  // [한글 주석: 게시글 단일 행(TR) 생성 헬퍼 함수]
+  const createPostRowHtml = (post, isPinned, displayNo) => {
     const globalIdx = window.combinedPosts.indexOf(post);
-    const displayNo = totalCount - (startIndex + pIdx);
 
     let badgeHtml = "";
     if (post.prefix === "필독") {
       badgeHtml = `<span class="badge-must-read">필독</span>`;
-    } else if (post.prefix === "공지") {
+    } else if (post.prefix === "공지" || isPinned) {
       badgeHtml = `<span class="badge-notice">공지</span>`;
     } else if (post.prefix && post.prefix !== "일반") {
       badgeHtml = `<span class="badge-general">${escapeHtml(post.prefix)}</span>`;
@@ -502,23 +532,20 @@ function renderCommunityTable() {
     const postCatPerm = postCatConfig ? (postCatConfig.readPermission || "all") : (post.board === "resume" ? "admin" : "all");
     const isExplicitSecret = post.rawIsSecret === true;
     if (isExplicitSecret || postCatPerm === "admin") {
-      // [한글 주석: 개별 비밀글로 작성되었거나 카테고리 권한이 관리자전용인 경우 비밀글 뱃지 표출]
       secretBadge = `<span style="color: #f59e0b; font-size: 0.8rem; margin-right: 0.3rem;"><i class="fa-solid fa-lock"></i> 비밀글</span>`;
     } else if (postCatPerm === "member") {
-      // [한글 주석: 카테고리 권한이 회원전용인 경우 회원전용 뱃지 표출]
       secretBadge = `<span style="color: #a5b4fc; font-size: 0.8rem; margin-right: 0.3rem;"><i class="fa-solid fa-user-group"></i> 회원전용</span>`;
     }
 
     const commentHtml = post.commentCount > 0 ? `<span class="cafe-comment-cnt">[${post.commentCount}]</span>` : "";
     const newHtml = post.isNew ? `<span class="cafe-new-icon">N</span>` : "";
 
-    // [한글 주석: 게시글 목록 테이블 행 생성 - 반응형 카드리스트 레이아웃 지원을 위한 모바일 메타 영역 및 클래스 적용]
     return `
-      <tr>
-        <!-- [한글 주석: 데스크톱 글 번호 컬럼 (모바일 768px 이하 숨김)] -->
+      <tr class="${isPinned ? 'cafe-tr-notice' : ''}">
+        <!-- [한글 주석: 글 번호 컬럼 (공지는 '공지' 뱃지, 일반글은 순수 번호)] -->
         <td class="cafe-col-no cafe-post-no">${displayNo}</td>
         
-        <!-- [한글 주석: 글 제목 컬럼 (모바일 768px 이하에서는 카드리스트 전체 영역 역할)] -->
+        <!-- [한글 주석: 글 제목 컬럼] -->
         <td class="cafe-col-title">
           <div class="cafe-title-line">
             ${badgeHtml}
@@ -531,7 +558,7 @@ function renderCommunityTable() {
             ${newHtml}
           </div>
           
-          <!-- [한글 주석: 모바일 전용 2번째 줄 메타 정보 영역 (768px 이하에서만 표시)] -->
+          <!-- [한글 주석: 모바일 전용 메타 정보 영역] -->
           <div class="cafe-mobile-meta">
             <span class="meta-author">
               ${escapeHtml(post.authorName)}
@@ -544,7 +571,7 @@ function renderCommunityTable() {
           </div>
         </td>
         
-        <!-- [한글 주석: 데스크톱 전용 작성자 컬럼 (모바일 768px 이하 숨김)] -->
+        <!-- [한글 주석: 데스크톱 작성자 컬럼] -->
         <td class="cafe-col-author">
           <div class="cafe-author-box">
             <span>${escapeHtml(post.authorName)}</span>
@@ -552,15 +579,32 @@ function renderCommunityTable() {
           </div>
         </td>
         
-        <!-- [한글 주석: 데스크톱 전용 작성일 컬럼 (모바일 768px 이하 숨김)] -->
+        <!-- [한글 주석: 데스크톱 작성일 컬럼] -->
         <td class="cafe-col-date" style="color: #64748b;">${post.date}</td>
         
-        <!-- [한글 주석: 데스크톱 전용 조회수 컬럼 (모바일 768px 이하 숨김)] -->
+        <!-- [한글 주석: 데스크톱 조회수 컬럼] -->
         <td class="cafe-col-views" style="color: #64748b;">${post.views}</td>
       </tr>
     `;
-  }).join("");
+  };
 
+  // 4. [한글 주석: 상단 고정 공지 행 목록 + 현재 페이지 일반 게시글 행 목록 결합 렌더링]
+  let rowsHtml = "";
+
+  // 1페이지(또는 모든 페이지 상단)에 상단 고정 공지 표출
+  if (currentPage === 1 && pinnedNotices.length > 0) {
+    pinnedNotices.forEach(post => {
+      rowsHtml += createPostRowHtml(post, true, `<span class="cafe-notice-pin">공지</span>`);
+    });
+  }
+
+  // 일반 시간순 게시글 목록 렌더링 (원래 번호 7, 6, 5... 부여)
+  pageNormalPosts.forEach((post, pIdx) => {
+    const postNo = normalPosts.length - (startIndex + pIdx);
+    rowsHtml += createPostRowHtml(post, false, postNo);
+  });
+
+  tbody.innerHTML = rowsHtml;
   renderPagination(totalPages);
 }
 
@@ -686,8 +730,29 @@ function showCafeDetailSection(postIndex) {
 
   let authorActionsHtml = "";
   if (isAuthor || isAllowedAdmin) {
+    let noticeToggleBtnHtml = "";
+    if (isAllowedAdmin) {
+      const isCurrentlyNotice = post.isNotice === true || post.prefix === "공지" || post.prefix === "필독";
+      if (isCurrentlyNotice) {
+        noticeToggleBtnHtml = `
+          <button type="button" onclick="window.togglePostNoticeStatus(${postIndex}, false)" class="btn-action btn-toggle-notice unpin"
+            style="padding: 0.45rem 1rem; font-size: 0.85rem; border-radius: 8px; cursor: pointer; background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;" title="전체 공지글에서 해제합니다">
+            <i class="fa-solid fa-thumbtack"></i> 공지 해제
+          </button>
+        `;
+      } else {
+        noticeToggleBtnHtml = `
+          <button type="button" onclick="window.togglePostNoticeStatus(${postIndex}, true)" class="btn-action btn-toggle-notice pin"
+            style="padding: 0.45rem 1rem; font-size: 0.85rem; border-radius: 8px; cursor: pointer; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;" title="이 글을 공지사항으로 등록하여 상단에 고정합니다">
+            <i class="fa-solid fa-bullhorn"></i> 공지 등록
+          </button>
+        `;
+      }
+    }
+
     authorActionsHtml = `
-      <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+      <div style="display: flex; gap: 0.5rem; margin-left: auto; align-items: center; flex-wrap: wrap;">
+        ${noticeToggleBtnHtml}
         <button type="button" onclick="window.editPost(${postIndex})" class="btn-action edit"
           style="padding: 0.45rem 1rem; font-size: 0.85rem; border-radius: 8px; cursor: pointer; background: rgba(0, 243, 255, 0.15); color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
           <i class="fa-solid fa-pen-to-square"></i> 수정
@@ -833,6 +898,51 @@ function showCafeDetailSection(postIndex) {
   const mainCard = document.querySelector(".cafe-main-card");
   if (mainCard) mainCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+/**
+ * [한글 주석: 관리자 전용 게시글 공지 등록/해제 토글 처리 함수]
+ * @param {number} postIndex - window.combinedPosts 내 인덱스
+ * @param {boolean} setNotice - true: 공지 등록, false: 공지 해제
+ */
+async function togglePostNoticeStatus(postIndex, setNotice) {
+  const post = window.combinedPosts ? window.combinedPosts[postIndex] : null;
+  if (!post) return;
+
+  const actionName = setNotice ? "공지사항으로 등록" : "공지사항에서 해제";
+  if (!confirm(`이 게시글을 ${actionName}하시겠습니까?`)) return;
+
+  try {
+    post.isNotice = setNotice;
+    if (setNotice) {
+      if (!post.prefix || post.prefix === "일반") {
+        post.prefix = "공지";
+      }
+    } else {
+      if (post.prefix === "공지") {
+        post.prefix = "일반";
+      }
+    }
+
+    if (post.id && !post.id.startsWith("local-")) {
+      await updateDoc(doc(db, "community_posts", post.id), {
+        isNotice: post.isNotice,
+        prefix: post.prefix
+      });
+    }
+
+    alert(`게시글이 성공적으로 ${actionName}되었습니다.`);
+
+    // 상세 보기 화면 다시 렌더링 및 목록 테이블 동기화
+    showCafeDetailSection(postIndex);
+    if (typeof window.renderCommunityTable === "function") {
+      window.renderCommunityTable();
+    }
+  } catch (err) {
+    console.error("Toggle notice status failed:", err);
+    alert(`공지 상태 변경 처리 중 오류가 발생했습니다: ${err.message}`);
+  }
+}
+window.togglePostNoticeStatus = togglePostNoticeStatus;
 
 /**
  * [한글 주석: 네이버 카페 스타일 게시글 댓글/대댓글 실시간 로딩 및 렌더링 함수]
@@ -1216,7 +1326,17 @@ window.toggleReplyForm = toggleReplyForm;
 function showCafeWriteSection() {
   const currentUid = auth.currentUser ? auth.currentUser.uid : (window.currentUserUid || "");
   const sidebarNameEl = document.getElementById("sidebar-user-name");
+  const sidebarRoleBadgeEl = document.getElementById("sidebar-user-badge");
   const currentUserName = sidebarNameEl ? sidebarNameEl.textContent.trim() : "";
+  const currentUserBadge = sidebarRoleBadgeEl ? sidebarRoleBadgeEl.textContent.trim() : "";
+  const userRole = (window.currentUserRole || "").toLowerCase();
+  const allowedAdminRoles = ["super_admin", "admin", "admin_user"];
+  const isAllowedAdmin = allowedAdminRoles.includes(userRole) ||
+                         currentUserBadge.includes("관리자") ||
+                         currentUserBadge.includes("최고관리자") ||
+                         currentUserName === "최고관리자" ||
+                         currentUserName === "관리자";
+
   const isLoggedIn = Boolean(auth.currentUser || window.isLoggedIn || (currentUid && currentUserName && currentUserName !== "방문자님" && currentUserName !== "로그인 필요"));
 
   // [한글 주석: 비로그인 사용자가 글쓰기 시도 시 로그인 모달 팝업으로 자연스럽게 유도]
@@ -1243,6 +1363,16 @@ function showCafeWriteSection() {
   const writeBoardSelect = document.getElementById("write-board-select");
   if (writeBoardSelect && currentBoard && currentBoard !== "all") {
     writeBoardSelect.value = currentBoard;
+  }
+
+  // [한글 주석: 관리자 전용 공지글 설정 체크박스 표출 및 초기화]
+  const noticeCheckWrap = document.getElementById("write-notice-check-wrapper");
+  const noticeCheck = document.getElementById("write-notice-check");
+  if (noticeCheckWrap) {
+    noticeCheckWrap.style.display = isAllowedAdmin ? "inline-flex" : "none";
+    if (noticeCheck && !window.editingPostId) {
+      noticeCheck.checked = (currentBoard === "notice");
+    }
   }
 
   const mainCard = document.querySelector(".cafe-main-card");
@@ -1318,12 +1448,18 @@ window.editPost = function(postIndex) {
   const contentInput = document.getElementById("write-content-input");
   const contentEditor = document.getElementById("write-content-editor");
   const tagsInput = document.getElementById("write-tags-input");
+  const noticeCheck = document.getElementById("write-notice-check");
 
   if (boardSelect) boardSelect.value = post.board || "notice";
   if (prefixSelect) prefixSelect.value = post.prefix || "일반";
   if (titleInput) titleInput.value = post.title || "";
   if (contentInput) contentInput.value = post.content || "";
   if (tagsInput) tagsInput.value = post.tags || "";
+
+  // [한글 주석: 수정 시 기존 공지글 여부 체크박스 상태 복원]
+  if (noticeCheck) {
+    noticeCheck.checked = (post.isNotice === true || post.board === "notice" || post.prefix === "공지" || post.prefix === "필독");
+  }
 
   if (contentEditor) {
     if (post.contentHtml) {
@@ -1403,11 +1539,18 @@ async function submitNewPost() {
   const tagsEl = document.getElementById("write-tags-input");
 
   const board = boardEl ? boardEl.value : "notice";
-  const prefix = prefixEl ? prefixEl.value : "일반";
+  let prefix = prefixEl ? prefixEl.value : "일반";
   const title = titleEl ? titleEl.value.trim() : "";
   const content = editorEl && editorEl.innerText ? editorEl.innerText.trim() : (contentEl ? contentEl.value.trim() : "");
   const contentHtml = editorEl ? editorEl.innerHTML : content.replace(/\n/g, "<br>");
   const tags = tagsEl ? tagsEl.value.trim() : "";
+
+  // [한글 주석: 관리자 공지 체크박스 체크 여부 또는 공지사항 카테고리 여부에 따라 공지 플래그 판별]
+  const noticeCheckEl = document.getElementById("write-notice-check");
+  const isNotice = (noticeCheckEl && noticeCheckEl.checked) || board === "notice" || prefix === "공지" || prefix === "필독";
+  if (isNotice && (!prefix || prefix === "일반")) {
+    prefix = "공지";
+  }
 
   if (!title || !content) {
     alert("제목과 내용을 모두 입력해 주세요.");
@@ -1426,7 +1569,8 @@ async function submitNewPost() {
   try {
     if (window.editingPostId && !window.editingPostId.startsWith("local-")) {
       await updateDoc(doc(db, "community_posts", window.editingPostId), {
-        board, prefix, title, content, contentHtml, isSecret, tags, photos, files
+        board, prefix, title, content, contentHtml, isSecret, tags, photos, files,
+        isNotice: Boolean(isNotice)
       });
       window.editingPostId = null;
       alert("게시글이 성공적으로 수정되었습니다.");
@@ -1434,7 +1578,8 @@ async function submitNewPost() {
       await addDoc(collection(db, "community_posts"), {
         board, prefix, title, content, contentHtml, isSecret, authorUid, tags,
         authorName, commentCount: 0, views: 1, dateStr,
-        createdAt: serverTimestamp(), photos, files
+        createdAt: serverTimestamp(), photos, files,
+        isNotice: Boolean(isNotice)
       });
       alert("게시글이 성공적으로 등록되었습니다!");
     }
@@ -1768,7 +1913,12 @@ function updateCategoryCounts() {
     if (cat.type === "divider") return;
     const countEl = document.getElementById(`count-${cat.id}`);
     if (countEl) {
-      const c = allPosts.filter(p => p.board === cat.id).length;
+      let c = 0;
+      if (cat.id === "notice") {
+        c = allPosts.filter(p => p.board === "notice" || p.isNotice === true || p.prefix === "공지" || p.prefix === "필독").length;
+      } else {
+        c = allPosts.filter(p => p.board === cat.id).length;
+      }
       countEl.textContent = c.toLocaleString();
     }
   });
@@ -1777,6 +1927,9 @@ function updateCategoryCounts() {
   if (totalDisplay) {
     if (currentBoard === "all") {
       totalDisplay.textContent = `${allPosts.length}개의 글`;
+    } else if (currentBoard === "notice") {
+      const filtered = allPosts.filter(p => p.board === "notice" || p.isNotice === true || p.prefix === "공지" || p.prefix === "필독");
+      totalDisplay.textContent = `${filtered.length}개의 글`;
     } else {
       const filtered = allPosts.filter(p => p.board === currentBoard);
       totalDisplay.textContent = `${filtered.length}개의 글`;

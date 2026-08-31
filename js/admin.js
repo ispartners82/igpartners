@@ -3294,8 +3294,11 @@ function initPage() {
   // ==========================================================================
 
   const interpreterRegisterForm = document.getElementById("interpreter-register-form");
+  // [한글 주석: 통역사 구분(소속/프리랜서) 셀렉트 박스 DOM 요소 바인딩]
   const regInterpreterType = document.getElementById("reg-interpreter-type");
-  const regInterpreterName = document.getElementById("reg-interpreter-name");
+  // [한글 주석: 한글 성명 및 영문/현지 성명 입력 필드 DOM 요소 바인딩]
+  const regInterpreterNameKo = document.getElementById("reg-interpreter-name-ko");
+  const regInterpreterNameEn = document.getElementById("reg-interpreter-name-en");
   const regInterpreterCountrySelect = document.getElementById("reg-interpreter-country-select");
   const regInterpreterCountry = document.getElementById("reg-interpreter-country");
   const regInterpreterPhone = document.getElementById("reg-interpreter-phone");
@@ -3342,25 +3345,81 @@ function initPage() {
     });
   }
 
+  /**
+   * [한글 주석] 통역사 프로필 사진 고화질 스마트 리샘플링 함수
+   * 어떤 크기/비율의 원본 사진이든 3:4 명함 황금비율(가로 420px, 세로 560px, Retina 3배수 완벽 대응)로 
+   * 인물 중심(Face/Center focus) 크롭 및 고품질(0.95) 리샘플링하여 Base64로 반환
+   */
+  function optimizeInterpreterImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const targetW = 420;
+          const targetH = 560;
+          const canvas = document.createElement("canvas");
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext("2d");
+
+          // 고화질 이미지 렌더링 스무딩 품질 극대화
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+
+          // 3:4 비율로 인물 중심(상단 15% 가중치) 스마트 크롭 계산
+          const targetRatio = targetW / targetH;
+          const imgRatio = img.width / img.height;
+          let srcX = 0, srcY = 0, srcW = img.width, srcH = img.height;
+
+          if (imgRatio > targetRatio) {
+            srcW = img.height * targetRatio;
+            srcX = (img.width - srcW) / 2;
+          } else {
+            srcH = img.width / targetRatio;
+            srcY = Math.max(0, (img.height - srcH) * 0.15);
+          }
+
+          ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, targetW, targetH);
+          const optimizedBase64 = canvas.toDataURL("image/jpeg", 0.95);
+          resolve(optimizedBase64);
+        };
+        img.onerror = () => reject(new Error("Image load error"));
+        img.src = e.target.result;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  }
+
   // [한글 주석: 통역사 프로필 사진 파일 선택 및 Base64 인코딩 미리보기]
   if (btnRegInterpreterPhotoTrigger && regInterpreterPhotoFile) {
     btnRegInterpreterPhotoTrigger.addEventListener("click", () => {
       regInterpreterPhotoFile.click();
     });
 
-    regInterpreterPhotoFile.addEventListener("change", (e) => {
+    regInterpreterPhotoFile.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (file) {
         regInterpreterPhotoFilename.textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = (loadEvt) => {
-          regInterpreterBase64Photo = loadEvt.target.result;
+        try {
+          regInterpreterBase64Photo = await optimizeInterpreterImage(file);
           if (regInterpreterPhotoPreview && regInterpreterPhotoPreviewContainer) {
             regInterpreterPhotoPreview.src = regInterpreterBase64Photo;
             regInterpreterPhotoPreviewContainer.style.display = "block";
           }
-        };
-        reader.readAsDataURL(file);
+        } catch (imgErr) {
+          console.error("Optimize interpreter image error:", imgErr);
+          const reader = new FileReader();
+          reader.onload = (loadEvt) => {
+            regInterpreterBase64Photo = loadEvt.target.result;
+            if (regInterpreterPhotoPreview && regInterpreterPhotoPreviewContainer) {
+              regInterpreterPhotoPreview.src = regInterpreterBase64Photo;
+              regInterpreterPhotoPreviewContainer.style.display = "block";
+            }
+          };
+          reader.readAsDataURL(file);
+        }
       } else {
         regInterpreterBase64Photo = "";
         regInterpreterPhotoFilename.textContent = "선택된 파일 없음";
@@ -3696,19 +3755,28 @@ function initPage() {
 
     if (editPhotoTrigger && editPhotoFile) {
       editPhotoTrigger.onclick = () => editPhotoFile.click();
-      editPhotoFile.onchange = (e) => {
+      editPhotoFile.onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
           editPhotoFilename.textContent = file.name;
-          const reader = new FileReader();
-          reader.onload = (loadEvt) => {
-            editBase64Photo = loadEvt.target.result;
+          try {
+            editBase64Photo = await optimizeInterpreterImage(file);
             if (editPhotoPreview && editPhotoPreviewWrap) {
               editPhotoPreview.src = editBase64Photo;
               editPhotoPreviewWrap.style.display = "block";
             }
-          };
-          reader.readAsDataURL(file);
+          } catch (imgErr) {
+            console.error("Optimize edit interpreter image error:", imgErr);
+            const reader = new FileReader();
+            reader.onload = (loadEvt) => {
+              editBase64Photo = loadEvt.target.result;
+              if (editPhotoPreview && editPhotoPreviewWrap) {
+                editPhotoPreview.src = editBase64Photo;
+                editPhotoPreviewWrap.style.display = "block";
+              }
+            };
+            reader.readAsDataURL(file);
+          }
         }
       };
     }

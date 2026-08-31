@@ -15,8 +15,8 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260828_2)] -->
-  <link rel="stylesheet" href="css/style.css?v=260828_2">
+  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 추가 (버전: v=260831_9)] -->
+  <link rel="stylesheet" href="css/style.css?v=260831_9">
 
   <!-- [한글 주석: 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장] -->
   <script>
@@ -514,7 +514,7 @@
           </div>
 
           <!-- 카테고리 & 말머리 선택 행 -->
-          <div style="display: flex; gap: 0.85rem; margin-bottom: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; gap: 0.85rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;">
             <select id="write-board-select" class="cafe-search-select"
               style="flex: 1; min-width: 180px; background: rgba(10, 15, 30, 0.9); font-weight: 700; color: #00f3ff;">
               <option value="notice">📢 공지사항</option>
@@ -524,6 +524,11 @@
               <option value="job">💼 구인구직</option>
               <option value="resume">📄 이력서업로드</option>
             </select>
+            <!-- [한글 주석: 관리자 전용 공지글 설정 체크박스 옵션] -->
+            <label id="write-notice-check-wrapper" class="cafe-checkbox-label" style="display: none; align-items: center; gap: 0.4rem; color: #f59e0b; font-weight: 700; font-size: 0.88rem; cursor: pointer; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); padding: 0.45rem 0.85rem; border-radius: 8px; user-select: none;">
+              <input type="checkbox" id="write-notice-check" style="accent-color: #f59e0b; width: 16px; height: 16px; cursor: pointer;">
+              📌 전체 공지로 상단 고정
+            </label>
           </div>
 
           <!-- 제목 입력 필드 -->
@@ -791,10 +796,10 @@
 
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260828_2)] -->
-  <script type="module" src="/js/navigation.js?v=260828_2"></script>
-  <script type="module" src="/js/auth.js?v=260828_2"></script>
-  <script type="module" src="/js/community.js?v=260828_2"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260831_9)] -->
+  <script type="module" src="/js/navigation.js?v=260831_9"></script>
+  <script type="module" src="/js/auth.js?v=260831_9"></script>
+  <script type="module" src="/js/community.js?v=260831_9"></script>
 </body>
 
 </html>
