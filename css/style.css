@@ -2798,11 +2798,22 @@ body.modal-open {
   gap: 0.3rem; /* 아바타와 닉네임 간 갭 축소 */
   background: transparent; /* 배경 투명화 */
   border: none; /* 이중 테두리 방지를 위해 기존 테두리 제거 */
-  padding: 0 0.35rem 0 0.15rem; /* 좌우 여백을 단정하게 재배정 */
-  border-radius: 0;
-  transition: var(--transition-smooth);
+  padding: 0.2rem 0.45rem 0.2rem 0.25rem; /* 좌우 여백을 단정하게 재배정 */
+  border-radius: 20px;
+  transition: all 0.25s ease;
   white-space: nowrap; /* 줄바꿈 방지 */
   flex-shrink: 0;
+  cursor: pointer; /* 마우스 오버 시 클릭 가능 커서 */
+  user-select: none;
+}
+
+.user-capsule:hover {
+  background: rgba(0, 243, 255, 0.12); /* 호버 시 시안 글로우 배경 */
+  box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+}
+
+.user-capsule:hover .user-nickname {
+  color: #00f3ff; /* 호버 시 닉네임 색상 하이라이트 */
 }
 
 .user-avatar {
@@ -2821,6 +2832,7 @@ body.modal-open {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.2s ease;
 }
 
 /* 네비게이션 우측 상태 제어 액션 버튼들 (컴팩트 튜닝) */
@@ -4813,6 +4825,31 @@ body.home-page {
   color: #f8fafc;
   font-weight: 500;
   word-break: break-all;
+}
+
+/* =========================================================================
+   [한글 주석] 마이페이지 (개인정보 수정 & 비밀번호 변경) 모달 전용 스타일
+   ========================================================================= */
+.profile-modal-card {
+  max-width: 680px;
+}
+
+.profile-modal-header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.input-readonly {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  user-select: none;
+}
+
+.auth-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
 }
 
 /* =========================================================================

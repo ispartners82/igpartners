@@ -5,9 +5,13 @@ import {
   signOut,
   onAuthStateChanged,
   setPersistence,
-  browserSessionPersistence
+  browserSessionPersistence,
+  updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /**
  * [한글 주석] IGPartners 회원가입 & 로그인 모듈
@@ -382,6 +386,475 @@ document.addEventListener("DOMContentLoaded", () => {
   window.hideLoginModal = hideAuthModal; // 하위 호환성 유지
 
   // =========================================================================
+  // 1-2. 개인정보 수정 및 비밀번호 변경 (마이페이지) 모달 UI 동적 생성 및 관리
+  // =========================================================================
+
+  /**
+   * [한글 주석] 개인정보 수정 및 비밀번호 변경 모달 HTML 구조를 동적으로 생성하는 함수
+   */
+  function ensureProfileModalCreated() {
+    if (document.getElementById("profile-edit-modal")) return;
+
+    const profileModalHTML = `
+      <div id="profile-edit-modal" class="auth-modal-backdrop" style="display: none; z-index: 999998;">
+        <div class="auth-modal-card profile-modal-card">
+          <button type="button" class="auth-modal-close" id="btn-close-profile-modal">&times;</button>
+          
+          <!-- 모달 상단 타이틀 -->
+          <div class="profile-modal-header">
+            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+              <span>👤</span> 내 정보 관리 <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">(My Profile)</span>
+            </h3>
+          </div>
+
+          <!-- 정보수정 / 비밀번호 변경 탭 헤더 -->
+          <div class="auth-nav-tabs" style="margin-top: 1rem;">
+            <button type="button" class="auth-tab-btn active" id="profile-tab-btn-info">📝 회원정보 수정 (Edit Info)</button>
+            <button type="button" class="auth-tab-btn" id="profile-tab-btn-pwd">🔒 비밀번호 변경 (Password)</button>
+          </div>
+
+          <!-- 탭 1: 회원정보 수정 영역 -->
+          <div id="profile-section-info">
+            <form id="form-profile-info">
+              <div class="auth-form-grid">
+                
+                <!-- 1. 국가(선호언어) 선택 -->
+                <div class="auth-form-group auth-field-full">
+                  <label for="profile-country-lang">국가 (선호언어) / Country (Language) <span class="req">*</span></label>
+                  <select id="profile-country-lang" required>
+                    <option value="ko">🇰🇷 대한민국 (한국어 / Korean)</option>
+                    <option value="ja">🇯🇵 일본 (日本語 / Japanese)</option>
+                    <option value="vi">🇻🇳 베트남 (Tiếng Việt / Vietnamese)</option>
+                    <option value="en">🇺🇸 미국/기타 (English)</option>
+                    <option value="zh">🇨🇳 중국 (中文 / Chinese)</option>
+                    <option value="ru">🇷🇺 러시아 (Русский / Russian)</option>
+                    <option value="my">🇲🇲 미얀마 (မြန်မာစာ / Myanmar)</option>
+                    <option value="km">🇰🇭 캄보디아 (ភាសាខ្មែរ / Khmer)</option>
+                    <option value="mn">🇲🇳 몽골 (Mongolian)</option>
+                    <option value="th">🇹🇭 태국 (ภาษาไทย / Thai)</option>
+                    <option value="lo">🇱🇦 라오스 (ພາສາລາວ / Lao)</option>
+                    <option value="ne">🇳🇵 네팔 (नेपाली / Nepali)</option>
+                    <option value="id">🇮🇩 인도네시아 (Bahasa Indonesia)</option>
+                    <option value="si">🇱🇰 스리랑카 (සිංහල / Sinhala)</option>
+                    <option value="bn">🇧🇩 방글라데시 (বাংলা / Bengali)</option>
+                  </select>
+                </div>
+
+                <!-- 2. 아이디 (수정 불가) -->
+                <div class="auth-form-group">
+                  <label for="profile-login-id">아이디 (ID) <span style="font-size: 0.75rem; color: #64748b;">(변경불가)</span></label>
+                  <input type="text" id="profile-login-id" readonly disabled class="input-readonly">
+                </div>
+
+                <!-- 3. 이메일 (수정 불가) -->
+                <div class="auth-form-group">
+                  <label for="profile-email">이메일 (Email) <span style="font-size: 0.75rem; color: #64748b;">(변경불가)</span></label>
+                  <input type="email" id="profile-email" readonly disabled class="input-readonly">
+                </div>
+
+                <!-- 4. 이름 (수정 가능) -->
+                <div class="auth-form-group">
+                  <label for="profile-name">이름 (성명) / Full Name <span class="req">*</span></label>
+                  <input type="text" id="profile-name" required placeholder="예: 홍길동">
+                </div>
+
+                <!-- 5. 연락처 (수정 가능) -->
+                <div class="auth-form-group">
+                  <label for="profile-phone">연락처 (Phone Number) <span class="req">*</span></label>
+                  <input type="tel" id="profile-phone" required placeholder="예: 010-1234-5678">
+                </div>
+
+                <!-- 6. 비자 타입 (수정 가능) -->
+                <div class="auth-form-group">
+                  <label for="profile-visa-type">비자 타입 (Visa Type) <span class="req">*</span></label>
+                  <input type="text" id="profile-visa-type" required placeholder="예: 내국인, D-2, E-9 등">
+                </div>
+
+                <!-- 7. 체류 만료일 (외국인일 때 활성화) -->
+                <div class="auth-form-group" id="profile-visa-expiry-group">
+                  <label for="profile-visa-expiry">체류 만료일 (Visa Expiry Date)</label>
+                  <input type="date" id="profile-visa-expiry">
+                </div>
+
+                <!-- 8. 현재 체류 주소 (수정 가능) -->
+                <div class="auth-form-group auth-field-full">
+                  <label for="profile-address">현재 체류 주소 (Current Address) <span class="req">*</span></label>
+                  <input type="text" id="profile-address" required placeholder="예: 대구광역시 수성구 알파시티1로 4길 8">
+                </div>
+
+                <!-- 9. 생년월일 (수정 불가 식별자) -->
+                <div class="auth-form-group">
+                  <label for="profile-dob">생년월일 (Date of Birth) <span style="font-size: 0.75rem; color: #64748b;">(변경불가)</span></label>
+                  <input type="text" id="profile-dob" readonly disabled class="input-readonly">
+                </div>
+
+                <!-- 10. 외국인등록번호/주민번호 (수정 불가 식별자) -->
+                <div class="auth-form-group">
+                  <label for="profile-alien-no">외국인등록번호 / ARC <span style="font-size: 0.75rem; color: #64748b;">(변경불가)</span></label>
+                  <input type="text" id="profile-alien-no" readonly disabled class="input-readonly">
+                </div>
+
+              </div>
+
+              <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button type="button" class="auth-btn-secondary" id="btn-cancel-profile-info" style="padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05); color: #cbd5e1; font-weight: 600; cursor: pointer;">닫기</button>
+                <button type="submit" class="auth-submit-btn" id="btn-submit-profile-info" style="margin-top: 0; width: auto; min-width: 140px; padding: 0.75rem 1.5rem;">저장하기 (Save)</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- 탭 2: 비밀번호 변경 영역 -->
+          <div id="profile-section-pwd" style="display: none;">
+            <form id="form-profile-pwd">
+              <div class="auth-form-group" style="margin-bottom: 1rem;">
+                <label for="profile-current-password">현재 비밀번호 (Current Password) <span class="req">*</span></label>
+                <input type="password" id="profile-current-password" required placeholder="현재 비밀번호를 입력해 주세요">
+              </div>
+
+              <div class="auth-form-group" style="margin-bottom: 1rem;">
+                <label for="profile-new-password">새 비밀번호 (New Password) <span class="req">*</span></label>
+                <input type="password" id="profile-new-password" required placeholder="6자 이상 영문/숫자 입력">
+              </div>
+
+              <div class="auth-form-group" style="margin-bottom: 1.5rem;">
+                <label for="profile-confirm-password">새 비밀번호 확인 (Confirm New Password) <span class="req">*</span></label>
+                <input type="password" id="profile-confirm-password" required placeholder="새 비밀번호를 다시 입력해 주세요">
+              </div>
+
+              <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button type="button" class="auth-btn-secondary" id="btn-cancel-profile-pwd" style="padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.05); color: #cbd5e1; font-weight: 600; cursor: pointer;">취소</button>
+                <button type="submit" class="auth-submit-btn" id="btn-submit-profile-pwd" style="margin-top: 0; width: auto; min-width: 160px; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);">비밀번호 변경</button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", profileModalHTML);
+    bindProfileModalEvents();
+  }
+
+  /**
+   * [한글 주석] 프로필 모달 이벤트 바인딩 함수
+   */
+  function bindProfileModalEvents() {
+    const btnClose = document.getElementById("btn-close-profile-modal");
+    const btnCancelInfo = document.getElementById("btn-cancel-profile-info");
+    const btnCancelPwd = document.getElementById("btn-cancel-profile-pwd");
+    const tabInfo = document.getElementById("profile-tab-btn-info");
+    const tabPwd = document.getElementById("profile-tab-btn-pwd");
+    const secInfo = document.getElementById("profile-section-info");
+    const secPwd = document.getElementById("profile-section-pwd");
+    const formInfo = document.getElementById("form-profile-info");
+    const formPwd = document.getElementById("form-profile-pwd");
+    const selectLang = document.getElementById("profile-country-lang");
+
+    if (btnClose) btnClose.addEventListener("click", hideProfileModal);
+    if (btnCancelInfo) btnCancelInfo.addEventListener("click", hideProfileModal);
+    if (btnCancelPwd) btnCancelPwd.addEventListener("click", hideProfileModal);
+
+    // 언어 변경 시 비자 입력 필드 제어
+    if (selectLang) {
+      selectLang.addEventListener("change", handleProfileCountryLangChange);
+    }
+
+    // 탭 전환 이벤트
+    if (tabInfo && tabPwd) {
+      tabInfo.addEventListener("click", () => {
+        tabInfo.classList.add("active");
+        tabPwd.classList.remove("active");
+        if (secInfo) secInfo.style.display = "block";
+        if (secPwd) secPwd.style.display = "none";
+      });
+
+      tabPwd.addEventListener("click", () => {
+        tabPwd.classList.add("active");
+        tabInfo.classList.remove("active");
+        if (secPwd) secPwd.style.display = "block";
+        if (secInfo) secInfo.style.display = "none";
+      });
+    }
+
+    // 회원정보 수정 제출 이벤트
+    if (formInfo) {
+      formInfo.addEventListener("submit", handleProfileInfoSubmit);
+    }
+
+    // 비밀번호 변경 제출 이벤트
+    if (formPwd) {
+      formPwd.addEventListener("submit", handleProfilePasswordSubmit);
+    }
+  }
+
+  /**
+   * [한글 주석] 프로필 수정 모달 내 국가(언어) 변경 시 비자 제어
+   */
+  function handleProfileCountryLangChange() {
+    const selectLang = document.getElementById("profile-country-lang");
+    const visaTypeInput = document.getElementById("profile-visa-type");
+    const visaExpiryInput = document.getElementById("profile-visa-expiry");
+    const visaExpiryGroup = document.getElementById("profile-visa-expiry-group");
+
+    if (!selectLang) return;
+
+    if (selectLang.value === "ko") {
+      if (visaTypeInput && !visaTypeInput.value) visaTypeInput.value = "내국인";
+      if (visaExpiryGroup) visaExpiryGroup.style.display = "none";
+      if (visaExpiryInput) visaExpiryInput.required = false;
+    } else {
+      if (visaTypeInput && visaTypeInput.value === "내국인") visaTypeInput.value = "";
+      if (visaExpiryGroup) visaExpiryGroup.style.display = "flex";
+    }
+  }
+
+  /**
+   * [한글 주석] 프로필 수정 모달 열기 함수 (전역 노출)
+   * - Firebase Auth currentUser 및 세션 캐시(auth_user_cache)를 모두 지원하여 0초 만에 즉시 열림 보장
+   */
+  async function showProfileModal() {
+    let user = auth.currentUser;
+    let cachedUser = null;
+    try {
+      const c = sessionStorage.getItem("auth_user_cache");
+      if (c) cachedUser = JSON.parse(c);
+    } catch (e) {}
+
+    const uid = user ? user.uid : (cachedUser ? cachedUser.uid : null);
+    const email = user ? user.email : (cachedUser ? cachedUser.email : "");
+    const displayName = user ? user.displayName : (cachedUser ? cachedUser.displayName : "");
+
+    if (!uid && !email) {
+      showAuthModal("login");
+      return;
+    }
+
+    ensureProfileModalCreated();
+    const modal = document.getElementById("profile-edit-modal");
+    const tabInfo = document.getElementById("profile-tab-btn-info");
+    if (tabInfo) tabInfo.click();
+
+    // 폼 기본값 초기화 및 로딩 상태 설정
+    const nameInput = document.getElementById("profile-name");
+    const emailInput = document.getElementById("profile-email");
+    const loginIdInput = document.getElementById("profile-login-id");
+    const phoneInput = document.getElementById("profile-phone");
+    const selectLang = document.getElementById("profile-country-lang");
+    const visaTypeInput = document.getElementById("profile-visa-type");
+    const visaExpiryInput = document.getElementById("profile-visa-expiry");
+    const addressInput = document.getElementById("profile-address");
+    const dobInput = document.getElementById("profile-dob");
+    const alienNoInput = document.getElementById("profile-alien-no");
+
+    if (emailInput) emailInput.value = email || "";
+    if (nameInput) nameInput.value = displayName || "";
+    if (loginIdInput) loginIdInput.value = email.split("@")[0] || "";
+
+    if (modal) {
+      modal.style.display = "flex";
+      document.body.classList.add("modal-open");
+    }
+
+    if (uid) {
+      try {
+        // Firestore에서 사용자 상세 프로필 데이터 로드
+        const userDocRef = doc(db, "users", uid);
+        const userSnap = await getDoc(userDocRef);
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (loginIdInput) loginIdInput.value = data.loginId || email.split("@")[0];
+          if (nameInput && data.name) nameInput.value = data.name;
+          if (phoneInput) phoneInput.value = data.phone || "";
+          if (selectLang && data.countryLanguage) selectLang.value = data.countryLanguage;
+          if (visaTypeInput) visaTypeInput.value = data.visaType || (data.countryLanguage === "ko" ? "내국인" : "");
+          if (visaExpiryInput) visaExpiryInput.value = data.visaExpiry || "";
+          if (addressInput) addressInput.value = data.address || "";
+          if (dobInput) dobInput.value = data.dob || "-";
+          
+          if (alienNoInput) {
+            // 외국인등록번호 마스킹 (예: 950101-1******)
+            if (data.alienNo && data.alienNo.length >= 7) {
+              alienNoInput.value = data.alienNo.substring(0, 7) + "******";
+            } else {
+              alienNoInput.value = data.alienNo || "-";
+            }
+          }
+        }
+        handleProfileCountryLangChange();
+      } catch (err) {
+        console.error("[auth] 사용자 프로필 로드 실패:", err);
+      }
+    }
+  }
+  window.showProfileModal = showProfileModal;
+
+  // [한글 주석: 전역 이벤트 위임(Event Delegation)으로 헤더/사이드바 사용자 프로필 클릭 시 100% 모달 오픈 보장]
+  document.addEventListener("click", (e) => {
+    const profileTrigger = e.target.closest(".user-capsule, #user-badge, #user-name, #user-photo, #sidebar-user-name, .cafe-user-badge");
+    if (profileTrigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      showProfileModal();
+    }
+  });
+
+  /**
+   * [한글 주석] 프로필 수정 모달 닫기 함수
+   */
+  function hideProfileModal() {
+    const modal = document.getElementById("profile-edit-modal");
+    if (modal) {
+      modal.style.display = "none";
+      document.body.classList.remove("modal-open");
+    }
+  }
+  window.hideProfileModal = hideProfileModal;
+
+  /**
+   * [한글 주석] 프로필 기본 정보 수정 폼 제출 핸들러
+   */
+  async function handleProfileInfoSubmit(e) {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    const btnSubmit = document.getElementById("btn-submit-profile-info");
+    const name = document.getElementById("profile-name").value.trim();
+    const phone = document.getElementById("profile-phone").value.trim();
+    const countryLanguage = document.getElementById("profile-country-lang").value;
+    const visaType = document.getElementById("profile-visa-type").value.trim();
+    const visaExpiry = document.getElementById("profile-visa-expiry").value;
+    const address = document.getElementById("profile-address").value.trim();
+
+    if (!name || !phone || !visaType || !address) {
+      alert("필수 항목(*)을 모두 입력해 주세요.");
+      return;
+    }
+
+    try {
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "저장 중...";
+      }
+
+      // 1. Firebase Auth 프로필 displayName 업데이트
+      if (user.displayName !== name) {
+        await updateProfile(user, { displayName: name });
+      }
+
+      // 2. Firestore users 문서 업데이트
+      const updateData = {
+        name: name,
+        phone: phone,
+        countryLanguage: countryLanguage,
+        visaType: visaType,
+        visaExpiry: visaExpiry || "",
+        address: address,
+        updatedAt: new Date().toISOString()
+      };
+
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(userDocRef, updateData, { merge: true });
+
+      // 3. 세션 캐시 및 상단 UI 즉시 갱신
+      const userCache = {
+        uid: user.uid,
+        email: user.email,
+        displayName: name,
+        photoURL: user.photoURL || ""
+      };
+      sessionStorage.setItem("auth_user_cache", JSON.stringify(userCache));
+
+      const userNameEl = document.getElementById("user-name");
+      if (userNameEl) userNameEl.textContent = name;
+      const sidebarNameEl = document.getElementById("sidebar-user-name");
+      if (sidebarNameEl) sidebarNameEl.textContent = name;
+
+      alert("개인정보가 성공적으로 수정되었습니다.");
+      hideProfileModal();
+    } catch (err) {
+      console.error("[auth] 개인정보 수정 실패:", err);
+      alert("개인정보 수정 중 오류가 발생했습니다: " + (err.message || err));
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "저장하기 (Save)";
+      }
+    }
+  }
+
+  /**
+   * [한글 주석] 비밀번호 변경 폼 제출 핸들러
+   */
+  async function handleProfilePasswordSubmit(e) {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    const btnSubmit = document.getElementById("btn-submit-profile-pwd");
+    const currentPassword = document.getElementById("profile-current-password").value;
+    const newPassword = document.getElementById("profile-new-password").value;
+    const confirmPassword = document.getElementById("profile-confirm-password").value;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert("모든 비밀번호 필드를 입력해 주세요.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert("새 비밀번호는 최소 6자 이상이어야 합니다.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+
+    try {
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "변경 중...";
+      }
+
+      // 1. 현재 비밀번호로 재인증 (보안 검증)
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // 2. 새 비밀번호로 업데이트
+      await updatePassword(user, newPassword);
+
+      alert("비밀번호가 안전하게 변경되었습니다.");
+      
+      // 폼 초기화 및 모달 닫기
+      document.getElementById("form-profile-pwd").reset();
+      hideProfileModal();
+    } catch (err) {
+      console.error("[auth] 비밀번호 변경 실패:", err);
+      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
+        alert("현재 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.");
+      } else if (err.code === "auth/weak-password") {
+        alert("새 비밀번호가 너무 취약합니다. 6자 이상의 강력한 비밀번호를 입력해 주세요.");
+      } else {
+        alert("비밀번호 변경 실패: " + (err.message || err));
+      }
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "비밀번호 변경";
+      }
+    }
+  }
+
+  // =========================================================================
   // 2. 회원가입 & 로그인 실질 로직 핸들러
   // =========================================================================
 
@@ -707,6 +1180,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (authUserArea) authUserArea.style.display = "flex";
+
+      // [한글 주석: 상단 사용자 뱃지 클릭 시 내 정보 관리(개인정보 수정) 모달 호출 이벤트 연결]
+      const userBadgeEl = document.getElementById("user-badge");
+      if (userBadgeEl) {
+        userBadgeEl.style.cursor = "pointer";
+        userBadgeEl.setAttribute("title", "내 정보 관리 (My Profile)");
+        if (!userBadgeEl.dataset.profileBound) {
+          userBadgeEl.dataset.profileBound = "true";
+          userBadgeEl.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (typeof window.showProfileModal === "function") {
+              window.showProfileModal();
+            }
+          });
+        }
+      }
+
       if (btnLogin) {
         btnLogin.style.display = "none";
         btnLogin.disabled = false;

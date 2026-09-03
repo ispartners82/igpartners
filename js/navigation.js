@@ -340,6 +340,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (userNameElem) userNameElem.textContent = userObj.displayName || "관리자";
         if (userPhotoElem && userObj.photoURL) userPhotoElem.src = userObj.photoURL;
 
+        // [한글 주석: 상단 사용자 프로필 캡슐 클릭 시 내 정보 관리(개인정보 수정) 모달 연동 준비]
+        const userCapsuleElem = document.querySelector(".user-capsule, #user-badge");
+        if (userCapsuleElem) {
+          userCapsuleElem.style.cursor = "pointer";
+          userCapsuleElem.setAttribute("title", "내 정보 관리 (My Profile)");
+        }
+
         // [한글 주석: 로그인 세션 복원 시 모바일 퀵 버튼 상태도 동시에 즉시 0ms로 노출 조정]
         if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
         if (quickBtnLogin) quickBtnLogin.style.display = "none";
