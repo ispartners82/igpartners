@@ -1,0 +1,6 @@
+# [한글 주석: 모든 검색 엔진 크롤러(Googlebot, Yeti, Bingbot 등)의 사이트 수집 허용 설정]
+User-agent: *
+Allow: /
+
+# [한글 주석: 구글 서치 콘솔 및 검색 로봇이 참조할 공식 XML 사이트맵 주소]
+Sitemap: https://igpartners.co.kr/sitemap.xml

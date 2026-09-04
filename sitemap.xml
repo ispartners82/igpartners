@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- [한글 주석: 구글 및 네이버 검색 엔진에 웹사이트의 주요 페이지 구조를 명시하는 표준 사이트맵] -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- 1. 아이지파트너스 공식 홈페이지 메인 -->
+  <url>
+    <loc>https://igpartners.co.kr/</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- 2. 회사소개 페이지 -->
+  <url>
+    <loc>https://igpartners.co.kr/about.html</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 3. 전문 의료 통역 서비스 페이지 -->
+  <url>
+    <loc>https://igpartners.co.kr/interpreters.html</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 4. 진료 예약(언어 선택) 페이지 -->
+  <url>
+    <loc>https://igpartners.co.kr/booking-lang.html</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 5. 커뮤니티 페이지 -->
+  <url>
+    <loc>https://igpartners.co.kr/community.html</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>
