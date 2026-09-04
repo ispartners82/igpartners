@@ -1,4 +1,4 @@
-import { db, auth } from "./firebase-db.js?v=2.0.7";
+import { db, auth } from "./firebase-db.js?v=260904_1";
 import { 
   collection, 
   query, 
@@ -2167,16 +2167,21 @@ function initPage() {
                 data-address="${(clinic.address || '').replace(/"/g, '&quot;')}"
                 data-depts="${(clinic.depts || []).join(',').replace(/"/g, '&quot;')}"
                 
-                /* [다국어 지원] 수정 폼 기본값 노출을 위한 4개 국어 속성 결합 */
-                data-namevi="${(clinic.name_vi || '').replace(/"/g, '&quot;')}"
-                data-deptsvi="${(clinic.depts_vi || []).join(',').replace(/"/g, '&quot;')}"
-                data-addressvi="${(clinic.address_vi || '').replace(/"/g, '&quot;')}"
-                data-descvi="${(clinic.desc_vi || '').replace(/"/g, '&quot;')}"
+                /* [다국어 지원] 수정 폼 기본값 노출을 위한 14개 국어 속성 결합 */
+                data-nameen="${(clinic.name_en || '').replace(/"/g, '&quot;')}"
+                data-deptsen="${(clinic.depts_en || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressen="${(clinic.address_en || '').replace(/"/g, '&quot;')}"
+                data-descen="${(clinic.desc_en || '').replace(/"/g, '&quot;')}"
 
                 data-nameja="${(clinic.name_ja || '').replace(/"/g, '&quot;')}"
                 data-deptsja="${(clinic.depts_ja || []).join(',').replace(/"/g, '&quot;')}"
                 data-addressja="${(clinic.address_ja || '').replace(/"/g, '&quot;')}"
                 data-descja="${(clinic.desc_ja || '').replace(/"/g, '&quot;')}"
+
+                data-namevi="${(clinic.name_vi || '').replace(/"/g, '&quot;')}"
+                data-deptsvi="${(clinic.depts_vi || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressvi="${(clinic.address_vi || '').replace(/"/g, '&quot;')}"
+                data-descvi="${(clinic.desc_vi || '').replace(/"/g, '&quot;')}"
 
                 data-namezh="${(clinic.name_zh || '').replace(/"/g, '&quot;')}"
                 data-deptszh="${(clinic.depts_zh || []).join(',').replace(/"/g, '&quot;')}"
@@ -2187,6 +2192,52 @@ function initPage() {
                 data-deptsru="${(clinic.depts_ru || []).join(',').replace(/"/g, '&quot;')}"
                 data-addressru="${(clinic.address_ru || '').replace(/"/g, '&quot;')}"
                 data-descru="${(clinic.desc_ru || '').replace(/"/g, '&quot;')}"
+
+                data-namemy="${(clinic.name_my || '').replace(/"/g, '&quot;')}"
+                data-deptsmy="${(clinic.depts_my || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressmy="${(clinic.address_my || '').replace(/"/g, '&quot;')}"
+                data-descmy="${(clinic.desc_my || '').replace(/"/g, '&quot;')}"
+
+                data-namekm="${(clinic.name_km || '').replace(/"/g, '&quot;')}"
+                data-deptskm="${(clinic.depts_km || []).join(',').replace(/"/g, '&quot;')}"
+                data-addresskm="${(clinic.address_km || '').replace(/"/g, '&quot;')}"
+                data-desckm="${(clinic.desc_km || '').replace(/"/g, '&quot;')}"
+
+                data-namemn="${(clinic.name_mn || '').replace(/"/g, '&quot;')}"
+                data-deptsmn="${(clinic.depts_mn || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressmn="${(clinic.address_mn || '').replace(/"/g, '&quot;')}"
+                data-descmn="${(clinic.desc_mn || '').replace(/"/g, '&quot;')}"
+
+                data-nameth="${(clinic.name_th || '').replace(/"/g, '&quot;')}"
+                data-deptsth="${(clinic.depts_th || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressth="${(clinic.address_th || '').replace(/"/g, '&quot;')}"
+                data-descth="${(clinic.desc_th || '').replace(/"/g, '&quot;')}"
+
+                data-namelo="${(clinic.name_lo || '').replace(/"/g, '&quot;')}"
+                data-deptslo="${(clinic.depts_lo || []).join(',').replace(/"/g, '&quot;')}"
+                data-addresslo="${(clinic.address_lo || '').replace(/"/g, '&quot;')}"
+                data-desclo="${(clinic.desc_lo || '').replace(/"/g, '&quot;')}"
+
+                data-namene="${(clinic.name_ne || '').replace(/"/g, '&quot;')}"
+                data-deptsne="${(clinic.depts_ne || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressne="${(clinic.address_ne || '').replace(/"/g, '&quot;')}"
+                data-descne="${(clinic.desc_ne || '').replace(/"/g, '&quot;')}"
+
+                data-nameid="${(clinic.name_id || '').replace(/"/g, '&quot;')}"
+                data-deptsid="${(clinic.depts_id || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressid="${(clinic.address_id || '').replace(/"/g, '&quot;')}"
+                data-descid="${(clinic.desc_id || '').replace(/"/g, '&quot;')}"
+
+                data-namesi="${(clinic.name_si || '').replace(/"/g, '&quot;')}"
+                data-deptssi="${(clinic.depts_si || []).join(',').replace(/"/g, '&quot;')}"
+                data-addresssi="${(clinic.address_si || '').replace(/"/g, '&quot;')}"
+                data-descsi="${(clinic.desc_si || '').replace(/"/g, '&quot;')}"
+
+                data-namebn="${(clinic.name_bn || '').replace(/"/g, '&quot;')}"
+                data-deptsbn="${(clinic.depts_bn || []).join(',').replace(/"/g, '&quot;')}"
+                data-addressbn="${(clinic.address_bn || '').replace(/"/g, '&quot;')}"
+                data-descbn="${(clinic.desc_bn || '').replace(/"/g, '&quot;')}"
+
                 /* [한글 주석] 병원 사진 수정을 위해 기존 이미지 데이터 전송 속성 추가 */
                 data-image="${(clinic.image || '').replace(/"/g, '&quot;')}"
                 style="height: 28px; line-height: 1;"
@@ -2307,30 +2358,30 @@ function initPage() {
       const address = document.getElementById("reg-clinic-address").value.trim();
       const desc = document.getElementById("reg-clinic-desc").value.trim();
 
-      // [다국어 지원] 신규 아코디언에서 다국어(vi, ja, zh, ru) 번역 기입 데이터 수집 (진료과목 추가 수집)
-      const name_vi = document.getElementById("reg-clinic-name-vi").value.trim();
-      const deptsRaw_vi = document.getElementById("reg-clinic-depts-vi").value.trim();
-      const depts_vi = deptsRaw_vi ? deptsRaw_vi.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-      const address_vi = document.getElementById("reg-clinic-address-vi").value.trim();
-      const desc_vi = document.getElementById("reg-clinic-desc-vi").value.trim();
+      // [다국어 지원] 신규 아코디언에서 14개 외국어 번역 기입 데이터 수집 (선택 입력)
+      const langCodes = ["en", "ja", "vi", "zh", "ru", "my", "km", "mn", "th", "lo", "ne", "id", "si", "bn"];
+      const multiLangData = {};
 
-      const name_ja = document.getElementById("reg-clinic-name-ja").value.trim();
-      const deptsRaw_ja = document.getElementById("reg-clinic-depts-ja").value.trim();
-      const depts_ja = deptsRaw_ja ? deptsRaw_ja.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-      const address_ja = document.getElementById("reg-clinic-address-ja").value.trim();
-      const desc_ja = document.getElementById("reg-clinic-desc-ja").value.trim();
+      langCodes.forEach(code => {
+        const nameEl = document.getElementById(`reg-clinic-name-${code}`);
+        const deptsEl = document.getElementById(`reg-clinic-depts-${code}`);
+        const addressEl = document.getElementById(`reg-clinic-address-${code}`);
+        const descEl = document.getElementById(`reg-clinic-desc-${code}`);
 
-      const name_zh = document.getElementById("reg-clinic-name-zh").value.trim();
-      const deptsRaw_zh = document.getElementById("reg-clinic-depts-zh").value.trim();
-      const depts_zh = deptsRaw_zh ? deptsRaw_zh.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-      const address_zh = document.getElementById("reg-clinic-address-zh").value.trim();
-      const desc_zh = document.getElementById("reg-clinic-desc-zh").value.trim();
+        const lName = nameEl ? nameEl.value.trim() : "";
+        const lDeptsRaw = deptsEl ? deptsEl.value.trim() : "";
+        const lDepts = lDeptsRaw ? lDeptsRaw.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+        const lAddress = addressEl ? addressEl.value.trim() : "";
+        const lDesc = descEl ? descEl.value.trim() : "";
 
-      const name_ru = document.getElementById("reg-clinic-name-ru").value.trim();
-      const deptsRaw_ru = document.getElementById("reg-clinic-depts-ru").value.trim();
-      const depts_ru = deptsRaw_ru ? deptsRaw_ru.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-      const address_ru = document.getElementById("reg-clinic-address-ru").value.trim();
-      const desc_ru = document.getElementById("reg-clinic-desc-ru").value.trim();
+        // 해당 언어에 입력된 내용이 하나라도 있으면 객체에 추가
+        if (lName || lDepts.length > 0 || lAddress || lDesc) {
+          multiLangData[`name_${code}`] = lName;
+          multiLangData[`depts_${code}`] = lDepts;
+          multiLangData[`address_${code}`] = lAddress;
+          multiLangData[`desc_${code}`] = lDesc;
+        }
+      });
 
       if (!uploadedImageBase64) {
         alert("병원사진 파일을 선택해 주세요. 이미지 압축 처리 중일 수 있습니다.");
@@ -2353,7 +2404,7 @@ function initPage() {
           nextOrder = (typeof maxVal === "number" ? maxVal : 0) + 1;
         }
 
-        // Firestore clinics 컬렉션에 등록 처리
+        // Firestore clinics 컬렉션에 등록 처리 (14개 언어 다국어 객체 포함)
         await addDoc(collection(db, "clinics"), {
           name,
           englishName,
@@ -2362,11 +2413,7 @@ function initPage() {
           address,
           desc,
           order: nextOrder,
-          // 기입된 다국어 정보가 있는 경우에만 선택적으로 데이터베이스 필드로 결합 저장 (서버 리소스 정합성 최적화)
-          ...(name_vi && { name_vi, depts_vi, address_vi, desc_vi }),
-          ...(name_ja && { name_ja, depts_ja, address_ja, desc_ja }),
-          ...(name_zh && { name_zh, depts_zh, address_zh, desc_zh }),
-          ...(name_ru && { name_ru, depts_ru, address_ru, desc_ru }),
+          ...multiLangData,
           createdAt: new Date().toISOString()
         });
         alert("신규 병원이 성공적으로 등록되었습니다.");
@@ -2411,26 +2458,45 @@ function initPage() {
         const curAddress  = btn.getAttribute("data-address");
         const curDepts    = btn.getAttribute("data-depts");
 
-        // [다국어 지원] 데이터 속성으로부터 기존 다국어 값 추출
-        const curNameVi    = btn.getAttribute("data-namevi") || "";
-        const curDeptsVi   = btn.getAttribute("data-deptsvi") || "";
-        const curAddressVi = btn.getAttribute("data-addressvi") || "";
-        const curDescVi    = btn.getAttribute("data-descvi") || "";
+        // [다국어 지원] 14개 외국어 설정 데이터 구조 정의
+        const langConfigs = [
+          { code: "en", flag: "🇺🇸", label: "영어 (English)", pName: "Clinic Name (영어 병원명)", pDepts: "Departments (진료과목 - 쉼표로 구분)", pAddress: "Address (영어 병원 주소)", pDesc: "Clinic Description (영어 병원 설명)" },
+          { code: "ja", flag: "🇯🇵", label: "일본어 (Japanese)", pName: "病院名 (일본어 병원명)", pDepts: "診療科目 (진료과목 - 쉼표로 구분)", pAddress: "住所 (일본어 병원 주소)", pDesc: "病院の説明 (일본어 병원 설명)" },
+          { code: "vi", flag: "🇻🇳", label: "베트남어 (Vietnamese)", pName: "Tên bệnh viện (베트남어 병원명)", pDepts: "Khoa điều trị (진료과목 - 쉼표로 구분)", pAddress: "Địa chỉ (베트남어 병원 주소)", pDesc: "Mô tả bệnh viện (베트남어 병원 설명)" },
+          { code: "zh", flag: "🇨🇳", label: "중국어 (Chinese)", pName: "医院名称 (중국어 병원명)", pDepts: "诊疗科目 (진료과목 - 쉼표로 구분)", pAddress: "地址 (중국어 병원 주소)", pDesc: "医院介绍 (중국어 병원 설명)" },
+          { code: "ru", flag: "🇷🇺", label: "러시아어 (Russian)", pName: "Название клиники (러시아어 병원명)", pDepts: "Медицинские отделения (진료과목 - 쉼표로 구분)", pAddress: "Адрес клиники (러시아어 병원 주소)", pDesc: "Описание клиники (러시아어 병원 설명)" },
+          { code: "my", flag: "🇲🇲", label: "미얀마어 (Myanmar)", pName: "ဆေးရုံအမည် (미얀마어 병원명)", pDepts: "ကုသမှုဌာနများ (진료과목 - 쉼표로 구분)", pAddress: "ဆေးရုံလိပ်စာ (미얀마어 병원 주소)", pDesc: "ဆေးရုံဖော်ပြချက် (미얀마어 병원 설명)" },
+          { code: "km", flag: "🇰🇭", label: "캄보디아어 (Khmer)", pName: "ឈ្មោះមន្ទីរពេទ្យ (캄보디아어 병원명)", pDepts: "ផ្នែកព្យាបាល (진료과목 - 쉼표로 구분)", pAddress: "អាសយដ្ឋានមន្ទីរពេទ្យ (캄보디아어 병원 주소)", pDesc: "ការពិពណ៌នាមន្ទីរពេទ្យ (캄보디아어 병원 설명)" },
+          { code: "mn", flag: "🇲🇳", label: "몽골어 (Mongolian)", pName: "Эмнэлгийн нэр (몽골어 병원명)", pDepts: "Эмчилгээний тасаг (진료과목 - 쉼표로 구분)", pAddress: "Эмнэлгийн хаяг (몽골어 병원 주소)", pDesc: "Эмнэлгийн танилцуулга (몽골어 병원 설명)" },
+          { code: "th", flag: "🇹🇭", label: "태국어 (Thai)", pName: "ชื่อโรงพยาบาล (태국어 병원명)", pDepts: "แผนกการรักษา (진료과목 - 쉼표로 구분)", pAddress: "ที่อยู่โรงพยาบาล (태국어 병원 주소)", pDesc: "รายละเอียดโรงพยาบาล (태국어 병원 설명)" },
+          { code: "lo", flag: "🇱🇦", label: "라오스어 (Lao)", pName: "ຊື່ໂຮງໝໍ (라오스어 병원명)", pDepts: "ພະແනກປິ່ນປົວ (진료과목 - 쉼표로 구분)", pAddress: "ທີ່ຢູ່ໂຮງໝໍ (라오스어 병원 주소)", pDesc: "ລາຍລະອຽດໂຮງໝໍ (라오스어 병원 설명)" },
+          { code: "ne", flag: "🇳🇵", label: "네팔어 (Nepali)", pName: "अस्पतालको नाम (네팔어 병원명)", pDepts: "उपचार विभागहरू (진료과목 - 쉼표로 구분)", pAddress: "अस्पतालको ठेगाना (네팔어 병원 주소)", pDesc: "अस्पतालको विवरण (네팔어 병원 설명)" },
+          { code: "id", flag: "🇮🇩", label: "인도네시아어 (Indonesian)", pName: "Nama Rumah Sakit (인도네시아어 병원명)", pDepts: "Departemen Medis (진료과목 - 쉼표로 구분)", pAddress: "Alamat Rumah Sakit (인도네시아어 병원 주소)", pDesc: "Deskripsi Rumah Sakit (인도네시아어 병원 설명)" },
+          { code: "si", flag: "🇱🇰", label: "스리랑카어 (Sinhala)", pName: "රෝහලේ නම (스리랑카어 병원명)", pDepts: "ප්‍රතිකාර අංශ (진료과목 - 쉼표로 구분)", pAddress: "රෝහලේ ලිපිනය (스리랑카어 병원 주소)", pDesc: "රෝහල් විස්තරය (스리랑카어 병원 설명)" },
+          { code: "bn", flag: "🇧🇩", label: "방글라데시어 (Bengali)", pName: "হাসপাতালের নাম (방글라데시어 병원명)", pDepts: "चिकित্সা বিভাগসমূহ (진료과목 - 쉼표로 구분)", pAddress: "হাসপাতালের ঠিকানা (방글라데시어 병원 주소)", pDesc: "হাসপাতালের বিবরণ (방글라데시어 병원 설명)" }
+        ];
 
-        const curNameJa    = btn.getAttribute("data-nameja") || "";
-        const curDeptsJa   = btn.getAttribute("data-deptsja") || "";
-        const curAddressJa = btn.getAttribute("data-addressja") || "";
-        const curDescJa    = btn.getAttribute("data-descja") || "";
+        /* [한글 주석] 14개 언어의 기존 데이터를 버튼 data-* 속성에서 추출하여 필드셋 HTML 생성 */
+        let langFieldsetsHtml = "";
+        langConfigs.forEach(cfg => {
+          const valName = (btn.getAttribute(`data-name${cfg.code}`) || "").replace(/"/g, '&quot;');
+          const valDepts = (btn.getAttribute(`data-depts${cfg.code}`) || "").replace(/"/g, '&quot;');
+          const valAddress = (btn.getAttribute(`data-address${cfg.code}`) || "").replace(/"/g, '&quot;');
+          const valDesc = (btn.getAttribute(`data-desc${cfg.code}`) || "").replace(/"/g, '&quot;');
 
-        const curNameZh    = btn.getAttribute("data-namezh") || "";
-        const curDeptsZh   = btn.getAttribute("data-deptszh") || "";
-        const curAddressZh = btn.getAttribute("data-addresszh") || "";
-        const curDescZh    = btn.getAttribute("data-desczh") || "";
+          langFieldsetsHtml += `
+            <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
+              <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">${cfg.flag} ${cfg.label}</legend>
+              <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
+                <input id="edit-clinic-name-${cfg.code}" type="text" value="${valName}" placeholder="${cfg.pName}" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; box-sizing:border-box;">
+                <input id="edit-clinic-depts-${cfg.code}" type="text" value="${valDepts}" placeholder="${cfg.pDepts}" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; box-sizing:border-box;">
+                <input id="edit-clinic-address-${cfg.code}" type="text" value="${valAddress}" placeholder="${cfg.pAddress}" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; box-sizing:border-box;">
+                <textarea id="edit-clinic-desc-${cfg.code}" rows="2" placeholder="${cfg.pDesc}" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical; box-sizing:border-box;">${valDesc}</textarea>
+              </div>
+            </fieldset>
+          `;
+        });
 
-        const curNameRu    = btn.getAttribute("data-nameru") || "";
-        const curDeptsRu   = btn.getAttribute("data-deptsru") || "";
-        const curAddressRu = btn.getAttribute("data-addressru") || "";
-        const curDescRu    = btn.getAttribute("data-descru") || "";
         /* [한글 주석] 병원 수정 폼에 로드하기 위해 기존 병원 사진의 Base64 데이터를 추출 */
         const curImage     = btn.getAttribute("data-image") || "";
 
@@ -2488,55 +2554,11 @@ function initPage() {
               <img id="edit-clinic-image-preview" src="${curImage}" alt="Clinic Preview" style="max-width:100%; max-height:150px; border-radius:8px; border:1px solid rgba(165,180,252,0.3); object-fit:cover;">
             </div>
             
-            <!-- [다국어 지원] 다국어 번역 수정 아코디언 -->
+            <!-- [다국어 지원] 다국어 번역 수정 아코디언 (14개국어 지원) -->
             <details style="border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.8rem; margin-bottom:1.4rem; background:rgba(255,255,255,0.02);">
               <summary style="font-weight:600; color:#a5b4fc; cursor:pointer; font-size:0.85rem; outline:none; user-select:none;">🌐 다국어 번역 수정 (선택사항)</summary>
               <div style="margin-top:0.8rem; display:flex; flex-direction:column; gap:0.8rem;">
-                
-                <!-- 베트남어 -->
-                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
-                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇻🇳 베트남어 (Vietnamese)</legend>
-                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
-                    <input id="edit-clinic-name-vi" type="text" value="${curNameVi}" placeholder="Tên bệnh viện (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-depts-vi" type="text" value="${curDeptsVi}" placeholder="Khoa điều trị (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-address-vi" type="text" value="${curAddressVi}" placeholder="Địa chỉ (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <textarea id="edit-clinic-desc-vi" rows="2" placeholder="Mô tả bệnh viện (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescVi}</textarea>
-                  </div>
-                </fieldset>
-
-                <!-- 일본어 -->
-                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
-                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇯🇵 일본어 (Japanese)</legend>
-                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
-                    <input id="edit-clinic-name-ja" type="text" value="${curNameJa}" placeholder="病院名 (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-depts-ja" type="text" value="${curDeptsJa}" placeholder="診療科目 (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-address-ja" type="text" value="${curAddressJa}" placeholder="住所 (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <textarea id="edit-clinic-desc-ja" rows="2" placeholder="病院の説明 (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescJa}</textarea>
-                  </div>
-                </fieldset>
-
-                <!-- 중국어 -->
-                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
-                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇨🇳 중국어 (Chinese)</legend>
-                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
-                    <input id="edit-clinic-name-zh" type="text" value="${curNameZh}" placeholder="医院名称 (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-depts-zh" type="text" value="${curDeptsZh}" placeholder="诊疗科目 (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-address-zh" type="text" value="${curAddressZh}" placeholder="地址 (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <textarea id="edit-clinic-desc-zh" rows="2" placeholder="医院介绍 (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescZh}</textarea>
-                  </div>
-                </fieldset>
-
-                <!-- 러시아어 -->
-                <fieldset style="border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; margin:0;">
-                  <legend style="color:#60a5fa; font-size:0.75rem; padding:0 4px; font-weight:600;">🇷🇺 러시아어 (Russian)</legend>
-                  <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.3rem;">
-                    <input id="edit-clinic-name-ru" type="text" value="${curNameRu}" placeholder="Название клиники (병원명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-depts-ru" type="text" value="${curDeptsRu}" placeholder="Медицинские отделения (진료과목 - 쉼표로 구분)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <input id="edit-clinic-address-ru" type="text" value="${curAddressRu}" placeholder="Адрес клиники (병원 주소)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem;">
-                    <textarea id="edit-clinic-desc-ru" rows="2" placeholder="Описание клиники (병원 설명)" style="width:100%; padding:0.4rem; border-radius:4px; border:1px solid rgba(165,180,252,0.2); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:0.8rem; resize:vertical;">${curDescRu}</textarea>
-                  </div>
-                </fieldset>
-
+                ${langFieldsetsHtml}
               </div>
             </details>
 
@@ -2625,10 +2647,6 @@ function initPage() {
         document.getElementById("btn-edit-clinic-cancel").addEventListener("click", () => {
           editModal.remove();
         });
-        // [한글 주석] 기존 모달 바깥 클릭 시 닫히는 이벤트를 제거합니다. (오직 취소 버튼 클릭 시에만 팝업이 닫히도록 설정)
-        // editModal.addEventListener("click", (ev) => {
-        //   if (ev.target === editModal) editModal.remove();
-        // });
 
         // 저장 버튼 - Firestore 업데이트
         document.getElementById("btn-edit-clinic-save").addEventListener("click", async () => {
@@ -2639,30 +2657,25 @@ function initPage() {
           const newAddress = document.getElementById("edit-clinic-address").value.trim();
           const newDesc    = document.getElementById("edit-clinic-desc").value.trim();
 
-          // [다국어 지원] 수정 폼에서 수집된 다국어 정보 변수 정의 (진료과목 포함)
-          const newNameVi    = document.getElementById("edit-clinic-name-vi").value.trim();
-          const newDeptsRawVi = document.getElementById("edit-clinic-depts-vi").value.trim();
-          const newDeptsVi   = newDeptsRawVi ? newDeptsRawVi.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-          const newAddressVi = document.getElementById("edit-clinic-address-vi").value.trim();
-          const newDescVi    = document.getElementById("edit-clinic-desc-vi").value.trim();
+          // [다국어 지원] 14개 언어의 수정된 값 수집
+          const updatedMultiLang = {};
+          langConfigs.forEach(cfg => {
+            const nameEl = document.getElementById(`edit-clinic-name-${cfg.code}`);
+            const deptsEl = document.getElementById(`edit-clinic-depts-${cfg.code}`);
+            const addressEl = document.getElementById(`edit-clinic-address-${cfg.code}`);
+            const descEl = document.getElementById(`edit-clinic-desc-${cfg.code}`);
 
-          const newNameJa    = document.getElementById("edit-clinic-name-ja").value.trim();
-          const newDeptsRawJa = document.getElementById("edit-clinic-depts-ja").value.trim();
-          const newDeptsJa   = newDeptsRawJa ? newDeptsRawJa.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-          const newAddressJa = document.getElementById("edit-clinic-address-ja").value.trim();
-          const newDescJa    = document.getElementById("edit-clinic-desc-ja").value.trim();
+            const vName = nameEl ? nameEl.value.trim() : "";
+            const vDeptsRaw = deptsEl ? deptsEl.value.trim() : "";
+            const vDepts = vDeptsRaw ? vDeptsRaw.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
+            const vAddress = addressEl ? addressEl.value.trim() : "";
+            const vDesc = descEl ? descEl.value.trim() : "";
 
-          const newNameZh    = document.getElementById("edit-clinic-name-zh").value.trim();
-          const newDeptsRawZh = document.getElementById("edit-clinic-depts-zh").value.trim();
-          const newDeptsZh   = newDeptsRawZh ? newDeptsRawZh.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-          const newAddressZh = document.getElementById("edit-clinic-address-zh").value.trim();
-          const newDescZh    = document.getElementById("edit-clinic-desc-zh").value.trim();
-
-          const newNameRu    = document.getElementById("edit-clinic-name-ru").value.trim();
-          const newDeptsRawRu = document.getElementById("edit-clinic-depts-ru").value.trim();
-          const newDeptsRu   = newDeptsRawRu ? newDeptsRawRu.split(",").map(d => d.trim()).filter(d => d.length > 0) : [];
-          const newAddressRu = document.getElementById("edit-clinic-address-ru").value.trim();
-          const newDescRu    = document.getElementById("edit-clinic-desc-ru").value.trim();
+            updatedMultiLang[`name_${cfg.code}`] = vName;
+            updatedMultiLang[`depts_${cfg.code}`] = vDepts;
+            updatedMultiLang[`address_${cfg.code}`] = vAddress;
+            updatedMultiLang[`desc_${cfg.code}`] = vDesc;
+          });
 
           if (!newName || !newEngName || !newAddress) {
             alert("병원명, 영문 식별명, 주소는 필수 항목입니다.");
@@ -2674,7 +2687,7 @@ function initPage() {
           saveBtn.textContent = "저장 중...";
 
           try {
-            // Firestore 문서 업데이트 (다국어 필드 및 병원 사진 덮어쓰기 업데이트 반영)
+            // Firestore 문서 업데이트 (14개 언어 다국어 필드 및 병원 사진 덮어쓰기 업데이트 반영)
             await updateDoc(doc(db, "clinics", docId), {
               name: newName,
               englishName: newEngName,
@@ -2683,26 +2696,7 @@ function initPage() {
               depts: newDepts,
               address: newAddress,
               desc: newDesc,
-              
-              name_vi: newNameVi,
-              depts_vi: newDeptsVi,
-              address_vi: newAddressVi,
-              desc_vi: newDescVi,
-
-              name_ja: newNameJa,
-              depts_ja: newDeptsJa,
-              address_ja: newAddressJa,
-              desc_ja: newDescJa,
-
-              name_zh: newNameZh,
-              depts_zh: newDeptsZh,
-              address_zh: newAddressZh,
-              desc_zh: newDescZh,
-
-              name_ru: newNameRu,
-              depts_ru: newDeptsRu,
-              address_ru: newAddressRu,
-              desc_ru: newDescRu
+              ...updatedMultiLang
             });
             alert("병원 정보가 성공적으로 수정되었습니다.");
             // [한글 주석: 병원 수정 반영에 따른 로컬 캐시 갱신 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
@@ -3085,6 +3079,22 @@ function initPage() {
 
       const editId = adEditId ? adEditId.value : "";
 
+      // [한글 주석: 메인 홈 광고 배너 캐시 무효화 통합 헬퍼 함수 (SWR 캐시 및 모든 구형 키 일괄 삭제)]
+      const invalidateAdsCache = () => {
+        try {
+          localStorage.removeItem("cached_home_ads");
+          localStorage.removeItem("cached_home_ads_data");
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("cached_home_ads")) {
+              localStorage.removeItem(key);
+            }
+          }
+        } catch (e) {
+          console.warn("Storage invalidation notice:", e);
+        }
+      };
+
       try {
         if (editId) {
           // 수정 모드 (Update)
@@ -3096,8 +3106,8 @@ function initPage() {
             slideInterval: slideIntervalMs
           });
           alert("광고 배너가 성공적으로 수정되었습니다.");
-          // [한글 주석: 광고 배너 수정 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
-          localStorage.removeItem("cached_home_ads");
+          // [한글 주석: 광고 배너 수정 성공 시 메인 홈 로컬 캐시 완전 무효화]
+          invalidateAdsCache();
         } else {
           // [한글 주석: 신규 광고 배너를 등록할 때 순번(order) 최댓값을 실시간으로 조회하여 마지막 순서에 자동 배치]
           let nextOrder = 1;
@@ -3119,8 +3129,8 @@ function initPage() {
             createdAt: serverTimestamp()
           });
           alert("새 광고 배너가 성공적으로 등록되었습니다.");
-          // [한글 주석: 신규 광고 배너 등록 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
-          localStorage.removeItem("cached_home_ads");
+          // [한글 주석: 신규 광고 배너 등록 성공 시 메인 홈 로컬 캐시 완전 무효화]
+          invalidateAdsCache();
         }
 
         // 폼 초기화 및 일반 모드로의 강제 복원
@@ -3159,6 +3169,22 @@ function initPage() {
   // 4) 광고 목록 편집, 삭제, 순서 이동 클릭 핸들러 (이벤트 위임)
   if (adminAdList) {
     adminAdList.addEventListener("click", async (e) => {
+      // [한글 주석: 메인 홈 광고 배너 캐시 무효화 통합 헬퍼 함수]
+      const invalidateAdsCache = () => {
+        try {
+          localStorage.removeItem("cached_home_ads");
+          localStorage.removeItem("cached_home_ads_data");
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("cached_home_ads")) {
+              localStorage.removeItem(key);
+            }
+          }
+        } catch (err) {
+          console.warn("Storage invalidation notice:", err);
+        }
+      };
+
       // ── [신규 추가] 순서 위로 이동 (Swap Up) ──
       if (e.target.classList.contains("btn-move-up-ad")) {
         const idx = parseInt(e.target.getAttribute("data-index"));
@@ -3178,8 +3204,8 @@ function initPage() {
             updateDoc(doc(db, "ads", prevAd.id), { order: currentOrder })
           ]);
 
-          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
-          localStorage.removeItem("cached_home_ads");
+          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 완전 무효화]
+          invalidateAdsCache();
           loadAds(); // 새로고침
         } catch (error) {
           console.error("Swap up failed:", error);
@@ -3207,8 +3233,8 @@ function initPage() {
             updateDoc(doc(db, "ads", nextAd.id), { order: currentOrder })
           ]);
 
-          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
-          localStorage.removeItem("cached_home_ads");
+          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 완전 무효화]
+          invalidateAdsCache();
           loadAds(); // 새로고침
         } catch (error) {
           console.error("Swap down failed:", error);
@@ -3272,8 +3298,8 @@ function initPage() {
           try {
             await deleteDoc(doc(db, "ads", docId));
             alert("광고 배너가 성공적으로 삭제되었습니다.");
-            // [한글 주석: 광고 배너 삭제 성공 시 메인 홈 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
-            localStorage.removeItem("cached_home_ads");
+            // [한글 주석: 광고 배너 삭제 성공 시 메인 홈 로컬 캐시 완전 무효화]
+            invalidateAdsCache();
             loadAds(); // 새로고침
           } catch (error) {
             console.error("Delete ad document failed:", error);

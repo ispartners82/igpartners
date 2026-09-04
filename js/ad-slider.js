@@ -5,8 +5,11 @@
  * DB가 비어있는 경우 사이트 정돈감을 위해 8개의 고화질 웰니스 샘플 광고를 자동 백업(Fallback) 노출합니다.
  */
 
-import { db } from "/js/firebase-db.js?v=2.0.7";
+import { db } from "/js/firebase-db.js?v=260904_1";
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// [한글 주석: 통합 광고 배너 로컬 캐시 키 정의 (SWR 캐시 엔진용)]
+const CACHE_KEY = "cached_home_ads_data";
 
 // DB가 비어있을 때 대신 렌더링되는 백업 샘플 광고 데이터 8개 정의
 const FALLBACK_ADS = [
@@ -92,81 +95,38 @@ const FALLBACK_ADS = [
   }
 ];
 
-// [한글 주석: SPA 및 일반 로드 환경 모두에서 정상 구동되도록 페이지 데이터 로딩 및 슬라이더 초기화 메인 함수 정의]
-async function initPage() {
+// [한글 주석: 활성화된 슬라이더 인터벌 타이머 ID들을 추적 관리하여 화면 재렌더링 시 중복 실행 방지]
+let activeSliderIntervals = [];
+
+/**
+ * [한글 주석: 광고 배너 배열을 받아 HTML DOM을 생성하고 슬라이더를 구동하는 렌더링 전용 함수]
+ * @param {Array} list - 표시할 광고 데이터 배열
+ */
+function renderAds(list) {
   const adGridContainer = document.getElementById("ad-grid-container");
   if (!adGridContainer) return;
 
-  let adsData = [];
+  // 1. 기존 동작 중인 슬라이더 인터벌 타이머를 모두 정리(Clear)
+  activeSliderIntervals.forEach(timerId => clearInterval(timerId));
+  activeSliderIntervals = [];
 
-  try {
-    // [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 키 정의 (v=260727_3 차수 동기화)]
-    const CURRENT_CACHE_KEY = "cached_home_ads_v260727_3";
+  // 2. 표시할 데이터가 비어있을 경우 기본 백업 샘플 광고 적용
+  const displayList = (list && list.length > 0) ? list : FALLBACK_ADS;
 
-    // [한글 주석: 이전 버전의 구형 LocalStorage 캐시 데이터를 자동으로 찾아 파기 및 정리하는 로직 추가]
-    try {
-      localStorage.removeItem("cached_home_ads"); // 구형 이전 캐시 삭제
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("cached_home_ads_") && key !== CURRENT_CACHE_KEY) {
-          localStorage.removeItem(key); // 상위/이전 버전 캐시 자동 청소
-        }
-      }
-    } catch (e) {
-      console.warn("Storage cleanup notice:", e);
-    }
-
-    // [한글 주석: 현재 버전의 최신 캐시가 존재하는지 확인하여 Firestore DB 조회 비용 절감]
-    const cachedAds = localStorage.getItem(CURRENT_CACHE_KEY);
-    if (cachedAds) {
-      adsData = JSON.parse(cachedAds);
-      console.log("Home ads loaded from Local Storage Cache (0 Firestore Read cost):", CURRENT_CACHE_KEY);
-    } else {
-      // 1. Firestore의 ads 컬렉션에서 순번(order) 오름차순 기준으로 실시간 데이터 목록 쿼리 실행
-      const q = query(collection(db, "ads"), orderBy("order", "asc"));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((doc) => {
-          const d = doc.data();
-          adsData.push({
-            tag: d.tag,
-            title: d.title,
-            desc: d.desc,
-            slideInterval: d.slideInterval || 4000,
-            images: d.images || [],
-            // [한글 주석: 데이터 일관성과 캐시 무효화 정합성을 위해 정렬 순번(order) 정보도 포함하여 저장]
-            order: d.order
-          });
-        });
-      }
-      // [한글 주석: 최신 불러온 광고 데이터를 현재 버전의 LocalStorage 키에 저장]
-      localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify(adsData));
-      console.log("Home ads loaded from Firestore DB and updated to Local Storage Cache:", CURRENT_CACHE_KEY);
-    }
-  } catch (error) {
-    console.error("Firestore ads loading error (falling back to samples):", error);
-  }
-
-  // 2. 만약 Firestore에 등록된 배너가 하나도 없을 경우 백업 샘플 광고로 전환
-  if (adsData.length === 0) {
-    console.log("No custom ads configured. Showing default fallback partners.");
-    adsData = FALLBACK_ADS;
-  }
-
-  // 3. 동적으로 광고 그리드 카드 요소 생성하여 마크업 주입
+  // 3. 광고 그리드 컨테이너 비우기 및 카드 요소 동적 생성 주입
   adGridContainer.innerHTML = "";
-  adsData.forEach((ad, index) => {
+
+  displayList.forEach((ad, index) => {
     const card = document.createElement("div");
     card.className = "ad-card";
     card.setAttribute("data-ad-index", index);
 
-    // 슬라이드에 노출될 이미지들의 HTML 조각 생성 (첫 번째만 active 클래스 부여)
+    // 슬라이드에 노출될 이미지들의 HTML 조각 생성 (첫 번째 이미지만 active 클래스 부여)
     let slidesHtml = "";
     if (ad.images && ad.images.length > 0) {
       ad.images.forEach((imgUrl, i) => {
         slidesHtml += `
-          <img class="ad-slide ${i === 0 ? 'active' : ''}" src="${imgUrl}" alt="${ad.tag} 슬라이드 이미지 ${i + 1}">
+          <img class="ad-slide ${i === 0 ? 'active' : ''}" src="${imgUrl}" alt="${ad.tag || '광고'} 슬라이드 이미지 ${i + 1}">
         `;
       });
     }
@@ -193,11 +153,90 @@ async function initPage() {
         currentSlideIdx = (currentSlideIdx + 1) % slides.length;
         slides[currentSlideIdx].classList.add("active");
       };
-      
-      // 개별 지정된 고유 슬라이드 간격(또는 기본 4초)으로 각각의 카드 타이머 기동
-      setInterval(nextSlide, ad.slideInterval);
+
+      const intervalMs = ad.slideInterval || 4000;
+      const timerId = setInterval(nextSlide, intervalMs);
+      activeSliderIntervals.push(timerId);
     }
   });
+}
+
+/**
+ * [한글 주석: SWR(Stale-While-Revalidate) 전략으로 0.01초 즉시 렌더링 후 최신 데이터 비동기 동기화]
+ */
+async function initPage() {
+  const adGridContainer = document.getElementById("ad-grid-container");
+  if (!adGridContainer) return;
+
+  // [한글 주석: 구형 버전의 LocalStorage 캐시 키 정리]
+  try {
+    localStorage.removeItem("cached_home_ads");
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("cached_home_ads_v")) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch (e) {
+    console.warn("Storage cleanup notice:", e);
+  }
+
+  // ── [1단계: Stale] 로컬 캐시가 있으면 0.01초 만에 즉시 렌더링 ──
+  let cachedData = null;
+  try {
+    const rawCache = localStorage.getItem(CACHE_KEY);
+    if (rawCache) {
+      cachedData = JSON.parse(rawCache);
+      if (Array.isArray(cachedData) && cachedData.length > 0) {
+        renderAds(cachedData);
+        console.log("⚡ [SWR] Home ads rendered immediately from Local Cache.");
+      }
+    }
+  } catch (e) {
+    console.warn("Local cache parse error:", e);
+  }
+
+  // 로컬 캐시가 없으면 기본 백업 샘플 광고로 우선 즉시 렌더링
+  if (!cachedData) {
+    renderAds(FALLBACK_ADS);
+  }
+
+  // ── [2단계: Revalidate] 백그라운드에서 Firestore 최신 데이터 비동기 조회 ──
+  try {
+    const q = query(collection(db, "ads"), orderBy("order", "asc"));
+    const querySnapshot = await getDocs(q);
+
+    const freshAds = [];
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        freshAds.push({
+          id: docSnap.id,
+          tag: d.tag || "",
+          title: d.title || "",
+          desc: d.desc || "",
+          slideInterval: d.slideInterval || 4000,
+          images: d.images || [],
+          order: typeof d.order === "number" ? d.order : 0
+        });
+      });
+    }
+
+    // ── [3단계: Update] 데이터 비교 후 변경 사항이 있으면 최신 데이터로 화면 갱신 ──
+    const freshDataStr = JSON.stringify(freshAds);
+    const cachedDataStr = JSON.stringify(cachedData || []);
+
+    if (freshDataStr !== cachedDataStr) {
+      console.log("🔄 [SWR] Fresh ads detected from Firestore. Updating UI and Cache.");
+      renderAds(freshAds);
+      localStorage.setItem(CACHE_KEY, freshDataStr);
+    } else {
+      console.log("✅ [SWR] Local Cache is already up-to-date with Firestore.");
+      localStorage.setItem(CACHE_KEY, freshDataStr);
+    }
+  } catch (error) {
+    console.error("❌ [SWR] Firestore ads background fetch error:", error);
+  }
 }
 
 // [한글 주석: 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]

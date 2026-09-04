@@ -13,8 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260903_2)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260903_2">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260904_2)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260904_2">
 </head>
 
 <body>
@@ -506,24 +506,24 @@
                       다국어 번역 추가 입력 (선택사항)</summary>
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
 
-                      <!-- 베트남어 (vi) 번역 입력 필드셋 -->
+                      <!-- 1. 영어 (en) 번역 입력 필드셋 -->
                       <fieldset
                         style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
-                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇻🇳 베트남어
-                          (Vietnamese)</legend>
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇺🇸 영어
+                          (English)</legend>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-                          <input type="text" id="reg-clinic-name-vi" placeholder="Tên bệnh viện (베트남어 병원명)"
+                          <input type="text" id="reg-clinic-name-en" placeholder="Clinic Name (영어 병원명)"
                             style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-depts-vi" placeholder="Khoa điều trị (베트남어 진료과목 - 쉼표로 구분)"
+                          <input type="text" id="reg-clinic-depts-en" placeholder="Departments (영어 진료과목 - 쉼표로 구분)"
                             style="padding: 0.5rem; font-size: 0.85rem;">
-                          <input type="text" id="reg-clinic-address-vi" placeholder="Địa chỉ (베트남어 병원 주소)"
+                          <input type="text" id="reg-clinic-address-en" placeholder="Address (영어 병원 주소)"
                             style="padding: 0.5rem; font-size: 0.85rem;">
-                          <textarea id="reg-clinic-desc-vi" rows="2" placeholder="Mô tả bệnh viện (베트남어 병원 설명)"
+                          <textarea id="reg-clinic-desc-en" rows="2" placeholder="Clinic Description (영어 병원 설명)"
                             style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
                         </div>
                       </fieldset>
 
-                      <!-- 일본어 (ja) 번역 입력 필드셋 -->
+                      <!-- 2. 일본어 (ja) 번역 입력 필드셋 -->
                       <fieldset
                         style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
                         <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇯🇵 일본어
@@ -540,7 +540,24 @@
                         </div>
                       </fieldset>
 
-                      <!-- 중국어 (zh) 번역 입력 필드셋 -->
+                      <!-- 3. 베트남어 (vi) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇻🇳 베트남어
+                          (Vietnamese)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-vi" placeholder="Tên bệnh viện (베트남어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-vi" placeholder="Khoa điều trị (베트남어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-vi" placeholder="Địa chỉ (베트남어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-vi" rows="2" placeholder="Mô tả bệnh viện (베트남어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 4. 중국어 (zh) 번역 입력 필드셋 -->
                       <fieldset
                         style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
                         <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇨🇳 중국어
@@ -557,7 +574,7 @@
                         </div>
                       </fieldset>
 
-                      <!-- 러시아어 (ru) 번역 입력 필드셋 -->
+                      <!-- 5. 러시아어 (ru) 번역 입력 필드셋 -->
                       <fieldset
                         style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
                         <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇷🇺 러시아어
@@ -571,6 +588,168 @@
                           <input type="text" id="reg-clinic-address-ru" placeholder="Адрес клиники (러시아어 병원 주소)"
                             style="padding: 0.5rem; font-size: 0.85rem;">
                           <textarea id="reg-clinic-desc-ru" rows="2" placeholder="Описание клиники (러시아어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 6. 미얀마어 (my) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇲🇲 미얀마어
+                          (Myanmar)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-my" placeholder="ဆေးရုံအမည် (미얀마어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-my"
+                            placeholder="ကုသမှုဌာနများ (미얀마어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-my" placeholder="ဆေးရုံလိပ်စာ (미얀마어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-my" rows="2" placeholder="ဆေးရုံဖော်ပြချက် (미얀마어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 7. 캄보디아어 (km) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇰🇭 캄보디아어
+                          (Khmer)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-km" placeholder="ឈ្មោះមន្ទីរពេទ្យ (캄보디아어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-km"
+                            placeholder="ផ្នែកព្យាបាល (캄보디아어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-km" placeholder="អាសយដ្ឋានមន្ទីរពេទ្យ (캄보디아어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-km" rows="2" placeholder="ការពិពណ៌នាមន្ទីរពេទ្យ (캄보디아어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 8. 몽골어 (mn) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇲🇳 몽골어
+                          (Mongolian)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-mn" placeholder="Эмнэлгийн нэр (몽골어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-mn"
+                            placeholder="Эмчилгээний тасаг (몽골어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-mn" placeholder="Эмнэлгийн хаяг (몽골어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-mn" rows="2" placeholder="Эмнэлгийн танилцуулга (몽골어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 9. 태국어 (th) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇹🇭 태국어
+                          (Thai)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-th" placeholder="ชื่อโรงพยาบาล (태국어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-th"
+                            placeholder="แผนกการรักษา (태국어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-th" placeholder="ที่อยู่โรงพยาบาล (태국어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-th" rows="2" placeholder="รายละเอียดโรงพยาบาล (태국어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 10. 라오스어 (lo) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇱🇦 라오스어
+                          (Lao)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-lo" placeholder="ຊື່ໂຮງໝໍ (라오스어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-lo"
+                            placeholder="ພະແນກປິ່ນປົວ (라오스어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-lo" placeholder="ທີ່ຢູ່ໂຮງໝໍ (라오스어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-lo" rows="2" placeholder="ລາຍລະອຽດໂຮງໝໍ (라오스어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 11. 네팔어 (ne) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇳🇵 네팔어
+                          (Nepali)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-ne" placeholder="अस्पतालको नाम (네팔어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-ne"
+                            placeholder="उपचार विभागहरू (네팔어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-ne" placeholder="अस्पतालको ठेगाना (네팔어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-ne" rows="2" placeholder="अस्पतालको विवरण (네팔어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 12. 인도네시아어 (id) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇮🇩 인도네시아어
+                          (Indonesian)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-id" placeholder="Nama Rumah Sakit (인도네시아어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-id"
+                            placeholder="Departemen Medis (인도네시아어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-id" placeholder="Alamat Rumah Sakit (인도네시아어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-id" rows="2" placeholder="Deskripsi Rumah Sakit (인도네시아어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 13. 스리랑카어 (si) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇱🇰 스리랑카어
+                          (Sinhala)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-si" placeholder="රෝහලේ නම (스리랑카어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-si"
+                            placeholder="ප්‍රතිකාර අංශ (스리랑카어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-si" placeholder="රෝහලේ ලිපිනය (스리랑카어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-si" rows="2" placeholder="රෝහල් විස්තරය (스리랑카어 병원 설명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
+                        </div>
+                      </fieldset>
+
+                      <!-- 14. 방글라데시어 (bn) 번역 입력 필드셋 -->
+                      <fieldset
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 0.8rem; margin: 0;">
+                        <legend style="color: #60a5fa; font-size: 0.85rem; padding: 0 5px; font-weight: 600;">🇧🇩 방글라데시어
+                          (Bengali)</legend>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                          <input type="text" id="reg-clinic-name-bn" placeholder="হাসপাতালের নাম (방글라데시어 병원명)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-depts-bn"
+                            placeholder="चिकित্সা বিভাগসমূহ (방글라데시어 진료과목 - 쉼표로 구분)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <input type="text" id="reg-clinic-address-bn" placeholder="হাসপাতালের ঠিকানা (방글라데시어 병원 주소)"
+                            style="padding: 0.5rem; font-size: 0.85rem;">
+                          <textarea id="reg-clinic-desc-bn" rows="2" placeholder="হাসপাতালের বিবরণ (방글라데시어 병원 설명)"
                             style="padding: 0.5rem; font-size: 0.85rem;"></textarea>
                         </div>
                       </fieldset>
@@ -898,10 +1077,10 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260903_2)] -->
-  <script type="module" src="/js/navigation.js?v=260903_2"></script>
-  <script type="module" src="/js/admin.js?v=260903_2"></script>
-  <script type="module" src="/js/auth.js?v=260903_2"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260904_2)] -->
+  <script type="module" src="/js/navigation.js?v=260904_2"></script>
+  <script type="module" src="/js/admin.js?v=260904_2"></script>
+  <script type="module" src="/js/auth.js?v=260904_2"></script>
 </body>
 
 </html>
