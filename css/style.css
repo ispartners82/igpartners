@@ -3090,9 +3090,11 @@ body.home-page {
   padding: 1.5rem 2rem 6rem;
 }
 
+/* [한글 주석: 섹션 내부 공통 컨테이너 - 와이드 화면 중앙 정렬 보장을 위한 margin: 0 auto 추가] */
 .section-container {
   width: 100%;
   max-width: 1100px;
+  margin: 0 auto;
 }
 
 .section-header {
@@ -6355,19 +6357,41 @@ body.home-page {
   text-align: center;
   padding: 4rem 1.5rem 3rem;
   overflow: hidden;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .interpreters-hero-content {
   position: relative;
   z-index: 2;
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
+  text-align: center;
 }
 
 /* 2. 전문통역 공통 섹션 레이아웃 */
 .interpreters-section {
   padding: 3rem 1.5rem 4rem;
   position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.interpreters-section .section-container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .interpreters-section.freelance-section {
@@ -6378,6 +6402,7 @@ body.home-page {
 .interpreters-section-header {
   text-align: center;
   margin-bottom: 2.5rem;
+  width: 100%;
 }
 
 .interpreters-section-header .badge-tag {
@@ -6411,13 +6436,14 @@ body.home-page {
 }
 
 /* 3. [상단 섹션] IGPartners 소속 통역 - 명함 카드 그리드 및 카드 디자인 */
-/* 3. [상단 섹션] IGPartners 소속 통역 - 명함 카드 그리드 및 카드 디자인 */
 .staff-interpreters-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.75rem;
+  width: 100%;
   max-width: 1240px;
   margin: 0 auto;
+  justify-content: center;
 }
 
 /* [한글 주석: 소속 통역사 프리미엄 명함 카드 본체 (불필요한 공백 최소화 및 꽉 찬 밀도감)] */
@@ -6611,8 +6637,10 @@ body.home-page {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.35rem;
+  width: 100%;
   max-width: 1240px;
   margin: 0 auto;
+  justify-content: center;
 }
 
 .freelance-card {
