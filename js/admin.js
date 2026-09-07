@@ -26,11 +26,14 @@ function initPage() {
   const tabUsers = document.getElementById("tab-users");
   // [디자인/기능 개편] 광고 배너 관리를 위한 신규 탭 버튼 및 패널 요소 캐싱
   const tabAds = document.getElementById("tab-ads");
+  // [한글 주석: 협력업체 CRUD 관리 탭 버튼 및 패널 요소 캐싱]
+  const tabPartners = document.getElementById("tab-partners");
   // [한글 주석: 전문 의료 통역 관리 탭 버튼 및 콘텐츠 패널 요소 캐싱]
   const tabInterpreters = document.getElementById("tab-interpreters");
   const contentReservations = document.getElementById("content-reservations");
   const contentUsers = document.getElementById("content-users");
   const contentAds = document.getElementById("content-ads");
+  const contentPartners = document.getElementById("content-partners");
   const contentInterpreters = document.getElementById("content-interpreters");
 
   const userList = document.getElementById("user-list");
@@ -709,6 +712,11 @@ function initPage() {
     if (tabAds) {
       tabAds.style.display = permissions.hasAds ? "inline-block" : "none";
     }
+    // [한글 주석: 협력업체 관리 탭 권한 노출 제어 (광고권한 또는 최고관리자 권한 연동)]
+    const tabPartners = document.getElementById("tab-partners");
+    if (tabPartners) {
+      tabPartners.style.display = (permissions.hasPartners !== false && (permissions.hasAds || permissions.isAdmin)) ? "inline-block" : "none";
+    }
     // [한글 주석: 전문통역 관리 탭 권한 노출 제어 (광고권한 또는 최고관리자 권한 연동)]
     if (tabInterpreters) {
       tabInterpreters.style.display = (permissions.hasInterpreters !== false && (permissions.hasAds || permissions.isAdmin)) ? "inline-block" : "none";
@@ -852,13 +860,16 @@ function initPage() {
           } else if (savedTab === "tab-ads") {
             // [한글 주석: 세션 상에 광고 탭이 기록되어 있을 경우, 진입 시 광고 리스트 로드 함수 호출]
             loadAds();
+          } else if (savedTab === "tab-partners") {
+            // [한글 주석: 세션 상에 협력업체 탭이 기록되어 있을 경우, 진입 시 협력업체 목록 로드 함수 호출]
+            loadAdminPartners();
           } else if (savedTab === "tab-interpreters") {
             // [한글 주석: 전문통역 관리 탭이 기록되어 있을 경우, 진입 시 통역사 목록 로드 함수 호출]
             loadAdminInterpreters();
           }
         } else {
           // 저장된 탭 정보가 없거나 비노출 상태인 경우 우선순위에 따라 탭 활성화 및 로드
-          // 우선순위: 예약내역관리(hasReservations) -> 병원관리(hasClinics) -> 광고배너(hasAds) -> 전문통역(hasInterpreters) -> 등급권한관리(hasRoles) -> 회원리스트(hasPermissions)
+          // 우선순위: 예약내역관리(hasReservations) -> 병원관리(hasClinics) -> 광고배너(hasAds) -> 협력업체(tabPartners) -> 전문통역(hasInterpreters) -> 등급권한관리(hasRoles) -> 회원리스트(hasPermissions)
           if (permissions.hasReservations && tabReservations) {
             tabReservations.click();
             loadReservations(true);
@@ -866,6 +877,8 @@ function initPage() {
             tabClinics.click();
           } else if (permissions.hasAds && tabAds) {
             tabAds.click();
+          } else if (tabPartners && tabPartners.style.display !== "none") {
+            tabPartners.click();
           } else if (tabInterpreters && tabInterpreters.style.display !== "none") {
             tabInterpreters.click();
           } else if (permissions.hasRoles && tabUsers) {
@@ -898,8 +911,8 @@ function initPage() {
   // [한글 주석: 탭 전환 시 메뉴 영역 랙 및 깜빡임(Layout Shift)을 방지하는 통합 탭 스위칭 헬퍼 함수]
   function switchTabSeamlessly(activeBtn, activeContent, tabStorageKey, fetchCallback) {
     // 1. 모든 탭 버튼 및 패널 스위칭 처리 (메뉴는 고정되고 내용만 즉각 변경됨)
-    const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabInterpreters];
-    const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds, contentInterpreters];
+    const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabPartners, tabInterpreters];
+    const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds, contentPartners, contentInterpreters];
 
     tabs.forEach(t => { if (t) t.classList.remove("active"); });
     contents.forEach(c => { if (c) c.style.display = "none"; });
@@ -960,6 +973,15 @@ function initPage() {
       tabAds.addEventListener("click", () => {
         switchTabSeamlessly(tabAds, contentAds, "tab-ads", () => {
           loadAds();
+        });
+      });
+    }
+
+    // [한글 주석: 협력업체 관리 탭 클릭 시 스위칭 및 목록 로드]
+    if (tabPartners) {
+      tabPartners.addEventListener("click", () => {
+        switchTabSeamlessly(tabPartners, contentPartners, "tab-partners", () => {
+          loadAdminPartners();
         });
       });
     }
@@ -3910,6 +3932,359 @@ function initPage() {
   }
 
   window.loadAdminInterpreters = loadAdminInterpreters;
+
+  // ==============================================================================
+  // [한글 주석: 6. 협력업체 관리 (CRUD) 기능 구현]
+  // ==============================================================================
+  setupPartnerTab();
+
+  function setupPartnerTab() {
+    const partnerForm = document.getElementById("partner-manage-form");
+    const partnerEditId = document.getElementById("partner-edit-id");
+    const partnerTitle = document.getElementById("partner-title");
+    const partnerSubtitle = document.getElementById("partner-subtitle");
+    const partnerTag = document.getElementById("partner-tag");
+    const partnerImageUrl = document.getElementById("partner-image-url");
+    const partnerLinkUrl = document.getElementById("partner-link-url");
+    const partnerOrder = document.getElementById("partner-order");
+    const partnerFileInput = document.getElementById("partner-file-input");
+    const partnerFileName = document.getElementById("partner-file-name");
+    const partnerImagePreview = document.getElementById("partner-image-preview");
+    const partnerPreviewImg = document.getElementById("partner-preview-img");
+    const partnerFormTitle = document.getElementById("partner-form-title");
+    const btnSavePartner = document.getElementById("btn-save-partner");
+    const btnCancelPartnerEdit = document.getElementById("btn-cancel-partner-edit");
+    const adminPartnerList = document.getElementById("admin-partner-list");
+    const partnerCountBadge = document.getElementById("partner-count-badge");
+
+    // [한글 주석: 이미지 URL 입력 변경 시 실시간 미리보기 갱신]
+    if (partnerImageUrl && partnerImagePreview && partnerPreviewImg) {
+      partnerImageUrl.addEventListener("input", () => {
+        const val = partnerImageUrl.value.trim();
+        if (val) {
+          partnerPreviewImg.src = val;
+          partnerImagePreview.style.display = "flex";
+        } else {
+          partnerImagePreview.style.display = "none";
+        }
+      });
+    }
+
+    // [한글 주석: 로컬 사진 파일 첨부 시 무료 서버 법칙 준수를 위한 클라이언트 캔버스 경량화 압축(Base64) 처리]
+    if (partnerFileInput) {
+      partnerFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        if (partnerFileName) partnerFileName.textContent = file.name;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            // [한글 주석: 최대 400x400 픽셀로 비례 축소하여 Firestore 용량 최소화]
+            const maxDim = 400;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // WebP 또는 JPEG 80% 퀄리티 압축 Base64 추출
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.82);
+            if (partnerImageUrl) partnerImageUrl.value = compressedBase64;
+            if (partnerPreviewImg) partnerPreviewImg.src = compressedBase64;
+            if (partnerImagePreview) partnerImagePreview.style.display = "flex";
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // [한글 주석: 수정 취소 버튼 클릭 시 폼 초기화 및 신규 등록 모드 복원]
+    if (btnCancelPartnerEdit) {
+      btnCancelPartnerEdit.addEventListener("click", () => {
+        resetPartnerForm();
+      });
+    }
+
+    function resetPartnerForm() {
+      if (partnerForm) partnerForm.reset();
+      if (partnerEditId) partnerEditId.value = "";
+      if (partnerFormTitle) partnerFormTitle.textContent = "신규 협력업체 등록";
+      if (btnSavePartner) {
+        btnSavePartner.textContent = "💾 협력업체 등록하기";
+        btnSavePartner.disabled = false;
+      }
+      if (btnCancelPartnerEdit) btnCancelPartnerEdit.style.display = "none";
+      if (partnerImagePreview) partnerImagePreview.style.display = "none";
+      if (partnerFileName) partnerFileName.textContent = "선택 안됨";
+      if (partnerOrder) partnerOrder.value = 1;
+    }
+
+    /**
+     * [한글 주석: XSS 방지 및 안전한 HTML 문자열 이스케이프 유틸리티]
+     * @param {string} str 대상 문자열
+     * @returns {string} 이스케이프된 안전한 문자열
+     */
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // [한글 주석: 협력업체 등록 및 수정 폼 서밋 핸들러]
+    if (partnerForm) {
+      partnerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const title = partnerTitle.value.trim();
+        const subtitle = partnerSubtitle.value.trim();
+        const tag = partnerTag.value.trim() || "Partner";
+        const imageUrl = partnerImageUrl.value.trim();
+        const linkUrl = partnerLinkUrl ? partnerLinkUrl.value.trim() : "";
+        const order = parseInt(partnerOrder.value, 10) || 1;
+        const editId = partnerEditId.value.trim();
+
+        if (!title || !subtitle || !imageUrl) {
+          alert("협력업체명, 소개(부제목), 이미지는 필수 입력 항목입니다.");
+          return;
+        }
+
+        btnSavePartner.disabled = true;
+        btnSavePartner.textContent = "저장 중...";
+
+        try {
+          const partnerData = {
+            title: title,
+            subtitle: subtitle,
+            tag: tag,
+            imageUrl: imageUrl,
+            linkUrl: linkUrl,
+            order: order,
+            updatedAt: new Date().toISOString()
+          };
+
+          if (editId) {
+            // [한글 주석: 수정 모드 - 상단에서 임포트한 doc 및 setDoc 사용]
+            await setDoc(doc(db, "partners", editId), partnerData, { merge: true });
+            alert(`'${title}' 협력업체 정보가 성공적으로 수정되었습니다.`);
+          } else {
+            // [한글 주석: 신규 등록 모드 - 상단에서 임포트한 collection 및 addDoc 사용]
+            partnerData.createdAt = new Date().toISOString();
+            await addDoc(collection(db, "partners"), partnerData);
+            alert(`'${title}' 신규 협력업체가 성공적으로 등록되었습니다.`);
+          }
+
+          resetPartnerForm();
+          loadAdminPartners();
+        } catch (err) {
+          console.error("[한글 주석: 협력업체 저장 실패]", err);
+          alert("협력업체 저장 중 오류가 발생했습니다: " + err.message);
+          btnSavePartner.disabled = false;
+          btnSavePartner.textContent = editId ? "✏️ 협력업체 수정 완료" : "💾 협력업체 등록하기";
+        }
+      });
+    }
+
+    // [한글 주석: 등록된 협력업체 실시간 목록 조회 및 렌더링 함수]
+    async function loadAdminPartners() {
+      if (!adminPartnerList) return;
+
+      adminPartnerList.innerHTML = `
+        <tr>
+          <td colspan="6" class="table-loading">협력업체 데이터를 불러오는 중입니다...</td>
+        </tr>
+      `;
+
+      try {
+        // [한글 주석: 상단에서 이미 임포트된 collection, query, orderBy, getDocs 사용]
+        const q = query(collection(db, "partners"), orderBy("order", "asc"));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          adminPartnerList.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 2.5rem; color: rgba(255,255,255,0.6);">
+                등록된 협력업체가 없습니다. 상단 폼을 통해 새로운 협력업체를 등록해 보세요.
+              </td>
+            </tr>
+          `;
+          if (partnerCountBadge) partnerCountBadge.textContent = "총 0개 업체";
+          return;
+        }
+
+        const dummyTitles = ["아이지 글로벌 헬스케어 센터", "서울 프리미엄 메디컬 파트너스", "글로벌 라이프 케어 솔루션"];
+        let rowsHtml = "";
+        let validCount = 0;
+
+        for (const docSnap of snapshot.docs) {
+          const p = docSnap.data();
+          const pid = docSnap.id;
+
+          // [한글 주석: 임시로 생성되었던 3개 샘플 업체는 Firestore에서 자동 영구 삭제 처리]
+          if (dummyTitles.includes(p.title)) {
+            console.log(`[한글 주석] 불필요한 샘플 업체 Firestore 자동 삭제: ${p.title} (${pid})`);
+            try {
+              await deleteDoc(doc(db, "partners", pid));
+            } catch (delErr) {
+              console.warn("[한글 주석] 샘플 업체 삭제 오류:", delErr);
+            }
+            continue;
+          }
+
+          validCount++;
+          const pTitle = escapeHtml(p.title || "미지정");
+          const pSubtitle = escapeHtml(p.subtitle || "-");
+          const pTag = escapeHtml(p.tag || "Partner");
+          const pImg = p.imageUrl || "/img/logo.png";
+          const pLink = p.linkUrl ? p.linkUrl.trim() : "";
+          const pOrder = p.order || 1;
+
+          rowsHtml += `
+            <tr data-id="${pid}">
+              <td style="text-align: center; font-weight: 700; color: #00f3ff;">${pOrder}</td>
+              <td style="text-align: center;">
+                <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,243,255,0.3); display: inline-flex; align-items: center; justify-content: center; overflow: hidden;">
+                  <img src="${pImg}" alt="${pTitle}" style="max-width: 85%; max-height: 85%; object-fit: contain;" onerror="this.src='/img/logo.png';">
+                </div>
+              </td>
+              <td>
+                <div style="font-weight: 700; color: #ffffff; margin-bottom: 0.2rem;">${pTitle}</div>
+                <span style="font-size: 0.72rem; color: #00f3ff; background: rgba(0,243,255,0.1); padding: 0.15rem 0.45rem; border-radius: 6px;">${pTag}</span>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.75); max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${pSubtitle}
+                </div>
+              </td>
+              <td>
+                ${pLink ? `<a href="${pLink}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-size: 0.82rem; text-decoration: underline;">방문하기 ➔</a>` : '<span style="color: rgba(255,255,255,0.4); font-size: 0.82rem;">-</span>'}
+              </td>
+              <td style="text-align: center; white-space: nowrap;">
+                <button type="button" class="btn-action-edit btn-edit-partner" data-id="${pid}" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; margin-right: 0.3rem; border-radius: 6px; background: #0284c7; color: white; border: none; cursor: pointer;">수정</button>
+                <button type="button" class="btn-action-delete btn-delete-partner" data-id="${pid}" data-title="${pTitle}" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; border-radius: 6px; background: #dc2626; color: white; border: none; cursor: pointer;">삭제</button>
+              </td>
+            </tr>
+          `;
+        }
+
+        if (partnerCountBadge) partnerCountBadge.textContent = `총 ${validCount}개 업체`;
+        adminPartnerList.innerHTML = rowsHtml;
+      } catch (err) {
+        console.error("[한글 주석: 협력업체 목록 로딩 실패]", err);
+        adminPartnerList.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; color: #ef4444; padding: 2rem;">
+              목록 로딩 중 오류가 발생했습니다: ${err.message}
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // [한글 주석: 협력업체 테이블 내부 수정/삭제 버튼 이벤트 위임 바인딩]
+    if (adminPartnerList) {
+      adminPartnerList.addEventListener("click", async (e) => {
+        const editBtn = e.target.closest(".btn-edit-partner");
+        const deleteBtn = e.target.closest(".btn-delete-partner");
+
+        if (editBtn) {
+          const pid = editBtn.getAttribute("data-id");
+          if (!pid) return;
+
+          try {
+            editBtn.disabled = true;
+            editBtn.textContent = "로딩...";
+            // [한글 주석: 상단에서 이미 임포트된 doc, getDoc 직접 사용]
+            const snap = await getDoc(doc(db, "partners", pid));
+            if (!snap.exists()) {
+              alert("해당 협력업체 데이터가 존재하지 않습니다.");
+              loadAdminPartners();
+              return;
+            }
+
+            const p = snap.data();
+            if (partnerEditId) partnerEditId.value = pid;
+            if (partnerTitle) partnerTitle.value = p.title || "";
+            if (partnerSubtitle) partnerSubtitle.value = p.subtitle || "";
+            if (partnerTag) partnerTag.value = p.tag || "Partner";
+            if (partnerImageUrl) partnerImageUrl.value = p.imageUrl || "";
+            if (partnerLinkUrl) partnerLinkUrl.value = p.linkUrl || "";
+            if (partnerOrder) partnerOrder.value = p.order || 1;
+
+            if (p.imageUrl && partnerPreviewImg && partnerImagePreview) {
+              partnerPreviewImg.src = p.imageUrl;
+              partnerImagePreview.style.display = "flex";
+            }
+
+            if (partnerFormTitle) partnerFormTitle.textContent = `'${p.title}' 협력업체 정보 수정`;
+            if (btnSavePartner) {
+              btnSavePartner.textContent = "✏️ 협력업체 수정 완료";
+              btnSavePartner.disabled = false;
+            }
+            if (btnCancelPartnerEdit) btnCancelPartnerEdit.style.display = "inline-block";
+
+            // 상단 폼 영역으로 부드럽게 스크롤
+            if (partnerForm) {
+              partnerForm.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          } catch (err) {
+            console.error("[한글 주석: 수정 정보 로드 오류]", err);
+            alert("협력업체 정보를 가져오는 중 오류가 발생했습니다: " + err.message);
+          } finally {
+            editBtn.disabled = false;
+            editBtn.textContent = "수정";
+          }
+        }
+
+        if (deleteBtn) {
+          const pid = deleteBtn.getAttribute("data-id");
+          const pTitle = deleteBtn.getAttribute("data-title") || "협력업체";
+          if (!pid) return;
+
+          if (!confirm(`'${pTitle}' 협력업체를 정말 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`)) {
+            return;
+          }
+
+          try {
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = "삭제 중...";
+            // [한글 주석: 상단에서 이미 임포트된 doc, deleteDoc 직접 사용]
+            await deleteDoc(doc(db, "partners", pid));
+            alert(`'${pTitle}' 협력업체가 성공적으로 삭제되었습니다.`);
+            loadAdminPartners();
+          } catch (err) {
+            console.error("[한글 주석: 삭제 오류]", err);
+            alert("협력업체 삭제 실패: " + err.message);
+            deleteBtn.disabled = false;
+            deleteBtn.textContent = "삭제";
+          }
+        }
+      });
+    }
+
+    window.loadAdminPartners = loadAdminPartners;
+  }
 }
 
 // [한글 주석: 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]

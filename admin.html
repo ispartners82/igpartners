@@ -15,11 +15,11 @@
     rel="stylesheet">
 
   <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260906_3">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260906_3">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260907_9">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260907_9">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260906_3)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260906_3">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260907_9)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260907_9">
 </head>
 
 <body>
@@ -61,7 +61,8 @@
           <!-- [한글 주석: 전문통역 전용 페이지 링크로 올바르게 연결] -->
           <li class="nav-item"><a href="/interpreters.html" class="nav-link btn-nav-booking">전문통역</a></li>
           <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking">진료 예약</a></li>
-          <li class="nav-item"><a href="/index.html#partners" class="nav-link">파트너스</a></li>
+          <!-- [한글 주석: 상단 메뉴 - 협력업체 전용 페이지 연결] -->
+          <li class="nav-item"><a href="/partners.html" class="nav-link">협력업체</a></li>
           <!-- [한글 주석: 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출] -->
           <li class="nav-item nav-community-item" id="nav-item-community"><a href="/community.html"
               class="nav-link">커뮤니티</a></li>
@@ -103,7 +104,7 @@
           <!-- [한글 주석: 모바일 전용 전문통역 퀵 아이콘 링크 매핑] -->
           <a href="/interpreters.html" class="quick-icon-btn" title="전문통역">🌐</a>
           <a href="/booking-lang.html" class="quick-icon-btn" title="진료 예약">📅</a>
-          <a href="/index.html#partners" class="quick-icon-btn" title="파트너스">🤝</a>
+          <a href="/partners.html" class="quick-icon-btn" title="협력업체">🤝</a>
           <a href="/community.html" class="quick-icon-btn" title="커뮤니티">💬</a>
           <a href="/my-reservations.html" id="quick-btn-my-reservations" class="quick-icon-btn" style="display: none;"
             title="예약내역">📋</a>
@@ -164,7 +165,9 @@
       <button id="tab-clinics" class="tab-btn" style="display: none;">병원 관리</button>
       <!-- 신규 추가: 광고 배너 CRUD 관리 탭 (병원 관리 바로 오른쪽 위치) -->
       <button id="tab-ads" class="tab-btn" style="display: none;">광고 배너 관리</button>
-      <!-- [한글 주석: 전문 의료 통역사(소속/프리랜서) CRUD 관리 탭 (광고 배너 관리 바로 오른쪽 위치)] -->
+      <!-- [한글 주석: 사용자 요청에 따라 광고 배너 관리 바로 오른쪽에 협력업체 CRUD 관리 탭 신설] -->
+      <button id="tab-partners" class="tab-btn" style="display: none;">협력업체 관리</button>
+      <!-- [한글 주석: 전문 의료 통역사(소속/프리랜서) CRUD 관리 탭] -->
       <button id="tab-interpreters" class="tab-btn" style="display: none;">전문통역 관리</button>
       <button id="tab-users" class="tab-btn" style="display: none;">등급,권한 관리</button>
       <button id="tab-permissions" class="tab-btn" style="display: none;">회원 리스트</button>
@@ -909,6 +912,116 @@
       </main>
     </div>
 
+    <!-- ==========================================================================
+         [한글 주석: 6. 협력업체 관리 탭 콘텐츠 (새로운 CRUD 패널 - 광고 배너 관리 바로 오른쪽)]
+         ========================================================================== -->
+    <div id="content-partners" class="admin-tab-content" style="display: none;">
+      <main class="admin-main">
+        <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
+          <!-- 6-1. 협력업체 등록/수정 폼 영역 (상단) -->
+          <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
+            <h2 id="partner-form-title" style="color: #00f3ff; margin-bottom: 1.2rem;">신규 협력업체 등록</h2>
+            <form id="partner-manage-form" style="display: flex; flex-direction: column; gap: 0.95rem;">
+              <input type="hidden" id="partner-edit-id"> <!-- 수정 모드 시 문서 ID 저장용 -->
+
+              <!-- 1행: 협력업체명 (제목) / 카테고리 태그 (2열) -->
+              <div class="form-row form-row-2">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                  <label for="partner-title" style="font-size: 0.85rem; font-weight: 700;">협력업체명 (제목) *</label>
+                  <input type="text" id="partner-title" required placeholder="예: (주)메디컬 솔루션, 서울글로벌케어"
+                    style="padding: 0.6rem; font-size: 0.9rem;">
+                </div>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                  <label for="partner-tag" style="font-size: 0.85rem; font-weight: 700;">카테고리 / 구분 태그</label>
+                  <input type="text" id="partner-tag" placeholder="예: Medical Partner, Global Care, IT Solution"
+                    value="Partner" style="padding: 0.6rem; font-size: 0.9rem;">
+                </div>
+              </div>
+
+              <!-- 2행: 협력업체 소개 (부제목) -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <label for="partner-subtitle" style="font-size: 0.85rem; font-weight: 700;">협력업체 소개 (부제목) *</label>
+                <textarea id="partner-subtitle" rows="2" required placeholder="예: 국내 15개국 외국인 환자 맞춤형 정밀 진료 및 종합 라이프 케어 협력 네트워크"
+                  style="padding: 0.6rem; font-size: 0.9rem; line-height: 1.4; resize: none;"></textarea>
+              </div>
+
+              <!-- 3행: 대표 로고/이미지 (URL 직접 입력 또는 로컬 파일 첨부 시 자동 최적화 Base64 변환) -->
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label style="font-size: 0.85rem; font-weight: 700;">대표 이미지 / 로고 *</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <input type="text" id="partner-image-url" required placeholder="웹 이미지 주소(URL) 입력 또는 우측 파일 업로드 이용"
+                    style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 240px;">
+                  <div style="display: flex; gap: 0.35rem; align-items: center;">
+                    <input type="file" id="partner-file-input" accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('partner-file-input').click();"
+                      style="font-size: 0.78rem; padding: 0.55rem 0.8rem; white-space: nowrap;">📁 사진 파일 첨부</button>
+                    <span id="partner-file-name" style="font-size: 0.78rem; color: #38bdf8; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">선택 안됨</span>
+                  </div>
+                </div>
+                <!-- 이미지 미리보기 박스 -->
+                <div id="partner-image-preview" style="width: 80px; height: 80px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0,243,255,0.3); display: none; align-items: center; justify-content: center; overflow: hidden; margin-top: 0.25rem;">
+                  <img id="partner-preview-img" src="" alt="미리보기" style="max-width: 85%; max-height: 85%; object-fit: contain;">
+                </div>
+              </div>
+
+              <!-- 4행: 홈페이지 링크 URL / 노출 순서 (2열) -->
+              <div class="form-row form-row-2">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                  <label for="partner-link-url" style="font-size: 0.85rem; font-weight: 700;">웹사이트 링크 (선택사항)</label>
+                  <input type="url" id="partner-link-url" placeholder="예: https://example.com (클릭 시 새 창 이동)"
+                    style="padding: 0.6rem; font-size: 0.9rem;">
+                </div>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem;">
+                  <label for="partner-order" style="font-size: 0.85rem; font-weight: 700;">노출 순서 (오름차순 정렬)</label>
+                  <input type="number" id="partner-order" value="1" min="1" max="999" required
+                    style="padding: 0.6rem; font-size: 0.9rem;">
+                </div>
+              </div>
+
+              <!-- 등록 및 수정 액션 버튼 -->
+              <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                <button type="submit" id="btn-save-partner" class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-weight: 700;">
+                  💾 협력업체 등록하기
+                </button>
+                <button type="button" id="btn-cancel-partner-edit" class="btn btn-secondary" style="display: none; padding: 0.75rem 1.5rem;">
+                  수정 취소
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- 6-2. 협력업체 목록 테이블 현황 영역 (하단) -->
+          <section class="clinic-list-section" style="max-width: 1200px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h2 style="font-size: 1.25rem; font-weight: 700; color: #ffffff;">등록된 협력업체 현황</h2>
+              <span id="partner-count-badge" style="font-size: 0.85rem; color: #00f3ff; background: rgba(0, 243, 255, 0.1); padding: 0.25rem 0.75rem; border-radius: 20px; border: 1px solid rgba(0, 243, 255, 0.3);">
+                총 0개 업체
+              </span>
+            </div>
+            <div class="table-container" style="overflow-x: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>순서</th>
+                    <th>로고/이미지</th>
+                    <th>협력업체명 / 태그</th>
+                    <th>소개 (부제목)</th>
+                    <th>웹사이트 링크</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-partner-list">
+                  <tr>
+                    <td colspan="6" class="table-loading">협력업체 데이터를 불러오는 중입니다...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
     <!-- [한글 주석: 전문 통역 관리 탭 콘텐츠 (소속/프리랜서 통역사 CRUD - 100% Full-Width 적용)] -->
     <div id="content-interpreters" class="admin-tab-content admin-users-full-layout" style="display: none;">
       <main class="admin-main" style="max-width: 100%; width: 100%; padding: 0;">
@@ -1082,10 +1195,10 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260906_3)] -->
-  <script type="module" src="/js/navigation.js?v=260906_3"></script>
-  <script type="module" src="/js/admin.js?v=260906_3"></script>
-  <script type="module" src="/js/auth.js?v=260906_3"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260907_9)] -->
+  <script type="module" src="/js/navigation.js?v=260907_9"></script>
+  <script type="module" src="/js/admin.js?v=260907_9"></script>
+  <script type="module" src="/js/auth.js?v=260907_9"></script>
 </body>
 
 </html>

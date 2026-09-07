@@ -23,7 +23,8 @@ const LANG_LIST = [
  * [한글 주석: 상단 메뉴 항목별 15개국어 번역 딕셔너리 데이터베이스]
  */
 const MENU_TRANSLATIONS = {
-  ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '전문통역', booking: '진료 예약', partners: '파트너스', community: '커뮤니티', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
+  // [한글 주석: 한국어 상단 메뉴 번역 - '파트너스'에서 '협력업체'로 명칭 변경 반영]
+  ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '전문통역', booking: '진료 예약', partners: '협력업체', community: '커뮤니티', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
   ja: { langSelect: '言語選択', home: 'ホーム', about: '会社紹介', services: '提供サービス', interpretation: '専門通訳', booking: '診療予約', partners: 'パートナー', community: 'コミュニティ', myRes: '📅 予約履歴', admin: '👑 관리자', stats: '📊 予約統計', logout: 'ログアウト', login: 'ログイン' },
   vi: { langSelect: 'Chọn ngôn ngữ', home: 'Trang chủ', about: 'Giới thiệu', services: 'Dịch vụ', interpretation: 'Thông dịch chuyên nghiệp', booking: 'Đặt lịch khám', partners: 'Đối tác', community: 'Cộng đồng', myRes: '📅 Lịch đặt', admin: '👑 Quản trị', stats: '📊 Thống kê', logout: 'Đăng xuất', login: 'Đăng nhập' },
   en: { langSelect: 'Language', home: 'Home', about: 'About Us', services: 'Services', interpretation: 'Professional Interpretation', booking: 'Book Appointment', partners: 'Partners', community: 'Community', myRes: '📅 My Bookings', admin: '👑 Admin', stats: '📊 Stats', logout: 'Logout', login: 'Login' },
@@ -96,7 +97,8 @@ function applyNavTranslations(langCode) {
   const menuServices = document.querySelector("#nav-menu a[href='/about.html#services']:not(.btn-nav-booking)");
   const menuInterpretation = document.querySelector("#nav-menu a[href='/interpreters.html'], #nav-menu a[href='/about.html#services'].btn-nav-booking");
   const menuBooking = document.querySelector("#nav-menu a[href='/booking-lang.html']");
-  const menuPartners = document.querySelector("#nav-menu a[href='/index.html#partners']");
+  // [한글 주석: 신규 협력업체 페이지(partners.html) 및 기존 해시 링크 모두 지원하는 메뉴 셀렉터 매핑]
+  const menuPartners = document.querySelector("#nav-menu a[href='/partners.html'], #nav-menu a[href='/index.html#partners']");
   const menuCommunity = document.querySelector("#nav-menu a[href='/community.html']");
 
   if (menuHome) menuHome.textContent = t.home;
@@ -281,9 +283,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentHash = hashPart ? `#${hashPart}` : "";
 
     const isIndexPage = (currentPath === "/" || currentPath.endsWith("index.html"));
+    const isPartnersPage = currentPath.includes("partners.html");
     const isPartnersHash = currentHash === "#partners";
     const isHomeActive = isIndexPage && !isPartnersHash;
-    const isPartnersActive = isIndexPage && isPartnersHash;
+    // [한글 주석: 신규 협력업체 전용 페이지(partners.html) 진입 시 또는 인덱스 해시 진입 시 active 활성화]
+    const isPartnersActive = isPartnersPage || (isIndexPage && isPartnersHash);
 
     const isAboutPage = currentPath.includes("about.html");
     const isServicesHash = currentHash === "#services";
@@ -301,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (href === "/about.html" && isAboutActive) isActive = true;
       else if (href === "/about.html#services" && isServicesActive) isActive = true;
       else if (href === "/booking-lang.html" && isBookingActive) isActive = true;
-      else if (href === "/index.html#partners" && isPartnersActive) isActive = true;
+      else if ((href === "/partners.html" || href === "/index.html#partners") && isPartnersActive) isActive = true;
       else if (href === "/my-reservations.html" && currentPath.endsWith("my-reservations.html")) isActive = true;
       else if (href === "/admin.html" && currentPath.endsWith("admin.html")) isActive = true;
       else if (href === "/stats.html" && currentPath.endsWith("stats.html")) isActive = true;
@@ -482,7 +486,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <ul>
               <li><a href="/about.html">회사소개</a></li>
               <li><a href="/about.html#services">제공 서비스</a></li>
-              <li><a href="/index.html#partners">협력사 네트워크</a></li>
+              <!-- [한글 주석: 공통 푸터 내 협력업체 전용 페이지 연결 링크] -->
+              <li><a href="/partners.html">협력사 네트워크</a></li>
             </ul>
           </div>
           <div class="footer-link-group">
