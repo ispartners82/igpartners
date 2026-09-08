@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ==============================================================================
  * [한글 주석: 협력업체 페이지 (partners.html) 전용 클라이언트 스크립트]
  * - Firestore 'partners' 컬렉션 데이터를 실시간으로 구독(onSnapshot)하여
@@ -8,7 +8,7 @@
  * ==============================================================================
  */
 
-import { db } from "/js/firebase-db.js?v=260907_9";
+import { db } from "/js/firebase-db.js?v=260908_7";
 import {
   collection,
   onSnapshot,
@@ -49,6 +49,11 @@ function renderPartnerCards(container, list) {
     const clickAttr = hasLink ? `onclick="window.open('${escapeHtml(linkUrl)}', '_blank', 'noopener,noreferrer')"` : "";
     const cursorStyle = hasLink ? 'cursor: pointer;' : '';
 
+    // [한글 주석: 웹사이트 링크 유무에 따라 공식 사이트 방문 칩 또는 공식 제휴사 인증 뱃지를 표시하여 우측 하단 공백 완벽 해소]
+    const bottomInfoHtml = hasLink
+      ? `<div class="partner-bottom-row"><span class="partner-link-row">🌐 공식 사이트 방문 ➔</span></div>`
+      : `<div class="partner-bottom-row"><span class="partner-verified-badge">🤝 IGPartners 공식 제휴사</span></div>`;
+
     html += `
       <div class="partner-card" ${clickAttr} style="${cursorStyle}" title="${hasLink ? '클릭 시 공식 웹사이트로 이동합니다' : ''}">
         <div class="partner-logo-box">
@@ -58,7 +63,7 @@ function renderPartnerCards(container, list) {
           <span class="partner-tag-badge">${tag}</span>
           <h3 class="partner-title">${title}</h3>
           <p class="partner-subtitle">${subtitle}</p>
-          ${hasLink ? `<div class="partner-link-row">공식 사이트 방문 ➔</div>` : ''}
+          ${bottomInfoHtml}
         </div>
       </div>
     `;

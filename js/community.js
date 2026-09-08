@@ -32,7 +32,17 @@ const DEFAULT_CATEGORIES = [
   { id: "resume", name: "이력서업로드", icon: "📄", isPublic: true, readPermission: "admin", showCount: true, viewType: "list", isDefault: false, type: "category" }
 ];
 
-let currentCategories = [...DEFAULT_CATEGORIES];
+// [한글 주석: SWR 로컬 스토리지 캐시 우선 로드 - 초기 렌더링 딜레이 및 깜빡임 완전 차단]
+let currentCategories = (function () {
+  try {
+    const cached = localStorage.getItem("community_cached_categories");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) { }
+  return [...DEFAULT_CATEGORIES];
+})();
 let editingCategories = [];
 let selectedCatIndex = 0;
 window.canCommunitySetting = false;
@@ -212,6 +222,10 @@ function initCommunityPage() {
   } catch (e) {
     console.warn("[Community] 프로필 캐시 즉시 동기화 예외:", e);
   }
+
+  // [한글 주석: SWR 패턴 - Firestore 비동기 응답 대기 전, 로컬 캐시 기반으로 사이드바 메뉴 0초 즉시 바인딩]
+  renderSidebarMenu();
+  renderWriteBoardSelect();
 
   // 1. 카테고리 설정 최신 동기화
   loadCommunityCategories();
@@ -1802,6 +1816,11 @@ async function loadCommunityCategories() {
     currentCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
   }
 
+  // [한글 주석: Firestore 조회 완료 즉시 브라우저 로컬 스토리지에 캐싱하여 다음 접속 시 0.001초 로딩 보장]
+  try {
+    localStorage.setItem("community_cached_categories", JSON.stringify(currentCategories));
+  } catch (err) { }
+
   renderSidebarMenu();
   renderWriteBoardSelect();
   updateCategoryCounts();
@@ -2304,6 +2323,11 @@ async function saveCategoryManageChanges() {
       updatedBy: window.currentUserUid || "admin"
     });
     currentCategories = JSON.parse(JSON.stringify(editingCategories));
+    // [한글 주석: 카테고리 저장 즉시 로컬 캐시를 최신화하여 화면 새로고침 시에도 지연 없이 즉시 반영]
+    try {
+      localStorage.setItem("community_cached_categories", JSON.stringify(currentCategories));
+    } catch (err) { }
+
     renderSidebarMenu();
     renderWriteBoardSelect();
     updateCategoryCounts();

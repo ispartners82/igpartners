@@ -13,7 +13,8 @@ import {
   addDoc,
   setDoc,
   limit,
-  serverTimestamp
+  serverTimestamp,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -712,14 +713,14 @@ function initPage() {
     if (tabAds) {
       tabAds.style.display = permissions.hasAds ? "inline-block" : "none";
     }
-    // [한글 주석: 협력업체 관리 탭 권한 노출 제어 (광고권한 또는 최고관리자 권한 연동)]
+    // [한글 주석: 협력업체 관리 탭 권한 노출 제어 (hasPartners 권한 또는 최고관리자 권한)]
     const tabPartners = document.getElementById("tab-partners");
     if (tabPartners) {
-      tabPartners.style.display = (permissions.hasPartners !== false && (permissions.hasAds || permissions.isAdmin)) ? "inline-block" : "none";
+      tabPartners.style.display = (permissions.hasPartners || permissions.isAdmin) ? "inline-block" : "none";
     }
-    // [한글 주석: 전문통역 관리 탭 권한 노출 제어 (광고권한 또는 최고관리자 권한 연동)]
+    // [한글 주석: 전문통역 관리 탭 권한 노출 제어 (hasInterpreters 권한 또는 최고관리자 권한)]
     if (tabInterpreters) {
-      tabInterpreters.style.display = (permissions.hasInterpreters !== false && (permissions.hasAds || permissions.isAdmin)) ? "inline-block" : "none";
+      tabInterpreters.style.display = (permissions.hasInterpreters || permissions.isAdmin) ? "inline-block" : "none";
     }
 
     // 활성화 탭 강제 튕김 보정
@@ -729,7 +730,9 @@ function initPage() {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-ads" && !permissions.hasAds) {
         if (tabReservations) tabReservations.click();
-      } else if (activeTab.id === "tab-interpreters" && !permissions.hasAds && !permissions.isAdmin) {
+      } else if (activeTab.id === "tab-partners" && !permissions.hasPartners && !permissions.isAdmin) {
+        if (tabReservations) tabReservations.click();
+      } else if (activeTab.id === "tab-interpreters" && !permissions.hasInterpreters && !permissions.isAdmin) {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-users" && !permissions.hasRoles) {
         if (tabReservations) tabReservations.click();
@@ -777,7 +780,9 @@ function initPage() {
         hasRoles: false,
         hasPermissions: false,
         hasStats: false,
-        hasAds: false
+        hasAds: false,
+        hasPartners: false,
+        hasInterpreters: false
       };
 
       if (roleDocSnap.exists()) {
@@ -791,16 +796,19 @@ function initPage() {
           hasPermissions: roleData.hasPermissions !== undefined ? roleData.hasPermissions : (userRole === "super_admin"),
           hasStats: roleData.hasStats !== undefined ? roleData.hasStats : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
           // [한글 주석: DB에서 로드된 광고배너관리 권한 바인딩 및 super_admin 가드]
-          hasAds: roleData.hasAds !== undefined ? roleData.hasAds : (userRole === "super_admin")
+          hasAds: roleData.hasAds !== undefined ? roleData.hasAds : (userRole === "super_admin"),
+          // [한글 주석: DB에서 로드된 협력업체관리 및 전문통역관리 권한 바인딩]
+          hasPartners: roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || userRole === "super_admin"),
+          hasInterpreters: roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || userRole === "super_admin")
         };
       } else {
         // 예외 상황: roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
         if (userRole === "super_admin") {
-          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasStats: true, hasAds: true };
+          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasStats: true, hasAds: true, hasPartners: true, hasInterpreters: true };
         } else if (["admin", "admin_user"].includes(userRole)) {
-          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false };
+          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
         } else if (["top_manager", "res_manager"].includes(userRole)) {
-          permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false };
+          permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
         }
       }
     }
@@ -1000,17 +1008,17 @@ function initPage() {
   let unsubscribeRoles = null;
   let rolesCache = {}; // { super_admin: "최고 관리자", ... }
 
-  // [한글 주석: 기본 등급 데이터셋 선언 - hasAds(광고배너관리), hasCommunitySettings(커뮤니티설정) 권한 정의]
+  // [한글 주석: 기본 등급 데이터셋 선언 - hasAds(광고배너관리), hasPartners(협력업체관리), hasInterpreters(전문통역관리), hasCommunitySettings(커뮤니티설정) 권한 정의]
   const defaultRoles = [
-    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasAds: true, hasCommunitySettings: true },
-    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: true },
-    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: true },
-    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
-    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
-    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
-    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
-    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false },
-    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasCommunitySettings: false }
+    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasAds: true, hasPartners: true, hasInterpreters: true, hasCommunitySettings: true },
+    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true },
+    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true },
+    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false }
   ];
 
   // [한글 주석: 솔라피 알림톡 수신 설정 데이터를 Firestore에서 비동기 로드하여 입력 필드 및 하단 목록 렌더링 적용]
@@ -1102,7 +1110,7 @@ function initPage() {
     const rolesCol = collection(db, "roles");
 
     // [성능 최적화] 초기 시드 등급 적재 검사는 백그라운드 비동기로 실행
-    // 마이그레이션은 roles 컬렉션이 비어있거나 isAdmin / hasCommunitySettings 필드 누락 시에만 1회 실행됩니다.
+    // 마이그레이션은 roles 컬렉션이 비어있거나 isAdmin / hasPartners 필드 누락 시에만 1회 실행됩니다.
     (async () => {
       try {
         const snap = await getDocs(rolesCol);
@@ -1111,7 +1119,7 @@ function initPage() {
         let needsMigration = snap.empty;
         if (!snap.empty) {
           const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
-          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined || superAdminSnap.data().hasAds === undefined || superAdminSnap.data().hasCommunitySettings === undefined) {
+          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined || superAdminSnap.data().hasAds === undefined || superAdminSnap.data().hasPartners === undefined || superAdminSnap.data().hasCommunitySettings === undefined) {
             needsMigration = true;
           }
         }
@@ -1133,6 +1141,8 @@ function initPage() {
                 hasRoles: r.hasRoles,
                 hasPermissions: r.hasPermissions,
                 hasAds: r.hasAds,
+                hasPartners: r.hasPartners,
+                hasInterpreters: r.hasInterpreters,
                 hasCommunitySettings: r.hasCommunitySettings,
                 createdAt: new Date().toISOString()
               });
@@ -1146,6 +1156,8 @@ function initPage() {
                 hasRoles: existingData.hasRoles !== undefined ? existingData.hasRoles : r.hasRoles,
                 hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions,
                 hasAds: existingData.hasAds !== undefined ? existingData.hasAds : r.hasAds,
+                hasPartners: existingData.hasPartners !== undefined ? existingData.hasPartners : (r.hasPartners || false),
+                hasInterpreters: existingData.hasInterpreters !== undefined ? existingData.hasInterpreters : (r.hasInterpreters || false),
                 hasCommunitySettings: existingData.hasCommunitySettings !== undefined ? existingData.hasCommunitySettings : (r.hasCommunitySettings || false)
               });
             }
@@ -1206,12 +1218,19 @@ function initPage() {
             <td>${makeToggleHTML(roleKey, "isAdmin", roleData.isAdmin, lockAdmin)}</td>
             <td>${makeToggleHTML(roleKey, "hasReservations", roleData.hasReservations, false)}</td>
             <td>${makeToggleHTML(roleKey, "hasClinics", roleData.hasClinics, false)}</td>
-            <!-- [한글 주석: 광고배너관리 권한 컬럼 스위치를 병원관리 바로 오른쪽에 배치] -->
+            <!-- [한글 주석: 광고배너관리 권한 컬럼 스위치] -->
             <td>${makeToggleHTML(roleKey, "hasAds", roleData.hasAds, false)}</td>
+            <!-- [한글 주석: 사용자 요청 - 광고배너관리 바로 오른쪽에 협력업체관리 권한 컬럼 스위치 신설] -->
+            <td>${makeToggleHTML(roleKey, "hasPartners", roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || lockAdmin), false)}</td>
+            <!-- [한글 주석: 등급권한관리 권한 컬럼 스위치] -->
             <td>${makeToggleHTML(roleKey, "hasRoles", roleData.hasRoles, lockAdmin)}</td>
+            <!-- [한글 주석: 전문통역관리 권한 컬럼 스위치 (헤더와 1:1 일치 복원)] -->
+            <td>${makeToggleHTML(roleKey, "hasInterpreters", roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || lockAdmin), false)}</td>
+            <!-- [한글 주석: 회원리스트 권한 컬럼 스위치] -->
             <td>${makeToggleHTML(roleKey, "hasPermissions", roleData.hasPermissions, false)}</td>
+            <!-- [한글 주석: 예약통계 권한 컬럼 스위치] -->
             <td>${makeToggleHTML(roleKey, "hasStats", roleData.hasStats, false)}</td>
-            <!-- [한글 주석: 예약통계 오른쪽 옆에 커뮤니티설정 권한 컬럼 스위치 배치] -->
+            <!-- [한글 주석: 커뮤니티설정 권한 컬럼 스위치] -->
             <td>${makeToggleHTML(roleKey, "hasCommunitySettings", roleData.hasCommunitySettings, false)}</td>
             <td>
               <div style="display:flex; gap:6px; align-items:center; justify-content:center;">
@@ -1724,6 +1743,16 @@ function initPage() {
         await setDoc(doc(db, "roles", roleKey), {
           label: roleLabel,
           isSystem: false,
+          isAdmin: false,
+          hasReservations: false,
+          hasClinics: false,
+          hasAds: false,
+          hasPartners: false,
+          hasRoles: false,
+          hasInterpreters: false,
+          hasPermissions: false,
+          hasStats: false,
+          hasCommunitySettings: false,
           createdAt: new Date().toISOString()
         });
         alert("새 회원 등급이 등록되었습니다.");
@@ -2829,6 +2858,22 @@ function initPage() {
   const btnCancelAdEdit = document.getElementById("btn-cancel-ad-edit");
   const btnSubmitAd = document.getElementById("btn-submit-ad");
 
+  // [한글 주석: 메인 홈 광고 배너 로컬 캐시 무효화 공통 헬퍼 함수 (SWR 캐시 및 구형 키 일괄 삭제)]
+  const invalidateAdsCache = () => {
+    try {
+      localStorage.removeItem("cached_home_ads");
+      localStorage.removeItem("cached_home_ads_data");
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("cached_home_ads")) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (e) {
+      console.warn("Storage invalidation notice:", e);
+    }
+  };
+
   // [한글 주석: 로컬 파일의 용량을 축소 압축하여 Firestore 1MB 제한 및 대역폭 추가 과금을 아예 방지하는 리사이징 헬퍼 함수]
   const compressImage = (file, maxWidth = 500) => {
     return new Promise((resolve, reject) => {
@@ -3034,29 +3079,24 @@ function initPage() {
         });
       });
 
-      currentLoadedAds.forEach((ad, index) => {
+      currentLoadedAds.forEach((ad) => {
         const imagesCount = ad.images ? ad.images.length : 0;
         const intervalSec = ad.slideInterval ? ad.slideInterval / 1000 : 4;
 
-        // 위쪽 행이 없으면 위로(▲) 버튼 비활성화, 아래쪽 행이 없으면 아래로(▼) 버튼 비활성화
-        const upDisabled = index === 0 ? "disabled" : "";
-        const downDisabled = index === currentLoadedAds.length - 1 ? "disabled" : "";
-
         html += `
-          <tr>
+          <tr data-id="${ad.id}" data-order="${ad.order}" class="ad-drag-row" draggable="true">
+            <!-- [한글 주석: 순서 컬럼을 맨 앞(좌측)으로 배치하고 마우스 드래그 핸들 및 순서 번호 표시] -->
+            <td style="text-align: center; font-weight: 700; color: #00f3ff; white-space: nowrap;">
+              <span class="ad-drag-handle" title="마우스로 드래그하여 순서 변경">⋮⋮</span>
+              <span class="ad-order-num">${ad.order}</span>
+            </td>
             <td style="font-weight: 700; color: #00f3ff;">${ad.tag || ""}</td>
             <td>${ad.title || ""}</td>
             <td><span class="badge" style="background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); color: #a5b4fc;">${imagesCount}개</span></td>
             <td>${intervalSec}초</td>
-            <!-- 순서 조정용 텍스트 노출 -->
-            <td style="font-weight: 700; color: rgba(255,255,255,0.7);">${ad.order}</td>
             <td>
-              <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
-                <!-- [한글 주석: 위/아래 정렬 조작 버튼을 캡처본 형태의 원형 서클 28px 규격으로 일치화 - 타원형 찌그러짐 차단 style 가드] -->
-                <button class="btn-move-up-ad" data-id="${ad.id}" data-index="${index}" ${upDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▲</button>
-                <button class="btn-move-down-ad" data-id="${ad.id}" data-index="${index}" ${downDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▼</button>
-                <span style="border-left: 1px solid rgba(255,255,255,0.15); height: 16px; margin: 0 0.25rem;"></span>
-                <!-- [한글 주석: 수정/삭제 버튼도 병원 관리 버튼 클래스 및 크기 규격(28px)과 동일하게 병합] -->
+              <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
+                <!-- [한글 주석: 위/아래 화살표 버튼은 마우스 드래그 앤 드롭 도입으로 삭제되고 수정/삭제 버튼만 단정하게 유지] -->
                 <button class="btn-action confirm btn-edit-ad" data-id="${ad.id}" style="height: 28px; line-height: 28px; padding: 0 0.75rem; font-size: 0.8rem; border: none; font-weight: 700;">수정</button>
                 <button class="btn-action delete btn-delete-ad" data-id="${ad.id}" style="height: 28px; line-height: 28px; padding: 0 0.75rem; font-size: 0.8rem; font-weight: 700;">삭제</button>
               </div>
@@ -3191,80 +3231,6 @@ function initPage() {
   // 4) 광고 목록 편집, 삭제, 순서 이동 클릭 핸들러 (이벤트 위임)
   if (adminAdList) {
     adminAdList.addEventListener("click", async (e) => {
-      // [한글 주석: 메인 홈 광고 배너 캐시 무효화 통합 헬퍼 함수]
-      const invalidateAdsCache = () => {
-        try {
-          localStorage.removeItem("cached_home_ads");
-          localStorage.removeItem("cached_home_ads_data");
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith("cached_home_ads")) {
-              localStorage.removeItem(key);
-            }
-          }
-        } catch (err) {
-          console.warn("Storage invalidation notice:", err);
-        }
-      };
-
-      // ── [신규 추가] 순서 위로 이동 (Swap Up) ──
-      if (e.target.classList.contains("btn-move-up-ad")) {
-        const idx = parseInt(e.target.getAttribute("data-index"));
-        if (idx <= 0) return; // 최상단은 이동 불가능
-
-        e.target.disabled = true;
-        const currentAd = currentLoadedAds[idx];
-        const prevAd = currentLoadedAds[idx - 1];
-
-        try {
-          // 두 광고의 order 값을 서로 맞교환(Swap)하여 Firestore에 동시 커밋
-          const currentOrder = currentAd.order;
-          const prevOrder = prevAd.order;
-
-          await Promise.all([
-            updateDoc(doc(db, "ads", currentAd.id), { order: prevOrder }),
-            updateDoc(doc(db, "ads", prevAd.id), { order: currentOrder })
-          ]);
-
-          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 완전 무효화]
-          invalidateAdsCache();
-          loadAds(); // 새로고침
-        } catch (error) {
-          console.error("Swap up failed:", error);
-          alert("순서 이동에 실패했습니다: " + error.message);
-          e.target.disabled = false;
-        }
-      }
-
-      // ── [신규 추가] 순서 아래로 이동 (Swap Down) ──
-      if (e.target.classList.contains("btn-move-down-ad")) {
-        const idx = parseInt(e.target.getAttribute("data-index"));
-        if (idx >= currentLoadedAds.length - 1) return; // 최하단은 이동 불가능
-
-        e.target.disabled = true;
-        const currentAd = currentLoadedAds[idx];
-        const nextAd = currentLoadedAds[idx + 1];
-
-        try {
-          // 두 광고의 order 값을 서로 맞교환(Swap)하여 Firestore에 동시 커밋
-          const currentOrder = currentAd.order;
-          const nextOrder = nextAd.order;
-
-          await Promise.all([
-            updateDoc(doc(db, "ads", currentAd.id), { order: nextOrder }),
-            updateDoc(doc(db, "ads", nextAd.id), { order: currentOrder })
-          ]);
-
-          // [한글 주석: 광고 배너 순서 변경 성공 시 메인 홈 로컬 캐시 완전 무효화]
-          invalidateAdsCache();
-          loadAds(); // 새로고침
-        } catch (error) {
-          console.error("Swap down failed:", error);
-          alert("순서 이동에 실패했습니다: " + error.message);
-          e.target.disabled = false;
-        }
-      }
-
       // ── 수정 모드 전환 처리 (Update Form Fill) ──
       if (e.target.classList.contains("btn-edit-ad")) {
         const docId = e.target.getAttribute("data-id");
@@ -3333,6 +3299,127 @@ function initPage() {
       }
     });
   }
+
+  // [한글 주석: 등록된 광고 배너 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수]
+  function setupAdDragAndDrop() {
+    if (!adminAdList) return;
+
+    let draggedRow = null;
+
+    // [한글 주석: 1) 드래그 시작 시점 처리]
+    adminAdList.addEventListener("dragstart", (e) => {
+      // 버튼, 입력창, 링크 등을 클릭하거나 조작할 때는 드래그 방지
+      if (e.target.closest("button, a, input, select, textarea")) {
+        e.preventDefault();
+        return;
+      }
+
+      const row = e.target.closest(".ad-drag-row");
+      if (!row) return;
+
+      draggedRow = row;
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", row.getAttribute("data-id") || "");
+
+      // 브라우저 기본 드래그 고스트 이미지가 생성된 직후 클래스를 적용하기 위해 0ms 지연
+      setTimeout(() => {
+        if (draggedRow) {
+          draggedRow.classList.add("dragging");
+        }
+      }, 0);
+    });
+
+    // [한글 주석: 2) 드래그 오버 시점 처리 - 실시간 DOM 행 위치 교체 시각적 피드백]
+    adminAdList.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+
+      if (!draggedRow) return;
+
+      const targetRow = e.target.closest(".ad-drag-row");
+      if (!targetRow || targetRow === draggedRow) return;
+
+      const rect = targetRow.getBoundingClientRect();
+      // 마우스 Y 좌표가 대상 행의 50%보다 아래면 다음 형제 노드 앞(즉 대상 행 바로 뒤)에 삽입
+      const isAfter = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+      adminAdList.insertBefore(draggedRow, isAfter ? targetRow.nextSibling : targetRow);
+    });
+
+    // [한글 주석: 3) 드래그 종료 시점 처리 - 행 번호 즉시 1부터 순차 재계산 및 Firestore Batch 일괄 자동 저장]
+    adminAdList.addEventListener("dragend", async () => {
+      if (!draggedRow) return;
+
+      draggedRow.classList.remove("dragging");
+      draggedRow = null;
+
+      const rows = adminAdList.querySelectorAll(".ad-drag-row");
+      if (!rows || rows.length === 0) return;
+
+      const reorderPayload = [];
+      let hasChanges = false;
+
+      // 현재 화면에 나열된 DOM 순서대로 1번부터 순차 번호 재계산
+      rows.forEach((row, index) => {
+        const adId = row.getAttribute("data-id");
+        const oldOrder = parseInt(row.getAttribute("data-order") || "0", 10);
+        const newOrder = index + 1;
+
+        // 화면 좌측 순서 번호 텍스트 즉시 갱신
+        const orderNumEl = row.querySelector(".ad-order-num");
+        if (orderNumEl) {
+          orderNumEl.textContent = newOrder;
+        }
+
+        if (oldOrder !== newOrder) {
+          hasChanges = true;
+        }
+
+        row.setAttribute("data-order", newOrder);
+        reorderPayload.push({
+          id: adId,
+          oldOrder: oldOrder,
+          newOrder: newOrder
+        });
+      });
+
+      // 실제 순서에 변경이 발생한 경우에만 Firestore 일괄 저장 실행
+      if (hasChanges) {
+        try {
+          const batch = writeBatch(db);
+          reorderPayload.forEach((item) => {
+            if (item.oldOrder !== item.newOrder) {
+              const docRef = doc(db, "ads", item.id);
+              batch.update(docRef, {
+                order: item.newOrder,
+                updatedAt: serverTimestamp()
+              });
+            }
+          });
+          await batch.commit();
+
+          // 메모리 내 광고 목록 캐시(currentLoadedAds)의 order 값 및 정렬 순서 동기화
+          currentLoadedAds.forEach((ad) => {
+            const found = reorderPayload.find((p) => p.id === ad.id);
+            if (found) {
+              ad.order = found.newOrder;
+            }
+          });
+          currentLoadedAds.sort((a, b) => a.order - b.order);
+
+          // 메인 홈 광고 배너 로컬 캐시 즉시 무효화
+          invalidateAdsCache();
+          console.log("[한글 주석: 광고 배너 순서가 Firestore Batch를 통해 성공적으로 일괄 저장되었습니다.]");
+        } catch (err) {
+          console.error("[한글 주석: 광고 배너 드래그 앤 드롭 순서 저장 실패]", err);
+          alert("광고 배너 순서 자동 저장 중 오류가 발생했습니다: " + err.message);
+          await loadAds(); // 오류 발생 시 원래 DB 데이터로 복원
+        }
+      }
+    });
+  }
+
+  // [한글 주석: 광고 배너 드래그 앤 드롭 초기 바인딩 실행]
+  setupAdDragAndDrop();
 
   // 탭 클릭 시 리소스 전역 로드 연동을 위해 window 스코프 배포
   window.loadAds = loadAds;
@@ -3957,6 +4044,8 @@ function initPage() {
     const adminPartnerList = document.getElementById("admin-partner-list");
     const partnerCountBadge = document.getElementById("partner-count-badge");
 
+    let currentPartnerCount = 0; // [한글 주석: 현재 등록된 유효 협력업체 총 개수 상태 변수]
+
     // [한글 주석: 이미지 URL 입력 변경 시 실시간 미리보기 갱신]
     if (partnerImageUrl && partnerImagePreview && partnerPreviewImg) {
       partnerImageUrl.addEventListener("input", () => {
@@ -4023,6 +4112,7 @@ function initPage() {
       });
     }
 
+    // [한글 주석: 협력업체 입력 폼 초기화 함수 - 신규 등록 기본 순서를 현재 등록 개수 + 1로 자동 부여]
     function resetPartnerForm() {
       if (partnerForm) partnerForm.reset();
       if (partnerEditId) partnerEditId.value = "";
@@ -4034,7 +4124,7 @@ function initPage() {
       if (btnCancelPartnerEdit) btnCancelPartnerEdit.style.display = "none";
       if (partnerImagePreview) partnerImagePreview.style.display = "none";
       if (partnerFileName) partnerFileName.textContent = "선택 안됨";
-      if (partnerOrder) partnerOrder.value = 1;
+      if (partnerOrder) partnerOrder.value = currentPartnerCount + 1;
     }
 
     /**
@@ -4052,7 +4142,53 @@ function initPage() {
         .replace(/'/g, "&#039;");
     }
 
-    // [한글 주석: 협력업체 등록 및 수정 폼 서밋 핸들러]
+    /**
+     * [한글 주석: Firestore에서 현재 등록된 모든 유효 협력업체 목록을 order 오름차순으로 조회]
+     * @returns {Promise<Array>} 협력업체 문서 객체 배열 [{id, title, order, ...}]
+     */
+    async function fetchAllPartners() {
+      const q = query(collection(db, "partners"), orderBy("order", "asc"));
+      const snapshot = await getDocs(q);
+      const dummyTitles = ["아이지 글로벌 헬스케어 센터", "서울 프리미엄 메디컬 파트너스", "글로벌 라이프 케어 솔루션"];
+      const list = [];
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (!dummyTitles.includes(data.title)) {
+          list.push({ id: docSnap.id, ...data });
+        }
+      });
+      return list;
+    }
+
+    /**
+     * [한글 주석: 정렬된 협력업체 목록을 전달받아 1번부터 N번까지 연속된 order로 Firestore writeBatch 일괄 업데이트]
+     * @param {Array} orderedList 순서대로 정렬된 협력업체 배열
+     */
+    async function saveBatchOrders(orderedList) {
+      if (!orderedList || orderedList.length === 0) return;
+      const batch = writeBatch(db);
+      let updatedCount = 0;
+
+      orderedList.forEach((item, idx) => {
+        const properOrder = idx + 1; // 1번부터 시작하는 연속된 정수 순서
+        if (item.order !== properOrder) {
+          const docRef = doc(db, "partners", item.id);
+          batch.update(docRef, {
+            order: properOrder,
+            updatedAt: new Date().toISOString()
+          });
+          item.order = properOrder;
+          updatedCount++;
+        }
+      });
+
+      if (updatedCount > 0) {
+        console.log(`[한글 주석: Firestore Batch] 총 ${updatedCount}개 협력업체의 순서를 연속된 번호로 일괄 갱신합니다.`);
+        await batch.commit();
+      }
+    }
+
+    // [한글 주석: 협력업체 등록 및 수정 폼 서밋 핸들러 - 순서 밀림 및 일괄 재정렬 지원]
     if (partnerForm) {
       partnerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -4071,7 +4207,7 @@ function initPage() {
         }
 
         btnSavePartner.disabled = true;
-        btnSavePartner.textContent = "저장 중...";
+        btnSavePartner.textContent = "저장 및 순서 재배열 중...";
 
         try {
           const partnerData = {
@@ -4085,18 +4221,53 @@ function initPage() {
           };
 
           if (editId) {
-            // [한글 주석: 수정 모드 - 상단에서 임포트한 doc 및 setDoc 사용]
+            // [한글 주석: 수정 모드 - 1) 수정 대상 문서 기본 데이터 업데이트]
             await setDoc(doc(db, "partners", editId), partnerData, { merge: true });
-            alert(`'${title}' 협력업체 정보가 성공적으로 수정되었습니다.`);
+
+            // [한글 주석: 2) 전체 협력업체 목록을 가져와서 수정된 업체를 목표 순서 위치로 이동 후 일괄 밀림 처리]
+            const allPartners = await fetchAllPartners();
+            const targetIdx = allPartners.findIndex((p) => p.id === editId);
+            let targetItem;
+            if (targetIdx !== -1) {
+              targetItem = allPartners.splice(targetIdx, 1)[0];
+            } else {
+              targetItem = { id: editId, ...partnerData };
+            }
+            Object.assign(targetItem, partnerData);
+
+            // 사용자가 지정한 새 순서 위치(order - 1)에 끼워넣기 (자연스러운 밀림)
+            const insertIdx = Math.max(0, Math.min(order - 1, allPartners.length));
+            allPartners.splice(insertIdx, 0, targetItem);
+
+            // 전체 목록에 1부터 N까지 연속된 순서 재부여 및 writeBatch 일괄 저장
+            await saveBatchOrders(allPartners);
+
+            alert(`'${title}' 협력업체 정보 및 순서(자동 밀림 포함)가 성공적으로 수정되었습니다.`);
           } else {
-            // [한글 주석: 신규 등록 모드 - 상단에서 임포트한 collection 및 addDoc 사용]
+            // [한글 주석: 신규 등록 모드 - 1) 신규 문서 추가]
             partnerData.createdAt = new Date().toISOString();
-            await addDoc(collection(db, "partners"), partnerData);
+            const newDocRef = await addDoc(collection(db, "partners"), partnerData);
+
+            // [한글 주석: 2) 전체 협력업체 목록을 가져와 신규 등록 업체를 지정한 순서 위치에 끼워넣고 밀림 처리]
+            const allPartners = await fetchAllPartners();
+            const targetIdx = allPartners.findIndex((p) => p.id === newDocRef.id);
+            let targetItem;
+            if (targetIdx !== -1) {
+              targetItem = allPartners.splice(targetIdx, 1)[0];
+            } else {
+              targetItem = { id: newDocRef.id, ...partnerData };
+            }
+
+            const insertIdx = Math.max(0, Math.min(order - 1, allPartners.length));
+            allPartners.splice(insertIdx, 0, targetItem);
+
+            await saveBatchOrders(allPartners);
+
             alert(`'${title}' 신규 협력업체가 성공적으로 등록되었습니다.`);
           }
 
           resetPartnerForm();
-          loadAdminPartners();
+          await loadAdminPartners();
         } catch (err) {
           console.error("[한글 주석: 협력업체 저장 실패]", err);
           alert("협력업체 저장 중 오류가 발생했습니다: " + err.message);
@@ -4129,7 +4300,9 @@ function initPage() {
               </td>
             </tr>
           `;
+          currentPartnerCount = 0;
           if (partnerCountBadge) partnerCountBadge.textContent = "총 0개 업체";
+          if (partnerOrder && (!partnerEditId || !partnerEditId.value)) partnerOrder.value = 1;
           return;
         }
 
@@ -4141,7 +4314,7 @@ function initPage() {
           const p = docSnap.data();
           const pid = docSnap.id;
 
-          // [한글 주석: 임시로 생성되었던 3개 샘플 업체는 Firestore에서 자동 영구 삭제 처리]
+          // [한글 주석: 불필요한 샘플 업체 영구 자동 삭제 처리]
           if (dummyTitles.includes(p.title)) {
             console.log(`[한글 주석] 불필요한 샘플 업체 Firestore 자동 삭제: ${p.title} (${pid})`);
             try {
@@ -4161,8 +4334,11 @@ function initPage() {
           const pOrder = p.order || 1;
 
           rowsHtml += `
-            <tr data-id="${pid}">
-              <td style="text-align: center; font-weight: 700; color: #00f3ff;">${pOrder}</td>
+            <tr data-id="${pid}" data-order="${pOrder}" class="partner-drag-row" draggable="true">
+              <td style="text-align: center; font-weight: 700; color: #00f3ff; white-space: nowrap;">
+                <span class="partner-drag-handle" title="마우스로 드래그하여 순서 변경">⋮⋮</span>
+                <span class="partner-order-num">${pOrder}</span>
+              </td>
               <td style="text-align: center;">
                 <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,243,255,0.3); display: inline-flex; align-items: center; justify-content: center; overflow: hidden;">
                   <img src="${pImg}" alt="${pTitle}" style="max-width: 85%; max-height: 85%; object-fit: contain;" onerror="this.src='/img/logo.png';">
@@ -4173,7 +4349,7 @@ function initPage() {
                 <span style="font-size: 0.72rem; color: #00f3ff; background: rgba(0,243,255,0.1); padding: 0.15rem 0.45rem; border-radius: 6px;">${pTag}</span>
               </td>
               <td>
-                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.75); max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <div class="partner-subtitle-cell">
                   ${pSubtitle}
                 </div>
               </td>
@@ -4188,7 +4364,11 @@ function initPage() {
           `;
         }
 
+        currentPartnerCount = validCount;
         if (partnerCountBadge) partnerCountBadge.textContent = `총 ${validCount}개 업체`;
+        if (partnerOrder && (!partnerEditId || !partnerEditId.value)) {
+          partnerOrder.value = validCount + 1;
+        }
         adminPartnerList.innerHTML = rowsHtml;
       } catch (err) {
         console.error("[한글 주석: 협력업체 목록 로딩 실패]", err);
@@ -4200,6 +4380,39 @@ function initPage() {
           </tr>
         `;
       }
+    }
+
+    // [한글 주석: 순서 일괄 자동 정리 버튼 이벤트 바인딩 - 중복되거나 비어있는 순서를 1번부터 차례대로 연속 정렬]
+    const btnReorderPartners = document.getElementById("btn-reorder-partners");
+    if (btnReorderPartners) {
+      btnReorderPartners.addEventListener("click", async () => {
+        if (!confirm("현재 목록 순서대로 모든 협력업체의 순서를 1번부터 차례대로 중복 없이 연속되게 재정렬하시겠습니까?")) {
+          return;
+        }
+
+        try {
+          btnReorderPartners.disabled = true;
+          btnReorderPartners.textContent = "정리 중...";
+
+          const allPartners = await fetchAllPartners();
+          if (allPartners.length === 0) {
+            alert("재정렬할 협력업체 데이터가 없습니다.");
+            return;
+          }
+
+          // 현재 순서(order) 오름차순 기준으로 1부터 순차 재부여
+          await saveBatchOrders(allPartners);
+
+          alert(`총 ${allPartners.length}개 협력업체의 순서가 1번부터 중복 없이 연속되게 재정렬되었습니다.`);
+          await loadAdminPartners();
+        } catch (err) {
+          console.error("[한글 주석: 순서 일괄 자동 정리 실패]", err);
+          alert("순서 재정렬 중 오류가 발생했습니다: " + err.message);
+        } finally {
+          btnReorderPartners.disabled = false;
+          btnReorderPartners.textContent = "🔄 순서 일괄 자동 정리";
+        }
+      });
     }
 
     // [한글 주석: 협력업체 테이블 내부 수정/삭제 버튼 이벤트 위임 바인딩]
@@ -4215,7 +4428,6 @@ function initPage() {
           try {
             editBtn.disabled = true;
             editBtn.textContent = "로딩...";
-            // [한글 주석: 상단에서 이미 임포트된 doc, getDoc 직접 사용]
             const snap = await getDoc(doc(db, "partners", pid));
             if (!snap.exists()) {
               alert("해당 협력업체 데이터가 존재하지 않습니다.");
@@ -4269,10 +4481,14 @@ function initPage() {
           try {
             deleteBtn.disabled = true;
             deleteBtn.textContent = "삭제 중...";
-            // [한글 주석: 상단에서 이미 임포트된 doc, deleteDoc 직접 사용]
             await deleteDoc(doc(db, "partners", pid));
+
+            // [한글 주석: 삭제 후 남아있는 협력업체들의 순서를 1부터 빈틈없이 연속되도록 자동 재정렬]
+            const remainingPartners = await fetchAllPartners();
+            await saveBatchOrders(remainingPartners);
+
             alert(`'${pTitle}' 협력업체가 성공적으로 삭제되었습니다.`);
-            loadAdminPartners();
+            await loadAdminPartners();
           } catch (err) {
             console.error("[한글 주석: 삭제 오류]", err);
             alert("협력업체 삭제 실패: " + err.message);
@@ -4282,6 +4498,112 @@ function initPage() {
         }
       });
     }
+
+    // [한글 주석: 등록된 협력업체 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수]
+    function setupPartnerDragAndDrop() {
+      if (!adminPartnerList) return;
+
+      let draggedRow = null;
+
+      // [한글 주석: 1) 드래그 시작 시점 처리]
+      adminPartnerList.addEventListener("dragstart", (e) => {
+        // 버튼, 입력창, 링크 등을 클릭하거나 조작할 때는 드래그 방지
+        if (e.target.closest("button, a, input, select, textarea")) {
+          e.preventDefault();
+          return;
+        }
+
+        const row = e.target.closest(".partner-drag-row");
+        if (!row) return;
+
+        draggedRow = row;
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", row.getAttribute("data-id") || "");
+
+        // 브라우저 기본 드래그 고스트 이미지가 생성된 직후 클래스를 적용하기 위해 0ms 지연
+        setTimeout(() => {
+          if (draggedRow) {
+            draggedRow.classList.add("dragging");
+          }
+        }, 0);
+      });
+
+      // [한글 주석: 2) 드래그 오버 시점 처리 - 실시간 DOM 행 위치 교체 시각적 피드백]
+      adminPartnerList.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+
+        if (!draggedRow) return;
+
+        const targetRow = e.target.closest(".partner-drag-row");
+        if (!targetRow || targetRow === draggedRow) return;
+
+        const rect = targetRow.getBoundingClientRect();
+        // 마우스 Y 좌표가 대상 행의 50%보다 아래면 다음 형제 노드 앞(즉 대상 행 바로 뒤)에 삽입
+        const isAfter = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+        adminPartnerList.insertBefore(draggedRow, isAfter ? targetRow.nextSibling : targetRow);
+      });
+
+      // [한글 주석: 3) 드래그 종료 시점 처리 - 행 번호 즉시 갱신 및 Firestore Batch 일괄 자동 저장]
+      adminPartnerList.addEventListener("dragend", async () => {
+        if (!draggedRow) return;
+
+        draggedRow.classList.remove("dragging");
+        draggedRow = null;
+
+        const rows = adminPartnerList.querySelectorAll(".partner-drag-row");
+        if (!rows || rows.length === 0) return;
+
+        const reorderPayload = [];
+        let hasChanges = false;
+
+        // 현재 화면에 나열된 DOM 순서대로 1번부터 순차 번호 재부여
+        rows.forEach((row, index) => {
+          const pid = row.getAttribute("data-id");
+          const oldOrder = parseInt(row.getAttribute("data-order") || "0", 10);
+          const newOrder = index + 1;
+
+          // 화면 좌측 순서 번호 텍스트 즉시 갱신
+          const orderNumEl = row.querySelector(".partner-order-num");
+          if (orderNumEl) {
+            orderNumEl.textContent = newOrder;
+          }
+
+          if (oldOrder !== newOrder) {
+            hasChanges = true;
+          }
+
+          row.setAttribute("data-order", newOrder);
+          reorderPayload.push({
+            id: pid,
+            order: oldOrder // saveBatchOrders 함수 내부에서 oldOrder !== properOrder 비교하여 변경된 문서만 Batch 업데이트
+          });
+        });
+
+        // 실제 순서에 변동이 있을 경우에만 Firestore 일괄 저장 실행
+        if (hasChanges) {
+          try {
+            if (partnerCountBadge) {
+              partnerCountBadge.textContent = "💾 순서 저장 중...";
+              await saveBatchOrders(reorderPayload);
+              partnerCountBadge.textContent = `총 ${rows.length}개 업체 (순서 자동 저장 완료)`;
+              setTimeout(() => {
+                if (partnerCountBadge) partnerCountBadge.textContent = `총 ${rows.length}개 업체`;
+              }, 2000);
+            } else {
+              await saveBatchOrders(reorderPayload);
+            }
+          } catch (err) {
+            console.error("[한글 주석: 드래그 앤 드롭 순서 저장 실패]", err);
+            alert("순서 자동 저장 중 오류가 발생했습니다: " + err.message);
+            await loadAdminPartners(); // 오류 발생 시 원래 DB 순서로 복구
+          }
+        }
+      });
+    }
+
+    // [한글 주석: 협력업체 드래그 앤 드롭 순서 변경 리스너 초기 바인딩 실행]
+    setupPartnerDragAndDrop();
 
     window.loadAdminPartners = loadAdminPartners;
   }

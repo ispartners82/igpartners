@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -15,11 +15,11 @@
     rel="stylesheet">
 
   <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260907_9">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260907_9">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260908_8">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260908_8">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260907_9)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260907_9">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260908_8)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260908_8">
 </head>
 
 <body>
@@ -359,6 +359,8 @@
                     <th>병원관리</th>
                     <!-- [한글 주석: 등급 권한 토글 제어를 위한 광고배너관리 열을 병원관리 바로 오른쪽으로 배치] -->
                     <th>광고배너관리</th>
+                    <!-- [한글 주석: 사용자 요청에 따라 광고배너관리 바로 오른쪽에 협력업체관리 열 신설] -->
+                    <th>협력업체관리</th>
                     <th>등급권한관리</th>
                     <!-- [한글 주석: 전문통역관리 권한 스위치 열을 등급권한관리 바로 오른쪽으로 추가 배치] -->
                     <th>전문통역관리</th>
@@ -371,7 +373,7 @@
                 </thead>
                 <tbody id="role-list">
                   <tr>
-                    <td colspan="12" class="table-loading">등급 데이터를 불러오는 중입니다...</td>
+                    <td colspan="13" class="table-loading">등급 데이터를 불러오는 중입니다...</td>
                   </tr>
                 </tbody>
               </table>
@@ -886,23 +888,28 @@
 
           <!-- 5-2. 광고 목록 현황 테이블 (하단) -->
           <section class="clinic-list-section" style="width: 100%;">
-            <h2>등록된 광고 배너 현황</h2>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;">
+              <h2 style="margin-bottom: 0;">등록된 광고 배너 현황</h2>
+              <span style="font-size: 0.8rem; color: #94a3b8; background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px dashed rgba(0, 243, 255, 0.3);">
+                💡 마우스로 행을 드래그하여 순서를 편하게 변경할 수 있습니다
+              </span>
+            </div>
             <div class="table-responsive">
               <table class="admin-table">
                 <thead>
                   <tr>
+                    <!-- [한글 주석: 순서 컬럼을 맨 앞(첫 번째 열)으로 배치하여 직관적인 순서 파악 및 드래그 조작 유도] -->
+                    <th style="width: 75px; text-align: center;">순서</th>
                     <th>태그</th>
                     <th>제목</th>
                     <th>사진 수</th>
                     <th>슬라이드 주기</th>
-                    <!-- 신규 추가: 광고 배너 출력 순서를 조절하기 위한 순서 컬럼 -->
-                    <th>순서</th>
                     <th>관리</th>
                   </tr>
                 </thead>
                 <tbody id="admin-ad-list">
                   <tr>
-                    <td colspan="5" class="table-loading">광고 데이터를 불러오는 중입니다...</td>
+                    <td colspan="6" class="table-loading">광고 데이터를 불러오는 중입니다...</td>
                   </tr>
                 </tbody>
               </table>
@@ -913,15 +920,15 @@
     </div>
 
     <!-- ==========================================================================
-         [한글 주석: 6. 협력업체 관리 탭 콘텐츠 (새로운 CRUD 패널 - 광고 배너 관리 바로 오른쪽)]
+         [한글 주석: 6. 협력업체 관리 탭 콘텐츠 (소속/제휴사 CRUD - 100% Full-Width 적용)]
          ========================================================================== -->
-    <div id="content-partners" class="admin-tab-content" style="display: none;">
-      <main class="admin-main">
+    <div id="content-partners" class="admin-tab-content admin-users-full-layout" style="display: none;">
+      <main class="admin-main" style="max-width: 100%; width: 100%; padding: 0;">
         <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
-          <!-- 6-1. 협력업체 등록/수정 폼 영역 (상단) -->
-          <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
+          <!-- 6-1. 협력업체 등록/수정 폼 영역 (상단 100% Full-Width) -->
+          <section class="clinic-form-section" style="width: 100%; max-width: 100%; box-sizing: border-box;">
             <h2 id="partner-form-title" style="color: #00f3ff; margin-bottom: 1.2rem;">신규 협력업체 등록</h2>
-            <form id="partner-manage-form" style="display: flex; flex-direction: column; gap: 0.95rem;">
+            <form id="partner-manage-form" style="display: flex; flex-direction: column; gap: 0.95rem; width: 100%;">
               <input type="hidden" id="partner-edit-id"> <!-- 수정 모드 시 문서 ID 저장용 -->
 
               <!-- 1행: 협력업체명 (제목) / 카테고리 태그 (2열) -->
@@ -990,19 +997,30 @@
             </form>
           </section>
 
-          <!-- 6-2. 협력업체 목록 테이블 현황 영역 (하단) -->
-          <section class="clinic-list-section" style="max-width: 1200px; width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h2 style="font-size: 1.25rem; font-weight: 700; color: #ffffff;">등록된 협력업체 현황</h2>
-              <span id="partner-count-badge" style="font-size: 0.85rem; color: #00f3ff; background: rgba(0, 243, 255, 0.1); padding: 0.25rem 0.75rem; border-radius: 20px; border: 1px solid rgba(0, 243, 255, 0.3);">
-                총 0개 업체
-              </span>
+          <!-- 6-2. 협력업체 목록 테이블 현황 영역 (하단 100% Full-Width) -->
+          <section class="clinic-list-section" style="width: 100%; max-width: 100%; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: #ffffff;">등록된 협력업체 현황</h2>
+                <span id="partner-count-badge" style="font-size: 0.85rem; color: #00f3ff; background: rgba(0, 243, 255, 0.1); padding: 0.25rem 0.75rem; border-radius: 20px; border: 1px solid rgba(0, 243, 255, 0.3);">
+                  총 0개 업체
+                </span>
+                <span style="font-size: 0.8rem; color: #94a3b8; background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px dashed rgba(0, 243, 255, 0.3);">
+                  💡 마우스로 행을 드래그하여 순서를 편하게 변경할 수 있습니다
+                </span>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <!-- [한글 주석: 중복되거나 비어있는 순서 번호를 1번부터 차례대로 완벽하게 재정렬하는 원클릭 액션 버튼] -->
+                <button type="button" id="btn-reorder-partners" class="btn btn-secondary" style="font-size: 0.82rem; padding: 0.45rem 0.9rem; border-color: #00f3ff; color: #00f3ff; cursor: pointer;">
+                  🔄 순서 일괄 자동 정리
+                </button>
+              </div>
             </div>
-            <div class="table-container" style="overflow-x: auto;">
-              <table class="admin-table">
+            <div class="table-responsive" style="width: 100%;">
+              <table class="admin-table" style="width: 100%;">
                 <thead>
                   <tr>
-                    <th>순서</th>
+                    <th style="width: 75px; text-align: center;">순서</th>
                     <th>로고/이미지</th>
                     <th>협력업체명 / 태그</th>
                     <th>소개 (부제목)</th>
@@ -1195,10 +1213,10 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260907_9)] -->
-  <script type="module" src="/js/navigation.js?v=260907_9"></script>
-  <script type="module" src="/js/admin.js?v=260907_9"></script>
-  <script type="module" src="/js/auth.js?v=260907_9"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260908_8)] -->
+  <script type="module" src="/js/navigation.js?v=260908_8"></script>
+  <script type="module" src="/js/admin.js?v=260908_8"></script>
+  <script type="module" src="/js/auth.js?v=260908_8"></script>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -30,11 +30,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260907_9">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260907_9">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260908_8">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260908_8">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=260907_9)] -->
-  <link rel="stylesheet" href="css/style.css?v=260907_9">
+  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=260908_8)] -->
+  <link rel="stylesheet" href="css/style.css?v=260908_8">
 
   <!-- [한글 주석: 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장] -->
   <script>
@@ -376,35 +376,37 @@
           <i class="fa-solid fa-chevron-down"></i>
         </div>
         <ul class="cafe-menu-list" id="cafe-sidebar-menu-list">
+          <!-- [한글 주석: 초기 하드코딩된 구형 6개 항목은 완전 삭제하고 전체글보기만 유지, 하단 인라인 캐시 스크립트로 최신 카테고리 0.001초 즉시 주입] -->
           <li class="cafe-menu-item active" data-board="all">
             <span>📋 전체글보기</span>
             <span class="cafe-menu-count" id="count-all">0</span>
           </li>
-          <li class="cafe-menu-item" data-board="notice">
-            <span>📢 공지사항</span>
-            <span class="cafe-menu-count" id="count-notice">0</span>
-          </li>
-          <li class="cafe-menu-item" data-board="clinic">
-            <span>🏥 병원정보</span>
-            <span class="cafe-menu-count" id="count-clinic">0</span>
-          </li>
-          <li class="cafe-menu-item" data-board="insurance">
-            <span>🛡️ 보험정보</span>
-            <span class="cafe-menu-count" id="count-insurance">0</span>
-          </li>
-          <li class="cafe-menu-item" data-board="visa">
-            <span>🛂 비자정보</span>
-            <span class="cafe-menu-count" id="count-visa">0</span>
-          </li>
-          <li class="cafe-menu-item" data-board="job">
-            <span>💼 구인구직</span>
-            <span class="cafe-menu-count" id="count-job">0</span>
-          </li>
-          <li class="cafe-menu-item" data-board="resume">
-            <span>📄 이력서업로드</span>
-            <span class="cafe-menu-count" id="count-resume">0</span>
-          </li>
         </ul>
+        <script>
+          /* [한글 주석: 0.001초 깜빡임 방지 로컬 스토리지 SWR 인라인 스크립트 - 알바공고 등 최신 카테고리 즉시 렌더링] */
+          (function () {
+            try {
+              var cached = localStorage.getItem("community_cached_categories");
+              if (cached) {
+                var cats = JSON.parse(cached);
+                if (Array.isArray(cats) && cats.length > 0) {
+                  var listEl = document.getElementById("cafe-sidebar-menu-list");
+                  if (listEl) {
+                    var html = '<li class="cafe-menu-item active" data-board="all"><span>📋 전체글보기</span><span class="cafe-menu-count" id="count-all">0</span></li>';
+                    cats.forEach(function (c) {
+                      if (c.type === "divider") {
+                        html += '<li class="cafe-menu-divider"></li>';
+                      } else if (c.isPublic !== false) {
+                        html += '<li class="cafe-menu-item" data-board="' + c.id + '"><span>' + (c.icon || '📁') + ' ' + (c.name || '') + '</span><span class="cafe-menu-count" id="count-' + c.id + '">0</span></li>';
+                      }
+                    });
+                    listEl.innerHTML = html;
+                  }
+                }
+              }
+            } catch (e) { }
+          })();
+        </script>
       </div>
     </aside>
 
@@ -815,10 +817,10 @@
 
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260907_9)] -->
-  <script type="module" src="/js/navigation.js?v=260907_9"></script>
-  <script type="module" src="/js/auth.js?v=260907_9"></script>
-  <script type="module" src="/js/community.js?v=260907_9"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260908_8)] -->
+  <script type="module" src="/js/navigation.js?v=260908_8"></script>
+  <script type="module" src="/js/auth.js?v=260908_8"></script>
+  <script type="module" src="/js/community.js?v=260908_8"></script>
 </body>
 
 </html>
