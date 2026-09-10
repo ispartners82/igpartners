@@ -3026,6 +3026,19 @@ body.home-page {
   word-break: keep-all;
 }
 
+/* [한글 주석: 회사소개 페이지 히어로 슬로건 전용 타이틀 - 긴 문구가 데스크톱 전체화면에서 줄바꿈 없이 한 줄로 깔끔하게 정돈되도록 폰트 크기 및 너비 최적화] */
+.about-hero-title {
+  font-size: clamp(1.6rem, 2.4vw, 2.8rem);
+  line-height: 1.35;
+  letter-spacing: -1px;
+}
+
+/* [한글 주석: 데스크톱 화면에서 각 슬로건 줄이 임의로 줄바꿈되어 흉하게 꺾이는 현상을 원천 방지하는 인라인 블록 래퍼] */
+.hero-title-line {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .hero-desc {
   font-size: 1.25rem;
   color: var(--text-secondary);
@@ -3720,6 +3733,16 @@ body.home-page {
   .hero-title {
     font-size: 2.1rem;
     line-height: 1.35;
+  }
+
+  /* [한글 주석: 모바일 화면에서 회사소개 슬로건이 자연스럽게 줄바꿈되고 넘치지 않도록 최적화] */
+  .about-hero-title {
+    font-size: 1.4rem;
+    line-height: 1.45;
+  }
+
+  .about-hero-title .hero-title-line {
+    white-space: normal;
   }
 
   .hero-desc {

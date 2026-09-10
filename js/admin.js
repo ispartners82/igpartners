@@ -4188,6 +4188,16 @@ function initPage() {
       }
     }
 
+    // [한글 주석: 협력업체 데이터 수정/삭제/순서변경 시 클라이언트 로컬 캐시 즉시 무효화 유틸리티]
+    function clearPartnersCache() {
+      try {
+        localStorage.removeItem("cached_partners_data");
+        console.log("🧹 [한글 주석: SWR] 관리자 데이터 변경으로 협력업체 로컬 캐시를 성공적으로 초기화했습니다.");
+      } catch (e) {
+        console.warn("[한글 주석: 협력업체 캐시 초기화 예외]", e);
+      }
+    }
+
     // [한글 주석: 협력업체 등록 및 수정 폼 서밋 핸들러 - 순서 밀림 및 일괄 재정렬 지원]
     if (partnerForm) {
       partnerForm.addEventListener("submit", async (e) => {
@@ -4242,6 +4252,9 @@ function initPage() {
             // 전체 목록에 1부터 N까지 연속된 순서 재부여 및 writeBatch 일괄 저장
             await saveBatchOrders(allPartners);
 
+            // [한글 주석: 로컬 캐시 즉시 무효화로 수정사항 즉각 반영]
+            clearPartnersCache();
+
             alert(`'${title}' 협력업체 정보 및 순서(자동 밀림 포함)가 성공적으로 수정되었습니다.`);
           } else {
             // [한글 주석: 신규 등록 모드 - 1) 신규 문서 추가]
@@ -4262,6 +4275,9 @@ function initPage() {
             allPartners.splice(insertIdx, 0, targetItem);
 
             await saveBatchOrders(allPartners);
+
+            // [한글 주석: 로컬 캐시 즉시 무효화로 신규 등록 즉각 반영]
+            clearPartnersCache();
 
             alert(`'${title}' 신규 협력업체가 성공적으로 등록되었습니다.`);
           }
@@ -4403,6 +4419,9 @@ function initPage() {
           // 현재 순서(order) 오름차순 기준으로 1부터 순차 재부여
           await saveBatchOrders(allPartners);
 
+          // [한글 주석: 순서 재정렬 완료 즉시 로컬 캐시 초기화]
+          clearPartnersCache();
+
           alert(`총 ${allPartners.length}개 협력업체의 순서가 1번부터 중복 없이 연속되게 재정렬되었습니다.`);
           await loadAdminPartners();
         } catch (err) {
@@ -4486,6 +4505,9 @@ function initPage() {
             // [한글 주석: 삭제 후 남아있는 협력업체들의 순서를 1부터 빈틈없이 연속되도록 자동 재정렬]
             const remainingPartners = await fetchAllPartners();
             await saveBatchOrders(remainingPartners);
+
+            // [한글 주석: 삭제 완료 즉시 로컬 캐시 초기화]
+            clearPartnersCache();
 
             alert(`'${pTitle}' 협력업체가 성공적으로 삭제되었습니다.`);
             await loadAdminPartners();
@@ -4586,12 +4608,16 @@ function initPage() {
             if (partnerCountBadge) {
               partnerCountBadge.textContent = "💾 순서 저장 중...";
               await saveBatchOrders(reorderPayload);
+              // [한글 주석: 드래그 앤 드롭 순서 변경 즉시 로컬 캐시 초기화]
+              clearPartnersCache();
               partnerCountBadge.textContent = `총 ${rows.length}개 업체 (순서 자동 저장 완료)`;
               setTimeout(() => {
                 if (partnerCountBadge) partnerCountBadge.textContent = `총 ${rows.length}개 업체`;
               }, 2000);
             } else {
               await saveBatchOrders(reorderPayload);
+              // [한글 주석: 드래그 앤 드롭 순서 변경 즉시 로컬 캐시 초기화]
+              clearPartnersCache();
             }
           } catch (err) {
             console.error("[한글 주석: 드래그 앤 드롭 순서 저장 실패]", err);

@@ -26,11 +26,11 @@
     rel="stylesheet">
 
   <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260908_8">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260908_8">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260910_4">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260910_4">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=260908_8)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260908_8">
+  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=260910_4)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260910_4">
 </head>
 
 <body class="home-page">
@@ -172,7 +172,7 @@
         <span class="partners-hero-tag">The Global with IGPartners</span>
         <h1 class="partners-hero-title">공식 제휴 협력업체</h1>
         <p class="partners-hero-desc">
-          주식회사 아이지파트너스(IGPartners)와 함께 글로벌 환자들에게 최고의 토탈 라이프 케어 솔루션을 제공하는 공식 협력 네트워크입니다.
+          아이지파트너스(IGPartners)와 함께 글로벌 고객들에게 최고의 토탈 라이프 케어 솔루션을 제공하는 공식 협력 네트워크입니다.
         </p>
       </div>
     </section>
@@ -180,11 +180,25 @@
     <!-- 2. [한글 주석: 1안 하이엔드 글래스모피즘 와이드 명함 카드 그리드 섹션] -->
     <section class="partners-main-container">
       <div class="partners-grid" id="partners-grid">
-        <!-- [한글 주석: js/partners.js에서 Firestore DB 데이터를 기반으로 0초 실시간 렌더링됩니다] -->
-        <div class="partners-loading">
+        <!-- [한글 주석: SWR 로컬 캐시가 존재하는 경우 스피너를 즉시 숨겨 딜레이 없는 화면 제공] -->
+        <div class="partners-loading" id="partners-loading-spinner">
           <span class="loading-spinner"></span>
           <p>협력업체 네트워크 정보를 불러오는 중입니다...</p>
         </div>
+        <script>
+          (function () {
+            try {
+              var raw = localStorage.getItem("cached_partners_data");
+              if (raw) {
+                var list = JSON.parse(raw);
+                if (Array.isArray(list) && list.length > 0) {
+                  var sp = document.getElementById("partners-loading-spinner");
+                  if (sp) sp.style.display = "none";
+                }
+              }
+            } catch (e) { }
+          })();
+        </script>
       </div>
     </section>
 
@@ -193,10 +207,10 @@
   <!-- 공통 푸터 -->
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260908_8)] -->
-  <script type="module" src="/js/navigation.js?v=260908_8"></script>
-  <script type="module" src="/js/auth.js?v=260908_8"></script>
-  <script type="module" src="/js/partners.js?v=260908_8"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260910_4)] -->
+  <script type="module" src="/js/navigation.js?v=260910_4"></script>
+  <script type="module" src="/js/auth.js?v=260910_4"></script>
+  <script type="module" src="/js/partners.js?v=260910_4"></script>
 
   <!-- [한글 주석: 구글 로그인 유도 안내 모달 팝업] -->
   <div id="login-required-modal" class="modal-backdrop" style="display: none;">
