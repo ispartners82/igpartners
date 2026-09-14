@@ -7286,28 +7286,33 @@ body.home-page {
   word-break: keep-all;
 }
 
-/* [한글 주석: 협력업체 목록 마우스 드래그 앤 드롭 인터랙션 스타일] */
-.partner-drag-row {
+/* [한글 주석: 등록된 병원 및 협력업체 목록 마우스 드래그 앤 드롭 인터랙션 스타일] */
+.partner-drag-row,
+.clinic-drag-row {
   cursor: grab;
   transition: background 0.15s ease, opacity 0.15s ease;
 }
 
-.partner-drag-row:hover {
+.partner-drag-row:hover,
+.clinic-drag-row:hover {
   background: rgba(0, 243, 255, 0.04) !important;
 }
 
-.partner-drag-row:active {
+.partner-drag-row:active,
+.clinic-drag-row:active {
   cursor: grabbing;
 }
 
-.partner-drag-row.dragging {
+.partner-drag-row.dragging,
+.clinic-drag-row.dragging {
   opacity: 0.4;
   background: rgba(0, 243, 255, 0.15) !important;
   border-top: 2px dashed #00f3ff !important;
   border-bottom: 2px dashed #00f3ff !important;
 }
 
-.partner-drag-handle {
+.partner-drag-handle,
+.clinic-drag-handle {
   display: inline-block;
   cursor: grab;
   color: #00f3ff;
@@ -7320,7 +7325,8 @@ body.home-page {
   transition: opacity 0.2s, transform 0.2s;
 }
 
-.partner-drag-row:hover .partner-drag-handle {
+.partner-drag-row:hover .partner-drag-handle,
+.clinic-drag-row:hover .clinic-drag-handle {
   opacity: 1;
   transform: scale(1.15);
 }

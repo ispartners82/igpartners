@@ -2198,6 +2198,12 @@ function initPage() {
       currentLoadedClinics = [];
       adminClinicList.innerHTML = "";
 
+      // [한글 주석: 등록된 병원 총 개수 뱃지 실시간 갱신]
+      const clinicCountBadge = document.getElementById("clinic-count-badge");
+      if (clinicCountBadge) {
+        clinicCountBadge.textContent = `총 ${querySnapshot.docs.length}개 병원`;
+      }
+
       // 메모리에 이동 처리를 위한 객체 배열 보관
       querySnapshot.forEach((docSnap) => {
         currentLoadedClinics.push({
@@ -2209,28 +2215,31 @@ function initPage() {
       currentLoadedClinics.forEach((clinic, index) => {
         const docId = clinic.id;
         const tr = document.createElement("tr");
+        const clinicOrder = clinic.order || (index + 1);
+
+        // [한글 주석: 마우스 드래그 앤 드롭 순서 변경을 위한 필수 속성 부여]
+        tr.setAttribute("data-id", docId);
+        tr.setAttribute("data-order", clinicOrder);
+        tr.className = "clinic-drag-row";
+        tr.draggable = true;
 
         const deptsHTML = (clinic.depts || []).map(d => `<span class="dept-badge" style="margin-right: 4px; display: inline-block;">${d}</span>`).join("");
 
-        // 위쪽 행이 없으면 위로(▲) 버튼 비활성화, 아래쪽 행이 없으면 아래로(▼) 버튼 비활성화
-        const upDisabled = index === 0 ? "disabled" : "";
-        const downDisabled = index === currentLoadedClinics.length - 1 ? "disabled" : "";
-
         tr.innerHTML = `
-          <td>
+          <!-- [한글 주석: 사용자 요청에 따라 맨 좌측으로 이동 배치된 순서 열 및 드래그 핸들] -->
+          <td style="text-align: center; font-weight: 700; color: #00f3ff; white-space: nowrap;">
+            <span class="clinic-drag-handle" title="마우스로 드래그하여 순서 변경">⋮⋮</span>
+            <span class="clinic-order-num">${clinicOrder}</span>
+          </td>
+          <td style="text-align: center;">
             <img src="${clinic.image || ''}" alt="Clinic" style="width: 50px; height: 35px; object-fit: cover; border-radius: 4px;" onerror="this.src='/img/clinic_1_dermatology.png'">
           </td>
           <td class="font-bold">${clinic.name || '-'} <br><small style="color:var(--text-secondary);">${clinic.englishName || '-'}</small></td>
           <td>${deptsHTML}</td>
           <td>${clinic.address || '-'}</td>
-          <!-- 순서 출력 열 -->
-          <td style="font-weight: 700; color: rgba(255,255,255,0.7);">${clinic.order}</td>
-          <td style="vertical-align: middle; white-space: nowrap;">
-            <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
-              <!-- [한글 주석: 순서 조작 위/아래 이동 버튼 배치 - 타원형 찌그러짐 차단을 위한 원형 서클 style 가드 적용] -->
-              <button class="btn-move-up-clinic" data-id="${docId}" data-index="${index}" ${upDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▲</button>
-              <button class="btn-move-down-clinic" data-id="${docId}" data-index="${index}" ${downDisabled} style="font-size: 0.65rem; padding: 0 !important; min-width: 28px !important; width: 28px !important; max-width: 28px !important; height: 28px !important; line-height: 26px; border-radius: 50% !important; border: 1px solid rgba(0, 229, 255, 0.25) !important; background: transparent !important; color: #e2e8f0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; box-sizing: border-box;">▼</button>
-              <span style="border-left: 1px solid rgba(255,255,255,0.15); height: 16px; margin: 0 0.25rem;"></span>
+          <td style="vertical-align: middle; white-space: nowrap; text-align: center;">
+            <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
+              <!-- [한글 주석: 마우스 드래그 앤 드롭 도입으로 불필요해진 이전 위/아래 이동 버튼을 제거하고 수정/삭제만 깔끔하게 유지] -->
               <button class="btn-action confirm btn-edit-clinic"
                 data-id="${docId}"
                 data-name="${(clinic.name || '').replace(/"/g, '&quot;')}"
@@ -2312,9 +2321,9 @@ function initPage() {
 
                 /* [한글 주석] 병원 사진 수정을 위해 기존 이미지 데이터 전송 속성 추가 */
                 data-image="${(clinic.image || '').replace(/"/g, '&quot;')}"
-                style="height: 28px; line-height: 1;"
+                style="height: 28px; line-height: 1; padding: 0.35rem 0.65rem; font-size: 0.8rem; border-radius: 6px; background: #0284c7; color: white; border: none; cursor: pointer;"
               >수정</button>
-              <button class="btn-action delete btn-delete-clinic" data-id="${docId}" style="height: 28px; line-height: 1;">삭제</button>
+              <button class="btn-action delete btn-delete-clinic" data-id="${docId}" style="height: 28px; line-height: 1; padding: 0.35rem 0.65rem; font-size: 0.8rem; border-radius: 6px; background: #dc2626; color: white; border: none; cursor: pointer;">삭제</button>
             </div>
           </td>
         `;
@@ -2806,65 +2815,180 @@ function initPage() {
           }
         }
       }
-
-      // ── [신규 추가] 병원 순서 위로 이동 (Swap Up) ──
-      if (e.target.classList.contains("btn-move-up-clinic")) {
-        const idx = parseInt(e.target.getAttribute("data-index"));
-        if (idx <= 0) return; // 최상단은 이동 불가
-
-        e.target.disabled = true;
-        const currentClinic = currentLoadedClinics[idx];
-        const prevClinic = currentLoadedClinics[idx - 1];
-
-        try {
-          const currentOrder = currentClinic.order;
-          const prevOrder = prevClinic.order;
-
-          // 두 문서의 order 값을 원자적으로 맞교환 후 Firestore에 커밋
-          await Promise.all([
-            updateDoc(doc(db, "clinics", currentClinic.id), { order: prevOrder }),
-            updateDoc(doc(db, "clinics", prevClinic.id), { order: currentOrder })
-          ]);
-
-          // [한글 주석: 병원 순서 교환 완료에 따른 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
-          localStorage.removeItem("cached_clinics_list");
-          loadClinics(); // 새로고침
-        } catch (error) {
-          console.error("Swap up clinic failed:", error);
-          alert("순서 이동에 실패했습니다: " + error.message);
-          e.target.disabled = false;
-        }
-      }
-
-      // ── [신규 추가] 병원 순서 아래로 이동 (Swap Down) ──
-      if (e.target.classList.contains("btn-move-down-clinic")) {
-        const idx = parseInt(e.target.getAttribute("data-index"));
-        if (idx >= currentLoadedClinics.length - 1) return; // 최하단은 이동 불가
-
-        e.target.disabled = true;
-        const currentClinic = currentLoadedClinics[idx];
-        const nextClinic = currentLoadedClinics[idx + 1];
-
-        try {
-          const currentOrder = currentClinic.order;
-          const nextOrder = nextClinic.order;
-
-          // 두 문서의 order 값을 원자적으로 맞교환 후 Firestore에 커밋
-          await Promise.all([
-            updateDoc(doc(db, "clinics", currentClinic.id), { order: nextOrder }),
-            updateDoc(doc(db, "clinics", nextClinic.id), { order: currentOrder })
-          ]);
-
-          // [한글 주석: 병원 순서 교환 완료에 따른 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
-          localStorage.removeItem("cached_clinics_list");
-          loadClinics(); // 새로고침
-        } catch (error) {
-          console.error("Swap down clinic failed:", error);
-          alert("순서 이동에 실패했습니다: " + error.message);
-          e.target.disabled = false;
-        }
-      }
     });
+
+    // ── [한글 주석: 정렬된 병원 목록을 받아 Firestore writeBatch로 일괄 순서 업데이트] ──
+    async function saveClinicBatchOrders(orderedList) {
+      if (!orderedList || orderedList.length === 0) return;
+      const batch = writeBatch(db);
+      let updatedCount = 0;
+
+      orderedList.forEach((item, idx) => {
+        const properOrder = idx + 1; // 1번부터 시작하는 연속된 정수 순서
+        if (item.order !== properOrder) {
+          const docRef = doc(db, "clinics", item.id);
+          batch.update(docRef, {
+            order: properOrder,
+            updatedAt: new Date().toISOString()
+          });
+          item.order = properOrder;
+          updatedCount++;
+        }
+      });
+
+      if (updatedCount > 0) {
+        console.log(`[한글 주석: Firestore Batch] 총 ${updatedCount}개 병원의 순서를 연속된 번호로 일괄 갱신합니다.`);
+        await batch.commit();
+      }
+    }
+
+    // ── [한글 주석: 등록된 병원 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수] ──
+    function setupClinicDragAndDrop() {
+      let draggedRow = null;
+
+      // 1) 드래그 시작 시점 처리
+      adminClinicList.addEventListener("dragstart", (e) => {
+        // 버튼, 링크, 입력창 클릭 시 드래그 방지
+        if (e.target.closest("button, a, input, select, textarea")) {
+          e.preventDefault();
+          return;
+        }
+
+        const row = e.target.closest(".clinic-drag-row");
+        if (!row) return;
+
+        draggedRow = row;
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", row.getAttribute("data-id") || "");
+
+        setTimeout(() => {
+          if (draggedRow) {
+            draggedRow.classList.add("dragging");
+          }
+        }, 0);
+      });
+
+      // 2) 드래그 오버 시점 처리 - 실시간 DOM 행 위치 교체 시각적 피드백
+      adminClinicList.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+
+        if (!draggedRow) return;
+
+        const targetRow = e.target.closest(".clinic-drag-row");
+        if (!targetRow || targetRow === draggedRow) return;
+
+        const rect = targetRow.getBoundingClientRect();
+        // 마우스 Y 좌표가 대상 행의 50%보다 아래면 다음 형제 노드 앞(대상 행 바로 뒤)에 삽입
+        const isAfter = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+        adminClinicList.insertBefore(draggedRow, isAfter ? targetRow.nextSibling : targetRow);
+      });
+
+      // 3) 드래그 종료 시점 처리 - 행 번호 즉시 갱신 및 Firestore Batch 일괄 자동 저장
+      adminClinicList.addEventListener("dragend", async () => {
+        if (!draggedRow) return;
+
+        draggedRow.classList.remove("dragging");
+        draggedRow = null;
+
+        const rows = adminClinicList.querySelectorAll(".clinic-drag-row");
+        if (!rows || rows.length === 0) return;
+
+        const reorderPayload = [];
+        let hasChanges = false;
+
+        rows.forEach((row, index) => {
+          const cid = row.getAttribute("data-id");
+          const oldOrder = parseInt(row.getAttribute("data-order") || "0", 10);
+          const newOrder = index + 1;
+
+          // 화면 좌측 순서 번호 텍스트 즉시 갱신
+          const orderNumEl = row.querySelector(".clinic-order-num");
+          if (orderNumEl) {
+            orderNumEl.textContent = newOrder;
+          }
+
+          if (oldOrder !== newOrder) {
+            hasChanges = true;
+          }
+
+          row.setAttribute("data-order", newOrder);
+          reorderPayload.push({
+            id: cid,
+            order: oldOrder
+          });
+        });
+
+        // 실제 순서에 변경이 발생한 경우에만 Firestore Batch 일괄 저장 실행
+        if (hasChanges) {
+          const clinicCountBadge = document.getElementById("clinic-count-badge");
+          try {
+            if (clinicCountBadge) {
+              clinicCountBadge.textContent = "💾 순서 저장 중...";
+            }
+            await saveClinicBatchOrders(reorderPayload);
+
+            // [한글 주석: 병원 순서 변경 즉시 로컬 스토리지 캐시 무효화 -> 사용자 예약 화면 즉시 반영]
+            localStorage.removeItem("cached_clinics_list");
+
+            if (clinicCountBadge) {
+              clinicCountBadge.textContent = `총 ${rows.length}개 병원 (순서 자동 저장 완료)`;
+              setTimeout(() => {
+                if (clinicCountBadge) clinicCountBadge.textContent = `총 ${rows.length}개 병원`;
+              }, 2000);
+            }
+          } catch (err) {
+            console.error("[한글 주석: 병원 드래그 앤 드롭 순서 저장 실패]", err);
+            alert("병원 순서 자동 저장 중 오류가 발생했습니다: " + err.message);
+            await loadClinics(); // 오류 발생 시 원래 DB 순서로 복구
+          }
+        }
+      });
+    }
+
+    setupClinicDragAndDrop();
+
+    // ── [한글 주석: 순서 일괄 자동 정리 버튼 이벤트 바인딩] ──
+    const btnReorderClinics = document.getElementById("btn-reorder-clinics");
+    if (btnReorderClinics) {
+      btnReorderClinics.addEventListener("click", async () => {
+        if (!confirm("현재 목록 순서대로 모든 등록된 병원의 순서를 1번부터 차례대로 중복 없이 연속되게 재정렬하시겠습니까?")) {
+          return;
+        }
+
+        try {
+          btnReorderClinics.disabled = true;
+          btnReorderClinics.textContent = "정리 중...";
+
+          // 최신 병원 목록 조회
+          const q = query(collection(db, "clinics"), orderBy("order", "asc"));
+          const snapshot = await getDocs(q);
+          const allClinics = [];
+          snapshot.forEach((docSnap) => {
+            allClinics.push({ id: docSnap.id, ...docSnap.data() });
+          });
+
+          if (allClinics.length === 0) {
+            alert("재정렬할 병원 데이터가 없습니다.");
+            return;
+          }
+
+          await saveClinicBatchOrders(allClinics);
+
+          // [한글 주석: 로컬 캐시 즉시 무효화]
+          localStorage.removeItem("cached_clinics_list");
+
+          alert(`총 ${allClinics.length}개 병원의 순서가 1번부터 중복 없이 연속되게 재정렬되었습니다.`);
+          await loadClinics();
+        } catch (err) {
+          console.error("[한글 주석: 병원 순서 일괄 자동 정리 실패]", err);
+          alert("순서 재정렬 중 오류가 발생했습니다: " + err.message);
+        } finally {
+          btnReorderClinics.disabled = false;
+          btnReorderClinics.textContent = "🔄 순서 일괄 자동 정리";
+        }
+      });
+    }
   }
 
   // ==========================================================================

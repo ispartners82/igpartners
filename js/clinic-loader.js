@@ -264,79 +264,108 @@ document.addEventListener("DOMContentLoaded", () => {
   if (modalClose) modalClose.textContent = dict.modalClose;
   if (modalTrigger) modalTrigger.textContent = dict.modalTrigger;
 
-  // 로딩 상태 안내 주입
-  container.innerHTML = `<div class="table-loading" style="grid-column: span 3; text-align: center; padding: 3rem; color: #a5b4fc;">${dict.loading}</div>`;
+  // [한글 주석: 병원 카드 목록 DOM 생성 및 렌더링 전담 함수]
+  function renderClinicsList(clinicsData, targetContainer, lang, dictionary) {
+    targetContainer.innerHTML = "";
 
-  // 3. Firestore에서 병원 데이터 로드 시작
-  // [한글 주석: 관리자가 순서 이동(Swap) 조정한 순번 order 오름차순 기준으로 병원 목록을 쿼리 정렬]
-  const q = query(collection(db, "clinics"), orderBy("order", "asc"));
+    if (!clinicsData || clinicsData.length === 0) {
+      targetContainer.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dictionary.empty}</div>`;
+      return;
+    }
 
+    clinicsData.forEach((clinic) => {
+      // [한글 주석: 언어에 맞는 병원 필드 동적 매핑 (다국어 전용 필드가 없으면 하위 호환을 위해 기본값 fallback)]
+      const clinicName = clinic[`name_${lang}`] || clinic.name || "";
+      const clinicDesc = clinic[`desc_${lang}`] || clinic.desc || "";
+      const clinicAddress = clinic[`address_${lang}`] || clinic.address || "";
+
+      // [한글 주석: 진료과목 배지 HTML 구성 (다국어 진료과목 지원)]
+      const deptBadges = (clinic[`depts_${lang}`] || clinic.depts || [])
+        .map(dept => `<span class="dept-badge">${dept}</span>`)
+        .join("");
+
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinicAddress)}`;
+
+      const card = document.createElement("article");
+      card.className = "clinic-card";
+      card.innerHTML = `
+        <div class="clinic-img-wrapper">
+          <img class="clinic-img" src="${clinic.image || '/img/clinic_1_dermatology.png'}" alt="${clinicName}" onerror="this.src='/img/clinic_1_dermatology.png'">
+        </div>
+        <div class="clinic-content">
+          <h2 class="clinic-title">${clinicName}</h2>
+          <div class="clinic-depts">
+            ${deptBadges}
+          </div>
+          <p class="clinic-desc">${clinicDesc}</p>
+          <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="clinic-address-link" style="text-decoration: none; color: inherit; display: block; margin-top: auto;">
+            <div class="clinic-address">
+              <svg class="address-icon" viewBox="0 0 24 24" width="14" height="14">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              <span style="display:inline-block; margin-left: 4px;">${clinicAddress}</span>
+            </div>
+          </a>
+          <button class="clinic-select-btn" onclick="selectClinic('${clinic.englishName || clinic.name}', '${clinicName.replace(/'/g, "\\'")}')">${dictionary.selectBtn}</button>
+        </div>
+      `;
+      targetContainer.appendChild(card);
+    });
+  }
+
+  // ── [SWR 1단계: Stale] 로컬 캐시가 존재하면 지연 없이 0.01초 만에 화면 즉시 렌더링 ──
+  let cachedDataStr = null;
+  let hasRenderedFromCache = false;
+  try {
+    cachedDataStr = localStorage.getItem("cached_clinics_list");
+    if (cachedDataStr) {
+      const cachedData = JSON.parse(cachedDataStr);
+      if (Array.isArray(cachedData) && cachedData.length > 0) {
+        renderClinicsList(cachedData, container, currentLang, dict);
+        hasRenderedFromCache = true;
+        console.log("⚡ [한글 주석: SWR] 병원 목록을 로컬 캐시에서 0.01초 만에 즉시 렌더링했습니다.");
+      }
+    }
+  } catch (cacheErr) {
+    console.warn("[한글 주석: 병원 로컬 캐시 파싱 예외]", cacheErr);
+  }
+
+  // 캐시가 없는 최초 방문 시에만 로딩 안내 스피너 표시
+  if (!hasRenderedFromCache) {
+    container.innerHTML = `<div class="table-loading" style="grid-column: span 3; text-align: center; padding: 3rem; color: #a5b4fc;">${dict.loading}</div>`;
+  }
+
+  // ── [SWR 2단계: Revalidate] 백그라운드에서 최신 Firestore 데이터 비동기 조회 (평생 무료 일회성 getDocs) ──
   (async () => {
     try {
-      // [한글 주석: 로컬 스토리지 기반 병원 목록 캐싱 적용으로 불필요한 Firestore DB 읽기 0회로 최적화 - 탭 간 캐시 무효화를 위해 sessionStorage에서 localStorage로 변경]
-      const cachedData = localStorage.getItem("cached_clinics_list");
-      let clinicsData = [];
+      // [한글 주석: 관리자가 순서 이동 조정한 순번 order 오름차순 기준으로 병원 목록 쿼리]
+      const q = query(collection(db, "clinics"), orderBy("order", "asc"));
+      const querySnapshot = await getDocs(q);
 
-      if (cachedData) {
-        clinicsData = JSON.parse(cachedData);
-        console.log("Clinics list loaded from Local Storage Cache (0 Firestore Read cost)");
-      } else {
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((docSnap) => {
-          clinicsData.push(docSnap.data());
-        });
-        localStorage.setItem("cached_clinics_list", JSON.stringify(clinicsData));
-        console.log("Clinics list loaded from Firestore DB and cached to Local Storage");
-      }
-
-      container.innerHTML = "";
-
-      if (clinicsData.length === 0) {
-        container.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dict.empty}</div>`;
-        return;
-      }
-
-      clinicsData.forEach((clinic) => {
-        // 언어에 맞는 병원 필드 동적 매핑 (만약 전용 다국어 필드가 없으면 하위 호환을 위해 기본값 fallback)
-        const clinicName = clinic[`name_${currentLang}`] || clinic.name || "";
-        const clinicDesc = clinic[`desc_${currentLang}`] || clinic.desc || "";
-        const clinicAddress = clinic[`address_${currentLang}`] || clinic.address || "";
-
-        // 진료과목 배지 HTML 구성 (다국어 진료과목 필드 지원 연계)
-        const deptBadges = (clinic[`depts_${currentLang}`] || clinic.depts || [])
-          .map(dept => `<span class="dept-badge">${dept}</span>`)
-          .join("");
-
-        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinicAddress)}`;
-
-        const card = document.createElement("article");
-        card.className = "clinic-card";
-        card.innerHTML = `
-          <div class="clinic-img-wrapper">
-            <img class="clinic-img" src="${clinic.image || '/img/clinic_1_dermatology.png'}" alt="${clinicName}" onerror="this.src='/img/clinic_1_dermatology.png'">
-          </div>
-          <div class="clinic-content">
-            <h2 class="clinic-title">${clinicName}</h2>
-            <div class="clinic-depts">
-              ${deptBadges}
-            </div>
-            <p class="clinic-desc">${clinicDesc}</p>
-            <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="clinic-address-link" style="text-decoration: none; color: inherit; display: block; margin-top: auto;">
-              <div class="clinic-address">
-                <svg class="address-icon" viewBox="0 0 24 24" width="14" height="14">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-                <span style="display:inline-block; margin-left: 4px;">${clinicAddress}</span>
-              </div>
-            </a>
-            <button class="clinic-select-btn" onclick="selectClinic('${clinic.englishName || clinic.name}', '${clinicName.replace(/'/g, "\\'")}')">${dict.selectBtn}</button>
-          </div>
-        `;
-        container.appendChild(card);
+      const freshList = [];
+      querySnapshot.forEach((docSnap) => {
+        freshList.push(docSnap.data());
       });
+
+      const freshDataStr = JSON.stringify(freshList);
+
+      // ── [SWR 3단계: Update] 데이터 비교 후 변경점(신규 병원 추가/수정/삭제) 감지 시 화면 및 캐시 최신화 ──
+      if (!hasRenderedFromCache || freshDataStr !== cachedDataStr) {
+        renderClinicsList(freshList, container, currentLang, dict);
+        try {
+          localStorage.setItem("cached_clinics_list", freshDataStr);
+          console.log("🔄 [한글 주석: SWR] 최신 병원 데이터로 화면 갱신 및 로컬 캐시 동기화 완료");
+        } catch (saveCacheErr) {
+          console.warn("[한글 주석: 로컬 스토리지 저장 오류]", saveCacheErr);
+        }
+      } else {
+        console.log("✅ [한글 주석: SWR] 병원 목록 변경사항 없음 (기존 캐시 유지)");
+      }
     } catch (err) {
-      console.error("병원 목록 로드 실패:", err);
-      container.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dict.empty}</div>`;
+      console.error("병원 목록 백그라운드 갱신 실패:", err);
+      if (!hasRenderedFromCache) {
+        container.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dict.empty}</div>`;
+      }
     }
   })();
 });
