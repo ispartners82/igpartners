@@ -1224,6 +1224,26 @@ document.addEventListener("DOMContentLoaded", () => {
           isAdmin = perms.isAdmin;
           hasStats = perms.hasStats;
 
+          // [한글 주석: 페이지 이동 시 0ms 즉시 노출을 위해 세션 스토리지에 관리자 권한 캐시 동기화 저장 (9개 세부 권한 완전체 저장)]
+          try {
+            const isSuper = (userRole === "super_admin");
+            const fullPermissions = {
+              isAdmin: isSuper || isAdmin,
+              hasReservations: isSuper || ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+              hasClinics: isSuper || ["admin", "admin_user"].includes(userRole),
+              hasRoles: isSuper,
+              hasPermissions: isSuper,
+              hasStats: isSuper || hasStats,
+              hasAds: isSuper,
+              hasPartners: isSuper,
+              hasInterpreters: isSuper
+            };
+            sessionStorage.setItem(`admin_permissions_${user.uid}`, JSON.stringify({
+              role: userRole,
+              permissions: fullPermissions
+            }));
+          } catch (e) { }
+
           // 역할 키별 한국어 명칭 동적 결정
           try {
             const roleDocSnap = await getDoc(doc(db, "roles", userRole));
@@ -1240,6 +1260,14 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (userRole === "admin") roleLabel = "관리자";
             else if (userRole === "partner") roleLabel = "협력사";
           }
+        } else {
+          // [한글 주석: 일반 회원 역할일 경우에도 권한 캐시를 명확히 false로 동기화]
+          try {
+            sessionStorage.setItem(`admin_permissions_${user.uid}`, JSON.stringify({
+              role: "user",
+              permissions: { isAdmin: false, hasStats: false }
+            }));
+          } catch (e) { }
         }
 
         // 커뮤니티 전용 사이드바 프로필 실시간 동기화
@@ -1294,8 +1322,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
       if (btnStatsDashboard) btnStatsDashboard.style.display = "none";
 
+      // [한글 주석: 로그아웃 시 권한 캐시 및 세션 완전 정리]
       Object.keys(sessionStorage)
-        .filter(key => key.startsWith("user_role_cache_") || key.startsWith("admin_permissions_cache_"))
+        .filter(key => key.startsWith("user_role_cache_") || key.startsWith("admin_permissions_") || key.startsWith("role_permissions_cache_"))
         .forEach(key => sessionStorage.removeItem(key));
     }
   });

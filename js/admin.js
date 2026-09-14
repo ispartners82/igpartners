@@ -679,7 +679,7 @@ function initPage() {
 
 
   // [성능 및 정합성 최적화] 관리자 권한을 파악하고 UI를 제어하는 함수
-  // [한글 주석: 권한 기반 UI 탭 제어를 전담 처리하는 리팩토링된 헬퍼 함수]
+  // [한글 주석: 권한 기반 UI 탭 제어를 전담 처리하는 리팩토링된 헬퍼 함수 - 최고관리자(super_admin) 프리패스 및 하위 등급별 메뉴 분기 완벽 지원]
   function applyPermissionsUI(permissions) {
     const tabReservations = document.getElementById("tab-reservations");
     const tabUsers = document.getElementById("tab-users");
@@ -688,44 +688,47 @@ function initPage() {
     const tabAds = document.getElementById("tab-ads");
     const tabInterpreters = document.getElementById("tab-interpreters");
 
+    // [한글 주석: 최고관리자 여부 판별 플래그]
+    const isSuper = (currentLoginUserRole === "super_admin");
+
     // [한글 주석: 상단 네비게이션 뱃지 영구 락 - 한 번 노출된 관리자/통계 뱃지는 뷰 스위칭 시 절대로 display: none으로 끄지 않고 영구 띄워둠]
     const btnAdminDashboard = document.getElementById("btn-admin-dashboard");
     const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
-    if (btnAdminDashboard && permissions.isAdmin) {
+    if (btnAdminDashboard && (permissions.isAdmin || isSuper)) {
       btnAdminDashboard.style.display = "inline-block";
     }
-    if (btnStatsDashboard && (permissions.hasStats || permissions.isAdmin)) {
+    if (btnStatsDashboard && (permissions.hasStats || permissions.isAdmin || isSuper)) {
       btnStatsDashboard.style.display = "inline-block";
     }
 
     if (tabReservations) {
-      tabReservations.style.display = permissions.hasReservations ? "inline-block" : "none";
+      tabReservations.style.display = (permissions.hasReservations || isSuper) ? "inline-block" : "none";
     }
     if (tabUsers) {
-      tabUsers.style.display = permissions.hasRoles ? "inline-block" : "none";
+      tabUsers.style.display = (permissions.hasRoles || isSuper) ? "inline-block" : "none";
     }
     if (tabPermissions) {
-      tabPermissions.style.display = permissions.hasPermissions ? "inline-block" : "none";
+      tabPermissions.style.display = (permissions.hasPermissions || isSuper) ? "inline-block" : "none";
     }
     if (tabClinics) {
-      tabClinics.style.display = permissions.hasClinics ? "inline-block" : "none";
+      tabClinics.style.display = (permissions.hasClinics || isSuper) ? "inline-block" : "none";
     }
     if (tabAds) {
-      tabAds.style.display = permissions.hasAds ? "inline-block" : "none";
+      tabAds.style.display = (permissions.hasAds || isSuper) ? "inline-block" : "none";
     }
     // [한글 주석: 협력업체 관리 탭 권한 노출 제어 (hasPartners 권한 또는 최고관리자 권한)]
     const tabPartners = document.getElementById("tab-partners");
     if (tabPartners) {
-      tabPartners.style.display = (permissions.hasPartners || permissions.isAdmin) ? "inline-block" : "none";
+      tabPartners.style.display = (permissions.hasPartners || permissions.isAdmin || isSuper) ? "inline-block" : "none";
     }
     // [한글 주석: 전문통역 관리 탭 권한 노출 제어 (hasInterpreters 권한 또는 최고관리자 권한)]
     if (tabInterpreters) {
-      tabInterpreters.style.display = (permissions.hasInterpreters || permissions.isAdmin) ? "inline-block" : "none";
+      tabInterpreters.style.display = (permissions.hasInterpreters || permissions.isAdmin || isSuper) ? "inline-block" : "none";
     }
 
-    // 활성화 탭 강제 튕김 보정
+    // 활성화 탭 강제 튕김 보정 (최고관리자는 절대 튕기지 않음)
     const activeTab = document.querySelector(".tab-btn.active");
-    if (activeTab) {
+    if (activeTab && !isSuper) {
       if (activeTab.id === "tab-clinics" && !permissions.hasClinics) {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-ads" && !permissions.hasAds) {
@@ -746,16 +749,24 @@ function initPage() {
   async function verifyAndApplyPermissions(user, forceRefresh = false) {
     if (!user) return false;
 
-    // [한글 주석: 세션 캐시 검색 및 복원 처리로 불필요한 Firestore 유저/등급 getDoc 요금 차단]
+    // [한글 주석: 세션 캐시 검색 및 복원 처리 - 9개 세부 권한 프로퍼티가 온전히 존재하는지 무결성 검증]
     const cacheKey = `admin_permissions_${user.uid}`;
     if (!forceRefresh) {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
-        const cachedObj = JSON.parse(cached);
-        console.log("Admin permissions restored from Session Cache (0 Firestore Read cost)");
-        currentLoginUserRole = cachedObj.role;
-        applyPermissionsUI(cachedObj.permissions);
-        return cachedObj.permissions;
+        try {
+          const cachedObj = JSON.parse(cached);
+          if (cachedObj && cachedObj.permissions && typeof cachedObj.permissions.hasReservations === "boolean") {
+            console.log("Admin permissions restored from Session Cache (0 Firestore Read cost)");
+            currentLoginUserRole = cachedObj.role;
+            applyPermissionsUI(cachedObj.permissions);
+            return cachedObj.permissions;
+          } else {
+            console.log("Incomplete session cache detected. Refreshing permissions from DB...");
+          }
+        } catch (e) {
+          console.warn("Session cache parsing error:", e);
+        }
       }
     }
 
@@ -769,46 +780,56 @@ function initPage() {
       const userData = userDocSnap.data();
       userRole = userData.role || "user";
       
-      // 등급 문서로부터 5가지 권한 로드
-      const roleDocRef = doc(db, "roles", userRole);
-      const roleDocSnap = await getDoc(roleDocRef);
-      
-      permissions = {
-        isAdmin: false,
-        hasReservations: false,
-        hasClinics: false,
-        hasRoles: false,
-        hasPermissions: false,
-        hasStats: false,
-        hasAds: false,
-        hasPartners: false,
-        hasInterpreters: false
-      };
-
-      if (roleDocSnap.exists()) {
-        const roleData = roleDocSnap.data();
-        // DB 로드 데이터 바인딩 + 누락 필드가 있을 경우 등급키 성격에 따라 하위 호환 롤백 가드 적용 (100% 진입 성공 보장)
+      // [한글 주석: 최고관리자(super_admin)는 모든 권한을 100% 무조건 부여하여 안전성 극대화]
+      if (userRole === "super_admin") {
         permissions = {
-          isAdmin: roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
-          hasReservations: roleData.hasReservations !== undefined ? roleData.hasReservations : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
-          hasClinics: roleData.hasClinics !== undefined ? roleData.hasClinics : ["super_admin", "admin", "admin_user"].includes(userRole),
-          hasRoles: roleData.hasRoles !== undefined ? roleData.hasRoles : (userRole === "super_admin"),
-          hasPermissions: roleData.hasPermissions !== undefined ? roleData.hasPermissions : (userRole === "super_admin"),
-          hasStats: roleData.hasStats !== undefined ? roleData.hasStats : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
-          // [한글 주석: DB에서 로드된 광고배너관리 권한 바인딩 및 super_admin 가드]
-          hasAds: roleData.hasAds !== undefined ? roleData.hasAds : (userRole === "super_admin"),
-          // [한글 주석: DB에서 로드된 협력업체관리 및 전문통역관리 권한 바인딩]
-          hasPartners: roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || userRole === "super_admin"),
-          hasInterpreters: roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || userRole === "super_admin")
+          isAdmin: true,
+          hasReservations: true,
+          hasClinics: true,
+          hasRoles: true,
+          hasPermissions: true,
+          hasStats: true,
+          hasAds: true,
+          hasPartners: true,
+          hasInterpreters: true
         };
       } else {
-        // 예외 상황: roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
-        if (userRole === "super_admin") {
-          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasStats: true, hasAds: true, hasPartners: true, hasInterpreters: true };
-        } else if (["admin", "admin_user"].includes(userRole)) {
-          permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
-        } else if (["top_manager", "res_manager"].includes(userRole)) {
-          permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
+        // 등급 문서로부터 5가지 이상 권한 로드
+        const roleDocRef = doc(db, "roles", userRole);
+        const roleDocSnap = await getDoc(roleDocRef);
+        
+        permissions = {
+          isAdmin: false,
+          hasReservations: false,
+          hasClinics: false,
+          hasRoles: false,
+          hasPermissions: false,
+          hasStats: false,
+          hasAds: false,
+          hasPartners: false,
+          hasInterpreters: false
+        };
+
+        if (roleDocSnap.exists()) {
+          const roleData = roleDocSnap.data();
+          permissions = {
+            isAdmin: roleData.isAdmin !== undefined ? roleData.isAdmin : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+            hasReservations: roleData.hasReservations !== undefined ? roleData.hasReservations : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+            hasClinics: roleData.hasClinics !== undefined ? roleData.hasClinics : ["admin", "admin_user"].includes(userRole),
+            hasRoles: roleData.hasRoles !== undefined ? roleData.hasRoles : false,
+            hasPermissions: roleData.hasPermissions !== undefined ? roleData.hasPermissions : false,
+            hasStats: roleData.hasStats !== undefined ? roleData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
+            hasAds: roleData.hasAds !== undefined ? roleData.hasAds : false,
+            hasPartners: roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || false),
+            hasInterpreters: roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || false)
+          };
+        } else {
+          // 예외 상황: roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
+          if (["admin", "admin_user"].includes(userRole)) {
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
+          } else if (["top_manager", "res_manager"].includes(userRole)) {
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
+          }
         }
       }
     }

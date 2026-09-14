@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -19,11 +19,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260907_9">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260907_9">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260914_3">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260914_3">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260907_9)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260907_9">
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_3)] -->
+  <link rel="stylesheet" href="/css/style.css?v=260914_3">
   <!-- 한글 주석: 데스크톱/모바일 반응형 필터 그리드 스타일 정의 -->
   <style>
     /* 기본적으로 모바일 1열 세로 레이아웃 */
@@ -361,31 +361,58 @@
           <!-- [한글 주석: 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출] -->
           <li class="nav-item nav-community-item" id="nav-item-community"><a href="/community.html" class="nav-link">커뮤니티</a></li>
         </ul>
+        <!-- [한글 주석: 비로그인 시 깜빡임(FOUC) 원천 차단 및 세션 캐시 기반 0ms 즉시 분기 렌더링 적용] -->
         <div class="nav-auth-area" id="nav-auth-area">
-          <div id="auth-user" class="auth-user-badge">
-            <!-- [한글 주석: HTML 파싱 0.00001초 순간 세션 스토리지에서 유저 이름/사진을 DOM에 즉시 박아 지워짐 100% 원천 차단] -->
+          <div id="auth-user" class="auth-user-badge" style="display: none;">
+            <!-- [한글 주석: 세션 스토리지에서 유저 정보를 즉시 바인딩하여 렌더링 지연 방지] -->
             <div class="user-capsule">
               <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile" class="user-avatar">
               <span id="user-name" class="user-nickname"></span>
-              <script>
-                (function(){
-                  try {
-                    var c = sessionStorage.getItem("auth_user_cache");
-                    if(c) {
-                      var u = JSON.parse(c);
-                      if(u.displayName) document.getElementById("user-name").textContent = u.displayName;
-                      if(u.photoURL) document.getElementById("user-photo").src = u.photoURL;
-                    }
-                  } catch(e){}
-                })();
-              </script>
             </div>
             <a href="/my-reservations.html" id="btn-my-reservations" class="btn-nav-action btn-my-res">📅 예약내역</a>
-            <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin">👑 관리자</a>
-            <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin active">📊 예약통계</a>
+            <a href="/admin.html" id="btn-admin-dashboard" class="btn-nav-action btn-admin" style="display: none;">👑 관리자</a>
+            <a href="/stats.html" id="btn-stats-dashboard" class="btn-nav-action btn-admin active" style="display: none;">📊 예약통계</a>
             <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
+          <script>
+            /* [한글 주석: HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함] */
+            (function () {
+              try {
+                var c = sessionStorage.getItem("auth_user_cache");
+                var authUser = document.getElementById("auth-user");
+                var btnLogin = document.getElementById("btn-login");
+                if (c) {
+                  if (authUser) authUser.style.display = "flex";
+                  var u = JSON.parse(c);
+                  var nameEl = document.getElementById("user-name");
+                  var photoEl = document.getElementById("user-photo");
+                  if (nameEl && u.displayName) nameEl.textContent = u.displayName;
+                  if (photoEl && u.photoURL) photoEl.src = u.photoURL;
+
+                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
+                  if (p) {
+                    var perm = JSON.parse(p);
+                    if (perm && perm.permissions) {
+                      if (perm.permissions.isAdmin) {
+                        var adm = document.getElementById("btn-admin-dashboard");
+                        if (adm) adm.style.display = "inline-block";
+                      }
+                      if (perm.permissions.hasStats || perm.permissions.isAdmin) {
+                        var st = document.getElementById("btn-stats-dashboard");
+                        if (st) st.style.display = "inline-block";
+                      }
+                    }
+                  }
+                } else {
+                  if (btnLogin) {
+                    btnLogin.style.display = "block";
+                    btnLogin.disabled = false;
+                  }
+                }
+              } catch (e) { }
+            })();
+          </script>
         </div>
 
         <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함] -->
@@ -673,10 +700,10 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260907_9)] -->
-  <script type="module" src="/js/navigation.js?v=260907_9"></script>
-  <script type="module" src="/js/stats.js?v=260907_9"></script>
-  <script type="module" src="/js/auth.js?v=260907_9"></script>
+  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_3)] -->
+  <script type="module" src="/js/navigation.js?v=260914_3"></script>
+  <script type="module" src="/js/stats.js?v=260914_3"></script>
+  <script type="module" src="/js/auth.js?v=260914_3"></script>
 </body>
 
 </html>
