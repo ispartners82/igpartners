@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- [한글 주석: 검색 엔진 최적화(SEO) 및 공식 한글/영문 상호 타이틀 정의] -->
+  <!-- 검색 엔진 최적화(SEO) 및 공식 한글/영문 상호 타이틀 정의 -->
   <title>관리자 예약 내역 조회 - 아이지파트너스 (IGPartners)</title>
 
   <!-- 폰트 불러오기 -->
@@ -14,12 +14,12 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap"
     rel="stylesheet">
 
-  <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_5">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_5">
+  <!-- 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정 -->
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_12">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_12">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_5)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260916_5">
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_5) -->
+  <link rel="stylesheet" href="/css/style.css?v=260916_12">
 </head>
 
 <body>
@@ -29,7 +29,7 @@
     <div class="aurora-2"></div>
   </div>
 
-  <!-- [한글 주석: 상단 네비게이션 재렌더링 파괴 방지를 위한 공통 상단 네비게이션 바 컴포넌트 정적 사전 배치] -->
+  <!-- 상단 네비게이션 재렌더링 파괴 방지를 위한 공통 상단 네비게이션 바 컴포넌트 정적 사전 배치 -->
   <header id="global-header">
     <nav class="common-navbar">
       <div class="nav-container">
@@ -38,7 +38,7 @@
           <span class="nav-brand-text">IGPartners</span>
         </a>
         <ul class="nav-menu" id="nav-menu">
-          <!-- [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치)] -->
+          <!-- 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치) -->
           <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
             <div class="nav-lang-trigger" id="nav-lang-trigger" onclick="window.toggleLangDropdown(event)">
               <img id="nav-lang-selected-flag" class="nav-lang-flag" src="https://flagcdn.com/w80/kr.png"
@@ -51,26 +51,26 @@
                 <span>🌐 Select Language / 언어선택</span>
               </div>
               <div class="nav-lang-scroll-list" id="nav-lang-scroll-list">
-                <!-- [한글 주석: 15개국 언어 목록은 navigation.js의 bindLangDropdownList()에서 0ms 동적 주입] -->
+                <!-- 15개국 언어 목록은 navigation.js의 bindLangDropdownList()에서 0ms 동적 주입 -->
               </div>
             </div>
           </li>
           <li class="nav-item"><a href="/index.html" class="nav-link">홈</a></li>
           <li class="nav-item"><a href="/about.html" class="nav-link">회사소개</a></li>
           <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
-          <!-- [한글 주석: 전문통역 전용 페이지 링크로 올바르게 연결] -->
+          <!-- 전문통역 전용 페이지 링크로 올바르게 연결 -->
           <li class="nav-item"><a href="/interpreters.html" class="nav-link btn-nav-booking">전문통역</a></li>
           <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking">진료 예약</a></li>
-          <!-- [한글 주석: 상단 메뉴 - 협력업체 전용 페이지 연결] -->
+          <!-- 상단 메뉴 - 협력업체 전용 페이지 연결 -->
           <li class="nav-item"><a href="/partners.html" class="nav-link">협력업체</a></li>
-          <!-- [한글 주석: 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출] -->
+          <!-- 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출 -->
           <li class="nav-item nav-community-item" id="nav-item-community"><a href="/community.html"
               class="nav-link">커뮤니티</a></li>
         </ul>
-        <!-- [한글 주석: 비로그인 시 깜빡임(FOUC) 원천 차단 및 세션 캐시 기반 0ms 즉시 분기 렌더링 적용] -->
+        <!-- 비로그인 시 깜빡임(FOUC) 원천 차단 및 세션 캐시 기반 0ms 즉시 분기 렌더링 적용 -->
         <div class="nav-auth-area" id="nav-auth-area">
           <div id="auth-user" class="auth-user-badge" style="display: none;">
-            <!-- [한글 주석: 세션 스토리지에서 유저 정보를 즉시 바인딩하여 렌더링 지연 방지] -->
+            <!-- 세션 스토리지에서 유저 정보를 즉시 바인딩하여 렌더링 지연 방지 -->
             <div class="user-capsule">
               <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile"
                 class="user-avatar">
@@ -83,7 +83,7 @@
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
           <script>
-            /* [한글 주석: HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함] */
+            /* HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함 */
             (function () {
               try {
                 var c = sessionStorage.getItem("auth_user_cache");
@@ -120,12 +120,12 @@
           </script>
         </div>
 
-        <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함] -->
+        <!-- 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함 -->
         <div class="nav-mobile-quick" id="nav-mobile-quick">
           <a href="/index.html" class="quick-icon-btn" title="홈">🏠</a>
           <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
           <a href="/about.html#services" class="quick-icon-btn" title="제공 서비스">🛠️</a>
-          <!-- [한글 주석: 모바일 전용 전문통역 퀵 아이콘 링크 매핑] -->
+          <!-- 모바일 전용 전문통역 퀵 아이콘 링크 매핑 -->
           <a href="/interpreters.html" class="quick-icon-btn" title="전문통역">🌐</a>
           <a href="/booking-lang.html" class="quick-icon-btn" title="진료 예약">📅</a>
           <a href="/partners.html" class="quick-icon-btn" title="협력업체">🤝</a>
@@ -163,7 +163,7 @@
           </script>
         </div>
 
-        <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
+        <!-- 모바일 화면 전용 햄버거 메뉴 토글 버튼 -->
         <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
           <span class="bar"></span>
           <span class="bar"></span>
@@ -173,7 +173,7 @@
     </nav>
   </header>
 
-  <!-- [한글 주석: SPA 동적 뷰 스위처 엔진이 이 영역을 감지하여 1:1 교체함으로써 헤더 파괴 및 튐현상을 100% 방지하는 본문 컨테이너] -->
+  <!-- SPA 동적 뷰 스위처 엔진이 이 영역을 감지하여 1:1 교체함으로써 헤더 파괴 및 튐현상을 100% 방지하는 본문 컨테이너 -->
   <div id="app-view-container" class="container admin-container">
     <!-- 기존 auth-bar 하드코딩 영역은 공통 네비게이션(global-header) 내부로 통합되어 완전히 제거되었습니다 -->
 
@@ -189,9 +189,9 @@
       <button id="tab-clinics" class="tab-btn" style="display: none;">병원 관리</button>
       <!-- 신규 추가: 광고 배너 CRUD 관리 탭 (병원 관리 바로 오른쪽 위치) -->
       <button id="tab-ads" class="tab-btn" style="display: none;">광고 배너 관리</button>
-      <!-- [한글 주석: 사용자 요청에 따라 광고 배너 관리 바로 오른쪽에 협력업체 CRUD 관리 탭 신설] -->
+      <!-- 사용자 요청에 따라 광고 배너 관리 바로 오른쪽에 협력업체 CRUD 관리 탭 신설 -->
       <button id="tab-partners" class="tab-btn" style="display: none;">협력업체 관리</button>
-      <!-- [한글 주석: 전문 의료 통역사(소속/프리랜서) CRUD 관리 탭] -->
+      <!-- 전문 의료 통역사(소속/프리랜서) CRUD 관리 탭 -->
       <button id="tab-interpreters" class="tab-btn" style="display: none;">전문통역 관리</button>
       <button id="tab-users" class="tab-btn" style="display: none;">등급,권한 관리</button>
       <button id="tab-permissions" class="tab-btn" style="display: none;">회원 리스트</button>
@@ -222,13 +222,13 @@
       <!-- 선택언어별 예약수 타일 영역 (예약캡처 디자인 모사) -->
       <div id="admin-lang-stats" class="admin-lang-stats"></div>
 
-      <!-- 예약 목록 테이블 영역 (한글 주석: 인라인 display: flex를 제거하여 style.css의 반응형 미디어 쿼리가 올바르게 적용되도록 개선) -->
+      <!-- 예약 목록 테이블 영역 (인라인 display: flex를 제거하여 style.css의 반응형 미디어 쿼리가 올바르게 적용되도록 개선) -->
       <main class="admin-main">
         <h2 style="margin-bottom: 0.8rem; color: #ffffff; font-size: 1.25rem;">예약 상세 목록</h2>
         <div class="table-controls" style="margin-bottom: 1.5rem;">
           <!-- [레이아웃 교정] 우측 조작계 항목 그룹화 및 촘촘한 정렬 컨테이너 (모바일 줄바꿈 flex-wrap 추가) -->
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <!-- 한글 주석: 예약 검색 필드 및 검색 버튼 추가 (실시간 검색 기능 대체) -->
+            <!-- 예약 검색 필드 및 검색 버튼 추가 (실시간 검색 기능 대체) -->
             <div style="display: flex; gap: 4px; align-items: center; flex-wrap: nowrap;">
               <input type="text" id="input-search-reservations" placeholder="이름, 연락처, 증상, 병원 검색..."
                 style="background: #0c1020; color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; width: 220px; max-width: 100%; outline: none; transition: border-color 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);">
@@ -261,7 +261,7 @@
               <option value="50">50개씩 보기</option>
               <option value="100">100개씩 보기</option>
             </select>
-            <!-- 한글 주석: 사용자 요청에 따라 '새로고침' 버튼의 렌더링 위치를 언어 필터 우측으로 이동 -->
+            <!-- 사용자 요청에 따라 '새로고침' 버튼의 렌더링 위치를 언어 필터 우측으로 이동 -->
             <button id="btn-refresh" class="btn-refresh" style="height: 36px;">
               <svg viewBox="0 0 24 24" width="16" height="16">
                 <path fill="currentColor"
@@ -289,7 +289,7 @@
                 <th>희망진료일</th>
                 <th>주 소</th>
                 <th>증 상</th>
-                <!-- [한글 주석: 예약 리스트 테이블에 신규 '유입경로' 컬럼 헤더 추가] -->
+                <!-- 예약 리스트 테이블에 신규 '유입경로' 컬럼 헤더 추가 -->
                 <th>유입경로</th>
                 <th>알림톡 상태</th>
                 <th>상 태</th>
@@ -298,7 +298,7 @@
             </thead>
             <tbody id="reservation-list">
               <tr>
-                <!-- [한글 주석: '알림톡 상태' 컬럼 추가로 전체 컬럼 개수가 17개로 변경됨에 따라 colspan 수정] -->
+                <!-- '알림톡 상태' 컬럼 추가로 전체 컬럼 개수가 17개로 변경됨에 따라 colspan 수정 -->
                 <td colspan="17" class="table-loading">데이터를 불러오는 중입니다...</td>
               </tr>
             </tbody>
@@ -312,7 +312,7 @@
       <main class="admin-main">
         <div class="admin-users-full-layout">
 
-          <!-- [한글 주석: 알림톡 수신 번호 설정 폼 (상단 단독 영역) - 번호 개별 추가 방식으로 UI 텍스트 및 안내 문구 업데이트] -->
+          <!-- 알림톡 수신 번호 설정 폼 (상단 단독 영역) - 번호 개별 추가 방식으로 UI 텍스트 및 안내 문구 업데이트 -->
           <section class="clinic-form-section" style="max-width: 480px; margin-bottom: 2rem;">
             <h2>알림톡 수신 번호 설정</h2>
             <form id="solapi-settings-form" class="admin-clinic-form"
@@ -329,7 +329,7 @@
                 번호 추가</button>
             </form>
 
-            <!-- [한글 주석: 현재 DB에 저장되어 있는 알림톡 수신 번호 목록 뷰 영역] -->
+            <!-- 현재 DB에 저장되어 있는 알림톡 수신 번호 목록 뷰 영역 -->
             <div id="solapi-phones-list-container"
               style="margin-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.2rem; display: none;">
               <h3
@@ -346,7 +346,7 @@
           <section class="clinic-list-section" style="width: 100%;">
             <h2>등록된 등급 종류 및 세부 기능 권한 설정</h2>
 
-            <!-- [한글 주석: 회원 등급 종류 추가 폼 (테이블 상단에 단정하게 병합 배치) - UX 동선 효율화 및 레이아웃 찌그러짐 예방용 통합] -->
+            <!-- 회원 등급 종류 추가 폼 (테이블 상단에 단정하게 병합 배치) - UX 동선 효율화 및 레이아웃 찌그러짐 예방용 통합 -->
             <div
               style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); padding: 1.25rem 1.5rem; border-radius: 12px; margin-top: 1.2rem; margin-bottom: 1.5rem; max-width: 720px;">
               <h3 style="font-size: 0.95rem; color: #a5b4fc; margin: 0 0 12px 0; font-weight: 700;">➕ 새 회원 등급 종류 추가</h3>
@@ -381,16 +381,16 @@
                     <th>관리자</th>
                     <th>예약내역관리</th>
                     <th>병원관리</th>
-                    <!-- [한글 주석: 등급 권한 토글 제어를 위한 광고배너관리 열을 병원관리 바로 오른쪽으로 배치] -->
+                    <!-- 등급 권한 토글 제어를 위한 광고배너관리 열을 병원관리 바로 오른쪽으로 배치 -->
                     <th>광고배너관리</th>
-                    <!-- [한글 주석: 사용자 요청에 따라 광고배너관리 바로 오른쪽에 협력업체관리 열 신설] -->
+                    <!-- 사용자 요청에 따라 광고배너관리 바로 오른쪽에 협력업체관리 열 신설 -->
                     <th>협력업체관리</th>
                     <th>등급권한관리</th>
-                    <!-- [한글 주석: 전문통역관리 권한 스위치 열을 등급권한관리 바로 오른쪽으로 추가 배치] -->
+                    <!-- 전문통역관리 권한 스위치 열을 등급권한관리 바로 오른쪽으로 추가 배치 -->
                     <th>전문통역관리</th>
                     <th>회원리스트</th>
                     <th>예약통계</th>
-                    <!-- [한글 주석: 예약통계 오른쪽 옆에 신규 커뮤니티설정 컬럼 추가] -->
+                    <!-- 예약통계 오른쪽 옆에 신규 커뮤니티설정 컬럼 추가 -->
                     <th>커뮤니티설정</th>
                     <th>등급명 변경</th> <!-- 사용자 요청에 맞춰 '등급변경' 컬럼명으로 복원 -->
                   </tr>
@@ -458,7 +458,7 @@
             </tbody>
           </table>
         </div>
-        <!-- [한글 주석: 회원 목록 전용 페이지네이션 컨트롤러 영역] -->
+        <!-- 회원 목록 전용 페이지네이션 컨트롤러 영역 -->
         <div id="users-pagination" class="admin-pagination-container"></div>
       </main>
     </div>
@@ -466,17 +466,17 @@
     <!-- 병원 관리 탭 콘텐츠 -->
     <div id="content-clinics" class="admin-tab-content" style="display: none;">
       <main class="admin-main">
-        <!-- [한글 주석: 1열 배치로 전환하여 병원 목록 테이블이 100% 가로 폭을 확보해 데스크톱 화면에서 한눈에 보이도록 하고, 창이 줄어들면 스크롤이 생성되도록 레이아웃 정돈] -->
+        <!-- 1열 배치로 전환하여 병원 목록 테이블이 100% 가로 폭을 확보해 데스크톱 화면에서 한눈에 보이도록 하고, 창이 줄어들면 스크롤이 생성되도록 레이아웃 정돈 -->
         <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
           <!-- 병원 등록 폼 (상단) -->
           <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
             <h2>신규 병원 등록</h2>
             <form id="clinic-register-form" class="admin-clinic-form" style="width: 100%;">
 
-              <!-- [한글 주석: 데스크톱 가로 2열 대칭 정렬 및 모바일 자동 1열 반응형 레이아웃 컨테이너 추가] -->
+              <!-- 데스크톱 가로 2열 대칭 정렬 및 모바일 자동 1열 반응형 레이아웃 컨테이너 추가 -->
               <div style="display: flex; gap: 2rem; flex-wrap: wrap; width: 100%;">
 
-                <!-- [한글 주석: 기본 정보 입력 영역 (좌측 1열)] -->
+                <!-- 기본 정보 입력 영역 (좌측 1열) -->
                 <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 1rem;">
                   <div class="form-group" style="margin-bottom: 0;">
                     <label for="reg-clinic-name">병원이름 (표시용) <span class="required">*</span></label>
@@ -509,7 +509,7 @@
                   </div>
                 </div>
 
-                <!-- [한글 주석: 주소 지도 검색 및 번역/등록 제어 영역 (우측 2열)] -->
+                <!-- 주소 지도 검색 및 번역/등록 제어 영역 (우측 2열) -->
                 <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 1rem;">
                   <div class="form-group" style="margin-bottom: 0;">
                     <label for="reg-clinic-address">병원주소 <span class="required">*</span></label>
@@ -790,7 +790,7 @@
 
                     </div>
                   </details>
-                  <!-- [한글 주석: 버튼이 세로로 무분별하게 거대화되는 현상을 차단하고, 타 등록 버튼과 동일하게 38px 높이에 왼쪽 정렬로 표준 크기 지정] -->
+                  <!-- 버튼이 세로로 무분별하게 거대화되는 현상을 차단하고, 타 등록 버튼과 동일하게 38px 높이에 왼쪽 정렬로 표준 크기 지정 -->
                   <button type="submit" class="btn btn-primary"
                     style="height: 38px; align-self: flex-start; padding: 0 1.5rem; font-size: 0.88rem; white-space: nowrap; margin-top: auto;">병원
                     등록하기</button>
@@ -813,7 +813,7 @@
                 </span>
               </div>
               <div style="display: flex; gap: 0.5rem;">
-                <!-- [한글 주석: 중복되거나 비어있는 순서 번호를 1번부터 차례대로 완벽하게 재정렬하는 원클릭 액션 버튼] -->
+                <!-- 중복되거나 비어있는 순서 번호를 1번부터 차례대로 완벽하게 재정렬하는 원클릭 액션 버튼 -->
                 <button type="button" id="btn-reorder-clinics" class="btn btn-secondary" style="font-size: 0.82rem; padding: 0.45rem 0.9rem; border-color: #00f3ff; color: #00f3ff; cursor: pointer;">
                   🔄 순서 일괄 자동 정리
                 </button>
@@ -823,7 +823,7 @@
               <table class="admin-table">
                 <thead>
                   <tr>
-                    <!-- [한글 주석: 사용자 요청에 따라 순서 컬럼을 맨 왼쪽으로 이동 배치] -->
+                    <!-- 사용자 요청에 따라 순서 컬럼을 맨 왼쪽으로 이동 배치 -->
                     <th style="width: 75px; text-align: center;">순서</th>
                     <th>사진</th>
                     <th>병원이름</th>
@@ -847,9 +847,9 @@
          5. 광고 배너 관리 탭 콘텐츠 (새로운 CRUD 패널)
          ========================================================================== -->
     <div id="content-ads" class="admin-tab-content" style="display: none;">
-      <!-- [한글 주석: 다른 탭 패널들과 100% 동일한 레이아웃 구조를 갖추어 탭 전환 시 레이아웃 흔들림(Layout Shift) 랙을 방지하는 main 컨테이너 배치] -->
+      <!-- 다른 탭 패널들과 100% 동일한 레이아웃 구조를 갖추어 탭 전환 시 레이아웃 흔들림(Layout Shift) 랙을 방지하는 main 컨테이너 배치 -->
       <main class="admin-main">
-        <!-- [한글 주석: 1열 배치로 전환하여 광고 현황 테이블이 100% 가로 폭을 확보해 데스크톱 화면에서 한눈에 보이도록 하고, 창이 줄어들면 스크롤이 생성되도록 레이아웃 정돈] -->
+        <!-- 1열 배치로 전환하여 광고 현황 테이블이 100% 가로 폭을 확보해 데스크톱 화면에서 한눈에 보이도록 하고, 창이 줄어들면 스크롤이 생성되도록 레이아웃 정돈 -->
         <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
           <!-- 5-1. 광고 배너 등록/수정 폼 영역 (상단) -->
           <section class="clinic-form-section" style="max-width: 1200px; width: 100%;">
@@ -893,7 +893,7 @@
                   <button type="button" id="btn-add-ad-url" class="btn btn-secondary"
                     style="font-size: 0.75rem; padding: 0.25rem 0.6rem; min-width: auto;">+ 추가</button>
                 </label>
-                <!-- [한글 주석: 이미지 목록들을 세로로 길게 방치하지 않고 가로 다열 그리드로 렌더링되게 스타일 변경] -->
+                <!-- 이미지 목록들을 세로로 길게 방치하지 않고 가로 다열 그리드로 렌더링되게 스타일 변경 -->
                 <div id="ad-urls-container"
                   style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 0.75rem; width: 100%;">
                   <!-- 자바스크립트로 동적 인풋 박스가 렌더링되며, 기본으로 최소 1개가 주어집니다 -->
@@ -901,7 +901,7 @@
                     <input type="text" class="ad-image-url" required placeholder="웹 이미지 주소(URL) 또는 우측 파일 업로드 이용"
                       style="padding: 0.6rem; font-size: 0.85rem; flex-grow: 1; min-width: 200px;">
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
-                      <!-- [한글 주석: 디자인 일관성을 지키는 숨김형 파일 업로드 버튼 및 가짜 뱃지 스타일 적용] -->
+                      <!-- 디자인 일관성을 지키는 숨김형 파일 업로드 버튼 및 가짜 뱃지 스타일 적용 -->
                       <label class="btn btn-secondary"
                         style="font-size: 0.75rem; padding: 0.6rem 0.8rem; min-width: auto; margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
                         📁 파일 선택
@@ -914,7 +914,7 @@
                 </div>
               </div>
 
-              <!-- [한글 주석: 수정취소/수정완료 버튼의 크기를 줄이고 50:50으로 정확히 대칭 분할 정렬] -->
+              <!-- 수정취소/수정완료 버튼의 크기를 줄이고 50:50으로 정확히 대칭 분할 정렬 -->
               <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; width: 100%;">
                 <button type="button" id="btn-cancel-ad-edit" class="btn btn-secondary"
                   style="flex: 1; display: none; padding: 0.5rem 0.75rem; font-size: 0.85rem; height: 38px; min-width: auto; line-height: 1.4;">수정
@@ -938,7 +938,7 @@
               <table class="admin-table">
                 <thead>
                   <tr>
-                    <!-- [한글 주석: 순서 컬럼을 맨 앞(첫 번째 열)으로 배치하여 직관적인 순서 파악 및 드래그 조작 유도] -->
+                    <!-- 순서 컬럼을 맨 앞(첫 번째 열)으로 배치하여 직관적인 순서 파악 및 드래그 조작 유도 -->
                     <th style="width: 75px; text-align: center;">순서</th>
                     <th>태그</th>
                     <th>제목</th>
@@ -960,7 +960,7 @@
     </div>
 
     <!-- ==========================================================================
-         [한글 주석: 6. 협력업체 관리 탭 콘텐츠 (소속/제휴사 CRUD - 100% Full-Width 적용)]
+         6. 협력업체 관리 탭 콘텐츠 (소속/제휴사 CRUD - 100% Full-Width 적용)]
          ========================================================================== -->
     <div id="content-partners" class="admin-tab-content admin-users-full-layout" style="display: none;">
       <main class="admin-main" style="max-width: 100%; width: 100%; padding: 0;">
@@ -1050,7 +1050,7 @@
                 </span>
               </div>
               <div style="display: flex; gap: 0.5rem;">
-                <!-- [한글 주석: 중복되거나 비어있는 순서 번호를 1번부터 차례대로 완벽하게 재정렬하는 원클릭 액션 버튼] -->
+                <!-- 중복되거나 비어있는 순서 번호를 1번부터 차례대로 완벽하게 재정렬하는 원클릭 액션 버튼 -->
                 <button type="button" id="btn-reorder-partners" class="btn btn-secondary" style="font-size: 0.82rem; padding: 0.45rem 0.9rem; border-color: #00f3ff; color: #00f3ff; cursor: pointer;">
                   🔄 순서 일괄 자동 정리
                 </button>
@@ -1080,7 +1080,7 @@
       </main>
     </div>
 
-    <!-- [한글 주석: 전문 통역 관리 탭 콘텐츠 (소속/프리랜서 통역사 CRUD - 100% Full-Width 적용)] -->
+    <!-- 전문 통역 관리 탭 콘텐츠 (소속/프리랜서 통역사 CRUD - 100% Full-Width 적용) -->
     <div id="content-interpreters" class="admin-tab-content admin-users-full-layout" style="display: none;">
       <main class="admin-main" style="max-width: 100%; width: 100%; padding: 0;">
         <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
@@ -1253,10 +1253,10 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5)] -->
-  <script type="module" src="/js/navigation.js?v=260916_5"></script>
-  <script type="module" src="/js/admin.js?v=260916_5"></script>
-  <script type="module" src="/js/auth.js?v=260916_5"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5) -->
+  <script type="module" src="/js/navigation.js?v=260916_12"></script>
+  <script type="module" src="/js/admin.js?v=260916_12"></script>
+  <script type="module" src="/js/auth.js?v=260916_12"></script>
 </body>
 
 </html>

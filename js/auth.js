@@ -14,7 +14,7 @@ import {
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /**
- * [한글 주석] IGPartners 회원가입 & 로그인 모듈
+ * IGPartners 회원가입 & 로그인 모듈
  * - 구글 로그인 방식을 대체하여 아이디/비밀번호 기반 회원가입 및 로그인 기능을 수행합니다.
  * - 회원가입 시 수집 항목: 아이디, 비밀번호, 비밀번호 재확인, 국가(선호언어), 이름, 생년월일, 외국인등록번호, 체류주소, 이메일, 연락처, 비자타입, 비자만료일
  * - Firestore `users/{uid}` 컬렉션 문서로 회원 프로필 데이터를 저장하여 안전하게 관리합니다.
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
 
   /**
-   * [한글 주석] 회원가입 및 로그인 모달 HTML 돔 구조가 없을 경우 동적 생성해주는 함수
+   * 회원가입 및 로그인 모달 HTML 돔 구조가 없을 경우 동적 생성해주는 함수
    */
   function ensureAuthModalCreated() {
     if (document.getElementById("auth-modal")) return;
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
 
           <!-- 회원가입 폼 영역 (12개 입력 항목) -->
-          <!-- [한글 주석: autocomplete="off"를 지정하여 브라우저 자동완성이 회원가입 입력창을 덮어쓰는 보안 취약점 원천 차단] -->
+          <!-- autocomplete="off"를 지정하여 브라우저 자동완성이 회원가입 입력창을 덮어쓰는 보안 취약점 원천 차단 -->
           <div id="auth-section-signup" style="display: none;">
             <form id="form-auth-signup" autocomplete="off">
               <div class="auth-form-grid">
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
               </div>
 
-              <!-- [한글 주석: 개인정보 수집 및 이용 동의 체크박스 영역] -->
+              <!-- 개인정보 수집 및 이용 동의 체크박스 영역 -->
               <div class="auth-privacy-wrapper">
                 <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: rgba(255, 255, 255, 0.9);">
                   <input type="checkbox" id="signup-privacy-agree" required style="width: 17px; height: 17px; accent-color: #3b82f6; cursor: pointer;">
@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 약관 상세 팝업 모달을 여는 전역 오픈 함수
+   * 약관 상세 팝업 모달을 여는 전역 오픈 함수
    */
   window.showPrivacyPolicyModal = function(e) {
     if (e) {
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   /**
-   * [한글 주석] 개인정보 수집 및 이용 동의 약관 상세 모달 HTML 동적 생성 함수
+   * 개인정보 수집 및 이용 동의 약관 상세 모달 HTML 동적 생성 함수
    */
   function ensurePrivacyModalCreated() {
     if (document.getElementById("privacy-policy-modal")) return;
@@ -263,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 국가(선호언어) 선택 변경에 따른 비자 타입 및 체류 만료일 동적 제어
+   * 국가(선호언어) 선택 변경에 따른 비자 타입 및 체류 만료일 동적 제어
    */
   function handleCountryLangChange() {
     const selectLang = document.getElementById("signup-country-lang");
@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 모달 내부 탭 스위처 및 닫기 이벤트 핸들러 바인딩
+   * 모달 내부 탭 스위처 및 닫기 이벤트 핸들러 바인딩
    */
   function bindAuthModalEvents() {
     const modal = document.getElementById("auth-modal");
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnClose) {
       btnClose.addEventListener("click", hideAuthModal);
     }
-    // [한글 주석] 지시사항에 따라 모달 밖 백드롭 영역 클릭 닫기는 제거함 (X 버튼으로만 닫기 허용)
+    // 지시사항에 따라 모달 밖 백드롭 영역 클릭 닫기는 제거함 (X 버튼으로만 닫기 허용)
 
     if (selectLang) {
       selectLang.addEventListener("change", handleCountryLangChange);
@@ -322,13 +322,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // [한글 주석: 회원가입 폼 보안 초기화 함수 - 브라우저 자동완성 오작동 및 이전 잔여 계정 데이터 완전 소거]
+    // 회원가입 폼 보안 초기화 함수 - 브라우저 자동완성 오작동 및 이전 잔여 계정 데이터 완전 소거]
     function resetSignupForm() {
       const formSignup = document.getElementById("form-auth-signup");
       if (formSignup) {
         formSignup.reset();
       }
-      // [한글 주석: 브라우저 AutoFill이 강제로 밀어 넣은 잔여 값들을 빈 문자열로 강제 소거]
+      // 브라우저 AutoFill이 강제로 밀어 넣은 잔여 값들을 빈 문자열로 강제 소거]
       const clearIds = [
         "signup-login-id", "signup-email", "signup-password", "signup-password-confirm",
         "signup-name", "signup-dob", "signup-alien-no", "signup-phone", "signup-address"
@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tabLogin.classList.remove("active");
         secSignup.style.display = "block";
         secLogin.style.display = "none";
-        // [한글 주석: 회원가입 탭 클릭 시 이전 로그인 자격증명이 노출되지 않도록 강제 리셋]
+        // 회원가입 탭 클릭 시 이전 로그인 자격증명이 노출되지 않도록 강제 리셋]
         resetSignupForm();
       });
     }
@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 로그인/회원가입 모달 열기 함수 (전역 노출)
+   * 로그인/회원가입 모달 열기 함수 (전역 노출)
    * @param {string} initialTab - "login" 또는 "signup"
    */
   function showAuthModal(initialTab = "login") {
@@ -389,7 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabSignup = document.getElementById("tab-btn-signup");
 
     if (modal) {
-      // [한글 주석: 모달 오픈 시 폼 잔여 데이터 깨끗이 비우기]
+      // 모달 오픈 시 폼 잔여 데이터 깨끗이 비우기]
       if (typeof window.resetSignupForm === "function") {
         window.resetSignupForm();
       }
@@ -406,14 +406,14 @@ document.addEventListener("DOMContentLoaded", () => {
   window.showLoginModal = showAuthModal; // 하위 호환성 유지
 
   /**
-   * [한글 주석] 로그인/회원가입 모달 닫기 함수 (전역 노출)
+   * 로그인/회원가입 모달 닫기 함수 (전역 노출)
    */
   function hideAuthModal() {
     const modal = document.getElementById("auth-modal");
     if (modal) {
       modal.style.display = "none";
       document.body.classList.remove("modal-open");
-      // [한글 주석: 모달 닫기 시 잔여 비밀번호 입력값 소거]
+      // 모달 닫기 시 잔여 비밀번호 입력값 소거]
       if (typeof window.resetSignupForm === "function") {
         window.resetSignupForm();
       }
@@ -427,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
 
   /**
-   * [한글 주석] 개인정보 수정 및 비밀번호 변경 모달 HTML 구조를 동적으로 생성하는 함수
+   * 개인정보 수정 및 비밀번호 변경 모달 HTML 구조를 동적으로 생성하는 함수
    */
   function ensureProfileModalCreated() {
     if (document.getElementById("profile-edit-modal")) return;
@@ -574,7 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 프로필 모달 이벤트 바인딩 함수
+   * 프로필 모달 이벤트 바인딩 함수
    */
   function bindProfileModalEvents() {
     const btnClose = document.getElementById("btn-close-profile-modal");
@@ -626,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 프로필 수정 모달 내 국가(언어) 변경 시 비자 제어
+   * 프로필 수정 모달 내 국가(언어) 변경 시 비자 제어
    */
   function handleProfileCountryLangChange() {
     const selectLang = document.getElementById("profile-country-lang");
@@ -647,7 +647,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 프로필 수정 모달 열기 함수 (전역 노출)
+   * 프로필 수정 모달 열기 함수 (전역 노출)
    * - Firebase Auth currentUser 및 세션 캐시(auth_user_cache)를 모두 지원하여 0초 만에 즉시 열림 보장
    */
   async function showProfileModal() {
@@ -727,7 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.showProfileModal = showProfileModal;
 
-  // [한글 주석: 전역 이벤트 위임(Event Delegation)으로 헤더/사이드바 사용자 프로필 클릭 시 100% 모달 오픈 보장]
+  // 전역 이벤트 위임(Event Delegation)으로 헤더/사이드바 사용자 프로필 클릭 시 100% 모달 오픈 보장]
   document.addEventListener("click", (e) => {
     const profileTrigger = e.target.closest(".user-capsule, #user-badge, #user-name, #user-photo, #sidebar-user-name, .cafe-user-badge");
     if (profileTrigger) {
@@ -738,7 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /**
-   * [한글 주석] 프로필 수정 모달 닫기 함수
+   * 프로필 수정 모달 닫기 함수
    */
   function hideProfileModal() {
     const modal = document.getElementById("profile-edit-modal");
@@ -750,7 +750,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.hideProfileModal = hideProfileModal;
 
   /**
-   * [한글 주석] 프로필 기본 정보 수정 폼 제출 핸들러
+   * 프로필 기본 정보 수정 폼 제출 핸들러
    */
   async function handleProfileInfoSubmit(e) {
     e.preventDefault();
@@ -826,7 +826,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 비밀번호 변경 폼 제출 핸들러
+   * 비밀번호 변경 폼 제출 핸들러
    */
   async function handleProfilePasswordSubmit(e) {
     e.preventDefault();
@@ -896,7 +896,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
 
   /**
-   * [한글 주석] 로그인 폼 제출 처리 핸들러
+   * 로그인 폼 제출 처리 핸들러
    * - 아이디 또는 이메일과 비밀번호로 로그인 처리합니다.
    */
   async function handleLoginSubmit(e) {
@@ -957,7 +957,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석] 회원가입 폼 제출 처리 핸들러
+   * 회원가입 폼 제출 처리 핸들러
    * - 12가지 필수 수집 항목에 대해 유효성을 검사하고 계정 생성 및 프로필 데이터를 Firestore에 저장합니다.
    */
   async function handleSignUpSubmit(e) {
@@ -1022,7 +1022,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const user = userCredential.user;
 
       // 3. Firestore users/{uid} 에 사용자 12가지 상세 데이터 저장
-      // [한글 주석] ispartners82@gmail.com 계정 또는 ispartners82 아이디로 가입 시 최고 관리자(super_admin) 등급 자동 부여
+      // ispartners82@gmail.com 계정 또는 ispartners82 아이디로 가입 시 최고 관리자(super_admin) 등급 자동 부여
       const isSuperAdminAccount = (email.toLowerCase() === "ispartners82@gmail.com" || loginId.toLowerCase() === "ispartners82");
       const assignedRole = isSuperAdminAccount ? "super_admin" : "user";
 
@@ -1090,7 +1090,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target.id === "btn-logout" || target.closest("#btn-logout")) {
       try {
         if (confirm("로그아웃 하시겠습니까?")) {
-          // [한글 주석: 로그아웃 시 폼에 남아있을 수 있는 자격증명 및 입력값을 즉시 초기화]
+          // 로그아웃 시 폼에 남아있을 수 있는 자격증명 및 입력값을 즉시 초기화]
           if (typeof window.resetSignupForm === "function") {
             window.resetSignupForm();
           }
@@ -1114,7 +1114,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
 
   /**
-   * [한글 주석: 사용자 역할(role) 세션 캐싱 함수 - 강제 최신화(forceRefresh) 지원으로 등급 변경 시 실시간 반영]
+   * 사용자 역할(role) 세션 캐싱 함수 - 강제 최신화(forceRefresh) 지원으로 등급 변경 시 실시간 반영]
    * @param {string} uid - 사용자 고유 식별자
    * @param {boolean} forceRefresh - 캐시를 무시하고 Firestore에서 강제로 최신 등급을 조회할지 여부
    */
@@ -1141,7 +1141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
   /**
-   * [한글 주석: 등급(role)별 10개 세부 기능 권한 및 라벨 정보 캐싱 함수 - Firestore 읽기 비용 절감 및 세부 권한 무결성 보장]
+   * 등급(role)별 10개 세부 기능 권한 및 라벨 정보 캐싱 함수 - Firestore 읽기 비용 절감 및 세부 권한 무결성 보장]
    * @param {string} userRole - 사용자 등급 키 (예: super_admin, admin, admin_user 등)
    * @returns {Promise<Object>} 10개 세부 권한 및 등급 라벨을 포함한 객체
    */
@@ -1199,7 +1199,7 @@ document.addEventListener("DOMContentLoaded", () => {
           label: roleData.label || (isSuper ? "최고관리자" : (userRole === "admin" ? "일반관리자" : (userRole === "admin_user" ? "관리자" : "회원")))
         };
       } else {
-        // [한글 주석: DB에 roles 문서가 존재하지 않을 때의 하위 호환 폴백 매핑]
+        // DB에 roles 문서가 존재하지 않을 때의 하위 호환 폴백 매핑]
         const isLegacyAdmin = ["admin", "admin_user"].includes(userRole);
         const isLegacyManager = ["top_manager", "res_manager"].includes(userRole);
         perms = {
@@ -1225,7 +1225,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [한글 주석: 사용자 등급 변경 또는 로그아웃 시 관련 세션 캐시 전체 무효화 함수]
+   * 사용자 등급 변경 또는 로그아웃 시 관련 세션 캐시 전체 무효화 함수]
    * @param {string} uid - 캐시를 삭제할 사용자 UID
    */
   function clearUserRoleCache(uid) {
@@ -1238,7 +1238,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.clearUserRoleCache = clearUserRoleCache;
 
-  // [한글 주석: 실시간 등급 및 세부 권한 감지 리스너 구독 해제 함수 포인터]
+  // 실시간 등급 및 세부 권한 감지 리스너 구독 해제 함수 포인터]
   let unsubscribeLiveUser = null;
   let unsubscribeLiveRole = null;
 
@@ -1289,7 +1289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (authUserArea) authUserArea.style.display = "flex";
 
-      // [한글 주석: 상단 사용자 뱃지 클릭 시 내 정보 관리(개인정보 수정) 모달 호출 이벤트 연결]
+      // 상단 사용자 뱃지 클릭 시 내 정보 관리(개인정보 수정) 모달 호출 이벤트 연결]
       const userBadgeEl = document.getElementById("user-badge");
       if (userBadgeEl) {
         userBadgeEl.style.cursor = "pointer";
@@ -1314,14 +1314,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
       if (quickBtnLogin) quickBtnLogin.style.display = "none";
 
-      // [한글 주석: 로그인한 회원에게만 상단 '커뮤니티' 메뉴 노출 처리]
+      // 로그인한 회원에게만 상단 '커뮤니티' 메뉴 노출 처리]
       const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
       communityMenuItems.forEach(item => {
         item.style.display = "inline-block";
         item.classList.add("logged-in");
       });
 
-      // [한글 주석: 이전 실시간 리스너 해제 후 안전한 재구독]
+      // 이전 실시간 리스너 해제 후 안전한 재구독]
       if (typeof unsubscribeLiveRole === "function") {
         unsubscribeLiveRole();
         unsubscribeLiveRole = null;
@@ -1331,7 +1331,7 @@ document.addEventListener("DOMContentLoaded", () => {
         unsubscribeLiveUser = null;
       }
 
-      // [한글 주석: 실시간 등급 및 10가지 세부 권한 변경 감지 파이프라인 시작]
+      // 실시간 등급 및 10가지 세부 권한 변경 감지 파이프라인 시작]
       // 1. users/{uid} 문서 실시간 감지: 관리자가 회원 등급을 바꿀 때 0.1초 즉시 감지
       unsubscribeLiveUser = onSnapshot(doc(db, "users", user.uid), (userSnap) => {
         if (!userSnap.exists()) return;
@@ -1365,7 +1365,7 @@ document.addEventListener("DOMContentLoaded", () => {
               hasCommunitySettings: isSuper || (rData.hasCommunitySettings !== undefined ? rData.hasCommunitySettings : false)
             };
           } else {
-            // [한글 주석: roles 문서가 DB에 없을 경우 하위 호환 폴백 매핑]
+            // roles 문서가 DB에 없을 경우 하위 호환 폴백 매핑]
             const isLegacyAdmin = ["admin", "admin_user"].includes(activeRole);
             const isLegacyManager = ["top_manager", "res_manager"].includes(activeRole);
             fullPermissions = {
@@ -1428,7 +1428,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       hideAuthModal();
     } else {
-      // [한글 주석: 로그아웃 시 기존 실시간 감지 리스너 정리]
+      // 로그아웃 시 기존 실시간 감지 리스너 정리]
       if (typeof unsubscribeLiveRole === "function") {
         unsubscribeLiveRole();
         unsubscribeLiveRole = null;
@@ -1452,7 +1452,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // [한글 주석: 비로그인/로그아웃 상태 시에도 상단 '커뮤니티' 메뉴는 항상 노출되도록 유지]
+      // 비로그인/로그아웃 상태 시에도 상단 '커뮤니티' 메뉴는 항상 노출되도록 유지]
       const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
       communityMenuItems.forEach(item => {
         item.style.display = "inline-block";
@@ -1469,7 +1469,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
       if (btnStatsDashboard) btnStatsDashboard.style.display = "none";
 
-      // [한글 주석: 로그아웃 시 권한 캐시 및 세션 완전 정리]
+      // 로그아웃 시 권한 캐시 및 세션 완전 정리]
       Object.keys(sessionStorage)
         .filter(key => key.startsWith("user_role_cache_") || key.startsWith("admin_permissions_") || key.startsWith("role_permissions_cache_"))
         .forEach(key => sessionStorage.removeItem(key));

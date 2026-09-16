@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- [한글 주석: 검색 엔진 최적화(SEO) 및 공식 한글/영문 상호 타이틀 정의] -->
+  <!-- 검색 엔진 최적화(SEO) 및 공식 한글/영문 상호 타이틀 정의 -->
   <title>커뮤니티 - 아이지파트너스 (IGPartners)</title>
   <meta name="description" content="주식회사 아이지파트너스(IGPartners) 회원을 위한 글로벌 의료 소통, 후기 및 정보 공유 커뮤니티입니다.">
   <meta name="keywords" content="아이지파트너스 커뮤니티, 외국인의료후기, 의료정보공유, IGPartners">
@@ -12,7 +12,7 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://igpartners.co.kr/community.html">
 
-  <!-- [한글 주석: 소셜 공유 오픈 그래프 태그] -->
+  <!-- 소셜 공유 오픈 그래프 태그 -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:site_name" content="아이지파트너스 (IGPartners)">
@@ -29,14 +29,14 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_5">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_5">
+  <!-- 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정 -->
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_12">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_12">
 
-  <!-- [한글 주석: 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=260914_5)] -->
-  <link rel="stylesheet" href="css/style.css?v=260916_5">
+  <!-- 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=260914_5) -->
+  <link rel="stylesheet" href="css/style.css?v=260916_12">
 
-  <!-- [한글 주석: 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장] -->
+  <!-- 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장 -->
   <script>
     window.attachedPhotos = [];
     window.attachedFiles = [];
@@ -71,7 +71,7 @@
       if (listEl) listEl.style.display = "block";
     }
 
-    // [한글 주석: 카테고리 관리 · 설정 인라인 편집 화면으로 전환하는 함수]
+    // 카테고리 관리 · 설정 인라인 편집 화면으로 전환하는 함수]
     function showCafeCategoryManageSection() {
       var listEl = document.getElementById("cafe-post-list-section");
       var writeEl = document.getElementById("cafe-post-write-section");
@@ -168,7 +168,7 @@
           compressImage(evt.target.result, 900, 0.85, function(compressedUrl) {
             window.attachedPhotos.push({ name: file.name, dataUrl: compressedUrl });
             renderPhotoPreviews();
-            // [한글 주석: 네이버 카페 스마트 에디터 - 사진 선택 즉시 본문 작성창 커서 위치에 대형 사진 자동 쏙 삽입]
+            // 네이버 카페 스마트 에디터 - 사진 선택 즉시 본문 작성창 커서 위치에 대형 사진 자동 쏙 삽입]
             if (typeof window.insertImageAtCursor === "function") {
               window.insertImageAtCursor(compressedUrl, file.name);
             }
@@ -204,7 +204,7 @@
       renderFilePreviews();
     }
 
-    // [한글 주석: 단일통합 전역 제출 엔진 - js/community.js 마스터 엔진 연동]
+    // 단일통합 전역 제출 엔진 - js/community.js 마스터 엔진 연동]
     function submitNewPost() {
       if (typeof window.submitNewPost === "function" && window.submitNewPost !== submitNewPost) {
         return window.submitNewPost();
@@ -226,7 +226,7 @@
 </head>
 
 <body class="home-page community-page">
-  <!-- [한글 주석: 헤더 및 상단 공통 네비게이션 영역] -->
+  <!-- 헤더 및 상단 공통 네비게이션 영역 -->
   <header id="global-header" class="global-header">
     <nav class="common-navbar">
       <div class="nav-container">
@@ -255,18 +255,18 @@
           <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
           <li class="nav-item"><a href="/interpreters.html" class="nav-link btn-nav-booking">전문통역</a></li>
           <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking">진료 예약</a></li>
-          <!-- [한글 주석: 상단 메뉴 명칭 변경 - 신규 협력업체 전용 페이지 연결] -->
+          <!-- 상단 메뉴 명칭 변경 - 신규 협력업체 전용 페이지 연결 -->
           <li class="nav-item"><a href="/partners.html" class="nav-link">협력업체</a></li>
-          <!-- [한글 주석: 상단 커뮤니티 메뉴 - 비로그인 상태에서도 지연 없이 상시 노출] -->
+          <!-- 상단 커뮤니티 메뉴 - 비로그인 상태에서도 지연 없이 상시 노출 -->
           <li class="nav-item nav-community-item" id="nav-item-community">
             <a href="/community.html" class="nav-link active">커뮤니티</a>
           </li>
         </ul>
 
-        <!-- [한글 주석: 비로그인 시 깜빡임(FOUC) 원천 차단 및 세션 캐시 기반 0ms 즉시 분기 렌더링 적용] -->
+        <!-- 비로그인 시 깜빡임(FOUC) 원천 차단 및 세션 캐시 기반 0ms 즉시 분기 렌더링 적용 -->
         <div class="nav-auth-area" id="nav-auth-area">
           <div id="auth-user" class="auth-user-badge" style="display: none;">
-            <!-- [한글 주석: 세션 스토리지에서 유저 정보를 즉시 바인딩하여 렌더링 지연 방지] -->
+            <!-- 세션 스토리지에서 유저 정보를 즉시 바인딩하여 렌더링 지연 방지 -->
             <div class="user-capsule">
               <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile"
                 class="user-avatar">
@@ -279,7 +279,7 @@
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
           <script>
-            /* [한글 주석: HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함] */
+            /* HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함 */
             (function () {
               try {
                 var c = sessionStorage.getItem("auth_user_cache");
@@ -316,7 +316,7 @@
           </script>
         </div>
 
-        <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함 및 active 적용] -->
+        <!-- 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함 및 active 적용 -->
         <div class="nav-mobile-quick" id="nav-mobile-quick">
           <a href="/index.html" class="quick-icon-btn" title="홈">🏠</a>
           <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
@@ -358,7 +358,7 @@
           </script>
         </div>
 
-        <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
+        <!-- 모바일 화면 전용 햄버거 메뉴 토글 버튼 -->
         <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
           <span class="bar"></span>
           <span class="bar"></span>
@@ -368,7 +368,7 @@
     </nav>
   </header>
 
-  <!-- [한글 주석: 네이버 카페 스타일 2열 레이아웃 커뮤니티 메인 컨테이너 - 비로그인 방문자도 상시 열람 가능] -->
+  <!-- 네이버 카페 스타일 2열 레이아웃 커뮤니티 메인 컨테이너 - 비로그인 방문자도 상시 열람 가능 -->
   <main class="cafe-layout-container" id="community-main-content">
 
     <!-- 1. 좌측 카테고리 사이드바 -->
@@ -383,7 +383,7 @@
             <span class="cafe-user-badge" id="sidebar-user-badge">일반회원</span>
           </div>
         </div>
-        <!-- [한글 주석: 프로필 카드 액션 버튼 그룹 - 권한에 따라 설정 버튼이 동적 표시됨] -->
+        <!-- 프로필 카드 액션 버튼 그룹 - 권한에 따라 설정 버튼이 동적 표시됨 -->
         <div class="cafe-profile-btn-group">
           <button type="button" id="btn-sidebar-write" class="btn-cafe-write" onclick="showCafeWriteSection()">
             <i class="fa-solid fa-pen"></i> 글쓰기
@@ -401,14 +401,14 @@
           <i class="fa-solid fa-chevron-down"></i>
         </div>
         <ul class="cafe-menu-list" id="cafe-sidebar-menu-list">
-          <!-- [한글 주석: 초기 하드코딩된 구형 6개 항목은 완전 삭제하고 전체글보기만 유지, 하단 인라인 캐시 스크립트로 최신 카테고리 0.001초 즉시 주입] -->
+          <!-- 초기 하드코딩된 구형 6개 항목은 완전 삭제하고 전체글보기만 유지, 하단 인라인 캐시 스크립트로 최신 카테고리 0.001초 즉시 주입 -->
           <li class="cafe-menu-item active" data-board="all">
             <span>📋 전체글보기</span>
             <span class="cafe-menu-count" id="count-all">0</span>
           </li>
         </ul>
         <script>
-          /* [한글 주석: 0.001초 깜빡임 방지 로컬 스토리지 SWR 인라인 스크립트 - 알바공고 등 최신 카테고리 즉시 렌더링] */
+          /* 0.001초 깜빡임 방지 로컬 스토리지 SWR 인라인 스크립트 - 알바공고 등 최신 카테고리 즉시 렌더링 */
           (function () {
             try {
               var cached = localStorage.getItem("community_cached_categories");
@@ -570,7 +570,7 @@
               <option value="job">💼 구인구직</option>
               <option value="resume">📄 이력서업로드</option>
             </select>
-            <!-- [한글 주석: 관리자 전용 공지글 설정 체크박스 옵션] -->
+            <!-- 관리자 전용 공지글 설정 체크박스 옵션 -->
             <label id="write-notice-check-wrapper" class="cafe-checkbox-label" style="display: none; align-items: center; gap: 0.4rem; color: #f59e0b; font-weight: 700; font-size: 0.88rem; cursor: pointer; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); padding: 0.45rem 0.85rem; border-radius: 8px; user-select: none;">
               <input type="checkbox" id="write-notice-check" style="accent-color: #f59e0b; width: 16px; height: 16px; cursor: pointer;">
               📌 전체 공지로 상단 고정
@@ -780,7 +780,7 @@
                 </div>
               </div>
 
-              <!-- 3-1. [한글 주석: 글쓰기 권한 - 시스템에 등록된 모든 등급 중 선택된 등급만 글쓰기 버튼 노출] -->
+              <!-- 3-1. 글쓰기 권한 - 시스템에 등록된 모든 등급 중 선택된 등급만 글쓰기 버튼 노출] -->
               <div class="cat-form-row" style="align-items: flex-start;">
                 <span class="cat-form-label" style="margin-top: 0.2rem;">글쓰기 권한</span>
                 <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
@@ -863,10 +863,10 @@
 
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5)] -->
-  <script type="module" src="/js/navigation.js?v=260916_5"></script>
-  <script type="module" src="/js/auth.js?v=260916_5"></script>
-  <script type="module" src="/js/community.js?v=260916_5"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5) -->
+  <script type="module" src="/js/navigation.js?v=260916_12"></script>
+  <script type="module" src="/js/auth.js?v=260916_12"></script>
+  <script type="module" src="/js/community.js?v=260916_12"></script>
 </body>
 
 </html>

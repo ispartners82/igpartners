@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- [한글 주석: 검색 엔진 최적화(SEO) 및 공식 한글/영문 상호 타이틀 정의] -->
+  <!-- 검색 엔진 최적화(SEO) 및 공식 한글/영문 상호 타이틀 정의 -->
   <title>예약 상세 통계 대시보드 - 아이지파트너스 (IGPartners)</title>
 
   <!-- Google 폰트 로드 -->
@@ -18,13 +18,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-  <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_5">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_5">
+  <!-- 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정 -->
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_12">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_12">
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_5)] -->
-  <link rel="stylesheet" href="/css/style.css?v=260916_5">
-  <!-- 한글 주석: 데스크톱/모바일 반응형 필터 그리드 스타일 정의 -->
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_5) -->
+  <link rel="stylesheet" href="/css/style.css?v=260916_12">
+  <!-- 데스크톱/모바일 반응형 필터 그리드 스타일 정의 -->
   <style>
     /* 기본적으로 모바일 1열 세로 레이아웃 */
     #stats-filter-form {
@@ -73,12 +73,12 @@
       }
     }
 
-    /* 브라우저 기본 용지 여백 최소화 (한글 주석: 세로/가로 인쇄 영역의 가로 폭을 최대로 극대화) */
+    /* 브라우저 기본 용지 여백 최소화 (세로/가로 인쇄 영역의 가로 폭을 최대로 극대화) */
     @page {
       margin: 5mm !important;
     }
 
-    /* 한글 주석: 프린트/PDF 저장 시 불필요한 레이아웃 가림 및 테이블 잘림/겹침 방지 최적화 v4 */
+    /* 프린트/PDF 저장 시 불필요한 레이아웃 가림 및 테이블 잘림/겹침 방지 최적화 v4 */
     @media print {
 
       #global-header,
@@ -168,7 +168,7 @@
       }
     }
 
-    /* 엑셀 미리보기 모달 전용 스타일 (한글 주석 필수) */
+    /* 엑셀 미리보기 모달 전용 스타일 */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -326,7 +326,7 @@
     <div class="aurora-2"></div>
   </div>
 
-  <!-- [한글 주석: 상단 네비게이션 파괴 방지를 위한 공통 상단 네비게이션 바 컴포넌트 정적 사전 배치] -->
+  <!-- 상단 네비게이션 파괴 방지를 위한 공통 상단 네비게이션 바 컴포넌트 정적 사전 배치 -->
   <header id="global-header">
     <nav class="common-navbar">
       <div class="nav-container">
@@ -335,7 +335,7 @@
           <span class="nav-brand-text">IGPartners</span>
         </a>
         <ul class="nav-menu" id="nav-menu">
-          <!-- [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치)] -->
+          <!-- 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 메뉴 (홈 메뉴 바로 왼쪽 정적 배치) -->
           <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
             <div class="nav-lang-trigger" id="nav-lang-trigger" onclick="window.toggleLangDropdown(event)">
               <img id="nav-lang-selected-flag" class="nav-lang-flag" src="https://flagcdn.com/w80/kr.png" alt="South Korea Flag">
@@ -347,7 +347,7 @@
                 <span>🌐 Select Language / 언어선택</span>
               </div>
               <div class="nav-lang-scroll-list" id="nav-lang-scroll-list">
-                <!-- [한글 주석: 15개국 언어 목록은 navigation.js의 bindLangDropdownList()에서 0ms 동적 주입] -->
+                <!-- 15개국 언어 목록은 navigation.js의 bindLangDropdownList()에서 0ms 동적 주입 -->
               </div>
             </div>
           </li>
@@ -356,15 +356,15 @@
           <li class="nav-item"><a href="/about.html#services" class="nav-link">제공 서비스</a></li>
           <li class="nav-item"><a href="/interpreters.html" class="nav-link btn-nav-booking">전문통역</a></li>
           <li class="nav-item"><a href="/booking-lang.html" class="nav-link btn-nav-booking">진료 예약</a></li>
-          <!-- [한글 주석: 상단 메뉴 - 협력업체 전용 페이지 연결] -->
+          <!-- 상단 메뉴 - 협력업체 전용 페이지 연결 -->
           <li class="nav-item"><a href="/partners.html" class="nav-link">협력업체</a></li>
-          <!-- [한글 주석: 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출] -->
+          <!-- 상단 커뮤니티 메뉴 - 비로그인 상태에서도 상시 노출 -->
           <li class="nav-item nav-community-item" id="nav-item-community"><a href="/community.html" class="nav-link">커뮤니티</a></li>
         </ul>
-        <!-- [한글 주석: 비로그인 시 깜빡임(FOUC) 원천 차단 및 세션 캐시 기반 0ms 즉시 분기 렌더링 적용] -->
+        <!-- 비로그인 시 깜빡임(FOUC) 원천 차단 및 세션 캐시 기반 0ms 즉시 분기 렌더링 적용 -->
         <div class="nav-auth-area" id="nav-auth-area">
           <div id="auth-user" class="auth-user-badge" style="display: none;">
-            <!-- [한글 주석: 세션 스토리지에서 유저 정보를 즉시 바인딩하여 렌더링 지연 방지] -->
+            <!-- 세션 스토리지에서 유저 정보를 즉시 바인딩하여 렌더링 지연 방지 -->
             <div class="user-capsule">
               <img id="user-photo" src="https://lh3.googleusercontent.com/a/default-user=s96-c" alt="Profile" class="user-avatar">
               <span id="user-name" class="user-nickname"></span>
@@ -376,7 +376,7 @@
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
           <script>
-            /* [한글 주석: HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함] */
+            /* HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함 */
             (function () {
               try {
                 var c = sessionStorage.getItem("auth_user_cache");
@@ -413,7 +413,7 @@
           </script>
         </div>
 
-        <!-- [한글 주석: 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함] -->
+        <!-- 모바일 상단 퀵 아이콘 네비게이션 바 - 커뮤니티 아이콘 포함 -->
         <div class="nav-mobile-quick" id="nav-mobile-quick">
           <a href="/index.html" class="quick-icon-btn" title="홈">🏠</a>
           <a href="/about.html" class="quick-icon-btn" title="회사소개">🏢</a>
@@ -452,7 +452,7 @@
           </script>
         </div>
 
-        <!-- [한글 주석: 모바일 화면 전용 햄버거 메뉴 토글 버튼] -->
+        <!-- 모바일 화면 전용 햄버거 메뉴 토글 버튼 -->
         <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 토글">
           <span class="bar"></span>
           <span class="bar"></span>
@@ -462,7 +462,7 @@
     </nav>
   </header>
 
-  <!-- [한글 주석: SPA 동적 뷰 스위처 엔진이 이 영역을 감지하여 1:1 교체함으로써 헤더 파괴 및 튐현상을 100% 방지하는 본문 컨테이너] -->
+  <!-- SPA 동적 뷰 스위처 엔진이 이 영역을 감지하여 1:1 교체함으로써 헤더 파괴 및 튐현상을 100% 방지하는 본문 컨테이너 -->
   <div id="app-view-container" class="container admin-container">
 
     <header class="header">
@@ -553,7 +553,7 @@
           </div>
         </div>
 
-        <!-- 한글 주석: 통합 조작행 (3열 가로 전체 병합 및 여백 소멸화) -->
+        <!-- 통합 조작행 (3열 가로 전체 병합 및 여백 소멸화) -->
         <div class="form-actions-row"
           style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px; margin-top: 8px; flex-wrap: wrap; gap: 12px;">
           <!-- 좌측: 예약시간 단축 선택 버튼 그룹 -->
@@ -607,7 +607,7 @@
         style="justify-content: space-between; display: flex; align-items: center; margin-bottom: 1.5rem;">
         <h2>조회 및 필터 결과 리스트</h2>
         <!-- 엑셀 다운로드나 간단한 인쇄 기능을 고려할 수 있는 조작 영역 -->
-        <!-- 한글 주석: 엑셀 파일 다운로드 및 인쇄 버튼 배치 -->
+        <!-- 엑셀 파일 다운로드 및 인쇄 버튼 배치 -->
         <div style="display: flex; gap: 8px;">
           <button id="btn-stats-excel" class="btn-refresh"
             style="font-size: 0.88rem; background: #10b981; color: #ffffff; border-color: rgba(16, 185, 129, 0.4);">📊
@@ -633,14 +633,14 @@
               <th>희망진료일</th>
               <th>주 소</th>
               <th>증 상</th>
-              <!-- [한글 주석: 통계 조회 결과 테이블에 유입경로 컬럼 헤더 추가] -->
+              <!-- 통계 조회 결과 테이블에 유입경로 컬럼 헤더 추가 -->
               <th>유입경로</th>
               <th>상 태</th>
             </tr>
           </thead>
           <tbody id="stats-result-list">
             <tr>
-              <!-- [한글 주석: 유입경로 컬럼 신설로 컬럼이 15개가 됨에 따라 colspan 15로 수정] -->
+              <!-- 유입경로 컬럼 신설로 컬럼이 15개가 됨에 따라 colspan 15로 수정 -->
               <td colspan="15" class="table-loading">조건을 선택한 후 [조회하기] 버튼을 눌러주세요.</td>
             </tr>
           </tbody>
@@ -649,7 +649,7 @@
     </main>
   </div>
 
-  <!-- 엑셀 다운로드 미리보기 모달 UI (한글 주석 필수) -->
+  <!-- 엑셀 다운로드 미리보기 모달 UI -->
   <div id="excel-preview-modal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -671,16 +671,16 @@
                 <th>성 별</th>
                 <th>비자타입</th>
                 <th>생년월일</th>
-                <!-- [한글 주석: 엑셀 미리보기 테이블 헤더 일치화를 위한 신원정보 컬럼 추가] -->
+                <!-- 엑셀 미리보기 테이블 헤더 일치화를 위한 신원정보 컬럼 추가 -->
                 <th>신원정보</th>
                 <th>체류만료일</th>
                 <th>연락처</th>
                 <th>접수시간</th>
                 <th>희망진료일</th>
-                <!-- [한글 주석: 엑셀 미리보기 테이블 헤더 일치화를 위한 주소 및 증상 컬럼 추가] -->
+                <!-- 엑셀 미리보기 테이블 헤더 일치화를 위한 주소 및 증상 컬럼 추가 -->
                 <th>주 소</th>
                 <th>증 상</th>
-                <!-- [한글 주석: 엑셀 다운로드 미리보기 모달 테이블에 유입경로 컬럼 헤더 추가] -->
+                <!-- 엑셀 다운로드 미리보기 모달 테이블에 유입경로 컬럼 헤더 추가 -->
                 <th>유입경로</th>
                 <th>상 태</th>
               </tr>
@@ -698,10 +698,10 @@
     </div>
   </div>
 
-  <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5)] -->
-  <script type="module" src="/js/navigation.js?v=260916_5"></script>
-  <script type="module" src="/js/stats.js?v=260916_5"></script>
-  <script type="module" src="/js/auth.js?v=260916_5"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5) -->
+  <script type="module" src="/js/navigation.js?v=260916_12"></script>
+  <script type="module" src="/js/stats.js?v=260916_12"></script>
+  <script type="module" src="/js/auth.js?v=260916_12"></script>
 </body>
 
 </html>

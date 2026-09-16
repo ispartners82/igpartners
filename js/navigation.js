@@ -1,5 +1,5 @@
 /**
- * [한글 주석: 15개 국어 정보 정의 - 국기 이미지 URL, 원어명, 한국어명]
+ * 15개 국어 정보 정의 - 국기 이미지 URL, 원어명, 한국어명]
  */
 const LANG_LIST = [
   { code: 'ko', native: '한국어', koName: '한국어', flag: 'https://flagcdn.com/w80/kr.png' },
@@ -20,10 +20,10 @@ const LANG_LIST = [
 ];
 
 /**
- * [한글 주석: 상단 메뉴 항목별 15개국어 번역 딕셔너리 데이터베이스]
+ * 상단 메뉴 항목별 15개국어 번역 딕셔너리 데이터베이스]
  */
 const MENU_TRANSLATIONS = {
-  // [한글 주석: 한국어 상단 메뉴 번역 - '파트너스'에서 '협력업체'로 명칭 변경 반영]
+  // 한국어 상단 메뉴 번역 - '파트너스'에서 '협력업체'로 명칭 변경 반영]
   ko: { langSelect: '언어선택', home: '홈', about: '회사소개', services: '제공 서비스', interpretation: '전문통역', booking: '진료 예약', partners: '협력업체', community: '커뮤니티', myRes: '📅 예약내역', admin: '👑 관리자', stats: '📊 예약통계', logout: '로그아웃', login: '로그인' },
   ja: { langSelect: '言語選択', home: 'ホーム', about: '会社紹介', services: '提供サービス', interpretation: '専門通訳', booking: '診療予約', partners: 'パートナー', community: 'コミュニティ', myRes: '📅 予約履歴', admin: '👑 관리자', stats: '📊 予約統計', logout: 'ログアウト', login: 'ログイン' },
   vi: { langSelect: 'Chọn ngôn ngữ', home: 'Trang chủ', about: 'Giới thiệu', services: 'Dịch vụ', interpretation: 'Thông dịch chuyên nghiệp', booking: 'Đặt lịch khám', partners: 'Đối tác', community: 'Cộng đồng', myRes: '📅 Lịch đặt', admin: '👑 Quản trị', stats: '📊 Thống kê', logout: 'Đăng xuất', login: 'Đăng nhập' },
@@ -42,11 +42,11 @@ const MENU_TRANSLATIONS = {
 };
 
 /**
- * [한글 주석: 전역 언어 변경 및 상단 메뉴 텍스트 실시간 동적 번역 적용 함수]
+ * 전역 언어 변경 및 상단 메뉴 텍스트 실시간 동적 번역 적용 함수]
  * @param {string} langCode 선택된 2글자 언어 코드 (ko, en, ja, vi 등)
  */
 /**
- * [한글 주석: 전역 언어 변경 및 상단 메뉴 텍스트 실시간 동적 번역 적용 함수]
+ * 전역 언어 변경 및 상단 메뉴 텍스트 실시간 동적 번역 적용 함수]
  * @param {string} langCode 선택된 2글자 언어 코드 (ko, en, ja, vi 등)
  */
 window.changeGlobalLanguage = function(langCode) {
@@ -67,14 +67,14 @@ window.changeGlobalLanguage = function(langCode) {
 };
 
 /**
- * [한글 주석: 현재 선택된 언어에 맞춰 상단 네비게이션 메인 메뉴 DOM의 텍스트를 실시간으로 갱신하는 함수]
+ * 현재 선택된 언어에 맞춰 상단 네비게이션 메인 메뉴 DOM의 텍스트를 실시간으로 갱신하는 함수]
  * @param {string} langCode 선택된 언어 코드
  */
 function applyNavTranslations(langCode) {
   const t = MENU_TRANSLATIONS[langCode] || MENU_TRANSLATIONS.ko;
   const currentLang = LANG_LIST.find(l => l.code === langCode) || LANG_LIST[0];
 
-  // 0. [한글 주석] 긴 다국어(미얀마, 스리랑카, 캄보디아, 라오스, 네팔, 태국, 방글라데시) 컴팩트 모드 클래스 토글
+  // 0. 긴 다국어(미얀마, 스리랑카, 캄보디아, 라오스, 네팔, 태국, 방글라데시) 컴팩트 모드 클래스 토글
   const longLanguages = ['my', 'si', 'km', 'lo', 'ne', 'th', 'bn'];
   const globalHeader = document.getElementById("global-header");
   if (longLanguages.includes(langCode)) {
@@ -97,7 +97,7 @@ function applyNavTranslations(langCode) {
   const menuServices = document.querySelector("#nav-menu a[href='/about.html#services']:not(.btn-nav-booking)");
   const menuInterpretation = document.querySelector("#nav-menu a[href='/interpreters.html'], #nav-menu a[href='/about.html#services'].btn-nav-booking");
   const menuBooking = document.querySelector("#nav-menu a[href='/booking-lang.html']");
-  // [한글 주석: 신규 협력업체 페이지(partners.html) 및 기존 해시 링크 모두 지원하는 메뉴 셀렉터 매핑]
+  // 신규 협력업체 페이지(partners.html) 및 기존 해시 링크 모두 지원하는 메뉴 셀렉터 매핑]
   const menuPartners = document.querySelector("#nav-menu a[href='/partners.html'], #nav-menu a[href='/index.html#partners']");
   const menuCommunity = document.querySelector("#nav-menu a[href='/community.html']");
 
@@ -127,7 +127,7 @@ function applyNavTranslations(langCode) {
 }
 
 /**
- * [한글 주석: 15개 언어 세로 수직 드롭다운 목록 HTML 조각 생성 함수]
+ * 15개 언어 세로 수직 드롭다운 목록 HTML 조각 생성 함수]
  */
 function createLangDropdownHTML() {
   const currentLangCode = localStorage.getItem("app_selected_language") || "ko";
@@ -169,7 +169,7 @@ function createLangDropdownHTML() {
 }
 
 /**
- * [한글 주석: 15개 언어 세로 목록을 정적/동적 드롭다운 영역에 동적으로 렌더링하고 이벤트를 바인딩하는 함수]
+ * 15개 언어 세로 목록을 정적/동적 드롭다운 영역에 동적으로 렌더링하고 이벤트를 바인딩하는 함수]
  */
 function bindLangDropdownList() {
   const scrollList = document.getElementById("nav-lang-scroll-list");
@@ -193,7 +193,7 @@ function bindLangDropdownList() {
   });
   scrollList.innerHTML = listHtml;
 
-  // [한글 주석: 이벤트 위임을 통한 클릭 확실 바인딩]
+  // 이벤트 위임을 통한 클릭 확실 바인딩]
   scrollList.onclick = function(e) {
     const btn = e.target.closest(".lang-dropdown-item");
     if (btn) {
@@ -205,13 +205,13 @@ function bindLangDropdownList() {
   };
 }
 
-// [한글 주석: DOM 트리가 이미 로드되어 있거나 빠른 파싱 환경에서 0ms 만에 즉시 언어 목록 주입]
+// DOM 트리가 이미 로드되어 있거나 빠른 파싱 환경에서 0ms 만에 즉시 언어 목록 주입]
 try {
   bindLangDropdownList();
 } catch (e) {}
 
 /**
- * [한글 주석: 언어 선택 드롭다운 패널 열기/닫기 토글 전용 전역 함수 (100% 무조건 작동 보장)]
+ * 언어 선택 드롭다운 패널 열기/닫기 토글 전용 전역 함수 (100% 무조건 작동 보장)]
  * @param {Event} e 클릭 이벤트 객체
  */
 window.toggleLangDropdown = function(e) {
@@ -245,14 +245,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedLang = localStorage.getItem("app_selected_language") || "ko";
   applyNavTranslations(savedLang);
 
-  // [한글 주석: 데스크톱 및 모바일 퀵 메뉴 언어선택 버튼 클릭 토글 이벤트 안전 바인딩]
+  // 데스크톱 및 모바일 퀵 메뉴 언어선택 버튼 클릭 토글 이벤트 안전 바인딩]
   const langTrigger = document.getElementById("nav-lang-trigger");
   const quickLangTrigger = document.getElementById("quick-btn-lang");
   const langPanel = document.getElementById("nav-lang-menu-panel");
 
   if (langPanel) {
     if (langTrigger) {
-      // [한글 주석: 인라인 onclick과의 중복 이벤트를 예방하고 확실하게 토글 함수를 연결]
+      // 인라인 onclick과의 중복 이벤트를 예방하고 확실하게 토글 함수를 연결]
       langTrigger.onclick = window.toggleLangDropdown;
     }
 
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       quickLangTrigger.onclick = window.toggleLangDropdown;
     }
 
-    // [한글 주석: 언어 선택 패널 및 트리거 영역 외 외부 클릭 시 드롭다운 패널 자동으로 닫기 처리]
+    // 언어 선택 패널 및 트리거 영역 외 외부 클릭 시 드롭다운 패널 자동으로 닫기 처리]
     document.addEventListener("click", (e) => {
       const target = e.target;
       const isInsideTrigger = langTrigger && langTrigger.contains(target);
@@ -273,9 +273,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // [한글 주석: 무한 루프를 완전 차단하고 탭 active 하이라이트만 0.01초 만에 스마트 스위칭하는 독립 함수]
+  // 무한 루프를 완전 차단하고 탭 active 하이라이트만 0.01초 만에 스마트 스위칭하는 독립 함수]
   function updateActiveNavLinks(targetUrl) {
-    // [한글 주석: 경로와 해시 분리 가드 엔진 - targetUrl에 해시가 붙어오더라도 순수 경로와 해시를 완전 분리 판별해 매칭 오류 원천 차단]
+    // 경로와 해시 분리 가드 엔진 - targetUrl에 해시가 붙어오더라도 순수 경로와 해시를 완전 분리 판별해 매칭 오류 원천 차단]
     const urlString = targetUrl || (window.location.pathname + window.location.hash);
     const [pathPart, hashPart] = urlString.split("#");
 
@@ -286,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isPartnersPage = currentPath.includes("partners.html");
     const isPartnersHash = currentHash === "#partners";
     const isHomeActive = isIndexPage && !isPartnersHash;
-    // [한글 주석: 신규 협력업체 전용 페이지(partners.html) 진입 시 또는 인덱스 해시 진입 시 active 활성화]
+    // 신규 협력업체 전용 페이지(partners.html) 진입 시 또는 인덱스 해시 진입 시 active 활성화]
     const isPartnersActive = isPartnersPage || (isIndexPage && isPartnersHash);
 
     const isAboutPage = currentPath.includes("about.html");
@@ -316,11 +316,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // [한글 주석: 뷰 스위칭 시 우측 프로필/관리자 버튼 2개의 상태를 0.001초 만에 최적화 복원]
+    // 뷰 스위칭 시 우측 프로필/관리자 버튼 2개의 상태를 0.001초 만에 최적화 복원]
     syncAuthBadgeInstantly();
   }
 
-  // [한글 주석: 0초 캐시 복원 엔진 - 페이지/뷰 스위칭 시 우측 관리자 버튼 2개 및 모바일 퀵메뉴가 0.1초 늦게 튀어나오며 발생하던 상단 메뉴 흔들림/사라짐 랙을 100% 원천 차단]
+  // 0초 캐시 복원 엔진 - 페이지/뷰 스위칭 시 우측 관리자 버튼 2개 및 모바일 퀵메뉴가 0.1초 늦게 튀어나오며 발생하던 상단 메뉴 흔들림/사라짐 랙을 100% 원천 차단]
   function syncAuthBadgeInstantly() {
     try {
       const authUserElem = document.getElementById("auth-user");
@@ -330,7 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const userNameElem = document.getElementById("user-name");
       const userPhotoElem = document.getElementById("user-photo");
 
-      // [한글 주석: 모바일 전용 퀵 버튼 요소 추가 제어]
+      // 모바일 전용 퀵 버튼 요소 추가 제어]
       const quickBtnMyReservations = document.getElementById("quick-btn-my-reservations");
       const quickBtnAdminDashboard = document.getElementById("quick-btn-admin-dashboard");
       const quickBtnStatsDashboard = document.getElementById("quick-btn-stats-dashboard");
@@ -344,18 +344,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (userNameElem) userNameElem.textContent = userObj.displayName || "관리자";
         if (userPhotoElem && userObj.photoURL) userPhotoElem.src = userObj.photoURL;
 
-        // [한글 주석: 상단 사용자 프로필 캡슐 클릭 시 내 정보 관리(개인정보 수정) 모달 연동 준비]
+        // 상단 사용자 프로필 캡슐 클릭 시 내 정보 관리(개인정보 수정) 모달 연동 준비]
         const userCapsuleElem = document.querySelector(".user-capsule, #user-badge");
         if (userCapsuleElem) {
           userCapsuleElem.style.cursor = "pointer";
           userCapsuleElem.setAttribute("title", "내 정보 관리 (My Profile)");
         }
 
-        // [한글 주석: 로그인 세션 복원 시 모바일 퀵 버튼 상태도 동시에 즉시 0ms로 노출 조정]
+        // 로그인 세션 복원 시 모바일 퀵 버튼 상태도 동시에 즉시 0ms로 노출 조정]
         if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
         if (quickBtnLogin) quickBtnLogin.style.display = "none";
 
-        // [한글 주석: 세션 캐시에 기록된 관리자 및 예약통계 권한 확인 후 0초 만에 인메모리 노출/숨김 제어]
+        // 세션 캐시에 기록된 관리자 및 예약통계 권한 확인 후 0초 만에 인메모리 노출/숨김 제어]
         const permCacheStr = sessionStorage.getItem(`admin_permissions_${userObj.uid}`);
         let isAdmin = false;
         let hasStats = false;
@@ -370,21 +370,21 @@ document.addEventListener("DOMContentLoaded", () => {
           } catch (e) { }
         }
 
-        // [한글 주석: 관리자 기능이 꺼져 있으면 관리자 버튼 숨김, 예약통계 기능이 꺼져 있으면 예약통계 버튼 숨김]
+        // 관리자 기능이 꺼져 있으면 관리자 버튼 숨김, 예약통계 기능이 꺼져 있으면 예약통계 버튼 숨김]
         if (btnAdminElem) btnAdminElem.style.display = isAdmin ? "inline-block" : "none";
         if (btnStatsElem) btnStatsElem.style.display = hasStats ? "inline-block" : "none";
 
-        // [한글 주석: 모바일용 퀵 버튼 관리자/통계 상태 동시 0ms 제어]
+        // 모바일용 퀵 버튼 관리자/통계 상태 동시 0ms 제어]
         if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = isAdmin ? "inline-flex" : "none";
         if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = hasStats ? "inline-flex" : "none";
       } else {
-        // [한글 주석: 로그인 세션 캐시가 없는 상태(비로그인)일 때의 모바일 퀵버튼 노출 상태 0ms 세팅]
+        // 로그인 세션 캐시가 없는 상태(비로그인)일 때의 모바일 퀵버튼 노출 상태 0ms 세팅]
         if (quickBtnMyReservations) quickBtnMyReservations.style.display = "none";
         if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = "none";
         if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = "none";
         if (quickBtnLogin) quickBtnLogin.style.display = "inline-flex";
 
-        // [한글 주석: 비로그인 상태일 때 데스크톱용 상단 네비게이션 로그인 바인딩 영역도 즉시 리셋하여 이전 사용자의 프로필, 예약내역 배지 등이 노출되는 버그를 예방함]
+        // 비로그인 상태일 때 데스크톱용 상단 네비게이션 로그인 바인딩 영역도 즉시 리셋하여 이전 사용자의 프로필, 예약내역 배지 등이 노출되는 버그를 예방함]
         if (authUserElem) authUserElem.style.display = "none";
         if (btnLoginElem) {
           btnLoginElem.style.display = "block";
@@ -398,6 +398,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (e) {
       console.warn("syncAuthBadgeInstantly warning:", e);
+    }
+    // 인증 상태 변경에 따라 퀵메뉴 아이콘 표시/숨김이 변경될 때 브랜드 텍스트 가시성 즉시 재계산]
+    if (typeof updateBrandTextVisibility === "function") {
+      updateBrandTextVisibility();
     }
   }
 
@@ -430,11 +434,84 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("인증 영역이 데스크톱 상단 우측으로 원복되었습니다.");
       }
     }
+
+    // 레이아웃 재배치 후 브랜드 로고 텍스트 충돌 가시성 즉시 계산]
+    updateBrandTextVisibility();
   }
 
-  // 창 크기 조절 이벤트 바인딩 및 즉시 1회 실행
+  /**
+   * 홈버튼 아이콘이 'IGPartners'의 'S'에 닿는 순간을 실시간 감지하여 텍스트를 숨기거나 복원하는 스마트 충돌 감지 함수]
+   * Flexbox 레이아웃 특성상 nav-container 내 요소 간 flex 간격(약 8px)이 유지되므로,
+   * 여유 거리를 16px로 현실화하여 홈버튼이 'S' 글자에 맞닿는 즉시 숨김 클래스를 적용합니다.
+   */
+  function updateBrandTextVisibility() {
+    const brandText = document.querySelector(".nav-brand-text");
+    const navLogo = document.querySelector(".nav-logo");
+    const mobileQuick = document.querySelector(".nav-mobile-quick");
+    if (!brandText || !navLogo) return;
+
+    // 데스크톱 모드(1024px 초과)에서는 텍스트 항상 표시
+    if (window.innerWidth > 1024 || !mobileQuick || window.getComputedStyle(mobileQuick).display === "none") {
+      brandText.classList.remove("brand-text-collapsed");
+      return;
+    }
+
+    // 모바일 퀵메뉴 내 첫 번째로 보이는 버튼(홈버튼 🏠 등) 탐색
+    const visibleBtns = Array.from(mobileQuick.querySelectorAll(".quick-icon-btn")).filter(btn => {
+      return btn.style.display !== "none" && window.getComputedStyle(btn).display !== "none";
+    });
+
+    if (visibleBtns.length === 0) {
+      brandText.classList.remove("brand-text-collapsed");
+      return;
+    }
+
+    const firstQuickBtn = visibleBtns[0];
+    // 모바일 퀵메뉴 컨테이너 시작점과 첫 번째 버튼의 시작점 중 더 좌측인 좌표를 안전하게 계산]
+    const quickLeft = Math.min(mobileQuick.getBoundingClientRect().left, firstQuickBtn.getBoundingClientRect().left);
+
+    // 1. 현재 텍스트가 표시되고 있는 경우: 홈버튼의 왼쪽 경계가 'S' 오른쪽 끝에 닿는 순간 숨김 (Flex 간격 8px 고려하여 임계값 16px 적용)
+    if (!brandText.classList.contains("brand-text-collapsed")) {
+      const textRight = brandText.getBoundingClientRect().right;
+      if (quickLeft <= textRight + 16) {
+        brandText.classList.add("brand-text-collapsed");
+      }
+    } else {
+      // 2. 현재 텍스트가 숨겨져 있는 경우: 로고 이미지와 홈버튼 사이에 텍스트 공간(약 135px)이 충분히 확보되면 복원하여 깜빡임 방지
+      const logoRight = navLogo.getBoundingClientRect().right;
+      const requiredSpace = 135; // 로고텍스트 너비(약 105px) + gap(8px) + 복원 여유 버퍼(22px)
+      if (quickLeft - logoRight >= requiredSpace) {
+        brandText.classList.remove("brand-text-collapsed");
+      }
+    }
+  }
+  window.updateBrandTextVisibility = updateBrandTextVisibility;
+
+  // 창 크기 조절 및 회전 이벤트 바인딩 및 즉시 1회 실행
   window.addEventListener("resize", handleResponsiveLayout);
+  window.addEventListener("orientationchange", handleResponsiveLayout);
   handleResponsiveLayout();
+
+  // ResizeObserver를 활용하여 픽셀 단위 크기 변경 시 실시간 초정밀 충돌 감지 연동]
+  if (window.ResizeObserver && navContainer) {
+    const ro = new ResizeObserver(() => {
+      updateBrandTextVisibility();
+    });
+    ro.observe(navContainer);
+    if (mobileQuick) {
+      ro.observe(mobileQuick);
+    }
+  }
+
+  // 폰트 로드 완료 및 창 전체 로드 시 정확한 텍스트 바운딩 박스 크기 재계산]
+  if (document.fonts) {
+    document.fonts.ready.then(() => {
+      updateBrandTextVisibility();
+    });
+  }
+  window.addEventListener("load", () => {
+    updateBrandTextVisibility();
+  });
 
   // =========================================================================
   // 2. 모바일 햄버거 메뉴 토글 기능
@@ -474,7 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   const globalFooter = document.getElementById("global-footer");
   if (globalFooter) {
-    // [한글 주석: 모든 페이지의 하단 정보를 단일 파일에서 제어할 수 있도록 동적으로 마크업을 주입합니다.]
+    // 모든 페이지의 하단 정보를 단일 파일에서 제어할 수 있도록 동적으로 마크업을 주입합니다.]
     globalFooter.innerHTML = `
       <div class="footer-container">
         <!-- 푸터 브랜드 설명 -->
@@ -492,7 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <ul>
               <li><a href="/about.html">회사소개</a></li>
               <li><a href="/about.html#services">제공 서비스</a></li>
-              <!-- [한글 주석: 공통 푸터 내 협력업체 전용 페이지 연결 링크] -->
+              <!-- 공통 푸터 내 협력업체 전용 페이지 연결 링크 -->
               <li><a href="/partners.html">협력사 네트워크</a></li>
             </ul>
           </div>
@@ -516,7 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <!-- 푸터 라이선스 및 저작권 정보 -->
       <div class="footer-bottom">
         <p>&copy; 2026 IGPartners Inc. All rights reserved.</p>
-        <!-- [한글 주석: 캡처본 요구사항에 맞춰 일관성 있게 구성된 최신 법인명 및 법인등록번호 표기] -->
+        <!-- 캡처본 요구사항에 맞춰 일관성 있게 구성된 최신 법인명 및 법인등록번호 표기 -->
         <p>법인명: 주식회사 아이지파트너스 | 법인등록번호: 167-86-04055 | 대구 수성구 알파시티 1로 4길 8</p>
       </div>
     `;
@@ -592,7 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // [한글 주석: SPA 동적 뷰 스위처 엔진 - 상단 메뉴바가 1ms도 사라지지 않고 제자리에 부동 고정된 채 아래 내용만 즉시 전환]
+  // SPA 동적 뷰 스위처 엔진 - 상단 메뉴바가 1ms도 사라지지 않고 제자리에 부동 고정된 채 아래 내용만 즉시 전환]
   async function loadViewSeamlessly(targetUrl, hashTag = "") {
     try {
       // 1. 주소창 URL을 하드 새로고침 없이 즉시 갱신
@@ -611,13 +688,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const doc = parser.parseFromString(htmlText, "text/html");
 
       // 3. 메인 콘텐츠 컨테이너 추출 및 인메모리 교체 (상단 global-header는 1ms도 손대지 않고 100% 온전히 유지)
-      // [한글 주석: 파싱된 타겟 HTML 문서에서 상단 #global-header를 사전에 제거하여 상단 메뉴바가 덮어씌워지고 사라지는 버그를 원천 차단]
+      // 파싱된 타겟 HTML 문서에서 상단 #global-header를 사전에 제거하여 상단 메뉴바가 덮어씌워지고 사라지는 버그를 원천 차단]
       const targetHeader = doc.querySelector("#global-header");
       if (targetHeader) {
         targetHeader.remove();
       }
 
-      // [한글 주석: #app-view-container 및 메인 컨테이너 영역만 정밀하게 1대1 교체하여 상단 헤더 100% 동결 보장]
+      // #app-view-container 및 메인 컨테이너 영역만 정밀하게 1대1 교체하여 상단 헤더 100% 동결 보장]
       const newMain = doc.querySelector("#app-view-container") || doc.querySelector(".container.admin-container") || doc.querySelector(".container") || doc.querySelector("main");
       const currentMain = document.querySelector("#app-view-container") || document.querySelector(".container.admin-container") || document.querySelector(".container") || document.querySelector("main");
 
@@ -628,9 +705,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // [한글 주석: 무한 루프를 완전 차단하기 위해 popstate dispatch 이벤트를 제거하고 active 하이라이트만 직접 스마트 갱신]
+      // 무한 루프를 완전 차단하기 위해 popstate dispatch 이벤트를 제거하고 active 하이라이트만 직접 스마트 갱신]
       window.dispatchEvent(new Event("hashchange"));
-      // [한글 주석: 계정 프로필 노드 영구 보존 락 - 뷰 전환 시 구글 계정 및 모바일 네비게이션이 0.001초도 비어있지 않도록 즉시 동기화 보존]
+      // 계정 프로필 노드 영구 보존 락 - 뷰 전환 시 구글 계정 및 모바일 네비게이션이 0.001초도 비어있지 않도록 즉시 동기화 보존]
       updateActiveNavLinks(fullUrl);
       syncAuthBadgeInstantly();
       if (typeof handleResponsiveLayout === "function") {
@@ -647,7 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
-      // [한글 주석: 페이지별 전용 스크립트 강제 재실행 엔진 - SPA 전환 시 기존 DOM이 소멸하고 신규 DOM이 생성되므로 페이지 개별 스크립트는 매번 반드시 재생성 및 재실행해야 함]
+      // 페이지별 전용 스크립트 강제 재실행 엔진 - SPA 전환 시 기존 DOM이 소멸하고 신규 DOM이 생성되므로 페이지 개별 스크립트는 매번 반드시 재생성 및 재실행해야 함]
       const scripts = doc.querySelectorAll("script");
       scripts.forEach(s => {
         const src = s.getAttribute("src");
@@ -674,7 +751,7 @@ document.addEventListener("DOMContentLoaded", () => {
           scriptElem.type = s.type || "text/javascript";
           document.body.appendChild(scriptElem);
         } else if (s.textContent && !s.textContent.includes("loadViewSeamlessly")) {
-          // [한글 주석: src가 없는 인라인 복원 스크립트도 뷰 전환 시 신규 DOM을 대상으로 0ms 즉시 구동되도록 재생성 실행]
+          // src가 없는 인라인 복원 스크립트도 뷰 전환 시 신규 DOM을 대상으로 0ms 즉시 구동되도록 재생성 실행]
           const scriptElem = document.createElement("script");
           scriptElem.textContent = s.textContent;
           scriptElem.type = s.type || "text/javascript";
@@ -727,12 +804,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // 브라우저 기본 링크 이동 동작(native navigation)이 수행되도록 기본 이벤트를 방지하지 않습니다.
   });
 
-  // [한글 주석: auth.js 실시간 등급/권한 변경 이벤트 수신 시 네비게이션 뱃지 상태 0초 실시간 즉각 동기화]
+  // auth.js 실시간 등급/권한 변경 이벤트 수신 시 네비게이션 뱃지 상태 0초 실시간 즉각 동기화]
   window.addEventListener("rolePermissionsChanged", () => {
     syncAuthBadgeInstantly();
   });
 
-  // [한글 주석: 동일 페이지 해시 이동(pushState) 시에도 탭 하이라이트가 누락 없이 스마트 동기화되도록 전역 hashchange 이벤트 연결]
+  // 동일 페이지 해시 이동(pushState) 시에도 탭 하이라이트가 누락 없이 스마트 동기화되도록 전역 hashchange 이벤트 연결]
   window.addEventListener("hashchange", () => {
     updateActiveNavLinks();
   });

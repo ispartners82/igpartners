@@ -4,10 +4,10 @@ import { app, auth, analytics } from "./firebase-db.js?v=2.0.7";
 console.log("Firebase App initialized successfully via common module.");
 
 /**
- * [한글 주석] 언어 선택 시 호출되는 액션 함수 (로그인 세션 검증 후 병원선택 화면으로 다이렉트 이동)
+ * 언어 선택 시 호출되는 액션 함수 (로그인 세션 검증 후 병원선택 화면으로 다이렉트 이동)
  */
 function selectLanguage(langCode) {
-  // [한글 주석] 로그인 세션 및 캐시 통합 검증 (window.isLoggedIn, auth.currentUser 및 sessionStorage 가입 세션 보장)
+  // 로그인 세션 및 캐시 통합 검증 (window.isLoggedIn, auth.currentUser 및 sessionStorage 가입 세션 보장)
   const isUserAuthenticated = window.isLoggedIn || (auth && auth.currentUser) || sessionStorage.getItem("auth_user_cache");
   if (!isUserAuthenticated) {
     if (typeof window.showAuthModal === "function") {

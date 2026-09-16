@@ -1,5 +1,5 @@
 /**
- * [한글 주석] 전문 의료 통역 서비스 클라이언트 스크립트 (interpreters.js)
+ * 전문 의료 통역 서비스 클라이언트 스크립트 (interpreters.js)
  * - Firebase Firestore DB 'interpreters' 컬렉션 실시간/비동기 연동
  * - 'IGPartners 소속 통역' 및 '프리랜서 통역사' 카드 동적 렌더링
  * - 초기 데이터 부재 시 자동 시딩(Seed) 기능 내장
@@ -14,7 +14,7 @@ import {
   orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// [한글 주석: 초기 시연용 기본 통역사 Seed 데이터셋]
+// 초기 시연용 기본 통역사 Seed 데이터셋]
 const seedInterpreters = [
   // 1. IGPartners 소속 통역사 (사진 포함, 명함 카드 레이아웃)
   {
@@ -138,7 +138,7 @@ const seedInterpreters = [
 const CACHE_KEY = "igpartners_cached_interpreters";
 
 /**
- * [한글 주석] 통역사 목록 로드 및 화면 렌더링 메인 함수 (SWR 초고속 캐싱 적용 - 0.001초 즉시 렌더링)
+ * 통역사 목록 로드 및 화면 렌더링 메인 함수 (SWR 초고속 캐싱 적용 - 0.001초 즉시 렌더링)
  */
 async function loadInterpreters() {
   const staffContainer = document.getElementById("staff-interpreters-grid");
@@ -183,7 +183,7 @@ async function loadInterpreters() {
     const q = query(collection(db, "interpreters"), orderBy("order", "asc"));
     const querySnapshot = await getDocs(q);
 
-    // [한글 주석] 데이터가 없을 경우 기본 Seed 데이터 자동 생성 및 재로드
+    // 데이터가 없을 경우 기본 Seed 데이터 자동 생성 및 재로드
     if (querySnapshot.empty) {
       console.log("No interpreters found. Populating default seed data...");
       for (const item of seedInterpreters) {
@@ -225,7 +225,7 @@ async function loadInterpreters() {
 }
 
 /**
- * [한글 주석] IGPartners 소속 통역사 명함 카드 목록 렌더링
+ * IGPartners 소속 통역사 명함 카드 목록 렌더링
  * @param {Array} list - 소속 통역사 목록 데이터
  * @param {HTMLElement} container - 렌더링 대상 컨테이너
  */
@@ -253,7 +253,7 @@ function parseInterpreterName(item) {
 }
 
 /**
- * [한글 주석] IGPartners 소속 통역사 명함 카드 목록 렌더링
+ * IGPartners 소속 통역사 명함 카드 목록 렌더링
  * @param {Array} list - 소속 통역사 목록 데이터
  * @param {HTMLElement} container - 렌더링 대상 컨테이너
  */
@@ -274,7 +274,7 @@ function renderStaffInterpreters(list, container) {
     const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
     const { nameKo, nameEn } = parseInterpreterName(item);
 
-    // [한글 주석: 연락처 및 이메일 전용 블록 생성 - 정보가 없더라도 일정한 하단 높이의 staff-contact-box를 항상 유지하여 상단 이름 위치 고정]
+    // 연락처 및 이메일 전용 블록 생성 - 정보가 없더라도 일정한 하단 높이의 staff-contact-box를 항상 유지하여 상단 이름 위치 고정]
     let contactItems = "";
     if (item.phone) {
       const phoneTel = item.phone.replace(/[^0-9+]/g, "");
@@ -323,7 +323,7 @@ function renderStaffInterpreters(list, container) {
 }
 
 /**
- * [한글 주석] 프리랜서 통역사 카드 목록 렌더링
+ * 프리랜서 통역사 카드 목록 렌더링
  * @param {Array} list - 프리랜서 통역사 목록 데이터
  * @param {HTMLElement} container - 렌더링 대상 컨테이너
  */
@@ -388,7 +388,7 @@ function renderFreelanceInterpreters(list, container) {
   });
 }
 
-// [한글 주석] DOM 로드 완료 시 즉시 통역사 목록 로드 실행 (SPA 뷰 또는 정적 로드 모두 안전 대응)
+// DOM 로드 완료 시 즉시 통역사 목록 로드 실행 (SPA 뷰 또는 정적 로드 모두 안전 대응)
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     loadInterpreters();

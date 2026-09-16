@@ -8,7 +8,7 @@
 /* --------------------------------------------------------------------------
    1. Design Tokens & Variables (수정하기 쉽도록 변수화)
    -------------------------------------------------------------------------- */
-/* [한글 주석: 탭 전환 시 세로 스크롤바 상시 고정 및 전역 스무스 스크롤 효과 부여] */
+/* 탭 전환 시 세로 스크롤바 상시 고정 및 전역 스무스 스크롤 효과 부여 */
 html {
   overflow-y: scroll !important; /* 세로 스크롤바 트랙을 상시 고정하여 중앙 정렬 위치 점프 완벽 방지 */
   scrollbar-gutter: stable !important;
@@ -69,7 +69,7 @@ body {
   font-family: var(--font-display);
   min-height: 100vh;
   display: flex;
-  flex-direction: column; /* [한글 주석: 모든 페이지에서 헤더 -> 본문 -> 푸터 세로 수직 정렬 보증] */
+  flex-direction: column; /* 모든 페이지에서 헤더 -> 본문 -> 푸터 세로 수직 정렬 보증 */
   align-items: stretch;
   justify-content: flex-start;
   overflow-x: hidden;
@@ -158,7 +158,7 @@ body {
   align-items: center;
 }
 
-/* [한글 주석: SPA 메인 콘텐츠 컨테이너의 상단 여백 설정 - 고정 헤더 높이(5rem)에 가려지지 않으면서 최적의 콤팩트 간격을 유지하도록 3차 최적화] */
+/* SPA 메인 콘텐츠 컨테이너의 상단 여백 설정 - 고정 헤더 높이(5rem)에 가려지지 않으면서 최적의 콤팩트 간격을 유지하도록 3차 최적화 */
 #app-view-container {
   margin-top: 90px !important;
 }
@@ -168,7 +168,7 @@ body {
   }
 }
 
-/* [한글 주석: 언어 선택 안내 문구 전용 형광 네온 스타일 - 크고 선명하게 돋보이도록 조정] */
+/* 언어 선택 안내 문구 전용 형광 네온 스타일 - 크고 선명하게 돋보이도록 조정 */
 .lang-select-subtitle {
   font-size: 1.35rem !important;
   font-weight: 700 !important;
@@ -182,7 +182,7 @@ body {
 }
 
 /* Header Section */
-/* [한글 주석: 대시보드 타이틀 헤더 영역을 정중앙 축에 가두어 탭 스위칭 시 제목 위치 흔들림을 100% 차단] */
+/* 대시보드 타이틀 헤더 영역을 정중앙 축에 가두어 탭 스위칭 시 제목 위치 흔들림을 100% 차단 */
 .header {
   text-align: center !important;
   width: 100% !important;
@@ -997,7 +997,7 @@ body {
   box-sizing: border-box;
 }
 
-/* [한글 주석: 대시보드 컨테이너의 좌우 마진을 auto로 고정하여 모든 탭 패널 전환 시 뷰포트 중앙점 흔들림 방지] */
+/* 대시보드 컨테이너의 좌우 마진을 auto로 고정하여 모든 탭 패널 전환 시 뷰포트 중앙점 흔들림 방지 */
 .admin-container {
   max-width: 1400px;
   width: 95%;
@@ -1007,7 +1007,7 @@ body {
   box-sizing: border-box;
 }
 
-/* [한글 주석: 탭 패널 전환 시 데이터 수집 대기 시간 동안 패널 높이가 0px로 순간 축소되어 헤더/탭 메뉴가 위아래로 튀는 랙을 방지하는 최소 높이 락] */
+/* 탭 패널 전환 시 데이터 수집 대기 시간 동안 패널 높이가 0px로 순간 축소되어 헤더/탭 메뉴가 위아래로 튀는 랙을 방지하는 최소 높이 락 */
 .admin-tab-content {
   width: 100%;
   min-height: 550px;
@@ -1318,12 +1318,12 @@ body {
 .col-name,
 .col-visa-type,
 .col-visa-expiry,
-/* [한글 주석: 예약 목록의 유입경로 셀에 white-space: nowrap 적용] */
+/* 예약 목록의 유입경로 셀에 white-space: nowrap 적용 */
 .col-inflow {
   white-space: nowrap;
 }
 
-/* [한글 주석: 관리자 페이지 예약 목록의 유입경로 인라인 입력란 커스텀 스타일] */
+/* 관리자 페이지 예약 목록의 유입경로 인라인 입력란 커스텀 스타일 */
 .inflow-edit-input {
   background: rgba(12, 16, 32, 0.6);
   color: #818cf8; /* text-accent 색상 */
@@ -1646,7 +1646,7 @@ body {
    12. Admin Tabs & Role Management (관리자 탭 및 등급 관리 추가)
    ---------------------------------- */
 
-/* [한글 주석: 관리자 탭 버튼 전체를 정중앙 수평 축에 고정하여 탭 전환 시 1px도 위치가 움직이지 않도록 락(Lock) 부여] */
+/* 관리자 탭 버튼 전체를 정중앙 수평 축에 고정하여 탭 전환 시 1px도 위치가 움직이지 않도록 락(Lock) 부여 */
 .admin-tabs {
   display: flex !important;
   justify-content: center !important;
@@ -1949,7 +1949,7 @@ body {
   #reservation-list td.col-res-date::before { content: "예약 희망일"; }
   #reservation-list td.col-address::before { content: "주 소"; }
   #reservation-list td.col-symptoms::before { content: "증 상"; }
-  /* [한글 주석: 모바일 반응형 뷰에서 유입경로 컬럼의 제목 라벨을 주입] */
+  /* 모바일 반응형 뷰에서 유입경로 컬럼의 제목 라벨을 주입 */
   #reservation-list td.col-inflow::before { content: "유입경로"; }
   #reservation-list td.col-status::before { content: "상 태"; }
   #reservation-list td.col-actions::before { content: "예약 상태 관리"; }
@@ -1957,13 +1957,13 @@ body {
   /* 주소나 증상, 유입경로 등 긴 텍스트는 모바일에서 우측 정렬 및 단어 줄바꿈 처리 */
   #reservation-list td.col-address,
   #reservation-list td.col-symptoms,
-  /* [한글 주석: 모바일 반응형 뷰에서 유입경로 셀도 긴 텍스트가 줄바꿈되도록 스타일 추가] */
+  /* 모바일 반응형 뷰에서 유입경로 셀도 긴 텍스트가 줄바꿈되도록 스타일 추가 */
   #reservation-list td.col-inflow {
     word-break: break-all;
     max-width: 65%;
   }
 
-  /* [한글 주석: 모바일 뷰 카드 형태 레이아웃에서 유입경로 입력창이 우측 정렬 및 조화로운 너비를 가지도록 조정] */
+  /* 모바일 뷰 카드 형태 레이아웃에서 유입경로 입력창이 우측 정렬 및 조화로운 너비를 가지도록 조정 */
   #reservation-list td.col-inflow .inflow-edit-input {
     text-align: right;
     width: 100%;
@@ -2563,7 +2563,7 @@ body.modal-open {
    7. 공통 상단 네비게이션 바 (Common Navigation Bar) 스타일 정의
    ========================================================================== */
 
-/* [한글 주석: 상단 공통 네비게이션 헤더를 최상위 Layer(z-index: 99999)에 부동 고정하여 1ms도 파괴됨 없이 온전히 노출되도록 긴급 정상 복구] */
+/* 상단 공통 네비게이션 헤더를 최상위 Layer(z-index: 99999)에 부동 고정하여 1ms도 파괴됨 없이 온전히 노출되도록 긴급 정상 복구 */
 #global-header {
   position: fixed !important;
   top: 0 !important;
@@ -2573,7 +2573,7 @@ body.modal-open {
   z-index: 99999 !important;
 }
 
-/* [한글 주석: 상단 공통 네비게이션 바를 수직 80px 높이 내에서 완벽한 정중앙(align-items: center)으로 정돈] */
+/* 상단 공통 네비게이션 바를 수직 80px 높이 내에서 완벽한 정중앙(align-items: center)으로 정돈 */
 .common-navbar {
   position: fixed !important;
   top: 0 !important;
@@ -2735,7 +2735,7 @@ body.modal-open {
   display: none !important; /* 언더라인 비활성화 */
 }
 
-/* [한글 주석: 의료통역 및 진료 예약 버튼 메뉴가 선택(active)되었을 때 글자색 흰색 전환 및 밝은 형광 네온 테두리/발광 효과 적용] */
+/* 의료통역 및 진료 예약 버튼 메뉴가 선택(active)되었을 때 글자색 흰색 전환 및 밝은 형광 네온 테두리/발광 효과 적용 */
 .btn-nav-booking.active {
   background: rgba(34, 211, 238, 0.18) !important;
   color: #ffffff !important;
@@ -2871,7 +2871,7 @@ body.modal-open {
   box-shadow: 0 2px 6px rgba(236, 72, 153, 0.2);
 }
 
-/* [한글 주석: 예약내역 버튼 선택(active) 시 반투명 형광 시안 테두리 및 글로우 하이라이트 적용] */
+/* 예약내역 버튼 선택(active) 시 반투명 형광 시안 테두리 및 글로우 하이라이트 적용 */
 .btn-my-res.active {
   background: rgba(0, 243, 255, 0.18) !important;
   color: #ffffff !important;
@@ -2881,7 +2881,7 @@ body.modal-open {
   transform: scale(1.05);
 }
 
-/* [한글 주석: 관리자 및 예약통계 버튼 선택(active) 시 기존 분홍/핑크 그라데이션 배경을 100% 유지하면서 밝은 형광 네온 테두리 및 글로우 발광 효과 적용] */
+/* 관리자 및 예약통계 버튼 선택(active) 시 기존 분홍/핑크 그라데이션 배경을 100% 유지하면서 밝은 형광 네온 테두리 및 글로우 발광 효과 적용 */
 .btn-admin.active {
   background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%) !important; /* 기존 핑크 그라데이션 배경 100% 유지 */
   color: #ffffff !important;
@@ -2974,7 +2974,7 @@ body.home-page {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 6.5rem 2rem 1rem; /* [한글 주석: 상단 고정 헤더에 가려지지 않도록 상단 6.5rem, 하단 간격 감축 1rem] */
+  padding: 6.5rem 2rem 1rem; /* 상단 고정 헤더에 가려지지 않도록 상단 6.5rem, 하단 간격 감축 1rem */
   overflow: hidden;
 }
 /* 히어로 내부 빛 확산 */
@@ -2991,7 +2991,7 @@ body.home-page {
   pointer-events: none;
 }
 
-/* [한글 주석: 메인 히어로 섹션 컨텐츠 래퍼 - 데스크톱 전체화면에서 타이틀이 한 줄로 시원하게 배치되도록 너비 확장] */
+/* 메인 히어로 섹션 컨텐츠 래퍼 - 데스크톱 전체화면에서 타이틀이 한 줄로 시원하게 배치되도록 너비 확장 */
 .hero-content {
   position: relative;
   z-index: 2;
@@ -3013,7 +3013,7 @@ body.home-page {
   letter-spacing: 0.5px;
 }
 
-/* [한글 주석: 메인 히어로 타이틀 - 데스크톱 전체화면에서 한 줄로 정돈되어 표시되고 단어 잘림 방지] */
+/* 메인 히어로 타이틀 - 데스크톱 전체화면에서 한 줄로 정돈되어 표시되고 단어 잘림 방지 */
 .hero-title {
   font-size: clamp(2.2rem, 3.8vw, 3.6rem);
   font-weight: 800;
@@ -3026,17 +3026,19 @@ body.home-page {
   word-break: keep-all;
 }
 
-/* [한글 주석: 회사소개 페이지 히어로 슬로건 전용 타이틀 - 긴 문구가 데스크톱 전체화면에서 줄바꿈 없이 한 줄로 깔끔하게 정돈되도록 폰트 크기 및 너비 최적화] */
-.about-hero-title {
-  font-size: clamp(1.6rem, 2.4vw, 2.8rem);
-  line-height: 1.35;
-  letter-spacing: -1px;
+/* 회사소개 페이지 히어로 슬로건 전용 타이틀 - 범용 .hero-title(3.5rem 등)에 덮어씌워지지 않도록 복합 선택자(.hero-title.about-hero-title)로 우선순위를 강화하고, 대형 화면 및 전체 창에서 시원하고 웅장하게 보이도록 최고 폰트 크기 상한(3.2rem) 및 반응형 뷰포트 배율(2.8vw) 최적화 */
+.hero-title.about-hero-title {
+  font-size: clamp(1.4rem, 2.8vw, 3.2rem);
+  line-height: 1.65;
+  letter-spacing: -0.5px;
+  margin-bottom: 1.5rem;
 }
 
-/* [한글 주석: 데스크톱 화면에서 각 슬로건 줄이 임의로 줄바꿈되어 흉하게 꺾이는 현상을 원천 방지하는 인라인 블록 래퍼] */
+/* 데스크톱 화면에서 각 슬로건 줄이 임의로 줄바꿈되어 흉하게 꺾이는 현상을 방지하고 세로 여백을 제공하는 인라인 블록 래퍼 */
 .hero-title-line {
   display: inline-block;
   white-space: nowrap;
+  padding: 0.25rem 0;
 }
 
 .hero-desc {
@@ -3098,12 +3100,12 @@ body.home-page {
   justify-content: center;
 }
 
-/* [한글 주석: 메인 홈 화면 파트너스 광고 배너 영역 상단 패딩 축소 - 메인 타이틀과의 간격 최적화] */
+/* 메인 홈 화면 파트너스 광고 배너 영역 상단 패딩 축소 - 메인 타이틀과의 간격 최적화 */
 #partners.content-section {
   padding: 1.5rem 2rem 6rem;
 }
 
-/* [한글 주석: 섹션 내부 공통 컨테이너 - 와이드 화면 중앙 정렬 보장을 위한 margin: 0 auto 추가] */
+/* 섹션 내부 공통 컨테이너 - 와이드 화면 중앙 정렬 보장을 위한 margin: 0 auto 추가 */
 .section-container {
   width: 100%;
   max-width: 1100px;
@@ -3305,7 +3307,7 @@ body.home-page {
   gap: 1.5rem;
 }
 
-/* [한글 주석: 레거시 파트너 카드 스타일 정리 완료 - partners.html 전용 1안 명함 카드 스타일로 통합] */
+/* 레거시 파트너 카드 스타일 정리 완료 - partners.html 전용 1안 명함 카드 스타일로 통합 */
 
 /* 공통 하단 푸터 (Footer) */
 .global-footer {
@@ -3395,8 +3397,22 @@ body.home-page {
    ========================================================================== */
 
 @media (max-width: 991px) {
+  /* 태블릿 환경(991px 이하)에서 타이틀이 비정상적으로 과대 확대되지 않도록 안정적인 반응형 폰트 크기 적용 */
   .hero-title {
-    font-size: 3.5rem;
+    font-size: clamp(2rem, 4.5vw, 2.8rem);
+  }
+
+  /* 태블릿 환경에서 회사소개 슬로건이 거대화되거나 잘리지 않도록 전용 크기 지정 및 단어 단위 자동 줄바꿈 활성화 */
+  .hero-title.about-hero-title {
+    font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    line-height: 1.55;
+  }
+
+  .about-hero-title .hero-title-line {
+    white-space: normal; /* 태블릿 및 좁은 화면에서 텍스트가 잘리지 않도록 안전한 줄바꿈 허용 */
+    word-break: keep-all; /* 한국어 단어 단위로 깔끔하게 줄바꿈 */
+    display: inline; /* 줄바꿈 시 자연스러운 텍스트 흐름 지원 */
+    padding: 0.15rem 0;
   }
   
   .about-grid {
@@ -3422,7 +3438,7 @@ body.home-page {
      모바일 및 태블릿 통합 대응 (1024px 이하)
      ========================================================================== */
 
-  /* [한글 주석: 모바일 고정 메뉴바에 버튼이 가려지지 않도록 상단 패딩을 6.5rem으로 적당히 띄워 배치] */
+  /* 모바일 고정 메뉴바에 버튼이 가려지지 않도록 상단 패딩을 6.5rem으로 적당히 띄워 배치 */
   .hero-section {
     padding-top: 6.5rem;
   }
@@ -3617,7 +3633,7 @@ body.home-page {
     justify-content: center; /* 로고 너비에 맞춰 정중앙 정렬 */
   }
 
-  /* [한글 주석: 핵심 버그 픽스]
+  /* 핵심 버그 픽스]
      nav-auth-area가 nav-container의 직접 자식일 때(JS 이동 전)는 숨깁니다.
      JS의 handleResponsiveLayout()이 nav-menu.appendChild(authArea)로 이동시키면
      이 선택자가 더 이상 일치하지 않아 위의 .nav-auth-area 스타일(display:flex)이 자동 적용됩니다.
@@ -3729,20 +3745,24 @@ body.home-page {
      ========================================================================== */
 
 
-  /* [한글 주석: 모바일 화면에서의 타이틀 크기 및 가독성 최적화] */
+  /* 모바일 화면에서의 타이틀 크기 및 가독성 최적화 */
   .hero-title {
     font-size: 2.1rem;
     line-height: 1.35;
   }
 
-  /* [한글 주석: 모바일 화면에서 회사소개 슬로건이 자연스럽게 줄바꿈되고 넘치지 않도록 최적화] */
-  .about-hero-title {
-    font-size: 1.4rem;
-    line-height: 1.45;
+  /* 모바일 화면(768px 이하)에서 회사소개 슬로건이 자연스럽게 줄바꿈되고 라인 간격이 답답하지 않도록 복합 선택자로 크기 및 여백 최적화 */
+  .hero-title.about-hero-title {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
   }
 
   .about-hero-title .hero-title-line {
     white-space: normal;
+    word-break: keep-all;
+    display: inline;
+    padding: 0.2rem 0;
   }
 
   .hero-desc {
@@ -3760,7 +3780,7 @@ body.home-page {
     padding: 5rem 1.5rem;
   }
 
-  /* [한글 주석: 모바일 화면에서의 파트너스 배너 영역 여백 축소] */
+  /* 모바일 화면에서의 파트너스 배너 영역 여백 축소 */
   #partners.content-section {
     padding: 1rem 1.5rem 4rem;
   }
@@ -4016,10 +4036,15 @@ body.home-page {
   }
 }
 
-/* [반응형 최적화] 가로폭이 매우 좁아져(600px 이하) 퀵 메뉴 아이콘들이 브랜드 로고 텍스트를 침범하기 직전에만 숨깁니다 */
-@media (max-width: 600px) {
+/* 홈버튼 아이콘이 'S' 글자에 닿는 순간 실시간 충돌 감지로 숨김 처리하는 전용 클래스 */
+.nav-brand-text.brand-text-collapsed {
+  display: none !important;
+}
+
+/* 초소형 모바일 기기(380px 이하)에서의 보조 레이아웃 방어용 미디어 쿼리 */
+@media (max-width: 380px) {
   .nav-brand-text {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -4102,7 +4127,7 @@ body.home-page {
   position: relative;
 }
 
-/* [한글 주석: 광고 카테고리 태그 뱃지 (병원명/기관명 - 가장 크고 강조되는 최상위 타이포그래피 부여)] */
+/* 광고 카테고리 태그 뱃지 (병원명/기관명 - 가장 크고 강조되는 최상위 타이포그래피 부여) */
 .ad-tag {
   font-size: 1.2rem;
   color: #00f3ff; /* 형광 시안 포인트 컬러 */
@@ -4111,7 +4136,7 @@ body.home-page {
   line-height: 1.3;
 }
 
-/* [한글 주석: 광고 타이틀 제목 - 병원명/기관명보다 작게 축소하여 가독성 위계 완성] */
+/* 광고 타이틀 제목 - 병원명/기관명보다 작게 축소하여 가독성 위계 완성 */
 .ad-title {
   font-size: 0.98rem;
   font-weight: 700;
@@ -4120,7 +4145,7 @@ body.home-page {
   line-height: 1.35;
 }
 
-/* [한글 주석: 광고 설명 텍스트 - 3단계 보조 텍스트 폰트 조율] */
+/* 광고 설명 텍스트 - 3단계 보조 텍스트 폰트 조율 */
 .ad-desc {
   font-size: 0.8rem;
   color: var(--text-secondary);
@@ -4182,7 +4207,7 @@ body.home-page {
 /* ==========================================================================
    히어로 섹션 신규 추가: 카톡상담하기 및 진료예약하기 버튼 그룹 스타일
    ========================================================================== */
-/* [한글 주석: 카톡상담하기 및 진료예약하기 버튼을 나란히 수평 정렬하는 버튼 그룹 Flex 컨테이너] */
+/* 카톡상담하기 및 진료예약하기 버튼을 나란히 수평 정렬하는 버튼 그룹 Flex 컨테이너 */
 .hero-btn-group,
 .hero-booking-btn-container {
   display: flex;
@@ -4193,7 +4218,7 @@ body.home-page {
   flex-wrap: wrap;
 }
 
-/* [한글 주석: 카카오톡 파트너/비즈니스 1:1 상담용 브랜드 전용 노란색 버튼 스타일] */
+/* 카카오톡 파트너/비즈니스 1:1 상담용 브랜드 전용 노란색 버튼 스타일 */
 .hero-kakao-btn {
   display: inline-flex;
   align-items: center;
@@ -4214,7 +4239,7 @@ body.home-page {
   letter-spacing: -0.5px;
 }
 
-/* [한글 주석: 카카오톡 SVG 아이콘 애니메이션 및 변형 효과] */
+/* 카카오톡 SVG 아이콘 애니메이션 및 변형 효과 */
 .hero-kakao-btn .kakao-icon {
   flex-shrink: 0;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -4303,7 +4328,7 @@ body.home-page {
 }
 
 /* ==========================================================================
-   [한글 주석: 상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 패널 프리미엄 스타일링]
+   상단 메인 메뉴 전용 15개국어 세로 수직 드롭다운 패널 프리미엄 스타일링]
    ========================================================================== */
 
 /* 드롭다운 부모 컨테이너 */
@@ -4356,7 +4381,7 @@ body.home-page {
   transition: transform 0.25s ease;
 }
 
-/* [한글 주석: 클릭 이벤트 발생 시 100% 무조건 팝업 패널이 화면에 표시되도록 강제 노출(!important) 스타일 적용] */
+/* 클릭 이벤트 발생 시 100% 무조건 팝업 패널이 화면에 표시되도록 강제 노출(!important) 스타일 적용 */
 .nav-lang-menu-panel.show,
 .nav-lang-menu-panel.active {
   display: block !important;
@@ -4498,13 +4523,13 @@ body.home-page {
   }
 }
 
-/* [한글 주석: 사용자 요청에 따라 모바일 상단 퀵 네비게이션 바 내 홈 옆 언어선택(🌐) 아이콘 숨김 처리 방어 코드] */
+/* 사용자 요청에 따라 모바일 상단 퀵 네비게이션 바 내 홈 옆 언어선택(🌐) 아이콘 숨김 처리 방어 코드 */
 .nav-lang-mobile-trigger {
   display: none !important;
 }
 
 /* =========================================================================
-   [한글 주석] ID/PW 회원가입 & 로그인 통합 모달 및 상세보기 모달 스타일 정의
+   ID/PW 회원가입 & 로그인 통합 모달 및 상세보기 모달 스타일 정의
    ========================================================================= */
 
 /* 모달 백드롭 배경 */
@@ -4821,7 +4846,7 @@ body.home-page {
 }
 
 /* =========================================================================
-   [한글 주석] 마이페이지 (개인정보 수정 & 비밀번호 변경) 모달 전용 스타일
+   마이페이지 (개인정보 수정 & 비밀번호 변경) 모달 전용 스타일
    ========================================================================= */
 .profile-modal-card {
   max-width: 680px;
@@ -4846,24 +4871,24 @@ body.home-page {
 }
 
 /* =========================================================================
-   [한글 주석] 상단 네비게이션 커뮤니티 메뉴 스타일 - 비로그인 및 로그인 회원 모두 지연 없이 즉시 노출
+   상단 네비게이션 커뮤니티 메뉴 스타일 - 비로그인 및 로그인 회원 모두 지연 없이 즉시 노출
    ========================================================================= */
 .nav-community-item {
-  display: inline-block; /* [한글 주석: 페이지 로드 시 딜레이/깜빡임 없이 커뮤니티 메뉴 즉시 표출] */
+  display: inline-block; /* 페이지 로드 시 딜레이/깜빡임 없이 커뮤니티 메뉴 즉시 표출 */
 }
 .nav-community-item.show,
 .nav-community-item.logged-in {
-  display: inline-block !important; /* [한글 주석: 상태 변경 시에도 인라인 블록 표시 유지] */
+  display: inline-block !important; /* 상태 변경 시에도 인라인 블록 표시 유지 */
 }
 
 /* =========================================================================
-   [한글 주석] 네이버 카페 스타일 커뮤니티 레이아웃 & 게시판 폼 디자인 시스템
+   네이버 카페 스타일 커뮤니티 레이아웃 & 게시판 폼 디자인 시스템
    ========================================================================= */
 .cafe-layout-container {
   max-width: 1280px;
   width: 100%;
   margin: 0 auto;
-  padding: 6.5rem 1.5rem 4rem; /* [한글 주석: 상단 고정 네비게이션 헤더(80px)에 콘텐츠가 가려지지 않도록 상단 패딩 104px 적용] */
+  padding: 6.5rem 1.5rem 4rem; /* 상단 고정 네비게이션 헤더(80px)에 콘텐츠가 가려지지 않도록 상단 패딩 104px 적용 */
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 1.75rem;
@@ -4922,7 +4947,7 @@ body.home-page {
   border-radius: 6px;
 }
 
-/* [한글 주석: 커뮤니티 프로필 카드 액션 버튼 그룹 - 글쓰기 및 설정 버튼 가변 레이아웃] */
+/* 커뮤니티 프로필 카드 액션 버튼 그룹 - 글쓰기 및 설정 버튼 가변 레이아웃 */
 .cafe-profile-btn-group {
   display: flex;
   gap: 0.5rem;
@@ -4960,7 +4985,7 @@ body.home-page {
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
 }
 
-/* [한글 주석: 커뮤니티 프로필 카드 설정 버튼 - 등급 권한 활성화 시 표출되는 세련된 네이비/시안 보조 버튼] */
+/* 커뮤니티 프로필 카드 설정 버튼 - 등급 권한 활성화 시 표출되는 세련된 네이비/시안 보조 버튼 */
 .btn-cafe-setting {
   flex: 1;
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
@@ -5191,7 +5216,7 @@ body.home-page {
   margin-right: 0.4rem;
 }
 
-/* [한글 주석: 상단 고정 공지글 전용 번호 뱃지 및 행 하이라이트 스타일 - 줄바꿈 100% 차단 및 단정 정렬] */
+/* 상단 고정 공지글 전용 번호 뱃지 및 행 하이라이트 스타일 - 줄바꿈 100% 차단 및 단정 정렬 */
 .cafe-notice-pin {
   display: inline-flex;
   align-items: center;
@@ -5217,7 +5242,7 @@ body.home-page {
   background: rgba(245, 158, 11, 0.08) !important;
 }
 
-/* [한글 주석: 상세 보기 페이지 내 관리자 전용 공지 등록/해제 버튼 인터랙션 스타일] */
+/* 상세 보기 페이지 내 관리자 전용 공지 등록/해제 버튼 인터랙션 스타일 */
 .btn-toggle-notice {
   transition: all 0.25s ease;
 }
@@ -5422,8 +5447,8 @@ body.home-page {
   color: #ffffff;
 }
 
-/* --- [한글 주석: 게시판 모바일 반응형 카드리스트 레이아웃 스타일] --- */
-/* [한글 주석: 기본 데스크톱 환경에서는 모바일 메타 영역을 숨김] */
+/* --- 게시판 모바일 반응형 카드리스트 레이아웃 스타일] --- */
+/* 기본 데스크톱 환경에서는 모바일 메타 영역을 숨김 */
 .cafe-mobile-meta {
   display: none;
 }
@@ -5435,14 +5460,14 @@ body.home-page {
   gap: 0.35rem;
 }
 
-/* [한글 주석: 모바일 화면 (768px 이하) 전용 반응형 카드리스트 전환] */
+/* 모바일 화면 (768px 이하) 전용 반응형 카드리스트 전환 */
 @media (max-width: 768px) {
-  /* [한글 주석: 모바일에서 테이블 헤더 숨김] */
+  /* 모바일에서 테이블 헤더 숨김 */
   .cafe-table thead {
     display: none;
   }
 
-  /* [한글 주석: 테이블 구성요소를 블록/플렉스 구조로 변경하여 카드 형태 생성] */
+  /* 테이블 구성요소를 블록/플렉스 구조로 변경하여 카드 형태 생성 */
   .cafe-table,
   .cafe-table tbody,
   .cafe-table tr,
@@ -5452,14 +5477,14 @@ body.home-page {
     box-sizing: border-box;
   }
 
-  /* [한글 주석: 각 게시글 행 카드 스타일 지정] */
+  /* 각 게시글 행 카드 스타일 지정 */
   .cafe-table tr {
     padding: 0.85rem 0.65rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: background 0.2s;
   }
 
-  /* [한글 주석: 데스크톱 전용 4개 컬럼(번호, 작성자, 작성일, 조회수) 모바일 숨김] */
+  /* 데스크톱 전용 4개 컬럼(번호, 작성자, 작성일, 조회수) 모바일 숨김 */
   .cafe-col-no,
   .cafe-col-author,
   .cafe-col-date,
@@ -5467,13 +5492,13 @@ body.home-page {
     display: none !important;
   }
 
-  /* [한글 주석: 제목 셀을 카드 전체 레이아웃 용도로 활용] */
+  /* 제목 셀을 카드 전체 레이아웃 용도로 활용 */
   .cafe-col-title {
     padding: 0 !important;
     border-bottom: none !important;
   }
 
-  /* [한글 주석: 1번째 줄 - 제목 라인 (한 줄 고정 및 overflow ellipsis 말줄임)] */
+  /* 1번째 줄 - 제목 라인 (한 줄 고정 및 overflow ellipsis 말줄임) */
   .cafe-title-line {
     display: flex;
     align-items: center;
@@ -5494,7 +5519,7 @@ body.home-page {
     font-weight: 600;
   }
 
-  /* [한글 주석: 2번째 줄 - 모바일 전용 메타 정보 (작성자 / 작성일 / 조회수)] */
+  /* 2번째 줄 - 모바일 전용 메타 정보 (작성자 / 작성일 / 조회수) */
   .cafe-mobile-meta {
     display: flex !important;
     align-items: center;
@@ -5527,7 +5552,7 @@ body.home-page {
 }
 
 /* ==========================================================================
-   [한글 주석: 네이버 카페 스타일 커뮤니티 댓글 & 대댓글(답글) 디자인 시스템]
+   네이버 카페 스타일 커뮤니티 댓글 & 대댓글(답글) 디자인 시스템]
    ========================================================================== */
 .cafe-comment-section {
   margin-top: 2rem;
@@ -5538,7 +5563,7 @@ body.home-page {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* [한글 주석: 댓글 상단 헤더 바 (댓글 수 및 새로고침 버튼)] */
+/* 댓글 상단 헤더 바 (댓글 수 및 새로고침 버튼) */
 .cafe-comment-header {
   display: flex;
   justify-content: space-between;
@@ -5582,7 +5607,7 @@ body.home-page {
   border-color: rgba(0, 243, 255, 0.3);
 }
 
-/* [한글 주석: 댓글 목록 컨테이너] */
+/* 댓글 목록 컨테이너 */
 .cafe-comment-list {
   display: flex;
   flex-direction: column;
@@ -5600,7 +5625,7 @@ body.home-page {
   border-radius: 10px;
 }
 
-/* [한글 주석: 개별 댓글 카드 아이템] */
+/* 개별 댓글 카드 아이템 */
 .cafe-comment-item {
   background: rgba(10, 15, 30, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -5615,7 +5640,7 @@ body.home-page {
   border-color: rgba(0, 243, 255, 0.15);
 }
 
-/* [한글 주석: 네이버 카페 스타일 대댓글(답글) 들여쓰기 및 시각적 계층 구조] */
+/* 네이버 카페 스타일 대댓글(답글) 들여쓰기 및 시각적 계층 구조 */
 .cafe-comment-item.is-reply {
   margin-left: 2rem;
   background: rgba(15, 23, 42, 0.85);
@@ -5679,7 +5704,7 @@ body.home-page {
   white-space: pre-wrap;
 }
 
-/* [한글 주석: 댓글 하단 버튼 바 (답글달기, 삭제)] */
+/* 댓글 하단 버튼 바 (답글달기, 삭제) */
 .comment-actions-bar {
   display: flex;
   align-items: center;
@@ -5713,7 +5738,7 @@ body.home-page {
   background: rgba(239, 68, 68, 0.1);
 }
 
-/* [한글 주석: 대댓글(답글) 작성 인라인 폼 컨테이너] */
+/* 대댓글(답글) 작성 인라인 폼 컨테이너 */
 .cafe-reply-form-wrap {
   margin-top: 0.75rem;
   padding: 0.85rem;
@@ -5722,7 +5747,7 @@ body.home-page {
   border-radius: 8px;
 }
 
-/* [한글 주석: 메인 댓글 작성 상자] */
+/* 메인 댓글 작성 상자 */
 .cafe-comment-form-box {
   background: rgba(10, 15, 30, 0.85);
   border: 1px solid rgba(0, 243, 255, 0.25);
@@ -5789,7 +5814,7 @@ body.home-page {
   transform: translateY(-1px);
 }
 
-/* [한글 주석: 비로그인 사용자용 댓글 로그인 유도 배너] */
+/* 비로그인 사용자용 댓글 로그인 유도 배너 */
 .cafe-comment-login-prompt {
   text-align: center;
   padding: 1.5rem 1rem;
@@ -5825,7 +5850,7 @@ body.home-page {
 }
 
 /* ==========================================================================
-   [한글 주석: 카테고리 관리 · 설정 인라인 에디터 전용 스타일셋]
+   카테고리 관리 · 설정 인라인 에디터 전용 스타일셋]
    - 네이버 카페/블로그 스타일 2열 구조 + 다크 사이버펑크 네온 테마 일체화
    - HTML5 드래그 앤 드롭 애니메이션 및 시각 피드백 지원
    ========================================================================== */
@@ -6015,7 +6040,7 @@ body.home-page {
   margin-left: 0.3rem;
 }
 
-/* [한글 주석: 카테고리별 글 열람 권한 표시 뱃지 (회원전용 / 비밀글·관리자)] */
+/* 카테고리별 글 열람 권한 표시 뱃지 (회원전용 / 비밀글·관리자) */
 .cat-item-perm-badge {
   font-size: 0.68rem;
   font-weight: 700;
@@ -6045,7 +6070,7 @@ body.home-page {
   gap: 0.65rem;
 }
 
-/* [한글 주석: 카테고리 관리 · 글쓰기 권한 등급 다중 선택 체크박스 그리드 스타일셋] */
+/* 카테고리 관리 · 글쓰기 권한 등급 다중 선택 체크박스 그리드 스타일셋 */
 .cat-roles-checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -6293,7 +6318,7 @@ body.home-page {
 }
 
 /* ==========================================================================
-   [한글 주석] 관리자 페이지 테이블 전용 페이지네이션 컨트롤러 스타일 정의
+   관리자 페이지 테이블 전용 페이지네이션 컨트롤러 스타일 정의
    - 사이버 네이비/시안(#00f3ff) 테마와 완벽하게 일치하는 반응형 페이징 UI
    - 이전/다음/첫페이지/마지막페이지 및 개별 번호 버튼 지원
    ========================================================================== */
@@ -6380,7 +6405,7 @@ body.home-page {
 }
 
 /* ==========================================================================
-   [한글 주석] 전문 의료 통역 전용 페이지 (interpreters.html) 스타일 정의
+   전문 의료 통역 전용 페이지 (interpreters.html) 스타일 정의
    - 상단 히어로 배너, IGPartners 소속 통역 명함 카드, 프리랜서 통역사 카드 UI
    ========================================================================== */
 
@@ -6479,7 +6504,7 @@ body.home-page {
   justify-content: center;
 }
 
-/* [한글 주석: 소속 통역사 프리미엄 명함 카드 본체 (불필요한 공백 최소화 및 꽉 찬 밀도감)] */
+/* 소속 통역사 프리미엄 명함 카드 본체 (불필요한 공백 최소화 및 꽉 찬 밀도감) */
 .staff-card {
   display: flex;
   align-items: stretch;
@@ -6517,7 +6542,7 @@ body.home-page {
   opacity: 1;
 }
 
-/* [한글 주석: 좌측 통역사 사진 영역 - 가로 140px 확장 적용] */
+/* 좌측 통역사 사진 영역 - 가로 140px 확장 적용 */
 .staff-card-left {
   flex-shrink: 0;
   width: 140px;
@@ -6534,7 +6559,7 @@ body.home-page {
   background: #0c1020;
 }
 
-/* [한글 주석: 인물 사진의 피부결 및 머리카락이 자글거림 없이 원본 그대로 부드럽고 자연스럽게 표출되도록 렌더링 최적화] */
+/* 인물 사진의 피부결 및 머리카락이 자글거림 없이 원본 그대로 부드럽고 자연스럽게 표출되도록 렌더링 최적화 */
 .staff-photo {
   width: 100%;
   height: 100%;
@@ -6560,7 +6585,7 @@ body.home-page {
   padding: 0.1rem 0;
 }
 
-/* [한글 주석: 국기 사이즈 및 국가명 폰트 대폭 확대] */
+/* 국기 사이즈 및 국가명 폰트 대폭 확대 */
 .staff-country-badge {
   display: flex;
   align-items: center;
@@ -6586,7 +6611,7 @@ body.home-page {
   line-height: 1.2;
 }
 
-/* [한글 주석: 한글이름과 영문이름 2줄 표시 영역 - 상단 일관 정렬] */
+/* 한글이름과 영문이름 2줄 표시 영역 - 상단 일관 정렬 */
 .staff-name-box {
   display: flex;
   flex-direction: column;
@@ -6624,7 +6649,7 @@ body.home-page {
   margin-top: 4px;
 }
 
-/* [한글 주석: 연락처 및 이메일 표시 영역 - 연락처가 없어도 일정한 하단 여백 및 높이(min-height)를 유지하여 이름 위치 고정] */
+/* 연락처 및 이메일 표시 영역 - 연락처가 없어도 일정한 하단 여백 및 높이(min-height)를 유지하여 이름 위치 고정 */
 .staff-contact-box {
   display: flex;
   flex-direction: column;
@@ -6866,7 +6891,7 @@ body.home-page {
   }
 }
 
-/* [한글 주석: 관리자 폼 행 다단 그리드 레이아웃 (3열 균등 배치 및 우측 공백 제거)] */
+/* 관리자 폼 행 다단 그리드 레이아웃 (3열 균등 배치 및 우측 공백 제거) */
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -6927,7 +6952,7 @@ body.home-page {
   background: #141a30;
 }
 
-/* [한글 주석: 전문통역 관리 탭 100% Full-Width 화면 확장 및 테이블 최적화] */
+/* 전문통역 관리 탭 100% Full-Width 화면 확장 및 테이블 최적화 */
 #content-interpreters .clinic-form-section,
 #content-interpreters .clinic-list-section {
   max-width: 100% !important;
@@ -6981,7 +7006,7 @@ body.home-page {
 }
 
 /* ==========================================================================
-   [한글 주석: 협력업체 페이지 (partners.html) - 1안 하이엔드 글래스모피즘 와이드 명함 카드 전용 스타일]
+   협력업체 페이지 (partners.html) - 1안 하이엔드 글래스모피즘 와이드 명함 카드 전용 스타일]
    ========================================================================== */
 
 /* 1. 협력업체 상단 웅장한 다크 오로라 히어로 배너 섹션 */
@@ -7050,7 +7075,7 @@ body.home-page {
   width: 100%;
 }
 
-/* 4. [한글 주석: 1안 하이엔드 글래스모피즘 와이드 명함 카드 본체 - 내부 공백 완전 해소 꽉 찬 명함] */
+/* 4. 1안 하이엔드 글래스모피즘 와이드 명함 카드 본체 - 내부 공백 완전 해소 꽉 찬 명함] */
 .partner-card {
   display: flex !important;
   flex-direction: row !important;
@@ -7135,7 +7160,7 @@ body.home-page {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* [한글 주석: 태그, 큰 제목, 본문, 배지 간격을 여유롭게 분산] */
+  gap: 0.75rem; /* 태그, 큰 제목, 본문, 배지 간격을 여유롭게 분산 */
 }
 
 .partner-tag-badge {
@@ -7152,7 +7177,7 @@ body.home-page {
 }
 
 .partner-title {
-  font-size: 1.45rem; /* [한글 주석: 1.28rem에서 1.45rem으로 대폭 키워 시선 집중] */
+  font-size: 1.45rem; /* 1.28rem에서 1.45rem으로 대폭 키워 시선 집중 */
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.4px;
@@ -7164,7 +7189,7 @@ body.home-page {
 }
 
 .partner-subtitle {
-  font-size: 1.02rem; /* [한글 주석: 0.92rem에서 1.02rem으로 키워 가독성 및 볼륨감 강화] */
+  font-size: 1.02rem; /* 0.92rem에서 1.02rem으로 키워 가독성 및 볼륨감 강화 */
   color: rgba(255, 255, 255, 0.88);
   line-height: 1.6;
   margin: 0;
@@ -7328,7 +7353,7 @@ body.home-page {
   word-break: keep-all;
 }
 
-/* [한글 주석: 등록된 병원 및 협력업체 목록 마우스 드래그 앤 드롭 인터랙션 스타일] */
+/* 등록된 병원 및 협력업체 목록 마우스 드래그 앤 드롭 인터랙션 스타일 */
 .partner-drag-row,
 .clinic-drag-row {
   cursor: grab;
@@ -7373,7 +7398,7 @@ body.home-page {
   transform: scale(1.15);
 }
 
-/* [한글 주석: 등록된 광고 배너 목록 마우스 드래그 앤 드롭 인터랙션 스타일] */
+/* 등록된 광고 배너 목록 마우스 드래그 앤 드롭 인터랙션 스타일 */
 .ad-drag-row {
   cursor: grab;
   transition: background 0.15s ease, opacity 0.15s ease;

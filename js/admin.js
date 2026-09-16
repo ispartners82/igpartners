@@ -18,7 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// [한글 주석: SPA 및 일반 로드 환경 모두에서 정상 구동되도록 관리자 페이지 초기화 메인 함수 정의]
+// SPA 및 일반 로드 환경 모두에서 정상 구동되도록 관리자 페이지 초기화 메인 함수 정의]
 function initPage() {
   const reservationList = document.getElementById("reservation-list");
   const btnRefresh = document.getElementById("btn-refresh");
@@ -27,9 +27,9 @@ function initPage() {
   const tabUsers = document.getElementById("tab-users");
   // [디자인/기능 개편] 광고 배너 관리를 위한 신규 탭 버튼 및 패널 요소 캐싱
   const tabAds = document.getElementById("tab-ads");
-  // [한글 주석: 협력업체 CRUD 관리 탭 버튼 및 패널 요소 캐싱]
+  // 협력업체 CRUD 관리 탭 버튼 및 패널 요소 캐싱]
   const tabPartners = document.getElementById("tab-partners");
-  // [한글 주석: 전문 의료 통역 관리 탭 버튼 및 콘텐츠 패널 요소 캐싱]
+  // 전문 의료 통역 관리 탭 버튼 및 콘텐츠 패널 요소 캐싱]
   const tabInterpreters = document.getElementById("tab-interpreters");
   const contentReservations = document.getElementById("content-reservations");
   const contentUsers = document.getElementById("content-users");
@@ -39,7 +39,7 @@ function initPage() {
 
   const userList = document.getElementById("user-list");
   const btnRefreshUsers = document.getElementById("btn-refresh-users");
-  // [한글 주석: 회원 목록 전용 페이지네이션 컨테이너 DOM 요소]
+  // 회원 목록 전용 페이지네이션 컨테이너 DOM 요소]
   const usersPagination = document.getElementById("users-pagination");
 
   let currentLoginUserRole = "user"; // 현재 로그인한 사용자의 등급 저장
@@ -54,13 +54,13 @@ function initPage() {
   let currentLimit = parseInt(localStorage.getItem("admin_reservation_limit") || "10", 10);
   // [회원 개수 제한 필터] 로컬 상태 보존 관리 변수 정의 (기본값: 10개)
   let currentLimitUsers = parseInt(localStorage.getItem("admin_user_limit") || "10", 10);
-  // [한글 주석: 회원 목록 현재 페이지 번호 관리 상태 변수 (기본값: 1페이지)]
+  // 회원 목록 현재 페이지 번호 관리 상태 변수 (기본값: 1페이지)]
   let currentUserPage = 1;
   // [회원 등급 필터] 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
   let currentRoleFilter = localStorage.getItem("admin_user_role_filter") || "all";
   // [예약 언어 필터] 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
   let currentLangFilter = localStorage.getItem("admin_reservation_lang_filter") || "all";
-  // [한글 주석: 예약 검색 필터] 실시간 검색어 상태 변수 (기본값: 빈 문자열)
+  // 예약 검색 필터] 실시간 검색어 상태 변수 (기본값: 빈 문자열)
   let currentSearchQuery = "";
 
   // 통계 업데이트 함수 정의
@@ -129,7 +129,7 @@ function initPage() {
     }
 
     if (items.length === 0) {
-      // [한글 주석: '알림톡 상태' 컬럼이 추가되어 전체 컬럼 개수가 17개로 변경됨에 따라 빈 테이블 노출 시 colspan을 17으로 수정]
+      // '알림톡 상태' 컬럼이 추가되어 전체 컬럼 개수가 17개로 변경됨에 따라 빈 테이블 노출 시 colspan을 17으로 수정]
       reservationList.innerHTML = `<tr><td colspan="17" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
       updateStats(0, 0, 0, 0);
       return;
@@ -202,7 +202,7 @@ function initPage() {
         statusBadgeClass = "badge-cancelled";
       }
 
-      // [한글 주석: 알림톡 상태 배지 생성 - success, sent 등 다양한 정상/실패 상태 대소문자 무관 안전 지원]
+      // 알림톡 상태 배지 생성 - success, sent 등 다양한 정상/실패 상태 대소문자 무관 안전 지원]
       let alimtalkBadgeText = "대기";
       let alimtalkBadgeClass = "badge-alimtalk-none";
       let alimtalkTitleAttr = "";
@@ -247,7 +247,7 @@ function initPage() {
 
       // 테이블 렌더링 처리
       // 성별-생년월일 사이에 비자타입(col-visa-type) 컬럼을 추가하고, 신원정보-연락처 사이에 체류만료일(col-visa-expiry) 컬럼을 각각 신설하여 출력합니다.
-      // [한글 주석: 유입경로와 상태 컬럼 사이에 알림톡 상태 배지(col-alimtalk) 컬럼을 신설하여 출력합니다]
+      // 유입경로와 상태 컬럼 사이에 알림톡 상태 배지(col-alimtalk) 컬럼을 신설하여 출력합니다]
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
         <td class="col-name font-bold">${data.name || "-"}</td>
@@ -262,7 +262,7 @@ function initPage() {
         <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
         <td class="col-address">${data.address || "-"}</td>
         <td class="col-symptoms">${data.symptoms || "-"}</td>
-        <!-- [한글 주석: 증상과 상태 컬럼 사이에 유입경로(inflow)를 직접 수정 가능한 인라인 input 텍스트 필드로 렌더링] -->
+        <!-- 증상과 상태 컬럼 사이에 유입경로(inflow)를 직접 수정 가능한 인라인 input 텍스트 필드로 렌더링 -->
         <td class="col-inflow"><input type="text" class="inflow-edit-input" data-id="${docId}" value="${data.inflow || ''}" placeholder="유입경로 입력" /></td>
         <td class="col-alimtalk"><span class="badge ${alimtalkBadgeClass}" ${alimtalkTitleAttr}>${alimtalkBadgeText}</span></td>
         <td class="col-status"><span class="badge ${statusBadgeClass}">${statusBadgeText}</span></td>
@@ -287,7 +287,7 @@ function initPage() {
     
     // 최초 로드 시에만 로딩 표시 및 로컬스토리지 즉시 반환 처리
     if (isFirstLoad) {
-      // [한글 주석: '알림톡 상태' 컬럼 추가로 전체 컬럼이 17개가 됨에 따라 로딩 표시 colspan을 17으로 수정]
+      // '알림톡 상태' 컬럼 추가로 전체 컬럼이 17개가 됨에 따라 로딩 표시 colspan을 17으로 수정]
       reservationList.innerHTML = `<tr><td colspan="17" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
 
       // 1단계: Firestore 로드 전, 로컬스토리지 백업 데이터가 있다면 먼저 렌더링 (즉각적인 피드백 보장)
@@ -306,7 +306,7 @@ function initPage() {
         if (currentLangFilter !== "all") {
           filteredLocal = initialLocalItems.filter(item => item.lang === currentLangFilter);
         }
-        // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
+        // 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
         if (currentSearchQuery) {
           filteredLocal = filteredLocal.filter(item => {
             const name = (item.name || "").toLowerCase();
@@ -316,9 +316,9 @@ function initPage() {
             const alienNo = (item.alienNo || "").toLowerCase();
             const passportNo = (item.passportNo || "").toLowerCase();
             const visaType = (item.visaType || "").toLowerCase();
-            // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
+            // 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
             const inflow = (item.inflow || "").toLowerCase();
-            // [한글 주석: 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
+            // 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
             const alimtalkStatus = (item.alimtalkStatus || "").toLowerCase();
             const alimtalkError = (item.alimtalkError || "").toLowerCase();
             return name.includes(currentSearchQuery) || 
@@ -401,7 +401,7 @@ function initPage() {
       if (currentLangFilter !== "all") {
         filteredItems = sortedItems.filter(item => item.lang === currentLangFilter);
       }
-      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
+      // 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
       if (currentSearchQuery) {
         filteredItems = filteredItems.filter(item => {
           const name = (item.name || "").toLowerCase();
@@ -411,9 +411,9 @@ function initPage() {
           const alienNo = (item.alienNo || "").toLowerCase();
           const passportNo = (item.passportNo || "").toLowerCase();
           const visaType = (item.visaType || "").toLowerCase();
-          // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
+          // 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
           const inflow = (item.inflow || "").toLowerCase();
-          // [한글 주석: 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
+          // 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
           const alimtalkStatus = (item.alimtalkStatus || "").toLowerCase();
           const alimtalkError = (item.alimtalkError || "").toLowerCase();
           return name.includes(currentSearchQuery) || 
@@ -449,7 +449,7 @@ function initPage() {
       if (currentLangFilter !== "all") {
         filteredLocal = localItems.filter(item => item.lang === currentLangFilter);
       }
-      // [한글 주석: 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
+      // 실시간 검색어 필터링 적용 - 이름, 연락처, 증상, 선택병원, 외국인번호, 여권번호, 비자타입, 유입경로, 알림톡 상태/에러]
       if (currentSearchQuery) {
         filteredLocal = filteredLocal.filter(item => {
           const name = (item.name || "").toLowerCase();
@@ -459,9 +459,9 @@ function initPage() {
           const alienNo = (item.alienNo || "").toLowerCase();
           const passportNo = (item.passportNo || "").toLowerCase();
           const visaType = (item.visaType || "").toLowerCase();
-          // [한글 주석: 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
+          // 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가]
           const inflow = (item.inflow || "").toLowerCase();
-          // [한글 주석: 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
+          // 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가]
           const alimtalkStatus = (item.alimtalkStatus || "").toLowerCase();
           const alimtalkError = (item.alimtalkError || "").toLowerCase();
           return name.includes(currentSearchQuery) || 
@@ -568,7 +568,7 @@ function initPage() {
     loadReservations(false);
   });
 
-  // [한글 주석: 유입경로 인라인 입력란의 값이 변경되었을 때 Firestore 및 로컬스토리지를 업데이트하는 이벤트 리스너]
+  // 유입경로 인라인 입력란의 값이 변경되었을 때 Firestore 및 로컬스토리지를 업데이트하는 이벤트 리스너]
   reservationList.addEventListener("change", async (e) => {
     if (!e.target.classList.contains("inflow-edit-input")) return;
 
@@ -588,7 +588,7 @@ function initPage() {
           localData[index].inflow = newInflow;
           localStorage.setItem("local_reservations", JSON.stringify(localData));
           
-          // [한글 주석: 로컬 전용 예약일 경우 별도 local_reservations_direct 키에 백업 저장]
+          // 로컬 전용 예약일 경우 별도 local_reservations_direct 키에 백업 저장]
           if (docId.startsWith("local_")) {
             localStorage.setItem("local_reservations_direct", JSON.stringify(localData.filter(item => item.id.startsWith("local_"))));
           }
@@ -603,7 +603,7 @@ function initPage() {
       try {
         const docRef = doc(db, "reservations", docId);
         await updateDoc(docRef, { inflow: newInflow });
-        // [한글 주석: 업데이트 성공 시 시각적 효과를 위해 잠시 테두리 색상 강조]
+        // 업데이트 성공 시 시각적 효과를 위해 잠시 테두리 색상 강조]
         input.style.borderColor = "#34d399";
         setTimeout(() => {
           input.style.borderColor = "";
@@ -648,7 +648,7 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 예약 검색 필터] 검색 버튼 클릭 및 엔터 키 입력 시 검색 처리 (실시간 검색 이벤트 대체)
+  // 예약 검색 필터] 검색 버튼 클릭 및 엔터 키 입력 시 검색 처리 (실시간 검색 이벤트 대체)
   const inputSearchReservations = document.getElementById("input-search-reservations");
   const btnSearchReservations = document.getElementById("btn-search-reservations");
 
@@ -679,7 +679,7 @@ function initPage() {
 
 
   // [성능 및 정합성 최적화] 관리자 권한을 파악하고 UI를 제어하는 함수
-  // [한글 주석: 권한 기반 UI 탭 제어를 전담 처리하는 리팩토링된 헬퍼 함수 - 최고관리자(super_admin) 프리패스 및 하위 등급별 메뉴 분기 완벽 지원]
+  // 권한 기반 UI 탭 제어를 전담 처리하는 리팩토링된 헬퍼 함수 - 최고관리자(super_admin) 프리패스 및 하위 등급별 메뉴 분기 완벽 지원]
   function applyPermissionsUI(permissions) {
     const tabReservations = document.getElementById("tab-reservations");
     const tabUsers = document.getElementById("tab-users");
@@ -688,10 +688,10 @@ function initPage() {
     const tabAds = document.getElementById("tab-ads");
     const tabInterpreters = document.getElementById("tab-interpreters");
 
-    // [한글 주석: 최고관리자 여부 판별 플래그]
+    // 최고관리자 여부 판별 플래그]
     const isSuper = (currentLoginUserRole === "super_admin");
 
-    // [한글 주석: 상단 네비게이션 뱃지 제어 - 관리자 권한이 꺼져 있으면 관리자 버튼 숨김, 예약통계 권한이 꺼져 있으면 예약통계 버튼 숨김]
+    // 상단 네비게이션 뱃지 제어 - 관리자 권한이 꺼져 있으면 관리자 버튼 숨김, 예약통계 권한이 꺼져 있으면 예약통계 버튼 숨김]
     const btnAdminDashboard = document.getElementById("btn-admin-dashboard");
     const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
     const quickBtnAdminDashboard = document.getElementById("quick-btn-admin-dashboard");
@@ -725,12 +725,12 @@ function initPage() {
     if (tabAds) {
       tabAds.style.display = (permissions.hasAds || isSuper) ? "inline-block" : "none";
     }
-    // [한글 주석: 협력업체 관리 탭 권한 노출 제어 (hasPartners 권한 또는 최고관리자 권한)]
+    // 협력업체 관리 탭 권한 노출 제어 (hasPartners 권한 또는 최고관리자 권한)]
     const tabPartners = document.getElementById("tab-partners");
     if (tabPartners) {
       tabPartners.style.display = (permissions.hasPartners || isSuper) ? "inline-block" : "none";
     }
-    // [한글 주석: 전문통역 관리 탭 권한 노출 제어 (hasInterpreters 권한 또는 최고관리자 권한)]
+    // 전문통역 관리 탭 권한 노출 제어 (hasInterpreters 권한 또는 최고관리자 권한)]
     if (tabInterpreters) {
       tabInterpreters.style.display = (permissions.hasInterpreters || isSuper) ? "inline-block" : "none";
     }
@@ -754,7 +754,7 @@ function initPage() {
     }
   }
 
-  // [한글 주석: auth.js의 실시간 등급/권한 감지기에서 발행하는 이벤트를 수신하여 관리자 탭 UI 0초 즉각 갱신]
+  // auth.js의 실시간 등급/권한 감지기에서 발행하는 이벤트를 수신하여 관리자 탭 UI 0초 즉각 갱신]
   window.addEventListener("rolePermissionsChanged", (e) => {
     if (e.detail && e.detail.permissions) {
       currentLoginUserRole = e.detail.role || currentLoginUserRole;
@@ -766,7 +766,7 @@ function initPage() {
   async function verifyAndApplyPermissions(user, forceRefresh = false) {
     if (!user) return false;
 
-    // [한글 주석: 세션 캐시 검색 및 복원 처리 - 9개 세부 권한 프로퍼티가 온전히 존재하는지 무결성 검증]
+    // 세션 캐시 검색 및 복원 처리 - 9개 세부 권한 프로퍼티가 온전히 존재하는지 무결성 검증]
     const cacheKey = `admin_permissions_${user.uid}`;
     if (!forceRefresh) {
       const cached = sessionStorage.getItem(cacheKey);
@@ -797,7 +797,7 @@ function initPage() {
       const userData = userDocSnap.data();
       userRole = userData.role || "user";
       
-      // [한글 주석: 최고관리자(super_admin)는 모든 권한을 100% 무조건 부여하여 안전성 극대화]
+      // 최고관리자(super_admin)는 모든 권한을 100% 무조건 부여하여 안전성 극대화]
       if (userRole === "super_admin") {
         permissions = {
           isAdmin: true,
@@ -812,7 +812,7 @@ function initPage() {
           hasCommunitySettings: true
         };
       } else {
-        // [한글 주석: roles 문서로부터 10가지 세부 기능 권한 로드]
+        // roles 문서로부터 10가지 세부 기능 권한 로드]
         const roleDocRef = doc(db, "roles", userRole);
         const roleDocSnap = await getDoc(roleDocRef);
         
@@ -844,7 +844,7 @@ function initPage() {
             hasCommunitySettings: roleData.hasCommunitySettings !== undefined ? roleData.hasCommunitySettings : false
           };
         } else {
-          // [한글 주석: 예외 상황 - roles 문서가 DB에 없을 경우 하위 호환 권한 매핑]
+          // 예외 상황 - roles 문서가 DB에 없을 경우 하위 호환 권한 매핑]
           if (["admin", "admin_user"].includes(userRole)) {
             permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true };
           } else if (["top_manager", "res_manager"].includes(userRole)) {
@@ -882,13 +882,13 @@ function initPage() {
     }
 
     try {
-      // [한글 주석: '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 권한 확인 로딩 표시 colspan을 16으로 수정]
+      // '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 권한 확인 로딩 표시 colspan을 16으로 수정]
       reservationList.innerHTML = `<tr><td colspan="16" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
       
       // 권한 검증 및 UI 갱신 함수 실행
       const permissions = await verifyAndApplyPermissions(user);
       if (permissions) {
-        // [한글 주석: 모든 탭 버튼 및 콘텐츠 숨김 처리 헬퍼 함수 - 7개 전체 관리 탭 및 패널 완벽 반영]
+        // 모든 탭 버튼 및 콘텐츠 숨김 처리 헬퍼 함수 - 7개 전체 관리 탭 및 패널 완벽 반영]
         const hideAllTabsAndContents = () => {
           const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabPartners, tabInterpreters];
           const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds, contentPartners, contentInterpreters];
@@ -907,13 +907,13 @@ function initPage() {
           if (savedTab === "tab-reservations") {
             loadReservations(true);
           } else if (savedTab === "tab-ads") {
-            // [한글 주석: 세션 상에 광고 탭이 기록되어 있을 경우, 진입 시 광고 리스트 로드 함수 호출]
+            // 세션 상에 광고 탭이 기록되어 있을 경우, 진입 시 광고 리스트 로드 함수 호출]
             loadAds();
           } else if (savedTab === "tab-partners") {
-            // [한글 주석: 세션 상에 협력업체 탭이 기록되어 있을 경우, 진입 시 협력업체 목록 로드 함수 호출]
+            // 세션 상에 협력업체 탭이 기록되어 있을 경우, 진입 시 협력업체 목록 로드 함수 호출]
             loadAdminPartners();
           } else if (savedTab === "tab-interpreters") {
-            // [한글 주석: 전문통역 관리 탭이 기록되어 있을 경우, 진입 시 통역사 목록 로드 함수 호출]
+            // 전문통역 관리 탭이 기록되어 있을 경우, 진입 시 통역사 목록 로드 함수 호출]
             loadAdminInterpreters();
           }
         } else {
@@ -938,7 +938,7 @@ function initPage() {
             // 모든 항목이 비활성화 되어 있는 경우 아무것도 보이지 않게 처리
             hideAllTabsAndContents();
             if (reservationList) {
-              // [한글 주석: '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 접근 불가 메시지 표시 colspan을 16으로 수정]
+              // '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 접근 불가 메시지 표시 colspan을 16으로 수정]
               reservationList.innerHTML = `<tr><td colspan="16" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
             }
           }
@@ -957,7 +957,7 @@ function initPage() {
   const tabPermissions = document.getElementById("tab-permissions");
   const contentPermissions = document.getElementById("content-permissions");
 
-  // [한글 주석: 탭 전환 시 메뉴 영역 랙 및 깜빡임(Layout Shift)을 방지하는 통합 탭 스위칭 헬퍼 함수]
+  // 탭 전환 시 메뉴 영역 랙 및 깜빡임(Layout Shift)을 방지하는 통합 탭 스위칭 헬퍼 함수]
   function switchTabSeamlessly(activeBtn, activeContent, tabStorageKey, fetchCallback) {
     // 1. 모든 탭 버튼 및 패널 스위칭 처리 (메뉴는 고정되고 내용만 즉각 변경됨)
     const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabPartners, tabInterpreters];
@@ -994,7 +994,7 @@ function initPage() {
     tabUsers.addEventListener("click", () => {
       switchTabSeamlessly(tabUsers, contentUsers, "tab-users", () => {
         initRolesAndListen();
-        // [한글 주석: 등급권한 관리 탭 진입 시 솔라피 수신 연락처 설정 데이터도 함께 로드]
+        // 등급권한 관리 탭 진입 시 솔라피 수신 연락처 설정 데이터도 함께 로드]
         loadSolapiSettings();
       });
     });
@@ -1026,7 +1026,7 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 협력업체 관리 탭 클릭 시 스위칭 및 목록 로드]
+    // 협력업체 관리 탭 클릭 시 스위칭 및 목록 로드]
     if (tabPartners) {
       tabPartners.addEventListener("click", () => {
         switchTabSeamlessly(tabPartners, contentPartners, "tab-partners", () => {
@@ -1035,7 +1035,7 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 전문통역 관리 탭 클릭 시 스위칭 및 목록 로드]
+    // 전문통역 관리 탭 클릭 시 스위칭 및 목록 로드]
     if (tabInterpreters) {
       tabInterpreters.addEventListener("click", () => {
         switchTabSeamlessly(tabInterpreters, contentInterpreters, "tab-interpreters", () => {
@@ -1049,7 +1049,7 @@ function initPage() {
   let unsubscribeRoles = null;
   let rolesCache = {}; // { super_admin: "최고 관리자", ... }
 
-  // [한글 주석: 기본 등급 데이터셋 선언 - hasAds(광고배너관리), hasPartners(협력업체관리), hasInterpreters(전문통역관리), hasCommunitySettings(커뮤니티설정) 권한 정의]
+  // 기본 등급 데이터셋 선언 - hasAds(광고배너관리), hasPartners(협력업체관리), hasInterpreters(전문통역관리), hasCommunitySettings(커뮤니티설정) 권한 정의]
   const defaultRoles = [
     { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasAds: true, hasPartners: true, hasInterpreters: true, hasCommunitySettings: true },
     { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true },
@@ -1062,7 +1062,7 @@ function initPage() {
     { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false }
   ];
 
-  // [한글 주석: 솔라피 알림톡 수신 설정 데이터를 Firestore에서 비동기 로드하여 입력 필드 및 하단 목록 렌더링 적용]
+  // 솔라피 알림톡 수신 설정 데이터를 Firestore에서 비동기 로드하여 입력 필드 및 하단 목록 렌더링 적용]
   async function loadSolapiSettings() {
     try {
       const solapiDocRef = doc(db, "settings", "solapi");
@@ -1076,7 +1076,7 @@ function initPage() {
         const data = solapiDocSnap.data();
         const adminPhones = data.adminPhones || [];
         
-        // [한글 주석: 1. 입력창 값 초기화 - 추가할 번호만 전용으로 입력받기 위해 비워둠]
+        // 1. 입력창 값 초기화 - 추가할 번호만 전용으로 입력받기 위해 비워둠]
         if (phonesInput) {
           phonesInput.value = "";
         }
@@ -1093,7 +1093,7 @@ function initPage() {
               </li>
             `).join("");
             
-            // [한글 주석: 각 개별 수신 번호 우측의 삭제 버튼 클릭 시 해당 번호를 배열에서 제외하고 DB에 재갱신 및 목록 리프레시 수행]
+            // 각 개별 수신 번호 우측의 삭제 버튼 클릭 시 해당 번호를 배열에서 제외하고 DB에 재갱신 및 목록 리프레시 수행]
             phonesList.querySelectorAll(".btn-delete-phone").forEach(btn => {
               btn.addEventListener("click", async (e) => {
                 const targetPhone = e.target.getAttribute("data-phone");
@@ -1259,19 +1259,19 @@ function initPage() {
             <td>${makeToggleHTML(roleKey, "isAdmin", roleData.isAdmin, lockAdmin)}</td>
             <td>${makeToggleHTML(roleKey, "hasReservations", roleData.hasReservations, false)}</td>
             <td>${makeToggleHTML(roleKey, "hasClinics", roleData.hasClinics, false)}</td>
-            <!-- [한글 주석: 광고배너관리 권한 컬럼 스위치] -->
+            <!-- 광고배너관리 권한 컬럼 스위치 -->
             <td>${makeToggleHTML(roleKey, "hasAds", roleData.hasAds, false)}</td>
-            <!-- [한글 주석: 사용자 요청 - 광고배너관리 바로 오른쪽에 협력업체관리 권한 컬럼 스위치 신설] -->
+            <!-- 사용자 요청 - 광고배너관리 바로 오른쪽에 협력업체관리 권한 컬럼 스위치 신설 -->
             <td>${makeToggleHTML(roleKey, "hasPartners", roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || lockAdmin), false)}</td>
-            <!-- [한글 주석: 등급권한관리 권한 컬럼 스위치] -->
+            <!-- 등급권한관리 권한 컬럼 스위치 -->
             <td>${makeToggleHTML(roleKey, "hasRoles", roleData.hasRoles, lockAdmin)}</td>
-            <!-- [한글 주석: 전문통역관리 권한 컬럼 스위치 (헤더와 1:1 일치 복원)] -->
+            <!-- 전문통역관리 권한 컬럼 스위치 (헤더와 1:1 일치 복원) -->
             <td>${makeToggleHTML(roleKey, "hasInterpreters", roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || lockAdmin), false)}</td>
-            <!-- [한글 주석: 회원리스트 권한 컬럼 스위치] -->
+            <!-- 회원리스트 권한 컬럼 스위치 -->
             <td>${makeToggleHTML(roleKey, "hasPermissions", roleData.hasPermissions, false)}</td>
-            <!-- [한글 주석: 예약통계 권한 컬럼 스위치] -->
+            <!-- 예약통계 권한 컬럼 스위치 -->
             <td>${makeToggleHTML(roleKey, "hasStats", roleData.hasStats, false)}</td>
-            <!-- [한글 주석: 커뮤니티설정 권한 컬럼 스위치] -->
+            <!-- 커뮤니티설정 권한 컬럼 스위치 -->
             <td>${makeToggleHTML(roleKey, "hasCommunitySettings", roleData.hasCommunitySettings, false)}</td>
             <td>
               <div style="display:flex; gap:6px; align-items:center; justify-content:center;">
@@ -1307,11 +1307,11 @@ function initPage() {
   }
 
 
-  // [한글 주석] 가입 회원 상세 정보를 메모리에 보관하여 상세보기 모달에 전달하기 위한 맵 객체
+  // 가입 회원 상세 정보를 메모리에 보관하여 상세보기 모달에 전달하기 위한 맵 객체
   let loadedUsersMap = {};
 
   /**
-   * [한글 주석] 가입 회원 상세 정보 모달 표시 함수 (Firestore Timestamp 및 일반 날짜 포맷 안전 처리)
+   * 가입 회원 상세 정보 모달 표시 함수 (Firestore Timestamp 및 일반 날짜 포맷 안전 처리)
    * @param {Object} userData - 가입 회원의 12가지 상세 프로필 객체
    */
   function showUserDetailModal(userData) {
@@ -1331,7 +1331,7 @@ function initPage() {
 
       let regDate = "-";
       if (userData.createdAt) {
-        // [한글 주석: Firestore Timestamp 객체, Date 객체, 숫자/문자열 날짜 형식 유연 지원]
+        // Firestore Timestamp 객체, Date 객체, 숫자/문자열 날짜 형식 유연 지원]
         let d = null;
         if (typeof userData.createdAt.toDate === "function") {
           d = userData.createdAt.toDate();
@@ -1413,11 +1413,11 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 현재 조회된 필터링 회원 목록 캐시 저장 변수]
+  // 현재 조회된 필터링 회원 목록 캐시 저장 변수]
   let cachedFilteredUsers = [];
 
   /**
-   * [한글 주석] 회원 목록 페이지네이션 컨트롤러 렌더링 함수
+   * 회원 목록 페이지네이션 컨트롤러 렌더링 함수
    * @param {number} totalItems - 전체 회원 수
    * @param {number} itemsPerPage - 페이지당 노출 개수
    * @param {number} currentPage - 현재 선택된 페이지 번호
@@ -1434,7 +1434,7 @@ function initPage() {
 
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
     
-    // [한글 주석: 페이지 번호 범위 계산 (최대 5개 번호 버튼 표출)]
+    // 페이지 번호 범위 계산 (최대 5개 번호 버튼 표출)]
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, startPage + 4);
     if (endPage - startPage < 4) {
@@ -1469,7 +1469,7 @@ function initPage() {
 
     usersPagination.innerHTML = paginationHTML;
 
-    // [한글 주석: 페이지네이션 버튼 클릭 이벤트 리스너 바인딩]
+    // 페이지네이션 버튼 클릭 이벤트 리스너 바인딩]
     const btnFirst = usersPagination.querySelector(".btn-first");
     const btnPrev = usersPagination.querySelector(".btn-prev");
     const btnNext = usersPagination.querySelector(".btn-next");
@@ -1499,7 +1499,7 @@ function initPage() {
   }
 
   /**
-   * [한글 주석] 현재 페이지에 해당하는 회원 목록 슬라이스 및 테이블 렌더링 함수
+   * 현재 페이지에 해당하는 회원 목록 슬라이스 및 테이블 렌더링 함수
    * @param {Array} usersToRender - 필터링된 전체 회원 데이터 배열
    */
   function renderUsersPage(usersToRender) {
@@ -1514,7 +1514,7 @@ function initPage() {
       return;
     }
 
-    // [한글 주석: 현재 페이지 번호 유효 범위 자동 보정]
+    // 현재 페이지 번호 유효 범위 자동 보정]
     const totalPages = Math.ceil(totalUsers / currentLimitUsers) || 1;
     if (currentUserPage > totalPages) currentUserPage = totalPages;
     if (currentUserPage < 1) currentUserPage = 1;
@@ -1538,7 +1538,7 @@ function initPage() {
 
       let registerDate = "-";
       if (userData.createdAt) {
-        // [한글 주석: Timestamp 객체 및 일반 Date 포맷 안전 변환]
+        // Timestamp 객체 및 일반 Date 포맷 안전 변환]
         let dateObj = null;
         if (typeof userData.createdAt.toDate === "function") {
           dateObj = userData.createdAt.toDate();
@@ -1603,7 +1603,7 @@ function initPage() {
       userList.appendChild(tr);
     });
 
-    // [한글 주석: 페이지네이션 바 컨트롤러 렌더링]
+    // 페이지네이션 바 컨트롤러 렌더링]
     renderUsersPagination(totalUsers, currentLimitUsers, currentUserPage, (newPage) => {
       currentUserPage = newPage;
       renderUsersPage(usersToRender);
@@ -1640,7 +1640,7 @@ function initPage() {
 
       loadedUsersMap = {};
 
-      // [한글 주석: Firestore 데이터 내부에 id 필드가 존재하더라도 docSnap.id(문서 식별자)가 덮어씌워지지 않도록 정합성 보장]
+      // Firestore 데이터 내부에 id 필드가 존재하더라도 docSnap.id(문서 식별자)가 덮어씌워지지 않도록 정합성 보장]
       let rawUsers = [];
       querySnapshot.forEach((docSnap) => {
         const uData = { ...docSnap.data(), id: docSnap.id, uid: docSnap.id };
@@ -1664,7 +1664,7 @@ function initPage() {
   }
 
   /**
-   * [한글 주석] 가입 회원 프로필 데이터 Firestore DB 완전 삭제 함수
+   * 가입 회원 프로필 데이터 Firestore DB 완전 삭제 함수
    * @param {string} targetUid - 삭제 대상 사용자의 UID
    */
   async function deleteUserAccount(targetUid) {
@@ -1702,7 +1702,7 @@ function initPage() {
         role: newRole
       });
       
-      // [한글 주석: 역할 변경 시 세션 스토리지 캐시를 즉각 삭제하여 변경된 권한이 실시간 반영되도록 보장]
+      // 역할 변경 시 세션 스토리지 캐시를 즉각 삭제하여 변경된 권한이 실시간 반영되도록 보장]
       try {
         sessionStorage.removeItem(`user_role_cache_${targetUid}`);
         sessionStorage.removeItem(`admin_permissions_${targetUid}`);
@@ -1814,7 +1814,7 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 알림톡 수신 번호 개별/다중 추가 처리 핸들러 - 기존 저장된 목록에 누적하여 추가]
+  // 알림톡 수신 번호 개별/다중 추가 처리 핸들러 - 기존 저장된 목록에 누적하여 추가]
   const solapiSettingsForm = document.getElementById("solapi-settings-form");
   if (solapiSettingsForm) {
     solapiSettingsForm.addEventListener("submit", async (e) => {
@@ -1832,7 +1832,7 @@ function initPage() {
         return;
       }
 
-      // [한글 주석: 쉼표로 분할하고 숫자만 남기는 전처리 수행]
+      // 쉼표로 분할하고 숫자만 남기는 전처리 수행]
       const newPhonesArray = phonesInput.split(",")
         .map(p => p.replace(/[^0-9]/g, ""))
         .filter(p => p !== "");
@@ -1847,7 +1847,7 @@ function initPage() {
       btnSubmit.textContent = "추가 중...";
 
       try {
-        // [한글 주석: 기존 Firestore에 저장되어 있는 알림톡 수신 번호 목록 불러오기]
+        // 기존 Firestore에 저장되어 있는 알림톡 수신 번호 목록 불러오기]
         const solapiDocRef = doc(db, "settings", "solapi");
         const solapiDocSnap = await getDoc(solapiDocRef);
         let existingPhones = [];
@@ -1855,10 +1855,10 @@ function initPage() {
           existingPhones = solapiDocSnap.data().adminPhones;
         }
 
-        // [한글 주석: 기존 번호 목록에 신규 입력 번호 병합 및 중복 번호 제거]
+        // 기존 번호 목록에 신규 입력 번호 병합 및 중복 번호 제거]
         const mergedPhones = Array.from(new Set([...existingPhones, ...newPhonesArray]));
 
-        // [한글 주석: 새로 추가된 번호가 없는 경우 (이미 모두 존재하는 번호일 때)]
+        // 새로 추가된 번호가 없는 경우 (이미 모두 존재하는 번호일 때)]
         const addedCount = mergedPhones.length - existingPhones.length;
         if (addedCount === 0) {
           alert("입력하신 번호는 이미 수신 번호 목록에 모두 등록되어 있습니다.");
@@ -1874,7 +1874,7 @@ function initPage() {
         
         alert(`${addedCount}개의 수신 번호가 성공적으로 추가되었습니다.`);
         if (phonesInputElement) phonesInputElement.value = "";
-        loadSolapiSettings(); // [한글 주석: 저장 성공 후 화면의 번호 리스트 목록 리프레시 수행]
+        loadSolapiSettings(); // 저장 성공 후 화면의 번호 리스트 목록 리프레시 수행]
       } catch (error) {
         console.error("Save Solapi settings failed:", error);
         alert("수신 번호 추가에 실패했습니다: " + error.message);
@@ -2037,7 +2037,7 @@ function initPage() {
           });
           console.log(`Updated permissions for ${roleKey}: ${fieldName} -> ${isChecked}`);
           
-          // [한글 주석: 세션 상에 캐시된 해당 등급의 권한 캐시를 즉각 삭제하여 변경 사항 즉시 반영]
+          // 세션 상에 캐시된 해당 등급의 권한 캐시를 즉각 삭제하여 변경 사항 즉시 반영]
           try {
             sessionStorage.removeItem(`role_permissions_cache_${roleKey}`);
           } catch (cErr) { }
@@ -2066,7 +2066,7 @@ function initPage() {
           if (loadedUsersMap[uid]) {
             showUserDetailModal(loadedUsersMap[uid]);
           } else {
-            // [한글 주석: 메모리 맵에 해당 회원 정보가 없는 경우 Firestore 직접 조회를 통한 Fallback 보장]
+            // 메모리 맵에 해당 회원 정보가 없는 경우 Firestore 직접 조회를 통한 Fallback 보장]
             try {
               const userDocRef = doc(db, "users", uid);
               const userDocSnap = await getDoc(userDocRef);
@@ -2169,7 +2169,7 @@ function initPage() {
   ];
 
   let unsubscribeClinics = null;
-  // [한글 주석: 병원 순서 이동(Swap) 처리를 위해 현재 메모리에 로드된 병원 데이터 리스트 캐싱]
+  // 병원 순서 이동(Swap) 처리를 위해 현재 메모리에 로드된 병원 데이터 리스트 캐싱]
   let currentLoadedClinics = [];
 
   async function loadClinics() {
@@ -2206,7 +2206,7 @@ function initPage() {
         return;
       }
 
-      // [한글 주석: 데이터베이스 자동 보정(Auto Migration) 로직]
+      // 데이터베이스 자동 보정(Auto Migration) 로직]
       // 기존에 order 필드 없이 생성되었던 병원 문서들에 대해 자동으로 순서를 부여해 줍니다.
       let needsMigration = false;
       querySnapshot.forEach((doc) => {
@@ -2229,7 +2229,7 @@ function initPage() {
       currentLoadedClinics = [];
       adminClinicList.innerHTML = "";
 
-      // [한글 주석: 등록된 병원 총 개수 뱃지 실시간 갱신]
+      // 등록된 병원 총 개수 뱃지 실시간 갱신]
       const clinicCountBadge = document.getElementById("clinic-count-badge");
       if (clinicCountBadge) {
         clinicCountBadge.textContent = `총 ${querySnapshot.docs.length}개 병원`;
@@ -2248,7 +2248,7 @@ function initPage() {
         const tr = document.createElement("tr");
         const clinicOrder = clinic.order || (index + 1);
 
-        // [한글 주석: 마우스 드래그 앤 드롭 순서 변경을 위한 필수 속성 부여]
+        // 마우스 드래그 앤 드롭 순서 변경을 위한 필수 속성 부여]
         tr.setAttribute("data-id", docId);
         tr.setAttribute("data-order", clinicOrder);
         tr.className = "clinic-drag-row";
@@ -2257,7 +2257,7 @@ function initPage() {
         const deptsHTML = (clinic.depts || []).map(d => `<span class="dept-badge" style="margin-right: 4px; display: inline-block;">${d}</span>`).join("");
 
         tr.innerHTML = `
-          <!-- [한글 주석: 사용자 요청에 따라 맨 좌측으로 이동 배치된 순서 열 및 드래그 핸들] -->
+          <!-- 사용자 요청에 따라 맨 좌측으로 이동 배치된 순서 열 및 드래그 핸들 -->
           <td style="text-align: center; font-weight: 700; color: #00f3ff; white-space: nowrap;">
             <span class="clinic-drag-handle" title="마우스로 드래그하여 순서 변경">⋮⋮</span>
             <span class="clinic-order-num">${clinicOrder}</span>
@@ -2270,7 +2270,7 @@ function initPage() {
           <td>${clinic.address || '-'}</td>
           <td style="vertical-align: middle; white-space: nowrap; text-align: center;">
             <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
-              <!-- [한글 주석: 마우스 드래그 앤 드롭 도입으로 불필요해진 이전 위/아래 이동 버튼을 제거하고 수정/삭제만 깔끔하게 유지] -->
+              <!-- 마우스 드래그 앤 드롭 도입으로 불필요해진 이전 위/아래 이동 버튼을 제거하고 수정/삭제만 깔끔하게 유지 -->
               <button class="btn-action confirm btn-edit-clinic"
                 data-id="${docId}"
                 data-name="${(clinic.name || '').replace(/"/g, '&quot;')}"
@@ -2350,7 +2350,7 @@ function initPage() {
                 data-addressbn="${(clinic.address_bn || '').replace(/"/g, '&quot;')}"
                 data-descbn="${(clinic.desc_bn || '').replace(/"/g, '&quot;')}"
 
-                /* [한글 주석] 병원 사진 수정을 위해 기존 이미지 데이터 전송 속성 추가 */
+                /* 병원 사진 수정을 위해 기존 이미지 데이터 전송 속성 추가 */
                 data-image="${(clinic.image || '').replace(/"/g, '&quot;')}"
                 style="height: 28px; line-height: 1; padding: 0.35rem 0.65rem; font-size: 0.8rem; border-radius: 6px; background: #0284c7; color: white; border: none; cursor: pointer;"
               >수정</button>
@@ -2378,7 +2378,7 @@ function initPage() {
       const file = e.target.files[0];
       if (!file) return;
 
-      // [한글 주석: 이미지 가드 한도를 10MB 용량 제한으로 상향 조정]
+      // 이미지 가드 한도를 10MB 용량 제한으로 상향 조정]
       const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
         alert("이미지 용량은 최대 10MB를 초과할 수 없습니다. (Image file exceeds 10MB limit.)");
@@ -2507,7 +2507,7 @@ function initPage() {
       btnSubmit.textContent = "등록 중...";
 
       try {
-        // [한글 주석: 신규 병원 등록 시 기존 order 최댓값 뒤에 오도록 순서 자동 매핑]
+        // 신규 병원 등록 시 기존 order 최댓값 뒤에 오도록 순서 자동 매핑]
         let nextOrder = 1;
         const maxQuery = query(collection(db, "clinics"), orderBy("order", "desc"), limit(1));
         const maxSnap = await getDocs(maxQuery);
@@ -2529,10 +2529,10 @@ function initPage() {
           createdAt: new Date().toISOString()
         });
         alert("신규 병원이 성공적으로 등록되었습니다.");
-        // [한글 주석: 병원 신설 성공 시 다국어 예약 페이지 내 병원 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+        // 병원 신설 성공 시 다국어 예약 페이지 내 병원 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
         localStorage.removeItem("cached_clinics_list");
         
-        // [한글 주석: 병원 등록 성공 즉시 왼쪽 등록된 병원 테이블 리스트를 새로고침하여 리스트에 바로 반영되도록 기능 추가]
+        // 병원 등록 성공 즉시 왼쪽 등록된 병원 테이블 리스트를 새로고침하여 리스트에 바로 반영되도록 기능 추가]
         loadClinics();
         
         // 폼 초기화 및 변수 정리
@@ -2588,7 +2588,7 @@ function initPage() {
           { code: "bn", flag: "🇧🇩", label: "방글라데시어 (Bengali)", pName: "হাসপাতালের নাম (방글라데시어 병원명)", pDepts: "चिकित্সা বিভাগসমূহ (진료과목 - 쉼표로 구분)", pAddress: "হাসপাতালের ঠিকানা (방글라데시어 병원 주소)", pDesc: "হাসপাতালের বিবরণ (방글라데시어 병원 설명)" }
         ];
 
-        /* [한글 주석] 14개 언어의 기존 데이터를 버튼 data-* 속성에서 추출하여 필드셋 HTML 생성 */
+        /* 14개 언어의 기존 데이터를 버튼 data-* 속성에서 추출하여 필드셋 HTML 생성 */
         let langFieldsetsHtml = "";
         langConfigs.forEach(cfg => {
           const valName = (btn.getAttribute(`data-name${cfg.code}`) || "").replace(/"/g, '&quot;');
@@ -2609,7 +2609,7 @@ function initPage() {
           `;
         });
 
-        /* [한글 주석] 병원 수정 폼에 로드하기 위해 기존 병원 사진의 Base64 데이터를 추출 */
+        /* 병원 수정 폼에 로드하기 위해 기존 병원 사진의 Base64 데이터를 추출 */
         const curImage     = btn.getAttribute("data-image") || "";
 
         // 인라인 수정 모달 동적 생성
@@ -2654,14 +2654,14 @@ function initPage() {
               style="width:100%; padding:0.6rem 0.8rem; border-radius:8px; border:1px solid rgba(165,180,252,0.3);
                      background:rgba(255,255,255,0.05); color:#e2e8f0; margin-bottom:1rem; box-sizing:border-box; resize:vertical;">${curDesc}</textarea>
             
-            <!-- [한글 주석] 병원 사진 수정 입력 폼 및 미리보기 디자인 영역 추가 -->
+            <!-- 병원 사진 수정 입력 폼 및 미리보기 디자인 영역 추가 -->
             <label style="display:block; color:#c7d2fe; font-size:0.85rem; margin-bottom:4px;">병원 사진 수정</label>
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem;">
               <input id="edit-clinic-image-file" type="file" accept="image/*" style="display:none;">
               <button id="btn-edit-clinic-image-trigger" class="btn btn-secondary" style="padding:0.4rem 1rem; font-size:0.8rem; border-radius:6px; cursor:pointer;" type="button">사진 선택</button>
               <span id="edit-clinic-image-filename" style="color:rgba(255,255,255,0.4); font-size:0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;">선택된 파일 없음</span>
             </div>
-            <!-- [한글 주석] 병원 이미지 미리보기 영역 (기존 이미지가 존재할 경우 기본 노출) -->
+            <!-- 병원 이미지 미리보기 영역 (기존 이미지가 존재할 경우 기본 노출) -->
             <div id="edit-clinic-image-preview-container" style="margin-bottom:1rem; display:${curImage ? 'block' : 'none'}; text-align:center;">
               <img id="edit-clinic-image-preview" src="${curImage}" alt="Clinic Preview" style="max-width:100%; max-height:150px; border-radius:8px; border:1px solid rgba(165,180,252,0.3); object-fit:cover;">
             </div>
@@ -2686,7 +2686,7 @@ function initPage() {
         `;
         document.body.appendChild(editModal);
 
-        /* [한글 주석] 병원 수정용 이미지 Base64를 저장할 변수 초기화 (기존 이미지 값을 기본값으로 설정) */
+        /* 병원 수정용 이미지 Base64를 저장할 변수 초기화 (기존 이미지 값을 기본값으로 설정) */
         let editImageBase64 = curImage;
 
         const editInputImage = document.getElementById("edit-clinic-image-file");
@@ -2695,18 +2695,18 @@ function initPage() {
         const editImgPreviewContainer = document.getElementById("edit-clinic-image-preview-container");
         const editImgPreview = document.getElementById("edit-clinic-image-preview");
 
-        /* [한글 주석] 커스텀 디자인 버튼 클릭 시 실제 숨겨진 file input을 클릭해 파일 탐색기 노출 */
+        /* 커스텀 디자인 버튼 클릭 시 실제 숨겨진 file input을 클릭해 파일 탐색기 노출 */
         if (editBtnTrigger && editInputImage) {
           editBtnTrigger.addEventListener("click", () => editInputImage.click());
         }
 
-        /* [한글 주석] 파일이 새로 선택되면 신규 등록과 동일하게 최대 10MB 체크 및 Canvas 800px 리사이징 처리 실행 */
+        /* 파일이 새로 선택되면 신규 등록과 동일하게 최대 10MB 체크 및 Canvas 800px 리사이징 처리 실행 */
         if (editInputImage) {
           editInputImage.addEventListener("change", (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
-            // [한글 주석: 이미지 가드 한도를 10MB 용량 제한으로 상향 조정]
+            // 이미지 가드 한도를 10MB 용량 제한으로 상향 조정]
             const maxSize = 10 * 1024 * 1024;
             if (file.size > maxSize) {
               alert("이미지 용량은 최대 10MB를 초과할 수 없습니다. (Image file exceeds 10MB limit.)");
@@ -2803,7 +2803,7 @@ function initPage() {
             await updateDoc(doc(db, "clinics", docId), {
               name: newName,
               englishName: newEngName,
-              /* [한글 주석] 병원 수정 폼에서 수집 또는 기존 유지된 사진 Base64 데이터를 Firestore에 반영 */
+              /* 병원 수정 폼에서 수집 또는 기존 유지된 사진 Base64 데이터를 Firestore에 반영 */
               image: editImageBase64,
               depts: newDepts,
               address: newAddress,
@@ -2811,7 +2811,7 @@ function initPage() {
               ...updatedMultiLang
             });
             alert("병원 정보가 성공적으로 수정되었습니다.");
-            // [한글 주석: 병원 수정 반영에 따른 로컬 캐시 갱신 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+            // 병원 수정 반영에 따른 로컬 캐시 갱신 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
             localStorage.removeItem("cached_clinics_list");
             editModal.remove();
             
@@ -2835,7 +2835,7 @@ function initPage() {
             e.target.textContent = "...";
             await deleteDoc(doc(db, "clinics", docId));
             alert("병원이 삭제되었습니다.");
-            // [한글 주석: 병원 삭제 완료에 따른 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
+            // 병원 삭제 완료에 따른 로컬 캐시 무효화 - 탭 간 캐시 동기화를 위해 localStorage로 변경]
             localStorage.removeItem("cached_clinics_list");
             loadClinics(); // 삭제 후 테이블 리프레시
           } catch (error) {
@@ -2848,7 +2848,7 @@ function initPage() {
       }
     });
 
-    // ── [한글 주석: 정렬된 병원 목록을 받아 Firestore writeBatch로 일괄 순서 업데이트] ──
+    // ── 정렬된 병원 목록을 받아 Firestore writeBatch로 일괄 순서 업데이트] ──
     async function saveClinicBatchOrders(orderedList) {
       if (!orderedList || orderedList.length === 0) return;
       const batch = writeBatch(db);
@@ -2868,12 +2868,12 @@ function initPage() {
       });
 
       if (updatedCount > 0) {
-        console.log(`[한글 주석: Firestore Batch] 총 ${updatedCount}개 병원의 순서를 연속된 번호로 일괄 갱신합니다.`);
+        console.log(`Firestore Batch] 총 ${updatedCount}개 병원의 순서를 연속된 번호로 일괄 갱신합니다.`);
         await batch.commit();
       }
     }
 
-    // ── [한글 주석: 등록된 병원 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수] ──
+    // ── 등록된 병원 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수] ──
     function setupClinicDragAndDrop() {
       let draggedRow = null;
 
@@ -2959,7 +2959,7 @@ function initPage() {
             }
             await saveClinicBatchOrders(reorderPayload);
 
-            // [한글 주석: 병원 순서 변경 즉시 로컬 스토리지 캐시 무효화 -> 사용자 예약 화면 즉시 반영]
+            // 병원 순서 변경 즉시 로컬 스토리지 캐시 무효화 -> 사용자 예약 화면 즉시 반영]
             localStorage.removeItem("cached_clinics_list");
 
             if (clinicCountBadge) {
@@ -2969,7 +2969,7 @@ function initPage() {
               }, 2000);
             }
           } catch (err) {
-            console.error("[한글 주석: 병원 드래그 앤 드롭 순서 저장 실패]", err);
+            console.error("병원 드래그 앤 드롭 순서 저장 실패]", err);
             alert("병원 순서 자동 저장 중 오류가 발생했습니다: " + err.message);
             await loadClinics(); // 오류 발생 시 원래 DB 순서로 복구
           }
@@ -2979,7 +2979,7 @@ function initPage() {
 
     setupClinicDragAndDrop();
 
-    // ── [한글 주석: 순서 일괄 자동 정리 버튼 이벤트 바인딩] ──
+    // ── 순서 일괄 자동 정리 버튼 이벤트 바인딩] ──
     const btnReorderClinics = document.getElementById("btn-reorder-clinics");
     if (btnReorderClinics) {
       btnReorderClinics.addEventListener("click", async () => {
@@ -3006,13 +3006,13 @@ function initPage() {
 
           await saveClinicBatchOrders(allClinics);
 
-          // [한글 주석: 로컬 캐시 즉시 무효화]
+          // 로컬 캐시 즉시 무효화]
           localStorage.removeItem("cached_clinics_list");
 
           alert(`총 ${allClinics.length}개 병원의 순서가 1번부터 중복 없이 연속되게 재정렬되었습니다.`);
           await loadClinics();
         } catch (err) {
-          console.error("[한글 주석: 병원 순서 일괄 자동 정리 실패]", err);
+          console.error("병원 순서 일괄 자동 정리 실패]", err);
           alert("순서 재정렬 중 오류가 발생했습니다: " + err.message);
         } finally {
           btnReorderClinics.disabled = false;
@@ -3034,7 +3034,7 @@ function initPage() {
   const btnCancelAdEdit = document.getElementById("btn-cancel-ad-edit");
   const btnSubmitAd = document.getElementById("btn-submit-ad");
 
-  // [한글 주석: 메인 홈 광고 배너 로컬 캐시 무효화 공통 헬퍼 함수 (SWR 캐시 및 구형 키 일괄 삭제)]
+  // 메인 홈 광고 배너 로컬 캐시 무효화 공통 헬퍼 함수 (SWR 캐시 및 구형 키 일괄 삭제)]
   const invalidateAdsCache = () => {
     try {
       localStorage.removeItem("cached_home_ads");
@@ -3050,7 +3050,7 @@ function initPage() {
     }
   };
 
-  // [한글 주석: 로컬 파일의 용량을 축소 압축하여 Firestore 1MB 제한 및 대역폭 추가 과금을 아예 방지하는 리사이징 헬퍼 함수]
+  // 로컬 파일의 용량을 축소 압축하여 Firestore 1MB 제한 및 대역폭 추가 과금을 아예 방지하는 리사이징 헬퍼 함수]
   const compressImage = (file, maxWidth = 500) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -3085,7 +3085,7 @@ function initPage() {
     });
   };
 
-  // [한글 주석: 광고 폼의 이미지 URL 행 템플릿 생성 헬퍼 함수 - 파일 선택 컨트롤 및 48x48 썸네일 미리보기 결합]
+  // 광고 폼의 이미지 URL 행 템플릿 생성 헬퍼 함수 - 파일 선택 컨트롤 및 48x48 썸네일 미리보기 결합]
   const createAdUrlRow = (urlValue = "") => {
     const row = document.createElement("div");
     row.className = "ad-url-row";
@@ -3103,7 +3103,7 @@ function initPage() {
     const imgDisplay = hasImage ? "block" : "none";
     
     row.innerHTML = `
-      <!-- [한글 주석: 썸네일 미리보기 이미지 영역 추가 - 수정 및 입력 시 시각적인 이미지 확인 유도] -->
+      <!-- 썸네일 미리보기 이미지 영역 추가 - 수정 및 입력 시 시각적인 이미지 확인 유도 -->
       <div class="ad-thumbnail-container" style="width: 48px; height: 48px; border-radius: 6px; overflow: hidden; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
         <img class="ad-thumbnail-img" src="${urlValue}" style="width: 100%; height: 100%; object-fit: cover; display: ${imgDisplay};">
         <span class="ad-thumbnail-placeholder" style="font-size: 0.65rem; color: rgba(255,255,255,0.3); display: ${hasImage ? "none" : "block"};">No Img</span>
@@ -3118,7 +3118,7 @@ function initPage() {
       </div>
     `;
 
-    // [한글 주석: 텍스트 입력창 값 변경 시 실시간으로 썸네일 미리보기 이미지를 동기화하는 이벤트 추가]
+    // 텍스트 입력창 값 변경 시 실시간으로 썸네일 미리보기 이미지를 동기화하는 이벤트 추가]
     const urlInput = row.querySelector(".ad-image-url");
     const thumbnailImg = row.querySelector(".ad-thumbnail-img");
     const placeholder = row.querySelector(".ad-thumbnail-placeholder");
@@ -3182,7 +3182,7 @@ function initPage() {
           const compressedBase64 = await compressImage(file, 500);
           urlInput.value = compressedBase64;
           
-          // [한글 주석: 이미지 업로드 성공 및 Base64 치환 시 해당 행의 썸네일 미리보기도 즉시 리프레시 반영]
+          // 이미지 업로드 성공 및 Base64 치환 시 해당 행의 썸네일 미리보기도 즉시 리프레시 반영]
           const thumbnailImg = row.querySelector(".ad-thumbnail-img");
           const placeholder = row.querySelector(".ad-thumbnail-placeholder");
           if (thumbnailImg && placeholder) {
@@ -3201,14 +3201,14 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 순서 이동 동작(Swap) 처리를 위해 현재 메모리에 올려진 광고 리스트 캐싱]
+  // 순서 이동 동작(Swap) 처리를 위해 현재 메모리에 올려진 광고 리스트 캐싱]
   let currentLoadedAds = [];
 
   // 1) Firestore로부터 광고 목록 전체를 조회하여 테이블 렌더링 (Read)
   async function loadAds() {
     if (!adminAdList) return;
     
-    // [한글 주석: 기존 광고 배너 목록 데이터가 수집되어 있는 경우 탭 이동 시마다 테이블 전체를 지워서 대시보드 제목/탭 메뉴가 튀는 랙을 차단하도록 가드]
+    // 기존 광고 배너 목록 데이터가 수집되어 있는 경우 탭 이동 시마다 테이블 전체를 지워서 대시보드 제목/탭 메뉴가 튀는 랙을 차단하도록 가드]
     if (!adminAdList.children || adminAdList.children.length === 0 || adminAdList.innerHTML.includes("table-loading")) {
       adminAdList.innerHTML = `<tr><td colspan="6" class="table-loading">광고 데이터를 불러오는 중입니다...</td></tr>`;
     }
@@ -3224,7 +3224,7 @@ function initPage() {
         return;
       }
 
-      // [한글 주석: 데이터베이스 자동 보정(Auto Migration) 로직]
+      // 데이터베이스 자동 보정(Auto Migration) 로직]
       // 기존에 order 필드 없이 생성되었던 레거시 문서들에 대해 자동으로 순서를 보완 발급합니다.
       let needsMigration = false;
       querySnapshot.forEach((doc) => {
@@ -3261,7 +3261,7 @@ function initPage() {
 
         html += `
           <tr data-id="${ad.id}" data-order="${ad.order}" class="ad-drag-row" draggable="true">
-            <!-- [한글 주석: 순서 컬럼을 맨 앞(좌측)으로 배치하고 마우스 드래그 핸들 및 순서 번호 표시] -->
+            <!-- 순서 컬럼을 맨 앞(좌측)으로 배치하고 마우스 드래그 핸들 및 순서 번호 표시 -->
             <td style="text-align: center; font-weight: 700; color: #00f3ff; white-space: nowrap;">
               <span class="ad-drag-handle" title="마우스로 드래그하여 순서 변경">⋮⋮</span>
               <span class="ad-order-num">${ad.order}</span>
@@ -3272,7 +3272,7 @@ function initPage() {
             <td>${intervalSec}초</td>
             <td>
               <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
-                <!-- [한글 주석: 위/아래 화살표 버튼은 마우스 드래그 앤 드롭 도입으로 삭제되고 수정/삭제 버튼만 단정하게 유지] -->
+                <!-- 위/아래 화살표 버튼은 마우스 드래그 앤 드롭 도입으로 삭제되고 수정/삭제 버튼만 단정하게 유지 -->
                 <button class="btn-action confirm btn-edit-ad" data-id="${ad.id}" style="height: 28px; line-height: 28px; padding: 0 0.75rem; font-size: 0.8rem; border: none; font-weight: 700;">수정</button>
                 <button class="btn-action delete btn-delete-ad" data-id="${ad.id}" style="height: 28px; line-height: 28px; padding: 0 0.75rem; font-size: 0.8rem; font-weight: 700;">삭제</button>
               </div>
@@ -3317,7 +3317,7 @@ function initPage() {
 
       const editId = adEditId ? adEditId.value : "";
 
-      // [한글 주석: 메인 홈 광고 배너 캐시 무효화 통합 헬퍼 함수 (SWR 캐시 및 모든 구형 키 일괄 삭제)]
+      // 메인 홈 광고 배너 캐시 무효화 통합 헬퍼 함수 (SWR 캐시 및 모든 구형 키 일괄 삭제)]
       const invalidateAdsCache = () => {
         try {
           localStorage.removeItem("cached_home_ads");
@@ -3344,10 +3344,10 @@ function initPage() {
             slideInterval: slideIntervalMs
           });
           alert("광고 배너가 성공적으로 수정되었습니다.");
-          // [한글 주석: 광고 배너 수정 성공 시 메인 홈 로컬 캐시 완전 무효화]
+          // 광고 배너 수정 성공 시 메인 홈 로컬 캐시 완전 무효화]
           invalidateAdsCache();
         } else {
-          // [한글 주석: 신규 광고 배너를 등록할 때 순번(order) 최댓값을 실시간으로 조회하여 마지막 순서에 자동 배치]
+          // 신규 광고 배너를 등록할 때 순번(order) 최댓값을 실시간으로 조회하여 마지막 순서에 자동 배치]
           let nextOrder = 1;
           const maxQuery = query(collection(db, "ads"), orderBy("order", "desc"), limit(1));
           const maxSnap = await getDocs(maxQuery);
@@ -3367,7 +3367,7 @@ function initPage() {
             createdAt: serverTimestamp()
           });
           alert("새 광고 배너가 성공적으로 등록되었습니다.");
-          // [한글 주석: 신규 광고 배너 등록 성공 시 메인 홈 로컬 캐시 완전 무효화]
+          // 신규 광고 배너 등록 성공 시 메인 홈 로컬 캐시 완전 무효화]
           invalidateAdsCache();
         }
 
@@ -3462,7 +3462,7 @@ function initPage() {
           try {
             await deleteDoc(doc(db, "ads", docId));
             alert("광고 배너가 성공적으로 삭제되었습니다.");
-            // [한글 주석: 광고 배너 삭제 성공 시 메인 홈 로컬 캐시 완전 무효화]
+            // 광고 배너 삭제 성공 시 메인 홈 로컬 캐시 완전 무효화]
             invalidateAdsCache();
             loadAds(); // 새로고침
           } catch (error) {
@@ -3476,13 +3476,13 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 등록된 광고 배너 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수]
+  // 등록된 광고 배너 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수]
   function setupAdDragAndDrop() {
     if (!adminAdList) return;
 
     let draggedRow = null;
 
-    // [한글 주석: 1) 드래그 시작 시점 처리]
+    // 1) 드래그 시작 시점 처리]
     adminAdList.addEventListener("dragstart", (e) => {
       // 버튼, 입력창, 링크 등을 클릭하거나 조작할 때는 드래그 방지
       if (e.target.closest("button, a, input, select, textarea")) {
@@ -3505,7 +3505,7 @@ function initPage() {
       }, 0);
     });
 
-    // [한글 주석: 2) 드래그 오버 시점 처리 - 실시간 DOM 행 위치 교체 시각적 피드백]
+    // 2) 드래그 오버 시점 처리 - 실시간 DOM 행 위치 교체 시각적 피드백]
     adminAdList.addEventListener("dragover", (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = "move";
@@ -3521,7 +3521,7 @@ function initPage() {
       adminAdList.insertBefore(draggedRow, isAfter ? targetRow.nextSibling : targetRow);
     });
 
-    // [한글 주석: 3) 드래그 종료 시점 처리 - 행 번호 즉시 1부터 순차 재계산 및 Firestore Batch 일괄 자동 저장]
+    // 3) 드래그 종료 시점 처리 - 행 번호 즉시 1부터 순차 재계산 및 Firestore Batch 일괄 자동 저장]
     adminAdList.addEventListener("dragend", async () => {
       if (!draggedRow) return;
 
@@ -3584,9 +3584,9 @@ function initPage() {
 
           // 메인 홈 광고 배너 로컬 캐시 즉시 무효화
           invalidateAdsCache();
-          console.log("[한글 주석: 광고 배너 순서가 Firestore Batch를 통해 성공적으로 일괄 저장되었습니다.]");
+          console.log("광고 배너 순서가 Firestore Batch를 통해 성공적으로 일괄 저장되었습니다.]");
         } catch (err) {
-          console.error("[한글 주석: 광고 배너 드래그 앤 드롭 순서 저장 실패]", err);
+          console.error("광고 배너 드래그 앤 드롭 순서 저장 실패]", err);
           alert("광고 배너 순서 자동 저장 중 오류가 발생했습니다: " + err.message);
           await loadAds(); // 오류 발생 시 원래 DB 데이터로 복원
         }
@@ -3594,20 +3594,20 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 광고 배너 드래그 앤 드롭 초기 바인딩 실행]
+  // 광고 배너 드래그 앤 드롭 초기 바인딩 실행]
   setupAdDragAndDrop();
 
   // 탭 클릭 시 리소스 전역 로드 연동을 위해 window 스코프 배포
   window.loadAds = loadAds;
 
   // ==========================================================================
-  // [한글 주석] 전문 의료 통역 관리 (소속 통역사 & 프리랜서 통역사) CRUD 구현
+  // 전문 의료 통역 관리 (소속 통역사 & 프리랜서 통역사) CRUD 구현
   // ==========================================================================
 
   const interpreterRegisterForm = document.getElementById("interpreter-register-form");
-  // [한글 주석: 통역사 구분(소속/프리랜서) 셀렉트 박스 DOM 요소 바인딩]
+  // 통역사 구분(소속/프리랜서) 셀렉트 박스 DOM 요소 바인딩]
   const regInterpreterType = document.getElementById("reg-interpreter-type");
-  // [한글 주석: 한글 성명 및 영문/현지 성명 입력 필드 DOM 요소 바인딩]
+  // 한글 성명 및 영문/현지 성명 입력 필드 DOM 요소 바인딩]
   const regInterpreterNameKo = document.getElementById("reg-interpreter-name-ko");
   const regInterpreterNameEn = document.getElementById("reg-interpreter-name-en");
   const regInterpreterCountrySelect = document.getElementById("reg-interpreter-country-select");
@@ -3629,7 +3629,7 @@ function initPage() {
   let regInterpreterBase64Photo = "";
   let loadedInterpretersMap = {};
 
-  // [한글 주석: 통역사 구분 변경 시 사진 업로드 영역 노출/숨김 토글]
+  // 통역사 구분 변경 시 사진 업로드 영역 노출/숨김 토글]
   if (regInterpreterType && regInterpreterPhotoGroup) {
     regInterpreterType.addEventListener("change", (e) => {
       if (e.target.value === "staff") {
@@ -3640,7 +3640,7 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 국가 셀렉트 변경 시 국가명 및 국기 자동 매핑]
+  // 국가 셀렉트 변경 시 국가명 및 국기 자동 매핑]
   if (regInterpreterCountrySelect && regInterpreterCountry) {
     regInterpreterCountrySelect.addEventListener("change", (e) => {
       const val = e.target.value;
@@ -3657,7 +3657,7 @@ function initPage() {
   }
 
   /**
-   * [한글 주석] 통역사 프로필 사진 고화질 스마트 리샘플링 함수
+   * 통역사 프로필 사진 고화질 스마트 리샘플링 함수
    * 어떤 크기/비율의 원본 사진이든 3:4 명함 황금비율(가로 420px, 세로 560px, Retina 3배수 완벽 대응)로 
    * 인물 중심(Face/Center focus) 크롭 및 고품질(0.95) 리샘플링하여 Base64로 반환
    */
@@ -3703,7 +3703,7 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 통역사 프로필 사진 파일 선택 및 Base64 인코딩 미리보기]
+  // 통역사 프로필 사진 파일 선택 및 Base64 인코딩 미리보기]
   if (btnRegInterpreterPhotoTrigger && regInterpreterPhotoFile) {
     btnRegInterpreterPhotoTrigger.addEventListener("click", () => {
       regInterpreterPhotoFile.click();
@@ -3742,7 +3742,7 @@ function initPage() {
   }
 
   /**
-   * [한글 주석] Firestore DB에서 전문 통역사 목록을 조회하여 관리자 테이블에 렌더링하는 함수
+   * Firestore DB에서 전문 통역사 목록을 조회하여 관리자 테이블에 렌더링하는 함수
    */
   async function loadAdminInterpreters() {
     if (!adminStaffInterpreterList || !adminFreelanceInterpreterList) return;
@@ -3836,7 +3836,7 @@ function initPage() {
     }
   }
 
-  // [한글 주석: 통역사 신규 등록 폼 제출 이벤트 처리]
+  // 통역사 신규 등록 폼 제출 이벤트 처리]
   if (interpreterRegisterForm) {
     interpreterRegisterForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -3917,7 +3917,7 @@ function initPage() {
     });
   }
 
-  // [한글 주석: 통역사 정보 수정 모달 표시 함수]
+  // 통역사 정보 수정 모달 표시 함수]
   function showInterpreterEditModal(data) {
     let editModal = document.getElementById("interpreter-edit-modal");
     if (editModal) editModal.remove();
@@ -4042,7 +4042,7 @@ function initPage() {
     if (closeBtn) closeBtn.onclick = () => editModal.remove();
     if (cancelBtn) cancelBtn.onclick = () => editModal.remove();
 
-    // [한글 주석: 수정 팝업에서 국가 선택 변경 시 국가명 텍스트 자동 동기화]
+    // 수정 팝업에서 국가 선택 변경 시 국가명 텍스트 자동 동기화]
     if (editCountrySelect && editCountryInput) {
       editCountrySelect.onchange = (e) => {
         const val = e.target.value;
@@ -4109,7 +4109,7 @@ function initPage() {
           return;
         }
 
-        // [한글 주석: 수정 시 선택된 국가 코드 및 국기 이미지 URL 계산]
+        // 수정 시 선택된 국가 코드 및 국기 이미지 URL 계산]
         let updatedCountryCode = data.countryCode || "kr";
         let updatedFlag = data.flag || "https://flagcdn.com/w80/kr.png";
         if (editCountrySelect) {
@@ -4149,7 +4149,7 @@ function initPage() {
     }
   }
 
-  // [한글 주석: 관리자 테이블 내 수정 / 삭제 버튼 클릭 이벤트 위임 바인딩]
+  // 관리자 테이블 내 수정 / 삭제 버튼 클릭 이벤트 위임 바인딩]
   function bindInterpreterTableEvents(container) {
     if (!container) return;
     container.addEventListener("click", async (e) => {
@@ -4197,7 +4197,7 @@ function initPage() {
   window.loadAdminInterpreters = loadAdminInterpreters;
 
   // ==============================================================================
-  // [한글 주석: 6. 협력업체 관리 (CRUD) 기능 구현]
+  // 6. 협력업체 관리 (CRUD) 기능 구현]
   // ==============================================================================
   setupPartnerTab();
 
@@ -4220,9 +4220,9 @@ function initPage() {
     const adminPartnerList = document.getElementById("admin-partner-list");
     const partnerCountBadge = document.getElementById("partner-count-badge");
 
-    let currentPartnerCount = 0; // [한글 주석: 현재 등록된 유효 협력업체 총 개수 상태 변수]
+    let currentPartnerCount = 0; // 현재 등록된 유효 협력업체 총 개수 상태 변수]
 
-    // [한글 주석: 이미지 URL 입력 변경 시 실시간 미리보기 갱신]
+    // 이미지 URL 입력 변경 시 실시간 미리보기 갱신]
     if (partnerImageUrl && partnerImagePreview && partnerPreviewImg) {
       partnerImageUrl.addEventListener("input", () => {
         const val = partnerImageUrl.value.trim();
@@ -4235,7 +4235,7 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 로컬 사진 파일 첨부 시 무료 서버 법칙 준수를 위한 클라이언트 캔버스 경량화 압축(Base64) 처리]
+    // 로컬 사진 파일 첨부 시 무료 서버 법칙 준수를 위한 클라이언트 캔버스 경량화 압축(Base64) 처리]
     if (partnerFileInput) {
       partnerFileInput.addEventListener("change", (e) => {
         const file = e.target.files && e.target.files[0];
@@ -4247,7 +4247,7 @@ function initPage() {
         reader.onload = (event) => {
           const img = new Image();
           img.onload = () => {
-            // [한글 주석: 최대 400x400 픽셀로 비례 축소하여 Firestore 용량 최소화]
+            // 최대 400x400 픽셀로 비례 축소하여 Firestore 용량 최소화]
             const maxDim = 400;
             let width = img.width;
             let height = img.height;
@@ -4281,14 +4281,14 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 수정 취소 버튼 클릭 시 폼 초기화 및 신규 등록 모드 복원]
+    // 수정 취소 버튼 클릭 시 폼 초기화 및 신규 등록 모드 복원]
     if (btnCancelPartnerEdit) {
       btnCancelPartnerEdit.addEventListener("click", () => {
         resetPartnerForm();
       });
     }
 
-    // [한글 주석: 협력업체 입력 폼 초기화 함수 - 신규 등록 기본 순서를 현재 등록 개수 + 1로 자동 부여]
+    // 협력업체 입력 폼 초기화 함수 - 신규 등록 기본 순서를 현재 등록 개수 + 1로 자동 부여]
     function resetPartnerForm() {
       if (partnerForm) partnerForm.reset();
       if (partnerEditId) partnerEditId.value = "";
@@ -4304,7 +4304,7 @@ function initPage() {
     }
 
     /**
-     * [한글 주석: XSS 방지 및 안전한 HTML 문자열 이스케이프 유틸리티]
+     * XSS 방지 및 안전한 HTML 문자열 이스케이프 유틸리티]
      * @param {string} str 대상 문자열
      * @returns {string} 이스케이프된 안전한 문자열
      */
@@ -4319,7 +4319,7 @@ function initPage() {
     }
 
     /**
-     * [한글 주석: Firestore에서 현재 등록된 모든 유효 협력업체 목록을 order 오름차순으로 조회]
+     * Firestore에서 현재 등록된 모든 유효 협력업체 목록을 order 오름차순으로 조회]
      * @returns {Promise<Array>} 협력업체 문서 객체 배열 [{id, title, order, ...}]
      */
     async function fetchAllPartners() {
@@ -4337,7 +4337,7 @@ function initPage() {
     }
 
     /**
-     * [한글 주석: 정렬된 협력업체 목록을 전달받아 1번부터 N번까지 연속된 order로 Firestore writeBatch 일괄 업데이트]
+     * 정렬된 협력업체 목록을 전달받아 1번부터 N번까지 연속된 order로 Firestore writeBatch 일괄 업데이트]
      * @param {Array} orderedList 순서대로 정렬된 협력업체 배열
      */
     async function saveBatchOrders(orderedList) {
@@ -4359,22 +4359,22 @@ function initPage() {
       });
 
       if (updatedCount > 0) {
-        console.log(`[한글 주석: Firestore Batch] 총 ${updatedCount}개 협력업체의 순서를 연속된 번호로 일괄 갱신합니다.`);
+        console.log(`Firestore Batch] 총 ${updatedCount}개 협력업체의 순서를 연속된 번호로 일괄 갱신합니다.`);
         await batch.commit();
       }
     }
 
-    // [한글 주석: 협력업체 데이터 수정/삭제/순서변경 시 클라이언트 로컬 캐시 즉시 무효화 유틸리티]
+    // 협력업체 데이터 수정/삭제/순서변경 시 클라이언트 로컬 캐시 즉시 무효화 유틸리티]
     function clearPartnersCache() {
       try {
         localStorage.removeItem("cached_partners_data");
-        console.log("🧹 [한글 주석: SWR] 관리자 데이터 변경으로 협력업체 로컬 캐시를 성공적으로 초기화했습니다.");
+        console.log("🧹 SWR] 관리자 데이터 변경으로 협력업체 로컬 캐시를 성공적으로 초기화했습니다.");
       } catch (e) {
-        console.warn("[한글 주석: 협력업체 캐시 초기화 예외]", e);
+        console.warn("협력업체 캐시 초기화 예외]", e);
       }
     }
 
-    // [한글 주석: 협력업체 등록 및 수정 폼 서밋 핸들러 - 순서 밀림 및 일괄 재정렬 지원]
+    // 협력업체 등록 및 수정 폼 서밋 핸들러 - 순서 밀림 및 일괄 재정렬 지원]
     if (partnerForm) {
       partnerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -4407,10 +4407,10 @@ function initPage() {
           };
 
           if (editId) {
-            // [한글 주석: 수정 모드 - 1) 수정 대상 문서 기본 데이터 업데이트]
+            // 수정 모드 - 1) 수정 대상 문서 기본 데이터 업데이트]
             await setDoc(doc(db, "partners", editId), partnerData, { merge: true });
 
-            // [한글 주석: 2) 전체 협력업체 목록을 가져와서 수정된 업체를 목표 순서 위치로 이동 후 일괄 밀림 처리]
+            // 2) 전체 협력업체 목록을 가져와서 수정된 업체를 목표 순서 위치로 이동 후 일괄 밀림 처리]
             const allPartners = await fetchAllPartners();
             const targetIdx = allPartners.findIndex((p) => p.id === editId);
             let targetItem;
@@ -4428,16 +4428,16 @@ function initPage() {
             // 전체 목록에 1부터 N까지 연속된 순서 재부여 및 writeBatch 일괄 저장
             await saveBatchOrders(allPartners);
 
-            // [한글 주석: 로컬 캐시 즉시 무효화로 수정사항 즉각 반영]
+            // 로컬 캐시 즉시 무효화로 수정사항 즉각 반영]
             clearPartnersCache();
 
             alert(`'${title}' 협력업체 정보 및 순서(자동 밀림 포함)가 성공적으로 수정되었습니다.`);
           } else {
-            // [한글 주석: 신규 등록 모드 - 1) 신규 문서 추가]
+            // 신규 등록 모드 - 1) 신규 문서 추가]
             partnerData.createdAt = new Date().toISOString();
             const newDocRef = await addDoc(collection(db, "partners"), partnerData);
 
-            // [한글 주석: 2) 전체 협력업체 목록을 가져와 신규 등록 업체를 지정한 순서 위치에 끼워넣고 밀림 처리]
+            // 2) 전체 협력업체 목록을 가져와 신규 등록 업체를 지정한 순서 위치에 끼워넣고 밀림 처리]
             const allPartners = await fetchAllPartners();
             const targetIdx = allPartners.findIndex((p) => p.id === newDocRef.id);
             let targetItem;
@@ -4452,7 +4452,7 @@ function initPage() {
 
             await saveBatchOrders(allPartners);
 
-            // [한글 주석: 로컬 캐시 즉시 무효화로 신규 등록 즉각 반영]
+            // 로컬 캐시 즉시 무효화로 신규 등록 즉각 반영]
             clearPartnersCache();
 
             alert(`'${title}' 신규 협력업체가 성공적으로 등록되었습니다.`);
@@ -4461,7 +4461,7 @@ function initPage() {
           resetPartnerForm();
           await loadAdminPartners();
         } catch (err) {
-          console.error("[한글 주석: 협력업체 저장 실패]", err);
+          console.error("협력업체 저장 실패]", err);
           alert("협력업체 저장 중 오류가 발생했습니다: " + err.message);
           btnSavePartner.disabled = false;
           btnSavePartner.textContent = editId ? "✏️ 협력업체 수정 완료" : "💾 협력업체 등록하기";
@@ -4469,7 +4469,7 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 등록된 협력업체 실시간 목록 조회 및 렌더링 함수]
+    // 등록된 협력업체 실시간 목록 조회 및 렌더링 함수]
     async function loadAdminPartners() {
       if (!adminPartnerList) return;
 
@@ -4480,7 +4480,7 @@ function initPage() {
       `;
 
       try {
-        // [한글 주석: 상단에서 이미 임포트된 collection, query, orderBy, getDocs 사용]
+        // 상단에서 이미 임포트된 collection, query, orderBy, getDocs 사용]
         const q = query(collection(db, "partners"), orderBy("order", "asc"));
         const snapshot = await getDocs(q);
 
@@ -4506,13 +4506,13 @@ function initPage() {
           const p = docSnap.data();
           const pid = docSnap.id;
 
-          // [한글 주석: 불필요한 샘플 업체 영구 자동 삭제 처리]
+          // 불필요한 샘플 업체 영구 자동 삭제 처리]
           if (dummyTitles.includes(p.title)) {
-            console.log(`[한글 주석] 불필요한 샘플 업체 Firestore 자동 삭제: ${p.title} (${pid})`);
+            console.log(`불필요한 샘플 업체 Firestore 자동 삭제: ${p.title} (${pid})`);
             try {
               await deleteDoc(doc(db, "partners", pid));
             } catch (delErr) {
-              console.warn("[한글 주석] 샘플 업체 삭제 오류:", delErr);
+              console.warn("샘플 업체 삭제 오류:", delErr);
             }
             continue;
           }
@@ -4563,7 +4563,7 @@ function initPage() {
         }
         adminPartnerList.innerHTML = rowsHtml;
       } catch (err) {
-        console.error("[한글 주석: 협력업체 목록 로딩 실패]", err);
+        console.error("협력업체 목록 로딩 실패]", err);
         adminPartnerList.innerHTML = `
           <tr>
             <td colspan="6" style="text-align: center; color: #ef4444; padding: 2rem;">
@@ -4574,7 +4574,7 @@ function initPage() {
       }
     }
 
-    // [한글 주석: 순서 일괄 자동 정리 버튼 이벤트 바인딩 - 중복되거나 비어있는 순서를 1번부터 차례대로 연속 정렬]
+    // 순서 일괄 자동 정리 버튼 이벤트 바인딩 - 중복되거나 비어있는 순서를 1번부터 차례대로 연속 정렬]
     const btnReorderPartners = document.getElementById("btn-reorder-partners");
     if (btnReorderPartners) {
       btnReorderPartners.addEventListener("click", async () => {
@@ -4595,13 +4595,13 @@ function initPage() {
           // 현재 순서(order) 오름차순 기준으로 1부터 순차 재부여
           await saveBatchOrders(allPartners);
 
-          // [한글 주석: 순서 재정렬 완료 즉시 로컬 캐시 초기화]
+          // 순서 재정렬 완료 즉시 로컬 캐시 초기화]
           clearPartnersCache();
 
           alert(`총 ${allPartners.length}개 협력업체의 순서가 1번부터 중복 없이 연속되게 재정렬되었습니다.`);
           await loadAdminPartners();
         } catch (err) {
-          console.error("[한글 주석: 순서 일괄 자동 정리 실패]", err);
+          console.error("순서 일괄 자동 정리 실패]", err);
           alert("순서 재정렬 중 오류가 발생했습니다: " + err.message);
         } finally {
           btnReorderPartners.disabled = false;
@@ -4610,7 +4610,7 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 협력업체 테이블 내부 수정/삭제 버튼 이벤트 위임 바인딩]
+    // 협력업체 테이블 내부 수정/삭제 버튼 이벤트 위임 바인딩]
     if (adminPartnerList) {
       adminPartnerList.addEventListener("click", async (e) => {
         const editBtn = e.target.closest(".btn-edit-partner");
@@ -4656,7 +4656,7 @@ function initPage() {
               partnerForm.scrollIntoView({ behavior: "smooth", block: "center" });
             }
           } catch (err) {
-            console.error("[한글 주석: 수정 정보 로드 오류]", err);
+            console.error("수정 정보 로드 오류]", err);
             alert("협력업체 정보를 가져오는 중 오류가 발생했습니다: " + err.message);
           } finally {
             editBtn.disabled = false;
@@ -4678,17 +4678,17 @@ function initPage() {
             deleteBtn.textContent = "삭제 중...";
             await deleteDoc(doc(db, "partners", pid));
 
-            // [한글 주석: 삭제 후 남아있는 협력업체들의 순서를 1부터 빈틈없이 연속되도록 자동 재정렬]
+            // 삭제 후 남아있는 협력업체들의 순서를 1부터 빈틈없이 연속되도록 자동 재정렬]
             const remainingPartners = await fetchAllPartners();
             await saveBatchOrders(remainingPartners);
 
-            // [한글 주석: 삭제 완료 즉시 로컬 캐시 초기화]
+            // 삭제 완료 즉시 로컬 캐시 초기화]
             clearPartnersCache();
 
             alert(`'${pTitle}' 협력업체가 성공적으로 삭제되었습니다.`);
             await loadAdminPartners();
           } catch (err) {
-            console.error("[한글 주석: 삭제 오류]", err);
+            console.error("삭제 오류]", err);
             alert("협력업체 삭제 실패: " + err.message);
             deleteBtn.disabled = false;
             deleteBtn.textContent = "삭제";
@@ -4697,13 +4697,13 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 등록된 협력업체 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수]
+    // 등록된 협력업체 목록 마우스 드래그 앤 드롭 순서 변경 및 실시간 Firestore 일괄 저장 함수]
     function setupPartnerDragAndDrop() {
       if (!adminPartnerList) return;
 
       let draggedRow = null;
 
-      // [한글 주석: 1) 드래그 시작 시점 처리]
+      // 1) 드래그 시작 시점 처리]
       adminPartnerList.addEventListener("dragstart", (e) => {
         // 버튼, 입력창, 링크 등을 클릭하거나 조작할 때는 드래그 방지
         if (e.target.closest("button, a, input, select, textarea")) {
@@ -4726,7 +4726,7 @@ function initPage() {
         }, 0);
       });
 
-      // [한글 주석: 2) 드래그 오버 시점 처리 - 실시간 DOM 행 위치 교체 시각적 피드백]
+      // 2) 드래그 오버 시점 처리 - 실시간 DOM 행 위치 교체 시각적 피드백]
       adminPartnerList.addEventListener("dragover", (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
@@ -4742,7 +4742,7 @@ function initPage() {
         adminPartnerList.insertBefore(draggedRow, isAfter ? targetRow.nextSibling : targetRow);
       });
 
-      // [한글 주석: 3) 드래그 종료 시점 처리 - 행 번호 즉시 갱신 및 Firestore Batch 일괄 자동 저장]
+      // 3) 드래그 종료 시점 처리 - 행 번호 즉시 갱신 및 Firestore Batch 일괄 자동 저장]
       adminPartnerList.addEventListener("dragend", async () => {
         if (!draggedRow) return;
 
@@ -4784,7 +4784,7 @@ function initPage() {
             if (partnerCountBadge) {
               partnerCountBadge.textContent = "💾 순서 저장 중...";
               await saveBatchOrders(reorderPayload);
-              // [한글 주석: 드래그 앤 드롭 순서 변경 즉시 로컬 캐시 초기화]
+              // 드래그 앤 드롭 순서 변경 즉시 로컬 캐시 초기화]
               clearPartnersCache();
               partnerCountBadge.textContent = `총 ${rows.length}개 업체 (순서 자동 저장 완료)`;
               setTimeout(() => {
@@ -4792,11 +4792,11 @@ function initPage() {
               }, 2000);
             } else {
               await saveBatchOrders(reorderPayload);
-              // [한글 주석: 드래그 앤 드롭 순서 변경 즉시 로컬 캐시 초기화]
+              // 드래그 앤 드롭 순서 변경 즉시 로컬 캐시 초기화]
               clearPartnersCache();
             }
           } catch (err) {
-            console.error("[한글 주석: 드래그 앤 드롭 순서 저장 실패]", err);
+            console.error("드래그 앤 드롭 순서 저장 실패]", err);
             alert("순서 자동 저장 중 오류가 발생했습니다: " + err.message);
             await loadAdminPartners(); // 오류 발생 시 원래 DB 순서로 복구
           }
@@ -4804,14 +4804,14 @@ function initPage() {
       });
     }
 
-    // [한글 주석: 협력업체 드래그 앤 드롭 순서 변경 리스너 초기 바인딩 실행]
+    // 협력업체 드래그 앤 드롭 순서 변경 리스너 초기 바인딩 실행]
     setupPartnerDragAndDrop();
 
     window.loadAdminPartners = loadAdminPartners;
   }
 }
 
-// [한글 주석: 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
+// 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initPage);
 } else {
