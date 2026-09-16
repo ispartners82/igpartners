@@ -355,22 +355,28 @@ document.addEventListener("DOMContentLoaded", () => {
         if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
         if (quickBtnLogin) quickBtnLogin.style.display = "none";
 
-        // 세션 캐시에 기록된 관리자 권한 확인 후 0초 만에 인메모리 노출
+        // [한글 주석: 세션 캐시에 기록된 관리자 및 예약통계 권한 확인 후 0초 만에 인메모리 노출/숨김 제어]
         const permCacheStr = sessionStorage.getItem(`admin_permissions_${userObj.uid}`);
+        let isAdmin = false;
+        let hasStats = false;
         if (permCacheStr) {
-          const permObj = JSON.parse(permCacheStr);
-          if (permObj && permObj.permissions) {
-            const isAdmin = !!permObj.permissions.isAdmin;
-            const hasStats = !!(permObj.permissions.hasStats || permObj.permissions.isAdmin);
-
-            if (btnAdminElem) btnAdminElem.style.display = isAdmin ? "inline-block" : "none";
-            if (btnStatsElem) btnStatsElem.style.display = hasStats ? "inline-block" : "none";
-
-            // [한글 주석: 모바일용 퀵 버튼 관리자/통계 상태 동시 0ms 제어]
-            if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = isAdmin ? "inline-flex" : "none";
-            if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = hasStats ? "inline-flex" : "none";
-          }
+          try {
+            const permObj = JSON.parse(permCacheStr);
+            if (permObj && permObj.permissions) {
+              const isSuper = (permObj.role === "super_admin");
+              isAdmin = isSuper || !!permObj.permissions.isAdmin;
+              hasStats = isSuper || !!permObj.permissions.hasStats;
+            }
+          } catch (e) { }
         }
+
+        // [한글 주석: 관리자 기능이 꺼져 있으면 관리자 버튼 숨김, 예약통계 기능이 꺼져 있으면 예약통계 버튼 숨김]
+        if (btnAdminElem) btnAdminElem.style.display = isAdmin ? "inline-block" : "none";
+        if (btnStatsElem) btnStatsElem.style.display = hasStats ? "inline-block" : "none";
+
+        // [한글 주석: 모바일용 퀵 버튼 관리자/통계 상태 동시 0ms 제어]
+        if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = isAdmin ? "inline-flex" : "none";
+        if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = hasStats ? "inline-flex" : "none";
       } else {
         // [한글 주석: 로그인 세션 캐시가 없는 상태(비로그인)일 때의 모바일 퀵버튼 노출 상태 0ms 세팅]
         if (quickBtnMyReservations) quickBtnMyReservations.style.display = "none";
@@ -718,8 +724,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 2) 다른 HTML 페이지로 이동 시 브라우저 표준 고속 페이지 이동 수행 (페이지별 독립적인 body 클래스 및 DOM 구조 100% 보증)
-    // [한글 주석: AJAX 파싱 뷰 교체로 인한 body 클래스 유실 및 2단 카페 레이아웃 붕괴 현상을 원천 차단]
     // 브라우저 기본 링크 이동 동작(native navigation)이 수행되도록 기본 이벤트를 방지하지 않습니다.
+  });
+
+  // [한글 주석: auth.js 실시간 등급/권한 변경 이벤트 수신 시 네비게이션 뱃지 상태 0초 실시간 즉각 동기화]
+  window.addEventListener("rolePermissionsChanged", () => {
+    syncAuthBadgeInstantly();
   });
 
   // [한글 주석: 동일 페이지 해시 이동(pushState) 시에도 탭 하이라이트가 누락 없이 스마트 동기화되도록 전역 hashchange 이벤트 연결]

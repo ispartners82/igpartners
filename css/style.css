@@ -6045,6 +6045,48 @@ body.home-page {
   gap: 0.65rem;
 }
 
+/* [한글 주석: 카테고리 관리 · 글쓰기 권한 등급 다중 선택 체크박스 그리드 스타일셋] */
+.cat-roles-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+  background: rgba(10, 15, 30, 0.7);
+  border: 1px solid rgba(0, 243, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cat-role-check-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  padding: 0.4rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.83rem;
+  color: #e2e8f0;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.cat-role-check-item:hover {
+  background: rgba(0, 243, 255, 0.1);
+  border-color: rgba(0, 243, 255, 0.4);
+  color: #00f3ff;
+}
+
+.cat-role-check-item input[type="checkbox"] {
+  accent-color: #00f3ff;
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+
 /* 구분선 아이템 전용 스타일 */
 .cat-tree-item.is-divider {
   background: rgba(0, 0, 0, 0.3);

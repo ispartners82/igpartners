@@ -32,11 +32,11 @@
     rel="stylesheet">
 
   <!-- [한글 주석: 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정] -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260914_5">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260914_5">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_5">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_5">
 
   <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_5)] -->
-  <link rel="stylesheet" href="css/style.css?v=260914_5">
+  <link rel="stylesheet" href="css/style.css?v=260916_5">
 </head>
 
 <body class="home-page">
@@ -120,14 +120,12 @@
                   if (p) {
                     var perm = JSON.parse(p);
                     if (perm && perm.permissions) {
-                      if (perm.permissions.isAdmin) {
-                        var adm = document.getElementById("btn-admin-dashboard");
-                        if (adm) adm.style.display = "inline-block";
-                      }
-                      if (perm.permissions.hasStats || perm.permissions.isAdmin) {
-                        var st = document.getElementById("btn-stats-dashboard");
-                        if (st) st.style.display = "inline-block";
-                      }
+                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
+                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
+                      var adm = document.getElementById("btn-admin-dashboard");
+                      if (adm) adm.style.display = isAdm ? "inline-block" : "none";
+                      var st = document.getElementById("btn-stats-dashboard");
+                      if (st) st.style.display = isSt ? "inline-block" : "none";
                     }
                   }
                 } else {
@@ -169,12 +167,12 @@
                   if (p) {
                     var perm = JSON.parse(p);
                     if (perm && perm.permissions) {
-                      if (perm.permissions.isAdmin) {
-                        document.getElementById("quick-btn-admin-dashboard").style.display = "inline-flex";
-                      }
-                      if (perm.permissions.hasStats || perm.permissions.isAdmin) {
-                        document.getElementById("quick-btn-stats-dashboard").style.display = "inline-flex";
-                      }
+                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
+                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
+                      var qAdm = document.getElementById("quick-btn-admin-dashboard");
+                      if (qAdm) qAdm.style.display = isAdm ? "inline-flex" : "none";
+                      var qSt = document.getElementById("quick-btn-stats-dashboard");
+                      if (qSt) qSt.style.display = isSt ? "inline-flex" : "none";
                     }
                   }
                 }
@@ -316,8 +314,8 @@
   <footer id="global-footer" class="global-footer"></footer>
 
   <!-- [한글 주석: 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5)] -->
-  <script type="module" src="/js/navigation.js?v=260914_5"></script>
-  <script type="module" src="/js/auth.js?v=260914_5"></script>
+  <script type="module" src="/js/navigation.js?v=260916_5"></script>
+  <script type="module" src="/js/auth.js?v=260916_5"></script>
 
   <!-- [한글 주석: 구글 로그인 유도 안내 모달 팝업 - 다국어 편의성을 위해 한국어와 영어를 병기하고 로그인 버튼 내 베트남어를 제거함] -->
   <div id="login-required-modal" class="modal-backdrop" style="display: none;">

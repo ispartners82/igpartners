@@ -11,7 +11,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /**
  * [한글 주석] IGPartners 회원가입 & 로그인 모듈
@@ -46,28 +46,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <!-- 로그인 폼 영역 -->
           <div id="auth-section-login">
-            <form id="form-auth-login">
+            <form id="form-auth-login" autocomplete="off">
               <div class="auth-form-group" style="margin-bottom: 1rem;">
                 <label for="login-input-account">아이디 또는 이메일 (ID or Email) <span class="req">*</span></label>
-                <input type="text" id="login-input-account" required placeholder="아이디 또는 이메일 주소를 입력해 주세요">
+                <input type="text" id="login-input-account" required placeholder="아이디 또는 이메일 주소를 입력해 주세요" autocomplete="username">
               </div>
               <div class="auth-form-group" style="margin-bottom: 1.5rem;">
                 <label for="login-input-password">비밀번호 (Password) <span class="req">*</span></label>
-                <input type="password" id="login-input-password" required placeholder="비밀번호를 입력해 주세요">
+                <input type="password" id="login-input-password" required placeholder="비밀번호를 입력해 주세요" autocomplete="current-password">
               </div>
               <button type="submit" class="auth-submit-btn" id="btn-submit-login">로그인 (Sign In)</button>
             </form>
           </div>
 
           <!-- 회원가입 폼 영역 (12개 입력 항목) -->
+          <!-- [한글 주석: autocomplete="off"를 지정하여 브라우저 자동완성이 회원가입 입력창을 덮어쓰는 보안 취약점 원천 차단] -->
           <div id="auth-section-signup" style="display: none;">
-            <form id="form-auth-signup">
+            <form id="form-auth-signup" autocomplete="off">
               <div class="auth-form-grid">
                 
                 <!-- 1. 국가(선호언어) 선택 (최상단 배치) -->
                 <div class="auth-form-group auth-field-full">
                   <label for="signup-country-lang">국가 (선호언어) / Country (Language) <span class="req">*</span></label>
-                  <select id="signup-country-lang" required>
+                  <select id="signup-country-lang" required autocomplete="off">
                     <option value="ko" selected>🇰🇷 대한민국 (한국어 / Korean)</option>
                     <option value="ja">🇯🇵 일본 (日本語 / Japanese)</option>
                     <option value="vi">🇻🇳 베트남 (Tiếng Việt / Vietnamese)</option>
@@ -89,67 +90,67 @@ document.addEventListener("DOMContentLoaded", () => {
                 <!-- 2. 아이디 -->
                 <div class="auth-form-group">
                   <label for="signup-login-id">아이디 (ID) <span class="req">*</span></label>
-                  <input type="text" id="signup-login-id" required placeholder="예: user123">
+                  <input type="text" id="signup-login-id" required placeholder="예: user123" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
 
                 <!-- 3. 이메일 -->
                 <div class="auth-form-group">
                   <label for="signup-email">이메일 (Email) <span class="req">*</span></label>
-                  <input type="email" id="signup-email" required placeholder="예: user@gmail.com">
+                  <input type="email" id="signup-email" required placeholder="예: user@gmail.com" autocomplete="off">
                 </div>
 
-                <!-- 4. 비밀번호 -->
+                <!-- 4. 비밀번호 (new-password로 지정하여 기존 로그인 비밀번호 자동 채움 차단) -->
                 <div class="auth-form-group">
                   <label for="signup-password">비밀번호 (Password) <span class="req">*</span></label>
-                  <input type="password" id="signup-password" required placeholder="6자 이상 입력">
+                  <input type="password" id="signup-password" required placeholder="6자 이상 입력" autocomplete="new-password">
                 </div>
 
                 <!-- 5. 비밀번호 재입력 -->
                 <div class="auth-form-group">
                   <label for="signup-password-confirm">비밀번호 확인 (Confirm Password) <span class="req">*</span></label>
-                  <input type="password" id="signup-password-confirm" required placeholder="비밀번호 재입력">
+                  <input type="password" id="signup-password-confirm" required placeholder="비밀번호 재입력" autocomplete="new-password">
                 </div>
 
                 <!-- 6. 이름 -->
                 <div class="auth-form-group">
                   <label for="signup-name">이름 (성명) / Full Name <span class="req">*</span></label>
-                  <input type="text" id="signup-name" required placeholder="예: 홍길동">
+                  <input type="text" id="signup-name" required placeholder="예: 홍길동" autocomplete="off">
                 </div>
 
                 <!-- 7. 생년월일 -->
                 <div class="auth-form-group">
                   <label for="signup-dob">생년월일 (Date of Birth) <span class="req">*</span></label>
-                  <input type="date" id="signup-dob" required>
+                  <input type="date" id="signup-dob" required autocomplete="off">
                 </div>
 
                 <!-- 8. 외국인등록번호(주민등록번호) -->
                 <div class="auth-form-group">
                   <label for="signup-alien-no">외국인등록번호(주민번호) / ARC (Resident No.) <span class="req">*</span></label>
-                  <input type="text" id="signup-alien-no" required placeholder="예: 950101-1******">
+                  <input type="text" id="signup-alien-no" required placeholder="예: 950101-1******" autocomplete="off">
                 </div>
 
                 <!-- 9. 연락처 -->
                 <div class="auth-form-group">
                   <label for="signup-phone">연락처 (Phone Number) <span class="req">*</span></label>
-                  <input type="tel" id="signup-phone" required placeholder="예: 010-1234-5678">
+                  <input type="tel" id="signup-phone" required placeholder="예: 010-1234-5678" autocomplete="off">
                 </div>
 
                 <!-- 10. 비자 타입 -->
                 <div class="auth-form-group">
                   <label for="signup-visa-type">비자 타입 (Visa Type) <span class="req">*</span></label>
-                  <input type="text" id="signup-visa-type" required placeholder="예: 내국인,D-2, E-9 등">
+                  <input type="text" id="signup-visa-type" required placeholder="예: 내국인,D-2, E-9 등" autocomplete="off">
                 </div>
 
                 <!-- 11. 체류(비자) 만료일 -->
                 <div class="auth-form-group" id="signup-visa-expiry-group">
                   <label for="signup-visa-expiry">체류(비자) 만료일 (Visa Expiry Date) <span class="req">*</span></label>
-                  <input type="date" id="signup-visa-expiry" required>
+                  <input type="date" id="signup-visa-expiry" required autocomplete="off">
                 </div>
 
                 <!-- 12. 현재 체류 주소 (전체 너비) -->
                 <div class="auth-form-group auth-field-full">
                   <label for="signup-address">현재 체류 주소 (Current Address) <span class="req">*</span></label>
-                  <input type="text" id="signup-address" required placeholder="예: 대구광역시 수성구 알파시티로 1로 4길 8">
+                  <input type="text" id="signup-address" required placeholder="예: 대구광역시 수성구 알파시티로 1로 4길 8" autocomplete="off">
                 </div>
 
               </div>
@@ -321,6 +322,32 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // [한글 주석: 회원가입 폼 보안 초기화 함수 - 브라우저 자동완성 오작동 및 이전 잔여 계정 데이터 완전 소거]
+    function resetSignupForm() {
+      const formSignup = document.getElementById("form-auth-signup");
+      if (formSignup) {
+        formSignup.reset();
+      }
+      // [한글 주석: 브라우저 AutoFill이 강제로 밀어 넣은 잔여 값들을 빈 문자열로 강제 소거]
+      const clearIds = [
+        "signup-login-id", "signup-email", "signup-password", "signup-password-confirm",
+        "signup-name", "signup-dob", "signup-alien-no", "signup-phone", "signup-address"
+      ];
+      clearIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      const privacyAgree = document.getElementById("signup-privacy-agree");
+      if (privacyAgree) privacyAgree.checked = false;
+
+      // 한국어 선택 기본값에 따른 비자타입 자동 재설정
+      if (typeof handleCountryLangChange === "function") {
+        handleCountryLangChange();
+      }
+    }
+    window.resetSignupForm = resetSignupForm;
+
     // 탭 클릭 이벤트
     if (tabLogin && tabSignup) {
       tabLogin.addEventListener("click", () => {
@@ -335,6 +362,8 @@ document.addEventListener("DOMContentLoaded", () => {
         tabLogin.classList.remove("active");
         secSignup.style.display = "block";
         secLogin.style.display = "none";
+        // [한글 주석: 회원가입 탭 클릭 시 이전 로그인 자격증명이 노출되지 않도록 강제 리셋]
+        resetSignupForm();
       });
     }
 
@@ -360,6 +389,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabSignup = document.getElementById("tab-btn-signup");
 
     if (modal) {
+      // [한글 주석: 모달 오픈 시 폼 잔여 데이터 깨끗이 비우기]
+      if (typeof window.resetSignupForm === "function") {
+        window.resetSignupForm();
+      }
       modal.style.display = "flex";
       document.body.classList.add("modal-open");
       if (initialTab === "signup" && tabSignup) {
@@ -380,6 +413,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modal) {
       modal.style.display = "none";
       document.body.classList.remove("modal-open");
+      // [한글 주석: 모달 닫기 시 잔여 비밀번호 입력값 소거]
+      if (typeof window.resetSignupForm === "function") {
+        window.resetSignupForm();
+      }
     }
   }
   window.hideAuthModal = hideAuthModal;
@@ -1053,6 +1090,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target.id === "btn-logout" || target.closest("#btn-logout")) {
       try {
         if (confirm("로그아웃 하시겠습니까?")) {
+          // [한글 주석: 로그아웃 시 폼에 남아있을 수 있는 자격증명 및 입력값을 즉시 초기화]
+          if (typeof window.resetSignupForm === "function") {
+            window.resetSignupForm();
+          }
+          const loginForm = document.getElementById("form-auth-login");
+          if (loginForm) loginForm.reset();
+
           sessionStorage.clear();
           await signOut(auth);
           console.log("User signed out.");
@@ -1070,12 +1114,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
 
   /**
-   * [성능 최적화] 사용자 역할(role) 세션 캐싱 함수
+   * [한글 주석: 사용자 역할(role) 세션 캐싱 함수 - 강제 최신화(forceRefresh) 지원으로 등급 변경 시 실시간 반영]
+   * @param {string} uid - 사용자 고유 식별자
+   * @param {boolean} forceRefresh - 캐시를 무시하고 Firestore에서 강제로 최신 등급을 조회할지 여부
    */
-  async function getCachedUserRole(uid) {
+  async function getCachedUserRole(uid, forceRefresh = false) {
     const cacheKey = `user_role_cache_${uid}`;
-    const cached = sessionStorage.getItem(cacheKey);
-    if (cached !== null) return cached;
+    if (!forceRefresh) {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached !== null) return cached;
+    }
 
     try {
       const userDocRef = doc(db, "users", uid);
@@ -1092,47 +1140,107 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * [성능 최적화] 권한(isAdmin, hasStats) 캐싱 함수
+  /**
+   * [한글 주석: 등급(role)별 10개 세부 기능 권한 및 라벨 정보 캐싱 함수 - Firestore 읽기 비용 절감 및 세부 권한 무결성 보장]
+   * @param {string} userRole - 사용자 등급 키 (예: super_admin, admin, admin_user 등)
+   * @returns {Promise<Object>} 10개 세부 권한 및 등급 라벨을 포함한 객체
    */
   async function getCachedRolePermissions(userRole) {
-    if (!userRole) return { isAdmin: false, hasStats: false };
+    if (!userRole) return { 
+      isAdmin: false, 
+      hasReservations: false,
+      hasClinics: false,
+      hasRoles: false,
+      hasPermissions: false,
+      hasStats: false, 
+      hasAds: false,
+      hasPartners: false,
+      hasInterpreters: false,
+      hasCommunitySettings: false,
+      label: "일반회원"
+    };
     const cacheKey = `role_permissions_cache_${userRole}`;
     const cached = sessionStorage.getItem(cacheKey);
     if (cached !== null) {
       try { return JSON.parse(cached); } catch (e) { }
     }
 
-    let isAdmin = false;
-    let hasStats = false;
+    const isSuper = (userRole === "super_admin");
+    let perms = {
+      isAdmin: isSuper,
+      hasReservations: isSuper,
+      hasClinics: isSuper,
+      hasRoles: isSuper,
+      hasPermissions: isSuper,
+      hasStats: isSuper,
+      hasAds: isSuper,
+      hasPartners: isSuper,
+      hasInterpreters: isSuper,
+      hasCommunitySettings: isSuper,
+      label: isSuper ? "최고관리자" : "일반회원"
+    };
+
     try {
       const roleDocRef = doc(db, "roles", userRole);
       const roleDocSnap = await getDoc(roleDocRef);
       if (roleDocSnap.exists()) {
         const roleData = roleDocSnap.data();
-        isAdmin = roleData.isAdmin !== undefined ? roleData.isAdmin : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-        hasStats = roleData.hasStats !== undefined ? roleData.hasStats : ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+        perms = {
+          isAdmin: isSuper || (roleData.isAdmin !== undefined ? roleData.isAdmin : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
+          hasReservations: isSuper || (roleData.hasReservations !== undefined ? roleData.hasReservations : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
+          hasClinics: isSuper || (roleData.hasClinics !== undefined ? roleData.hasClinics : ["admin", "admin_user"].includes(userRole)),
+          hasRoles: isSuper || (roleData.hasRoles !== undefined ? roleData.hasRoles : false),
+          hasPermissions: isSuper || (roleData.hasPermissions !== undefined ? roleData.hasPermissions : false),
+          hasStats: isSuper || (roleData.hasStats !== undefined ? roleData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
+          hasAds: isSuper || (roleData.hasAds !== undefined ? roleData.hasAds : false),
+          hasPartners: isSuper || (roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || false)),
+          hasInterpreters: isSuper || (roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || false)),
+          hasCommunitySettings: isSuper || (roleData.hasCommunitySettings !== undefined ? roleData.hasCommunitySettings : false),
+          label: roleData.label || (isSuper ? "최고관리자" : (userRole === "admin" ? "일반관리자" : (userRole === "admin_user" ? "관리자" : "회원")))
+        };
       } else {
-        isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-        hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+        // [한글 주석: DB에 roles 문서가 존재하지 않을 때의 하위 호환 폴백 매핑]
+        const isLegacyAdmin = ["admin", "admin_user"].includes(userRole);
+        const isLegacyManager = ["top_manager", "res_manager"].includes(userRole);
+        perms = {
+          isAdmin: isSuper || isLegacyAdmin || isLegacyManager,
+          hasReservations: isSuper || isLegacyAdmin || isLegacyManager,
+          hasClinics: isSuper || isLegacyAdmin,
+          hasRoles: isSuper,
+          hasPermissions: isSuper,
+          hasStats: isSuper || isLegacyAdmin || isLegacyManager,
+          hasAds: isSuper,
+          hasPartners: isSuper,
+          hasInterpreters: isSuper,
+          hasCommunitySettings: isSuper,
+          label: isSuper ? "최고관리자" : (userRole === "admin" ? "일반관리자" : (userRole === "admin_user" ? "관리자" : "회원"))
+        };
       }
     } catch (e) {
-      isAdmin = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
-      hasStats = ["super_admin", "admin", "admin_user", "top_manager", "res_manager"].includes(userRole);
+      console.warn("getCachedRolePermissions error:", e);
     }
 
-    const perms = { isAdmin, hasStats };
     try { sessionStorage.setItem(cacheKey, JSON.stringify(perms)); } catch (e) { }
     return perms;
   }
 
+  /**
+   * [한글 주석: 사용자 등급 변경 또는 로그아웃 시 관련 세션 캐시 전체 무효화 함수]
+   * @param {string} uid - 캐시를 삭제할 사용자 UID
+   */
   function clearUserRoleCache(uid) {
     if (uid) {
       sessionStorage.removeItem(`user_role_cache_${uid}`);
+      sessionStorage.removeItem(`admin_permissions_${uid}`);
       sessionStorage.removeItem(`admin_permissions_cache_${uid}`);
     }
     sessionStorage.clear();
   }
   window.clearUserRoleCache = clearUserRoleCache;
+
+  // [한글 주석: 실시간 등급 및 세부 권한 감지 리스너 구독 해제 함수 포인터]
+  let unsubscribeLiveUser = null;
+  let unsubscribeLiveRole = null;
 
   // 실시간 인증 상태 변경 감지
   onAuthStateChanged(auth, async (user) => {
@@ -1213,84 +1321,123 @@ document.addEventListener("DOMContentLoaded", () => {
         item.classList.add("logged-in");
       });
 
-      try {
-        const userRole = await getCachedUserRole(user.uid);
-        let isAdmin = false;
-        let hasStats = false;
-        let roleLabel = "일반회원";
+      // [한글 주석: 이전 실시간 리스너 해제 후 안전한 재구독]
+      if (typeof unsubscribeLiveRole === "function") {
+        unsubscribeLiveRole();
+        unsubscribeLiveRole = null;
+      }
+      if (typeof unsubscribeLiveUser === "function") {
+        unsubscribeLiveUser();
+        unsubscribeLiveUser = null;
+      }
 
-        if (userRole) {
-          const perms = await getCachedRolePermissions(userRole);
-          isAdmin = perms.isAdmin;
-          hasStats = perms.hasStats;
+      // [한글 주석: 실시간 등급 및 10가지 세부 권한 변경 감지 파이프라인 시작]
+      // 1. users/{uid} 문서 실시간 감지: 관리자가 회원 등급을 바꿀 때 0.1초 즉시 감지
+      unsubscribeLiveUser = onSnapshot(doc(db, "users", user.uid), (userSnap) => {
+        if (!userSnap.exists()) return;
+        const activeRole = userSnap.data().role || "user";
+        sessionStorage.setItem(`user_role_cache_${user.uid}`, activeRole);
 
-          // [한글 주석: 페이지 이동 시 0ms 즉시 노출을 위해 세션 스토리지에 관리자 권한 캐시 동기화 저장 (9개 세부 권한 완전체 저장)]
-          try {
-            const isSuper = (userRole === "super_admin");
-            const fullPermissions = {
-              isAdmin: isSuper || isAdmin,
-              hasReservations: isSuper || ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
-              hasClinics: isSuper || ["admin", "admin_user"].includes(userRole),
-              hasRoles: isSuper,
-              hasPermissions: isSuper,
-              hasStats: isSuper || hasStats,
-              hasAds: isSuper,
-              hasPartners: isSuper,
-              hasInterpreters: isSuper
-            };
-            sessionStorage.setItem(`admin_permissions_${user.uid}`, JSON.stringify({
-              role: userRole,
-              permissions: fullPermissions
-            }));
-          } catch (e) { }
-
-          // 역할 키별 한국어 명칭 동적 결정
-          try {
-            const roleDocSnap = await getDoc(doc(db, "roles", userRole));
-            if (roleDocSnap.exists() && roleDocSnap.data().label) {
-              roleLabel = roleDocSnap.data().label;
-            } else {
-              if (userRole === "super_admin") roleLabel = "최고관리자";
-              else if (userRole === "admin") roleLabel = "관리자";
-              else if (userRole === "partner") roleLabel = "협력사";
-              else if (userRole === "regular") roleLabel = "정회원";
-            }
-          } catch (rErr) {
-            if (userRole === "super_admin") roleLabel = "최고관리자";
-            else if (userRole === "admin") roleLabel = "관리자";
-            else if (userRole === "partner") roleLabel = "협력사";
-          }
-        } else {
-          // [한글 주석: 일반 회원 역할일 경우에도 권한 캐시를 명확히 false로 동기화]
-          try {
-            sessionStorage.setItem(`admin_permissions_${user.uid}`, JSON.stringify({
-              role: "user",
-              permissions: { isAdmin: false, hasStats: false }
-            }));
-          } catch (e) { }
+        // 2. roles/{activeRole} 문서 실시간 감지: 최고관리자가 어떤 등급의 어떤 스위치를 조작하든 즉각 감지
+        if (typeof unsubscribeLiveRole === "function") {
+          unsubscribeLiveRole();
+          unsubscribeLiveRole = null;
         }
 
-        // 커뮤니티 전용 사이드바 프로필 실시간 동기화
-        const sidebarNameEl = document.getElementById("sidebar-user-name");
-        const sidebarBadgeEl = document.getElementById("sidebar-user-badge");
-        if (sidebarNameEl && displayName) sidebarNameEl.textContent = displayName;
-        if (sidebarBadgeEl) sidebarBadgeEl.textContent = roleLabel;
+        unsubscribeLiveRole = onSnapshot(doc(db, "roles", activeRole), (roleSnap) => {
+          const isSuper = (activeRole === "super_admin");
+          let fullPermissions = null;
+          let roleLabel = isSuper ? "최고관리자" : "일반회원";
 
-        const currentAdminBtn = document.getElementById("btn-admin-dashboard");
-        const currentStatsBtn = document.getElementById("btn-stats-dashboard");
-        const currentQuickAdminBtn = document.getElementById("quick-btn-admin-dashboard");
-        const currentQuickStatsBtn = document.getElementById("quick-btn-stats-dashboard");
+          if (roleSnap.exists()) {
+            const rData = roleSnap.data();
+            roleLabel = rData.label || roleLabel;
+            fullPermissions = {
+              isAdmin: isSuper || (rData.isAdmin !== undefined ? rData.isAdmin : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
+              hasReservations: isSuper || (rData.hasReservations !== undefined ? rData.hasReservations : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
+              hasClinics: isSuper || (rData.hasClinics !== undefined ? rData.hasClinics : ["admin", "admin_user"].includes(activeRole)),
+              hasRoles: isSuper || (rData.hasRoles !== undefined ? rData.hasRoles : false),
+              hasPermissions: isSuper || (rData.hasPermissions !== undefined ? rData.hasPermissions : false),
+              hasStats: isSuper || (rData.hasStats !== undefined ? rData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
+              hasAds: isSuper || (rData.hasAds !== undefined ? rData.hasAds : false),
+              hasPartners: isSuper || (rData.hasPartners !== undefined ? rData.hasPartners : (rData.hasAds || false)),
+              hasInterpreters: isSuper || (rData.hasInterpreters !== undefined ? rData.hasInterpreters : (rData.hasAds || false)),
+              hasCommunitySettings: isSuper || (rData.hasCommunitySettings !== undefined ? rData.hasCommunitySettings : false)
+            };
+          } else {
+            // [한글 주석: roles 문서가 DB에 없을 경우 하위 호환 폴백 매핑]
+            const isLegacyAdmin = ["admin", "admin_user"].includes(activeRole);
+            const isLegacyManager = ["top_manager", "res_manager"].includes(activeRole);
+            fullPermissions = {
+              isAdmin: isSuper || isLegacyAdmin || isLegacyManager,
+              hasReservations: isSuper || isLegacyAdmin || isLegacyManager,
+              hasClinics: isSuper || isLegacyAdmin,
+              hasRoles: isSuper,
+              hasPermissions: isSuper,
+              hasStats: isSuper || isLegacyAdmin || isLegacyManager,
+              hasAds: isSuper,
+              hasPartners: isSuper,
+              hasInterpreters: isSuper,
+              hasCommunitySettings: isSuper
+            };
+          }
 
-        if (currentAdminBtn && isAdmin) currentAdminBtn.style.display = "inline-flex";
-        if (currentStatsBtn && hasStats) currentStatsBtn.style.display = "inline-flex";
-        if (currentQuickAdminBtn && isAdmin) currentQuickAdminBtn.style.display = "inline-flex";
-        if (currentQuickStatsBtn && hasStats) currentQuickStatsBtn.style.display = "inline-flex";
-      } catch (error) {
-        console.error("사용자 권한 확인 실패:", error);
-      }
+          // 3. 브라우저 세션 스토리지 즉각 최신화 (새로고침 시에도 즉시 유효)
+          try {
+            sessionStorage.setItem(`admin_permissions_${user.uid}`, JSON.stringify({
+              role: activeRole,
+              permissions: fullPermissions
+            }));
+            sessionStorage.setItem(`role_permissions_cache_${activeRole}`, JSON.stringify({
+              ...fullPermissions,
+              label: roleLabel
+            }));
+          } catch (e) { }
+
+          // 4. 상단 네비게이션 관리자 및 예약통계 버튼 노출/숨김 0초 실시간 즉각 스위칭
+          const currentAdminBtn = document.getElementById("btn-admin-dashboard");
+          const currentStatsBtn = document.getElementById("btn-stats-dashboard");
+          const currentQuickAdminBtn = document.getElementById("quick-btn-admin-dashboard");
+          const currentQuickStatsBtn = document.getElementById("quick-btn-stats-dashboard");
+
+          if (currentAdminBtn) currentAdminBtn.style.display = fullPermissions.isAdmin ? "inline-flex" : "none";
+          if (currentStatsBtn) currentStatsBtn.style.display = fullPermissions.hasStats ? "inline-flex" : "none";
+          if (currentQuickAdminBtn) currentQuickAdminBtn.style.display = fullPermissions.isAdmin ? "inline-flex" : "none";
+          if (currentQuickStatsBtn) currentQuickStatsBtn.style.display = fullPermissions.hasStats ? "inline-flex" : "none";
+
+          // 5. 커뮤니티 전용 사이드바 프로필 실시간 동기화
+          const sidebarNameEl = document.getElementById("sidebar-user-name");
+          const sidebarBadgeEl = document.getElementById("sidebar-user-badge");
+          if (sidebarNameEl && displayName) sidebarNameEl.textContent = displayName;
+          if (sidebarBadgeEl) sidebarBadgeEl.textContent = roleLabel;
+
+          // 6. 전역 이벤트 전파: 관리자 대시보드 탭 메뉴 및 다른 모듈 0초 실시간 즉각 동기화
+          window.dispatchEvent(new CustomEvent("rolePermissionsChanged", {
+            detail: {
+              role: activeRole,
+              permissions: fullPermissions,
+              label: roleLabel
+            }
+          }));
+        }, (roleErr) => {
+          console.warn("Live role listener error:", roleErr);
+        });
+      }, (userErr) => {
+        console.warn("Live user listener error:", userErr);
+      });
 
       hideAuthModal();
     } else {
+      // [한글 주석: 로그아웃 시 기존 실시간 감지 리스너 정리]
+      if (typeof unsubscribeLiveRole === "function") {
+        unsubscribeLiveRole();
+        unsubscribeLiveRole = null;
+      }
+      if (typeof unsubscribeLiveUser === "function") {
+        unsubscribeLiveUser();
+        unsubscribeLiveUser = null;
+      }
+
       const hasUserCache = sessionStorage.getItem("auth_user_cache");
       if (!hasUserCache) {
         window.isLoggedIn = false;

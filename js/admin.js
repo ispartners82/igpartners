@@ -691,14 +691,23 @@ function initPage() {
     // [한글 주석: 최고관리자 여부 판별 플래그]
     const isSuper = (currentLoginUserRole === "super_admin");
 
-    // [한글 주석: 상단 네비게이션 뱃지 영구 락 - 한 번 노출된 관리자/통계 뱃지는 뷰 스위칭 시 절대로 display: none으로 끄지 않고 영구 띄워둠]
+    // [한글 주석: 상단 네비게이션 뱃지 제어 - 관리자 권한이 꺼져 있으면 관리자 버튼 숨김, 예약통계 권한이 꺼져 있으면 예약통계 버튼 숨김]
     const btnAdminDashboard = document.getElementById("btn-admin-dashboard");
     const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
-    if (btnAdminDashboard && (permissions.isAdmin || isSuper)) {
-      btnAdminDashboard.style.display = "inline-block";
+    const quickBtnAdminDashboard = document.getElementById("quick-btn-admin-dashboard");
+    const quickBtnStatsDashboard = document.getElementById("quick-btn-stats-dashboard");
+
+    if (btnAdminDashboard) {
+      btnAdminDashboard.style.display = (permissions.isAdmin || isSuper) ? "inline-block" : "none";
     }
-    if (btnStatsDashboard && (permissions.hasStats || permissions.isAdmin || isSuper)) {
-      btnStatsDashboard.style.display = "inline-block";
+    if (btnStatsDashboard) {
+      btnStatsDashboard.style.display = (permissions.hasStats || isSuper) ? "inline-block" : "none";
+    }
+    if (quickBtnAdminDashboard) {
+      quickBtnAdminDashboard.style.display = (permissions.isAdmin || isSuper) ? "inline-flex" : "none";
+    }
+    if (quickBtnStatsDashboard) {
+      quickBtnStatsDashboard.style.display = (permissions.hasStats || isSuper) ? "inline-flex" : "none";
     }
 
     if (tabReservations) {
@@ -719,11 +728,11 @@ function initPage() {
     // [한글 주석: 협력업체 관리 탭 권한 노출 제어 (hasPartners 권한 또는 최고관리자 권한)]
     const tabPartners = document.getElementById("tab-partners");
     if (tabPartners) {
-      tabPartners.style.display = (permissions.hasPartners || permissions.isAdmin || isSuper) ? "inline-block" : "none";
+      tabPartners.style.display = (permissions.hasPartners || isSuper) ? "inline-block" : "none";
     }
     // [한글 주석: 전문통역 관리 탭 권한 노출 제어 (hasInterpreters 권한 또는 최고관리자 권한)]
     if (tabInterpreters) {
-      tabInterpreters.style.display = (permissions.hasInterpreters || permissions.isAdmin || isSuper) ? "inline-block" : "none";
+      tabInterpreters.style.display = (permissions.hasInterpreters || isSuper) ? "inline-block" : "none";
     }
 
     // 활성화 탭 강제 튕김 보정 (최고관리자는 절대 튕기지 않음)
@@ -733,9 +742,9 @@ function initPage() {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-ads" && !permissions.hasAds) {
         if (tabReservations) tabReservations.click();
-      } else if (activeTab.id === "tab-partners" && !permissions.hasPartners && !permissions.isAdmin) {
+      } else if (activeTab.id === "tab-partners" && !permissions.hasPartners) {
         if (tabReservations) tabReservations.click();
-      } else if (activeTab.id === "tab-interpreters" && !permissions.hasInterpreters && !permissions.isAdmin) {
+      } else if (activeTab.id === "tab-interpreters" && !permissions.hasInterpreters) {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-users" && !permissions.hasRoles) {
         if (tabReservations) tabReservations.click();
@@ -744,6 +753,14 @@ function initPage() {
       }
     }
   }
+
+  // [한글 주석: auth.js의 실시간 등급/권한 감지기에서 발행하는 이벤트를 수신하여 관리자 탭 UI 0초 즉각 갱신]
+  window.addEventListener("rolePermissionsChanged", (e) => {
+    if (e.detail && e.detail.permissions) {
+      currentLoginUserRole = e.detail.role || currentLoginUserRole;
+      applyPermissionsUI(e.detail.permissions);
+    }
+  });
 
   // [성능 및 정합성 최적화] 관리자 권한을 파악하고 UI를 제어하는 함수
   async function verifyAndApplyPermissions(user, forceRefresh = false) {
@@ -791,10 +808,11 @@ function initPage() {
           hasStats: true,
           hasAds: true,
           hasPartners: true,
-          hasInterpreters: true
+          hasInterpreters: true,
+          hasCommunitySettings: true
         };
       } else {
-        // 등급 문서로부터 5가지 이상 권한 로드
+        // [한글 주석: roles 문서로부터 10가지 세부 기능 권한 로드]
         const roleDocRef = doc(db, "roles", userRole);
         const roleDocSnap = await getDoc(roleDocRef);
         
@@ -807,7 +825,8 @@ function initPage() {
           hasStats: false,
           hasAds: false,
           hasPartners: false,
-          hasInterpreters: false
+          hasInterpreters: false,
+          hasCommunitySettings: false
         };
 
         if (roleDocSnap.exists()) {
@@ -821,14 +840,15 @@ function initPage() {
             hasStats: roleData.hasStats !== undefined ? roleData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
             hasAds: roleData.hasAds !== undefined ? roleData.hasAds : false,
             hasPartners: roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || false),
-            hasInterpreters: roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || false)
+            hasInterpreters: roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || false),
+            hasCommunitySettings: roleData.hasCommunitySettings !== undefined ? roleData.hasCommunitySettings : false
           };
         } else {
-          // 예외 상황: roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
+          // [한글 주석: 예외 상황 - roles 문서가 DB에 없을 경우 하위 호환 권한 매핑]
           if (["admin", "admin_user"].includes(userRole)) {
-            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true };
           } else if (["top_manager", "res_manager"].includes(userRole)) {
-            permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false };
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false };
           }
         }
       }
@@ -868,10 +888,10 @@ function initPage() {
       // 권한 검증 및 UI 갱신 함수 실행
       const permissions = await verifyAndApplyPermissions(user);
       if (permissions) {
-        // 모든 탭 버튼 및 콘텐츠 숨김 처리 헬퍼 함수
+        // [한글 주석: 모든 탭 버튼 및 콘텐츠 숨김 처리 헬퍼 함수 - 7개 전체 관리 탭 및 패널 완벽 반영]
         const hideAllTabsAndContents = () => {
-          const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds];
-          const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds];
+          const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabPartners, tabInterpreters];
+          const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds, contentPartners, contentInterpreters];
           tabs.forEach(t => { if (t) t.classList.remove("active"); });
           contents.forEach(c => { if (c) c.style.display = "none"; });
         };
@@ -1682,8 +1702,14 @@ function initPage() {
         role: newRole
       });
       
-      // [성능 최적화] 역할 변경 시 auth.js의 sessionStorage 역할 캐시를 무효화하여
-      // 다음 로그인 시 변경된 권한이 정확히 반영되도록 보장합니다.
+      // [한글 주석: 역할 변경 시 세션 스토리지 캐시를 즉각 삭제하여 변경된 권한이 실시간 반영되도록 보장]
+      try {
+        sessionStorage.removeItem(`user_role_cache_${targetUid}`);
+        sessionStorage.removeItem(`admin_permissions_${targetUid}`);
+        sessionStorage.removeItem(`admin_permissions_cache_${targetUid}`);
+        sessionStorage.removeItem(`role_permissions_cache_${newRole}`);
+      } catch (cErr) { }
+
       if (typeof window.clearUserRoleCache === "function") {
         window.clearUserRoleCache(targetUid);
       }
@@ -2011,6 +2037,11 @@ function initPage() {
           });
           console.log(`Updated permissions for ${roleKey}: ${fieldName} -> ${isChecked}`);
           
+          // [한글 주석: 세션 상에 캐시된 해당 등급의 권한 캐시를 즉각 삭제하여 변경 사항 즉시 반영]
+          try {
+            sessionStorage.removeItem(`role_permissions_cache_${roleKey}`);
+          } catch (cErr) { }
+
           // [실시간 정합성] 최고 관리자가 권한 설정을 변경했으므로 본인의 권한 캐시를 최신화하여 UI 탭 상태 즉각 동기화
           if (auth.currentUser) {
             await verifyAndApplyPermissions(auth.currentUser, true);
