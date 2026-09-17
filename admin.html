@@ -15,11 +15,11 @@
     rel="stylesheet">
 
   <!-- 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정 -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260917_1">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260917_1">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260917_8">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260917_8">
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_5) -->
-  <link rel="stylesheet" href="/css/style.css?v=260917_1">
+  <link rel="stylesheet" href="/css/style.css?v=260917_8">
 </head>
 
 <body>
@@ -287,6 +287,8 @@
                 <th>연락처</th>
                 <th>예약시간</th>
                 <th>희망진료일</th>
+                <!-- 예약자가 선택한 진료 희망 시간 표시용 신규 컬럼 -->
+                <th>희망진료시간</th>
                 <th>주 소</th>
                 <th>증 상</th>
                 <!-- 예약 리스트 테이블에 신규 '유입경로' 컬럼 헤더 추가 -->
@@ -298,8 +300,8 @@
             </thead>
             <tbody id="reservation-list">
               <tr>
-                <!-- '알림톡 상태' 컬럼 추가로 전체 컬럼 개수가 17개로 변경됨에 따라 colspan 수정 -->
-                <td colspan="17" class="table-loading">데이터를 불러오는 중입니다...</td>
+                <!-- '희망진료시간' 컬럼 추가로 전체 컬럼 개수가 18개로 확장됨에 따라 colspan 수정 -->
+                <td colspan="18" class="table-loading">데이터를 불러오는 중입니다...</td>
               </tr>
             </tbody>
           </table>
@@ -1254,9 +1256,9 @@
   </div>
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5) -->
-  <script type="module" src="/js/navigation.js?v=260917_1"></script>
-  <script type="module" src="/js/admin.js?v=260917_1"></script>
-  <script type="module" src="/js/auth.js?v=260917_1"></script>
+  <script type="module" src="/js/navigation.js?v=260917_8"></script>
+  <script type="module" src="/js/admin.js?v=260917_8"></script>
+  <script type="module" src="/js/auth.js?v=260917_8"></script>
 </body>
 
 </html>

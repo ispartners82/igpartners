@@ -15,11 +15,11 @@
     rel="stylesheet">
 
   <!-- 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정 -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260917_1">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260917_1">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260917_8">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260917_8">
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260914_5) -->
-  <link rel="stylesheet" href="/css/style.css?v=260917_1">
+  <link rel="stylesheet" href="/css/style.css?v=260917_8">
 </head>
 
 <body
@@ -161,13 +161,13 @@
         <!-- 2열 그리드 레이아웃 -->
         <div class="form-grid">
 
-          <!-- 이름 (전체 너비) -->
-          <div class="form-group full-width">
+          <!-- 1행 좌측: 이름 입력 필드 -->
+          <div class="form-group">
             <label for="input-name" id="label-name">이 름 <span class="required">*</span></label>
             <input type="text" id="input-name" required placeholder="예: 홍길동">
           </div>
 
-          <!-- 성별 (왼쪽 열 배치) -->
+          <!-- 1행 우측: 성별 선택 필드 -->
           <div class="form-group">
             <label for="input-gender" id="label-gender">성 별 <span class="required">*</span></label>
             <select id="input-gender" required>
@@ -177,34 +177,90 @@
             </select>
           </div>
 
-          <!-- 비자타입 (오른쪽 열 배치) -->
+          <!-- 2행 좌측: 비자타입 입력 필드 -->
           <div class="form-group">
             <label for="input-visa-type" id="label-visa-type">비자타입 <span class="required">*</span></label>
             <input type="text" id="input-visa-type" required placeholder="예시: C-3-9">
           </div>
 
-          <!-- 외국인등록번호 (왼쪽 열 배치) -->
+          <!-- 2행 우측: 외국인등록번호 입력 필드 -->
           <div class="form-group">
             <label for="input-alien-no" id="label-alien-no">외국인등록번호</label>
             <input type="text" id="input-alien-no" placeholder="예: 950101-2******">
           </div>
 
-          <!-- 체류만료일 (오른쪽 열 배치) -->
+          <!-- 3행 좌측: 체류 만료일 입력 필드 -->
           <div class="form-group">
             <label for="input-visa-expiry" id="label-visa-expiry">체류 만료일 <span class="required">*</span></label>
             <input type="date" id="input-visa-expiry" required>
           </div>
 
-          <!-- 생년월일 (왼쪽 열 배치) -->
+          <!-- 3행 우측: 생년월일 입력 필드 -->
           <div class="form-group">
             <label for="input-dob" id="label-dob">생년월일 <span class="required">*</span></label>
             <input type="date" id="input-dob" required>
           </div>
 
-          <!-- 예약날짜 (오른쪽 열 배치) -->
+          <!-- 4행 좌측: 예약희망일 입력 필드 -->
           <div class="form-group">
-            <label for="input-date" id="label-date">진료 예약날짜 <span class="required">*</span></label>
+            <label for="input-date" id="label-date">예약희망일 <span class="required">*</span></label>
             <input type="date" id="input-date" required>
+          </div>
+
+          <!-- 4행 우측: 예약희망시간 선택 필드 (24시간 전 시간대 드롭다운 전용) -->
+          <div class="form-group">
+            <label for="input-time" id="label-time">예약희망시간 <span class="required">*</span></label>
+            <select id="input-time" required>
+              <option value="" disabled selected id="time-placeholder">시간을 선택해 주세요</option>
+              <option value="00:00">00:00</option>
+              <option value="00:30">00:30</option>
+              <option value="01:00">01:00</option>
+              <option value="01:30">01:30</option>
+              <option value="02:00">02:00</option>
+              <option value="02:30">02:30</option>
+              <option value="03:00">03:00</option>
+              <option value="03:30">03:30</option>
+              <option value="04:00">04:00</option>
+              <option value="04:30">04:30</option>
+              <option value="05:00">05:00</option>
+              <option value="05:30">05:30</option>
+              <option value="06:00">06:00</option>
+              <option value="06:30">06:30</option>
+              <option value="07:00">07:00</option>
+              <option value="07:30">07:30</option>
+              <option value="08:00">08:00</option>
+              <option value="08:30">08:30</option>
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
+              <option value="10:00">10:00</option>
+              <option value="10:30">10:30</option>
+              <option value="11:00">11:00</option>
+              <option value="11:30">11:30</option>
+              <option value="12:00">12:00</option>
+              <option value="12:30">12:30</option>
+              <option value="13:00">13:00</option>
+              <option value="13:30">13:30</option>
+              <option value="14:00">14:00</option>
+              <option value="14:30">14:30</option>
+              <option value="15:00">15:00</option>
+              <option value="15:30">15:30</option>
+              <option value="16:00">16:00</option>
+              <option value="16:30">16:30</option>
+              <option value="17:00">17:00</option>
+              <option value="17:30">17:30</option>
+              <option value="18:00">18:00</option>
+              <option value="18:30">18:30</option>
+              <option value="19:00">19:00</option>
+              <option value="19:30">19:30</option>
+              <option value="20:00">20:00</option>
+              <option value="20:30">20:30</option>
+              <option value="21:00">21:00</option>
+              <option value="21:30">21:30</option>
+              <option value="22:00">22:00</option>
+              <option value="22:30">22:30</option>
+              <option value="23:00">23:00</option>
+              <option value="23:30">23:30</option>
+            </select>
           </div>
 
           <!-- 주소 (전체 너비) -->
@@ -251,9 +307,9 @@
 
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5) -->
-  <script type="module" src="/js/navigation.js?v=260917_1"></script>
-  <script type="module" src="/js/reservation.js?v=260917_1"></script>
-  <script type="module" src="/js/auth.js?v=260917_1"></script>
+  <script type="module" src="/js/navigation.js?v=260917_8"></script>
+  <script type="module" src="/js/reservation.js?v=260917_8"></script>
+  <script type="module" src="/js/auth.js?v=260917_8"></script>
 
   <!-- 개인정보 처리방침 모달 팝업 (reservation.js에서 언어에 맞게 콘텐츠 주입) -->
   <div id="privacy-modal" class="modal-backdrop" style="display: none;">

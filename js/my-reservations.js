@@ -135,7 +135,7 @@ function initPage() {
         <td class="col-visa-expiry text-accent">${data.visaExpiry || "-"}</td>
         <td class="col-phone">${data.phone || "-"}</td>
         <td class="col-date">${dateStr}</td>
-        <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
+        <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}${data.reservationTime ? ` ${data.reservationTime}` : ""}</td>
         <td class="col-address">${data.address || "-"}</td>
         <td class="col-symptoms">${data.symptoms || "-"}</td>
         <td class="col-status"><span class="badge ${statusBadgeClass}">${statusBadgeText}</span></td>

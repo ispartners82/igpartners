@@ -342,7 +342,7 @@ function initPage() {
         <td class="col-visa-expiry text-accent">${data.visaExpiry || "-"}</td>
         <td class="col-phone">${data.phone || "-"}</td>
         <td class="col-date">${regDateStr}</td>
-        <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
+        <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}${data.reservationTime ? ` ${data.reservationTime}` : ""}</td>
         <td class="col-address" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.address || ""}">${data.address || "-"}</td>
         <td class="col-symptoms" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.symptoms || ""}">${data.symptoms || "-"}</td>
         <!-- 예약통계 페이지 결과 리스트에 유입경로 데이터 바인딩하는 td 셀 추가 -->
@@ -488,7 +488,7 @@ function initPage() {
         <td>${data.visaExpiry || "-"}</td>
         <td>${data.phone || "-"}</td>
         <td>${regDateStr}</td>
-        <td>${data.reservationDate || "-"}</td>
+        <td>${data.reservationDate || "-"}${data.reservationTime ? ` ${data.reservationTime}` : ""}</td>
         <!-- 엑셀 미리보기 테이블 컬럼 일치화를 위한 주소 및 증상 td 셀 추가 -->
         <td>${data.address || "-"}</td>
         <td>${data.symptoms || "-"}</td>
@@ -649,7 +649,7 @@ function initPage() {
           item.visaExpiry || "-",
           item.phone || "-",
           regDateStr,
-          item.reservationDate || "-",
+          (item.reservationDate || "-") + (item.reservationTime ? ` ${item.reservationTime}` : ""), // 예약희망일 및 시간 결합
           item.address || "-",
           item.symptoms || "-",
           item.inflow || "-",

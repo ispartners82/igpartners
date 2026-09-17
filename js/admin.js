@@ -129,8 +129,8 @@ function initPage() {
     }
 
     if (items.length === 0) {
-      // '알림톡 상태' 컬럼이 추가되어 전체 컬럼 개수가 17개로 변경됨에 따라 빈 테이블 노출 시 colspan을 17으로 수정
-      reservationList.innerHTML = `<tr><td colspan="17" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
+      // '희망진료시간' 컬럼이 추가되어 전체 컬럼 개수가 18개로 변경됨에 따라 빈 테이블 노출 시 colspan을 18로 수정
+      reservationList.innerHTML = `<tr><td colspan="18" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
       updateStats(0, 0, 0, 0);
       return;
     }
@@ -260,6 +260,7 @@ function initPage() {
         <td class="col-phone">${data.phone || "-"}</td>
         <td class="col-date">${dateStr}</td>
         <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}</td>
+        <td class="col-res-time font-bold" style="color: #67e8f9;">${data.reservationTime || "-"}</td>
         <td class="col-address">${data.address || "-"}</td>
         <td class="col-symptoms">${data.symptoms || "-"}</td>
         <!-- 증상과 상태 컬럼 사이에 유입경로(inflow)를 직접 수정 가능한 인라인 input 텍스트 필드로 렌더링 -->
@@ -287,8 +288,8 @@ function initPage() {
     
     // 최초 로드 시에만 로딩 표시 및 로컬스토리지 즉시 반환 처리
     if (isFirstLoad) {
-      // '알림톡 상태' 컬럼 추가로 전체 컬럼이 17개가 됨에 따라 로딩 표시 colspan을 17으로 수정
-      reservationList.innerHTML = `<tr><td colspan="17" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
+      // '희망진료시간' 컬럼 추가로 전체 컬럼이 18개가 됨에 따라 로딩 표시 colspan을 18로 수정
+      reservationList.innerHTML = `<tr><td colspan="18" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
 
       // 1단계: Firestore 로드 전, 로컬스토리지 백업 데이터가 있다면 먼저 렌더링 (즉각적인 피드백 보장)
       let initialLocalItems = [];
@@ -316,6 +317,8 @@ function initPage() {
             const alienNo = (item.alienNo || "").toLowerCase();
             const passportNo = (item.passportNo || "").toLowerCase();
             const visaType = (item.visaType || "").toLowerCase();
+            // 실시간 검색어 필터링 대상에 예약희망시간 필드 추가
+            const reservationTime = (item.reservationTime || "").toLowerCase();
             // 실시간 검색어 필터링 대상에 유입경로(inflow) 필드 추가
             const inflow = (item.inflow || "").toLowerCase();
             // 실시간 검색어 필터링 대상에 알림톡 상태 및 알림톡 에러 메시지 추가
@@ -328,6 +331,7 @@ function initPage() {
                    alienNo.includes(currentSearchQuery) ||
                    passportNo.includes(currentSearchQuery) ||
                    visaType.includes(currentSearchQuery) ||
+                   reservationTime.includes(currentSearchQuery) ||
                    inflow.includes(currentSearchQuery) ||
                    alimtalkStatus.includes(currentSearchQuery) ||
                    alimtalkError.includes(currentSearchQuery);
@@ -883,7 +887,7 @@ function initPage() {
 
     try {
       // '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 권한 확인 로딩 표시 colspan을 16으로 수정
-      reservationList.innerHTML = `<tr><td colspan="16" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
+      reservationList.innerHTML = `<tr><td colspan="18" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
       
       // 권한 검증 및 UI 갱신 함수 실행
       const permissions = await verifyAndApplyPermissions(user);
@@ -939,7 +943,7 @@ function initPage() {
             hideAllTabsAndContents();
             if (reservationList) {
               // '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 접근 불가 메시지 표시 colspan을 16으로 수정
-              reservationList.innerHTML = `<tr><td colspan="16" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
+              reservationList.innerHTML = `<tr><td colspan="18" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
             }
           }
         }
@@ -956,6 +960,59 @@ function initPage() {
   const contentClinics = document.getElementById("content-clinics");
   const tabPermissions = document.getElementById("tab-permissions");
   const contentPermissions = document.getElementById("content-permissions");
+
+  /**
+   * 테이블 컨테이너 내부 화면을 마우스로 클릭하여 좌우로 부드럽게 끌어당길 수 있는 마우스 드래그 가로 스크롤 엔진
+   * @param {HTMLElement} container - 스크롤 가능한 .table-responsive 요소
+   */
+  function initTableDragToScroll(container) {
+    if (!container || container.dataset.dragScrollBound === "true") return;
+    container.dataset.dragScrollBound = "true";
+    container.classList.add("drag-scroll-enabled");
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    container.addEventListener("mousedown", (e) => {
+      // 버튼, 드롭다운 셀렉트박스, 입력창 등 폼 조작 요소를 클릭한 경우 드래그 시작 차단
+      if (e.target.closest("button, select, input, a, textarea, label")) return;
+
+      isDown = true;
+      container.classList.add("dragging");
+      startX = e.pageX - container.offsetLeft;
+      scrollLeft = container.scrollLeft;
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (isDown) {
+        isDown = false;
+        container.classList.remove("dragging");
+      }
+    });
+
+    container.addEventListener("mouseleave", () => {
+      if (isDown) {
+        isDown = false;
+        container.classList.remove("dragging");
+      }
+    });
+
+    container.addEventListener("mousemove", (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - container.offsetLeft;
+      const walk = (x - startX) * 1.5; // 드래그 가속 반응도 계수
+      container.scrollLeft = scrollLeft - walk;
+    });
+  }
+
+  // 관리자 페이지 내 모든 테이블 컨테이너(.table-responsive)에 마우스 드래그 가로 스크롤 기능 일괄 적용
+  function setupAllTableDragToScroll() {
+    document.querySelectorAll(".table-responsive").forEach((container) => {
+      initTableDragToScroll(container);
+    });
+  }
 
   // 탭 전환 시 메뉴 영역 랙 및 깜빡임(Layout Shift)을 방지하는 통합 탭 스위칭 헬퍼 함수
   function switchTabSeamlessly(activeBtn, activeContent, tabStorageKey, fetchCallback) {
@@ -978,7 +1035,10 @@ function initPage() {
       unsubscribe = null;
     }
 
-    // 4. 데이터 로드 콜백 비동기 실행 (탭 전환 반응속도 100% 보장)
+    // 4. 활성화된 탭 내부 테이블의 마우스 드래그 스크롤 활성화 바인딩
+    setupAllTableDragToScroll();
+
+    // 5. 데이터 로드 콜백 비동기 실행 (탭 전환 반응속도 100% 보장)
     if (fetchCallback) {
       fetchCallback();
     }
@@ -1310,6 +1370,25 @@ function initPage() {
   // 가입 회원 상세 정보를 메모리에 보관하여 상세보기 모달에 전달하기 위한 맵 객체
   let loadedUsersMap = {};
 
+  // 15개 공식 지원 국가(선호언어) 코드 및 국기, 표시 레이블 표준 매핑 상수
+  const SUPPORTED_COUNTRY_LANGS = {
+    ko: { flag: "🇰🇷", label: "대한민국 (한국어)" },
+    ja: { flag: "🇯🇵", label: "일본 (日本語)" },
+    vi: { flag: "🇻🇳", label: "베트남 (Tiếng Việt)" },
+    en: { flag: "🇺🇸", label: "미국/기타 (English)" },
+    zh: { flag: "🇨🇳", label: "중국 (中文)" },
+    ru: { flag: "🇷🇺", label: "러시아 (Русский)" },
+    my: { flag: "🇲🇲", label: "미얀마 (မြန်မာစာ)" },
+    km: { flag: "🇰🇭", label: "캄보디아 (ភាសាខ្មែរ)" },
+    mn: { flag: "🇲🇳", label: "몽골 (Mongolian)" },
+    th: { flag: "🇹🇭", label: "태국 (ภาษาไทย)" },
+    lo: { flag: "🇱🇦", label: "라오스 (ພາສາລາວ)" },
+    ne: { flag: "🇳🇵", label: "네팔 (नेपाली)" },
+    id: { flag: "🇮🇩", label: "인도네시아 (Bahasa Indonesia)" },
+    si: { flag: "🇱🇰", label: "스리랑카 (සිංහල)" },
+    bn: { flag: "🇧🇩", label: "방글라데시 (বাংলা)" }
+  };
+
   /**
    * 가입 회원 상세 정보 모달 표시 함수 (Firestore Timestamp 및 일반 날짜 포맷 안전 처리)
    * @param {Object} userData - 가입 회원의 12가지 상세 프로필 객체
@@ -1320,14 +1399,12 @@ function initPage() {
       const content = document.getElementById("user-detail-content");
       if (!modal || !content) return;
 
-      const countryLangLabels = {
-        ko: "🇰🇷 대한민국 (한국어)",
-        vi: "🇻🇳 베트남 (Tiếng Việt)",
-        en: "🇺🇸 미국/기타 (English)",
-        zh: "🇨🇳 중국 (中文)",
-        ru: "🇷🇺 러시아 (Русский)",
-        mn: "🇲🇳 몽골 (Mongolian)"
-      };
+      // 회원의 국가/선호언어 매핑 (countryLanguage, country, lang 필드 순차 호환 조회)
+      const userLangKey = (userData.countryLanguage || userData.country || userData.lang || "").toLowerCase();
+      const matchedCountry = SUPPORTED_COUNTRY_LANGS[userLangKey];
+      const countryLangDisplay = matchedCountry 
+        ? `${matchedCountry.flag} ${matchedCountry.label}` 
+        : (userData.countryLanguage || userData.country || userData.lang || "-");
 
       let regDate = "-";
       if (userData.createdAt) {
@@ -1358,7 +1435,7 @@ function initPage() {
         </div>
         <div class="detail-item">
           <div class="detail-label">국가 (선호언어)</div>
-          <div class="detail-value">${countryLangLabels[userData.countryLanguage] || userData.countryLanguage || "-"}</div>
+          <div class="detail-value">${countryLangDisplay}</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">생년월일</div>
@@ -1523,14 +1600,8 @@ function initPage() {
     const endIndex = startIndex + currentLimitUsers;
     const pageUsers = usersToRender.slice(startIndex, endIndex);
 
-    const countryLangFlags = {
-      ko: "🇰🇷 한국어",
-      vi: "🇻🇳 베트남어",
-      en: "🇺🇸 English",
-      zh: "🇨🇳 中文",
-      ru: "🇷🇺 Русский",
-      mn: "🇲🇳 몽골어"
-    };
+    // 3가지 관리자 등급(super_admin, admin, admin_user) 계정의 국가(선호언어) 수정 권한 확인
+    const canEditCountryLang = ["super_admin", "admin", "admin_user"].includes(currentLoginUserRole);
 
     pageUsers.forEach((userData) => {
       const userId = userData.id;
@@ -1582,10 +1653,38 @@ function initPage() {
         </div>
       `;
 
-      const countryLangDisplay = countryLangFlags[userData.countryLanguage] || (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
+      // 회원의 기존 국가(선호언어) 키 식별 (countryLanguage, country, lang 순차 호환)
+      const userLangKey = (userData.countryLanguage || userData.country || userData.lang || "ko").toLowerCase();
+      const matchedLangInfo = SUPPORTED_COUNTRY_LANGS[userLangKey];
+      const countryLangDisplay = matchedLangInfo ? `${matchedLangInfo.flag} ${matchedLangInfo.label}` : (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
+
+      // 3가지 관리자 등급 계정에서는 15개국 선택 드롭다운과 변경 버튼을 렌더링하고, 비관리자는 읽기 전용 텍스트 노출
+      let countryLangControlHTML = "";
+      if (canEditCountryLang) {
+        let langOptionsHTML = "";
+        let langFoundInList = false;
+        Object.entries(SUPPORTED_COUNTRY_LANGS).forEach(([lCode, lData]) => {
+          const isSelected = (userLangKey === lCode) ? "selected" : "";
+          if (userLangKey === lCode) langFoundInList = true;
+          langOptionsHTML += `<option value="${lCode}" ${isSelected}>${lData.flag} ${lData.label}</option>`;
+        });
+        if (userData.countryLanguage && !langFoundInList) {
+          langOptionsHTML += `<option value="${userData.countryLanguage}" selected>🌐 ${userData.countryLanguage} (기타)</option>`;
+        }
+        countryLangControlHTML = `
+          <div class="role-control-wrapper lang-control-wrapper">
+            <select class="select-role select-country-lang" id="select-lang-${userId}">
+              ${langOptionsHTML}
+            </select>
+            <button class="btn-action confirm btn-update-user-lang" data-uid="${userId}">변경</button>
+          </div>
+        `;
+      } else {
+        countryLangControlHTML = `<span>${countryLangDisplay}</span>`;
+      }
 
       tr.innerHTML = `
-        <td>${countryLangDisplay}</td>
+        <td class="col-user-country-lang">${countryLangControlHTML}</td>
         <td class="font-bold">${userData.name || "-"}</td>
         <td>${userData.phone || "-"}</td>
         <td>${userData.email || "-"}</td>
@@ -1686,6 +1785,44 @@ function initPage() {
     } catch (error) {
       console.error("User deletion failed:", error);
       alert("회원 데이터 삭제 중 오류가 발생했습니다: " + error.message);
+    }
+  }
+
+  /**
+   * 회원 국가(선호언어) 변경 처리 함수 (3가지 관리자 등급: super_admin, admin, admin_user 계정 전용)
+   * @param {string} targetUid - 대상 회원의 고유 UID
+   * @param {string} newLang - 변경할 15개 지원 국가(선호언어) 코드 (예: ko, ja, vi 등)
+   */
+  async function updateUserCountryLanguage(targetUid, newLang) {
+    // 3가지 관리자 등급 권한 유효성 검사
+    const allowedAdminRoles = ["super_admin", "admin", "admin_user"];
+    if (!allowedAdminRoles.includes(currentLoginUserRole)) {
+      alert("회원 국가(선호언어) 변경 권한이 없습니다. (관리자 전용 기능)");
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, "users", targetUid);
+      // countryLanguage 필드와 하위 호환 필드(country, lang) 및 수정 시간 동시 기록
+      await updateDoc(userDocRef, {
+        countryLanguage: newLang,
+        country: newLang,
+        lang: newLang,
+        updatedAt: serverTimestamp()
+      });
+
+      // 로컬 메모리 캐시 최신화
+      if (loadedUsersMap && loadedUsersMap[targetUid]) {
+        loadedUsersMap[targetUid].countryLanguage = newLang;
+        loadedUsersMap[targetUid].country = newLang;
+        loadedUsersMap[targetUid].lang = newLang;
+      }
+
+      alert("회원의 국가(선호언어)가 정상적으로 수정되었습니다.");
+      loadUsers(); // 목록 새로고침
+    } catch (error) {
+      console.error("Update user country language failed:", error);
+      alert("국가(선호언어) 수정 중 오류가 발생했습니다: " + error.message);
     }
   }
 
@@ -2085,7 +2222,27 @@ function initPage() {
         }
       }
 
-      // 2. 등급 변경 버튼 클릭 처리
+      // 2. 국가(선호언어) 변경 버튼 클릭 처리 (3가지 관리자 등급 전용)
+      if (e.target.classList.contains("btn-update-user-lang")) {
+        const targetUid = e.target.getAttribute("data-uid");
+        const selectBox = document.getElementById(`select-lang-${targetUid}`);
+        if (selectBox) {
+          const newLang = selectBox.value;
+          const targetLangLabel = SUPPORTED_COUNTRY_LANGS[newLang] 
+            ? `${SUPPORTED_COUNTRY_LANGS[newLang].flag} ${SUPPORTED_COUNTRY_LANGS[newLang].label}` 
+            : newLang;
+          if (confirm(`해당 회원의 국가(선호언어)를 '${targetLangLabel}'(으)로 변경하시겠습니까?`)) {
+            const originalText = e.target.textContent;
+            e.target.disabled = true;
+            e.target.textContent = "처리중...";
+            await updateUserCountryLanguage(targetUid, newLang);
+            e.target.disabled = false;
+            e.target.textContent = originalText;
+          }
+        }
+      }
+
+      // 3. 등급 변경 버튼 클릭 처리
       if (e.target.classList.contains("btn-update-role")) {
         const targetUid = e.target.getAttribute("data-uid");
         const selectBox = document.getElementById(`select-role-${targetUid}`);
@@ -4808,6 +4965,9 @@ function initPage() {
     setupPartnerDragAndDrop();
 
     window.loadAdminPartners = loadAdminPartners;
+
+    // 관리자 페이지 내 모든 테이블 드래그 가로 스크롤 초기화 실행
+    setupAllTableDragToScroll();
   }
 }
 

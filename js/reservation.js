@@ -25,7 +25,12 @@ const i18n = {
     placeholderAlienNo: "예: 950101-1****** (뒷자리 첫번호만 기재 가능)",
     labelVisaExpiry: "체류 만료일 *",
     labelDob: "생년월일 *",
-    labelDate: "진료 희망 예약 날짜 *",
+    // 사용자의 예약 편의성을 위해 '진료 희망 예약 날짜'에서 '예약희망일'로 라벨 명칭 간소화
+    labelDate: "예약희망일 *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "예약희망시간 *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "시간을 선택해 주세요",
     labelAddress: "현재 체류 주소 *",
     placeholderAddress: "예: 서울특별시 강남구 테헤란로 123",
     labelSymptoms: "현재 증상 *",
@@ -62,6 +67,10 @@ const i18n = {
     labelVisaExpiry: "Ngày hết hạn lưu trú *",
     labelDob: "Ngày sinh *",
     labelDate: "Ngày đặt lịch *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "Giờ đặt lịch *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "Chọn giờ hẹn",
     labelAddress: "Địa chỉ hiện tại *",
     placeholderAddress: "Ví dụ: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "Triệu chứng hiện tại *",
@@ -98,6 +107,10 @@ const i18n = {
     labelVisaExpiry: "Visa Expiry Date *",
     labelDob: "Date of Birth *",
     labelDate: "Preferred Appointment Date *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "Preferred Appointment Time *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "Select time",
     labelAddress: "Current Address in Korea *",
     placeholderAddress: "e.g. Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "Current Symptoms *",
@@ -134,6 +147,10 @@ const i18n = {
     labelVisaExpiry: "在留期間満了日 *",
     labelDob: "生年月日 *",
     labelDate: "予約希望일 *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "予約希望時間 *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "時間を選択してください",
     labelAddress: "韓国内の現住所 *",
     placeholderAddress: "例: ソウル市江南区テヘラン路123",
     labelSymptoms: "現在の症状 *",
@@ -170,6 +187,10 @@ const i18n = {
     labelVisaExpiry: "滞留到期日 *",
     labelDob: "出生日期 *",
     labelDate: "希望诊疗的预约日期 *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "希望诊疗的预约时间 *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "请选择时间",
     labelAddress: "当前居住地址 *",
     placeholderAddress: "例如: 首尔特别市江南区德黑兰路 123",
     labelSymptoms: "当前症状 *",
@@ -206,6 +227,10 @@ const i18n = {
     labelVisaExpiry: "Дата окончания пребывания *",
     labelDob: "Дата рождения *",
     labelDate: "Желаемая дата приема *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "Желаемое время приема *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "Выберите время",
     labelAddress: "Адрес текущего пребывания *",
     placeholderAddress: "Например: Сеул, Каннам-гу, Тегеран-ро 123",
     labelSymptoms: "Текущие симптомы *",
@@ -242,6 +267,10 @@ const i18n = {
     labelVisaExpiry: "ဗီဇာသက်တမ်းကုန်ဆုံးရက် *",
     labelDob: "မွေးသက္ကရာဇ် *",
     labelDate: "ကုသမှုခံယူလိုသော ရက်စွဲ *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "ကုသမှုခံယူလိုသော အချိန် *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "အချိန်ရွေးချယ်ပါ",
     labelAddress: "လက်ရှိနေရပ်လိပ်စာ *",
     placeholderAddress: "ဥပမာ: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "လက်ရှိရောဂါလက္ခဏာများ *",
@@ -278,6 +307,10 @@ const i18n = {
     labelVisaExpiry: "ថ្ងៃផុតកំណត់ទិដ្ឋាការ *",
     labelDob: "ថ្ងៃខែឆ្នាំកំណើត *",
     labelDate: "ថ្ងៃកក់ទុកពិនិត្យព្យាបាល *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "ម៉ោងកក់ទុកពិនិត្យព្យាបាល *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "សូមជ្រើសរើសម៉ោង",
     labelAddress: "អាសយដ្ឋានបច្ចុប្បន្ន *",
     placeholderAddress: "ឧទាហរណ៍: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "រោគសញ្ញាបច្ចុប្បន្ន *",
@@ -314,6 +347,10 @@ const i18n = {
     labelVisaExpiry: "Виз сунгалт дуусах хугацаа *",
     labelDob: "Төрсөн огноо *",
     labelDate: "Эмчилгээ хийлгэхийг хүсэж буй огноо *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "Эмчилгээ хийлгэхийг хүсэж буй цаг *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "Цагаа сонгоно уу",
     labelAddress: "Одоо оршин сууж буй хаяг *",
     placeholderAddress: "Жишээ: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "Одоо илэрч буй шинж тэмдэг *",
@@ -350,6 +387,10 @@ const i18n = {
     labelVisaExpiry: "วันหมดอายุการพำนัก *",
     labelDob: "วันเดือนปีเกิด *",
     labelDate: "วันที่ต้องการจองเข้ารับการตรวจ *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "เวลาที่ต้องการจองเข้ารับการตรวจ *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "กรุณาเลือกเวลา",
     labelAddress: "ที่อยู่ปัจจุบันในเกาหลี *",
     placeholderAddress: "เช่น: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "อาการปัจจุบัน *",
@@ -386,6 +427,10 @@ const i18n = {
     labelVisaExpiry: "ວັນໝົດອາຍຸການພຳນັກ *",
     labelDob: "ວັນເດືອນປີເກີດ *",
     labelDate: "ວັນທີຕ້ອງການນັດໝາຍກວດ *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "ເວລາທີ່ຕ້ອງການນັດໝາຍກວດ *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "ກະລຸນາເລືອກເວລາ",
     labelAddress: "ທີ່ຢູ່ປະຈຸບັນໃນເກົາຫຼີ *",
     placeholderAddress: "ຕົວຢ່າງ: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "ອາການປະຈຸບັນ *",
@@ -422,6 +467,10 @@ const i18n = {
     labelVisaExpiry: "बसाई अवधि समाप्ति मिति *",
     labelDob: "जन्ममिति *",
     labelDate: "उपचार गराउन चाहेको मिति *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "उपचार गराउन चाहेको समय *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "समय चयन गर्नुहोस्",
     labelAddress: "हालको ठेगाना *",
     placeholderAddress: "जस्तै: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "हालको लक्षणहरू *",
@@ -458,6 +507,10 @@ const i18n = {
     labelVisaExpiry: "Tanggal Kedaluwarsa Tinggal *",
     labelDob: "Tanggal Lahir *",
     labelDate: "Tanggal Reservasi Medis yang Diinginkan *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "Waktu Reservasi Medis yang Diinginkan *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "Pilih waktu",
     labelAddress: "Alamat Tinggal Saat Ini *",
     placeholderAddress: "contoh: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "Gejala Saat Ini *",
@@ -494,6 +547,10 @@ const i18n = {
     labelVisaExpiry: "රැඳී සිටීමේ කාලය අවසන් වන දිනය *",
     labelDob: "උපන් දිනය *",
     labelDate: "ප්‍රතිකාර සඳහා වෙන්කරවා ගැනීමට බලාපොරොත්තු වන දිනය *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "ප්‍රතිකාර සඳහා වෙන්කරවා ගැනීමට බලාපොරොත්තු වන වේලාව *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "වේලාව තෝරන්න",
     labelAddress: "දැනට පදිංචි ලිපිනය *",
     placeholderAddress: "උදා: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "දැනට පවතින රෝග ලක්ෂණ *",
@@ -530,6 +587,10 @@ const i18n = {
     labelVisaExpiry: "থাকার মেয়াদ শেষের তারিখ *",
     labelDob: "জন্ম তারিখ *",
     labelDate: "চিকিৎসার কাঙ্ক্ষিত তারিখ *",
+    // 15개국어 다국어 지원용 예약희망시간 필드 라벨 정의
+    labelTime: "চিকিৎসার কাঙ্ক্ষিত সময় *",
+    // 15개국어 다국어 지원용 예약희망시간 드롭다운 기본 안내 문구
+    timePlaceholder: "সময় নির্বাচন করুন",
     labelAddress: "বর্তমান বসবাসের ঠিকানা *",
     placeholderAddress: "যেমন: Seoul, Gangnam-gu, Teheran-ro 123",
     labelSymptoms: "বর্তমান লক্ষণসমূহ *",
@@ -752,8 +813,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // 솔라피(Solapi) API 연동에 필요한 키 정의 및 설정 상수
   const SOLAPI_API_KEY = "NCS6QTA1RKWBG0P5";         // 솔라피에서 발급받은 API Key
   const SOLAPI_API_SECRET = "YO0S9SMY2XTAKI3ZRH93X7FB4UC0BIGS";   // 솔라피에서 발급받은 API Secret Key
-  const SOLAPI_PF_ID = "KA01PF260722073645289pLAZp0cKRLD"; // 솔라피 콘솔에서 발급받은 카카오톡 채널 고유 연동 프로필 ID (pfId)]
-  const SOLAPI_TEMPLATE_ID = "KA01TP260722095342810ZFE6mOE5X5e";       // 등록 승인 완료된 알림톡 템플릿 ID (솔라피 콘솔에서 발급)
+  const SOLAPI_PF_ID = "KA01PF260722073645289pLAZp0cKRLD"; // 솔라피 콘솔에서 발급받은 카카오톡 채널 고유 연동 프로필 ID (pfId)
+  // 카카오 검수 승인 완료된 신규 알림톡 템플릿 ID (예약희망시간 포함)
+  const SOLAPI_TEMPLATE_ID = "KA01TP260917074840400ff0zrEUDfKQ";
   const SOLAPI_SENDER_NUMBER = "01028196392";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 01012345678)
 
   // 새로운 예약 신청 알림톡을 실시간으로 전달받을 관리자 휴대폰 번호 목록 (DB 연동으로 변경됨에 따라 하드코딩 상수는 제거 처리)
@@ -789,7 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // 솔라피 API를 호출하여 등록된 관리자 휴대폰으로 10가지 예약 정보 알림톡을 다중 전송하는 비동기 함수
-  const sendSolapiAlimtalk = async (lang, name, clinicName, gender, visaType, dob, reservationDate, symptoms, address, phone) => {
+  const sendSolapiAlimtalk = async (lang, name, clinicName, gender, visaType, dob, reservationDate, reservationTime, symptoms, address, phone) => {
     // API 연동용 인증키 유효성 사전 검사
     if (SOLAPI_API_KEY === "YOUR_SOLAPI_API_KEY" || SOLAPI_API_SECRET === "YOUR_SOLAPI_API_SECRET") {
       console.warn("솔라피 API Key 또는 Secret이 설정되지 않았습니다. 실서비스 연동을 위해 키를 입력해 주세요.");
@@ -837,14 +899,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
       // 각 예약 변수가 실제 데이터값으로 치환된 최종 발송용 텍스트 본문 생성 (줄바꿈 호환성을 위해 명시적 \n 결합 구조 사용)
-      const messageText = "[새로운 진료 예약 접수 알림]\n" + // 템플릿 검증 일치를 위해 '신규' -> '새로운'으로 단어 수정]
-        "• 예약언어: " + lang + "\n" + // 템플릿 검증 일치를 위해 '선택언어' -> '예약언어'로 단어 수정]
+      // 솔라피 승인 템플릿 문구와 100% 일치하도록 '병원' 단어 포함 본문 생성
+      const messageText = "[새로운 병원 진료 예약 접수 알림]\n" +
+        "• 예약언어: " + lang + "\n" + // 템플릿 검증 일치를 위해 '선택언어' -> '예약언어'로 단어 지정
         "• 환자이름: " + name + "\n" +
         "• 신청병원: " + clinicName + "\n" +
         "• 성별: " + gender + "\n" +
         "• 비자타입: " + visaType + "\n" +
         "• 생년월일: " + dob + "\n" +
         "• 예약희망일: " + reservationDate + "\n" +
+        "• 예약희망시간: " + (reservationTime || "-") + "\n" +
         "• 증상: " + symptoms + "\n" + // 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전히 배제]
         "• 주소: " + address + "\n" +
         "• 연락처: " + phone;
@@ -871,6 +935,7 @@ document.addEventListener("DOMContentLoaded", () => {
               "#{비자타입}": visaType,
               "#{생년월일}": dob,
               "#{예약희망일}": reservationDate,
+              "#{예약희망시간}": reservationTime || "-",
               "#{증상}": symptoms, // variables 치환 시에도 증상 값 원본을 그대로 전송]
               "#{주소}": address,
               "#{연락처}": phone
@@ -965,6 +1030,7 @@ document.addEventListener("DOMContentLoaded", () => {
   mapTextAndPlaceholder("label-visa-expiry", dict.labelVisaExpiry);
   mapTextAndPlaceholder("label-dob", dict.labelDob);
   mapTextAndPlaceholder("label-date", dict.labelDate);
+  mapTextAndPlaceholder("label-time", dict.labelTime);
   mapTextAndPlaceholder("label-address", dict.labelAddress, dict.placeholderAddress);
   mapTextAndPlaceholder("label-symptoms", dict.labelSymptoms, dict.placeholderSymptoms);
   mapTextAndPlaceholder("label-phone", dict.labelPhone, dict.placeholderPhone);
@@ -976,6 +1042,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (genderPlaceholder) genderPlaceholder.textContent = dict.genderPlaceholder;
   if (genderMale) genderMale.textContent = dict.genderMale;
   if (genderFemale) genderFemale.textContent = dict.genderFemale;
+  // 예약희망시간 드롭다운 기본 안내 문구 다국어 바인딩
+  const timePlaceholder = document.getElementById("time-placeholder");
+  if (timePlaceholder) timePlaceholder.textContent = dict.timePlaceholder;
 
   // 개인정보 동의 문구 및 상세보기 주입
   const agreementCheck = document.getElementById("agreement-check");
@@ -1092,6 +1161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const visaExpiry = document.getElementById("input-visa-expiry").value;
     const dob = document.getElementById("input-dob").value;
     const reservationDate = document.getElementById("input-date").value;
+    const reservationTime = document.getElementById("input-time") ? document.getElementById("input-time").value : "";
     const address = document.getElementById("input-address").value.trim();
     const symptoms = document.getElementById("input-symptoms").value.trim();
     const phone = document.getElementById("input-phone").value.trim();
@@ -1118,6 +1188,7 @@ document.addEventListener("DOMContentLoaded", () => {
         visaType,    // 비자타입
         dob,         // 생년월일
         reservationDate, // 예약희망일
+        reservationTime, // 예약희망시간
         symptoms,    // 증상
         address,     // 주소
         phone        // 연락처
@@ -1134,6 +1205,7 @@ document.addEventListener("DOMContentLoaded", () => {
         visaExpiry: visaExpiry,
         dob: dob,
         reservationDate: reservationDate,
+        reservationTime: reservationTime,
         address: address,
         symptoms: symptoms,
         // 유입경로는 초기 비어있으며 관리자 페이지에서 입력 및 관리됨

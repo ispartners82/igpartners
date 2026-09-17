@@ -1722,6 +1722,57 @@ body {
   cursor: not-allowed;
 }
 
+/* 회원 리스트 국가(선호언어) 전용 조작 컨트롤러 및 셀렉트 박스 스타일 */
+.lang-control-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.select-country-lang {
+  min-width: 150px;
+  max-width: 195px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  padding: 0.38rem 0.5rem;
+}
+
+.col-user-country-lang {
+  white-space: nowrap;
+}
+
+/* 회원 리스트 테이블 컴팩트 최적화 및 가로 스크롤 방지 레이아웃 */
+#content-permissions .admin-table {
+  min-width: 1080px;
+}
+
+#content-permissions .admin-table th,
+#content-permissions .admin-table td {
+  padding: 0.85rem 0.65rem;
+}
+
+/* 가로 스크롤 가능 테이블 영역 마우스 드래그 상호작용 커서 스타일 */
+.table-responsive.drag-scroll-enabled {
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive.drag-scroll-enabled.dragging {
+  cursor: grabbing;
+  user-select: none;
+  scroll-behavior: auto !important;
+}
+
+.table-responsive.drag-scroll-enabled input,
+.table-responsive.drag-scroll-enabled select,
+.table-responsive.drag-scroll-enabled button,
+.table-responsive.drag-scroll-enabled a {
+  cursor: pointer;
+  user-select: auto;
+}
+
 /* 역할 라벨 뱃지 */
 .role-badge {
   display: inline-block;
