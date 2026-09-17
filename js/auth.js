@@ -322,13 +322,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 회원가입 폼 보안 초기화 함수 - 브라우저 자동완성 오작동 및 이전 잔여 계정 데이터 완전 소거]
+    // 회원가입 폼 보안 초기화 함수 - 브라우저 자동완성 오작동 및 이전 잔여 계정 데이터 완전 소거
     function resetSignupForm() {
       const formSignup = document.getElementById("form-auth-signup");
       if (formSignup) {
         formSignup.reset();
       }
-      // 브라우저 AutoFill이 강제로 밀어 넣은 잔여 값들을 빈 문자열로 강제 소거]
+      // 브라우저 AutoFill이 강제로 밀어 넣은 잔여 값들을 빈 문자열로 강제 소거
       const clearIds = [
         "signup-login-id", "signup-email", "signup-password", "signup-password-confirm",
         "signup-name", "signup-dob", "signup-alien-no", "signup-phone", "signup-address"
@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tabLogin.classList.remove("active");
         secSignup.style.display = "block";
         secLogin.style.display = "none";
-        // 회원가입 탭 클릭 시 이전 로그인 자격증명이 노출되지 않도록 강제 리셋]
+        // 회원가입 탭 클릭 시 이전 로그인 자격증명이 노출되지 않도록 강제 리셋
         resetSignupForm();
       });
     }
@@ -389,7 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabSignup = document.getElementById("tab-btn-signup");
 
     if (modal) {
-      // 모달 오픈 시 폼 잔여 데이터 깨끗이 비우기]
+      // 모달 오픈 시 폼 잔여 데이터 깨끗이 비우기
       if (typeof window.resetSignupForm === "function") {
         window.resetSignupForm();
       }
@@ -413,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modal) {
       modal.style.display = "none";
       document.body.classList.remove("modal-open");
-      // 모달 닫기 시 잔여 비밀번호 입력값 소거]
+      // 모달 닫기 시 잔여 비밀번호 입력값 소거
       if (typeof window.resetSignupForm === "function") {
         window.resetSignupForm();
       }
@@ -727,7 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.showProfileModal = showProfileModal;
 
-  // 전역 이벤트 위임(Event Delegation)으로 헤더/사이드바 사용자 프로필 클릭 시 100% 모달 오픈 보장]
+  // 전역 이벤트 위임(Event Delegation)으로 헤더/사이드바 사용자 프로필 클릭 시 100% 모달 오픈 보장
   document.addEventListener("click", (e) => {
     const profileTrigger = e.target.closest(".user-capsule, #user-badge, #user-name, #user-photo, #sidebar-user-name, .cafe-user-badge");
     if (profileTrigger) {
@@ -1090,7 +1090,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target.id === "btn-logout" || target.closest("#btn-logout")) {
       try {
         if (confirm("로그아웃 하시겠습니까?")) {
-          // 로그아웃 시 폼에 남아있을 수 있는 자격증명 및 입력값을 즉시 초기화]
+          // 로그아웃 시 폼에 남아있을 수 있는 자격증명 및 입력값을 즉시 초기화
           if (typeof window.resetSignupForm === "function") {
             window.resetSignupForm();
           }
@@ -1199,7 +1199,7 @@ document.addEventListener("DOMContentLoaded", () => {
           label: roleData.label || (isSuper ? "최고관리자" : (userRole === "admin" ? "일반관리자" : (userRole === "admin_user" ? "관리자" : "회원")))
         };
       } else {
-        // DB에 roles 문서가 존재하지 않을 때의 하위 호환 폴백 매핑]
+        // DB에 roles 문서가 존재하지 않을 때의 하위 호환 폴백 매핑
         const isLegacyAdmin = ["admin", "admin_user"].includes(userRole);
         const isLegacyManager = ["top_manager", "res_manager"].includes(userRole);
         perms = {
@@ -1238,7 +1238,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.clearUserRoleCache = clearUserRoleCache;
 
-  // 실시간 등급 및 세부 권한 감지 리스너 구독 해제 함수 포인터]
+  // 실시간 등급 및 세부 권한 감지 리스너 구독 해제 함수 포인터
   let unsubscribeLiveUser = null;
   let unsubscribeLiveRole = null;
 
@@ -1289,7 +1289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (authUserArea) authUserArea.style.display = "flex";
 
-      // 상단 사용자 뱃지 클릭 시 내 정보 관리(개인정보 수정) 모달 호출 이벤트 연결]
+      // 상단 사용자 뱃지 클릭 시 내 정보 관리(개인정보 수정) 모달 호출 이벤트 연결
       const userBadgeEl = document.getElementById("user-badge");
       if (userBadgeEl) {
         userBadgeEl.style.cursor = "pointer";
@@ -1314,14 +1314,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
       if (quickBtnLogin) quickBtnLogin.style.display = "none";
 
-      // 로그인한 회원에게만 상단 '커뮤니티' 메뉴 노출 처리]
+      // 로그인한 회원에게만 상단 '커뮤니티' 메뉴 노출 처리
       const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
       communityMenuItems.forEach(item => {
         item.style.display = "inline-block";
         item.classList.add("logged-in");
       });
 
-      // 이전 실시간 리스너 해제 후 안전한 재구독]
+      // 이전 실시간 리스너 해제 후 안전한 재구독
       if (typeof unsubscribeLiveRole === "function") {
         unsubscribeLiveRole();
         unsubscribeLiveRole = null;
@@ -1331,7 +1331,7 @@ document.addEventListener("DOMContentLoaded", () => {
         unsubscribeLiveUser = null;
       }
 
-      // 실시간 등급 및 10가지 세부 권한 변경 감지 파이프라인 시작]
+      // 실시간 등급 및 10가지 세부 권한 변경 감지 파이프라인 시작
       // 1. users/{uid} 문서 실시간 감지: 관리자가 회원 등급을 바꿀 때 0.1초 즉시 감지
       unsubscribeLiveUser = onSnapshot(doc(db, "users", user.uid), (userSnap) => {
         if (!userSnap.exists()) return;
@@ -1365,7 +1365,7 @@ document.addEventListener("DOMContentLoaded", () => {
               hasCommunitySettings: isSuper || (rData.hasCommunitySettings !== undefined ? rData.hasCommunitySettings : false)
             };
           } else {
-            // roles 문서가 DB에 없을 경우 하위 호환 폴백 매핑]
+            // roles 문서가 DB에 없을 경우 하위 호환 폴백 매핑
             const isLegacyAdmin = ["admin", "admin_user"].includes(activeRole);
             const isLegacyManager = ["top_manager", "res_manager"].includes(activeRole);
             fullPermissions = {
@@ -1428,7 +1428,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       hideAuthModal();
     } else {
-      // 로그아웃 시 기존 실시간 감지 리스너 정리]
+      // 로그아웃 시 기존 실시간 감지 리스너 정리
       if (typeof unsubscribeLiveRole === "function") {
         unsubscribeLiveRole();
         unsubscribeLiveRole = null;
@@ -1452,7 +1452,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // 비로그인/로그아웃 상태 시에도 상단 '커뮤니티' 메뉴는 항상 노출되도록 유지]
+      // 비로그인/로그아웃 상태 시에도 상단 '커뮤니티' 메뉴는 항상 노출되도록 유지
       const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
       communityMenuItems.forEach(item => {
         item.style.display = "inline-block";
@@ -1469,7 +1469,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const btnStatsDashboard = document.getElementById("btn-stats-dashboard");
       if (btnStatsDashboard) btnStatsDashboard.style.display = "none";
 
-      // 로그아웃 시 권한 캐시 및 세션 완전 정리]
+      // 로그아웃 시 권한 캐시 및 세션 완전 정리
       Object.keys(sessionStorage)
         .filter(key => key.startsWith("user_role_cache_") || key.startsWith("admin_permissions_") || key.startsWith("role_permissions_cache_"))
         .forEach(key => sessionStorage.removeItem(key));

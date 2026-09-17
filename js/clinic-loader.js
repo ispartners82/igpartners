@@ -1,5 +1,5 @@
 import { db } from "./firebase-db.js?v=2.0.7";
-// [성능 최적화] 병원 목록은 관리자가 수정할 때만 변경되므로 실시간 리스너(onSnapshot) 대신
+// 성능 최적화: 병원 목록은 관리자가 수정할 때만 변경되므로 실시간 리스너(onSnapshot) 대신
 // getDocs 일회성 조회를 사용하여 불필요한 Firestore 연결 유지와 비용을 제거합니다.
 import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -16,7 +16,7 @@ const i18n = {
     pageTitle: "병원 선택",
     pageSubtitle: "진료 예약을 진행할 병원을 선택해 주세요.",
     changeLang: "언어 변경", /* 신규 추가: 언어선택 복원용 텍스트 */
-    // 한국어 모드일 때도 글로벌 고객을 위해 줄바꿈 형태로 영어 번역 텍스트를 함께 병기하도록 리소스를 개편함]
+    // 한국어 모드일 때도 글로벌 고객을 위해 줄바꿈 형태로 영어 번역 텍스트를 함께 병기하도록 리소스를 개편함
     modalTitle: "🔒 로그인 필요<br><span style='font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); font-weight: 500;'>Login Required</span>",
     modalDescMain: "이 서비스는 구글 로그인이 필요합니다.<br><span style='font-size: 0.95rem; color: rgba(255,255,255,0.8); font-weight: 500;'>This service requires Google Login.</span>",
     modalDescSub: "예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.<br><span style='font-size: 0.8rem; color: rgba(255,255,255,0.5);'>Please proceed with Google Login to request or check reservations.</span>",
@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (modalClose) modalClose.textContent = dict.modalClose;
   if (modalTrigger) modalTrigger.textContent = dict.modalTrigger;
 
-  // 병원 카드 목록 DOM 생성 및 렌더링 전담 함수]
+  // 병원 카드 목록 DOM 생성 및 렌더링 전담 함수
   function renderClinicsList(clinicsData, targetContainer, lang, dictionary) {
     targetContainer.innerHTML = "";
 
@@ -274,12 +274,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     clinicsData.forEach((clinic) => {
-      // 언어에 맞는 병원 필드 동적 매핑 (다국어 전용 필드가 없으면 하위 호환을 위해 기본값 fallback)]
+      // 언어에 맞는 병원 필드 동적 매핑 (다국어 전용 필드가 없으면 하위 호환을 위해 기본값 fallback)
       const clinicName = clinic[`name_${lang}`] || clinic.name || "";
       const clinicDesc = clinic[`desc_${lang}`] || clinic.desc || "";
       const clinicAddress = clinic[`address_${lang}`] || clinic.address || "";
 
-      // 진료과목 배지 HTML 구성 (다국어 진료과목 지원)]
+      // 진료과목 배지 HTML 구성 (다국어 진료과목 지원)
       const deptBadges = (clinic[`depts_${lang}`] || clinic.depts || [])
         .map(dept => `<span class="dept-badge">${dept}</span>`)
         .join("");
@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ── [SWR 2단계: Revalidate] 백그라운드에서 최신 Firestore 데이터 비동기 조회 (평생 무료 일회성 getDocs) ──
   (async () => {
     try {
-      // 관리자가 순서 이동 조정한 순번 order 오름차순 기준으로 병원 목록 쿼리]
+      // 관리자가 순서 이동 조정한 순번 order 오름차순 기준으로 병원 목록 쿼리
       const q = query(collection(db, "clinics"), orderBy("order", "asc"));
       const querySnapshot = await getDocs(q);
 

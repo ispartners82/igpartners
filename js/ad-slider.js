@@ -8,7 +8,7 @@
 import { db } from "/js/firebase-db.js?v=260904_1";
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// 통합 광고 배너 로컬 캐시 키 정의 (SWR 캐시 엔진용)]
+// 통합 광고 배너 로컬 캐시 키 정의 (SWR 캐시 엔진용)
 const CACHE_KEY = "cached_home_ads_data";
 
 // DB가 비어있을 때 대신 렌더링되는 백업 샘플 광고 데이터 8개 정의
@@ -95,7 +95,7 @@ const FALLBACK_ADS = [
   }
 ];
 
-// 활성화된 슬라이더 인터벌 타이머 ID들을 추적 관리하여 화면 재렌더링 시 중복 실행 방지]
+// 활성화된 슬라이더 인터벌 타이머 ID들을 추적 관리하여 화면 재렌더링 시 중복 실행 방지
 let activeSliderIntervals = [];
 
 /**
@@ -168,7 +168,7 @@ async function initPage() {
   const adGridContainer = document.getElementById("ad-grid-container");
   if (!adGridContainer) return;
 
-  // 구형 버전의 LocalStorage 캐시 키 정리]
+  // 구형 버전의 LocalStorage 캐시 키 정리
   try {
     localStorage.removeItem("cached_home_ads");
     for (let i = 0; i < localStorage.length; i++) {
@@ -239,7 +239,7 @@ async function initPage() {
   }
 }
 
-// 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
+// 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initPage);
 } else {

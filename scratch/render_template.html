@@ -137,7 +137,7 @@
   <script type="text/markdown" id="markdown-source">__MARKDOWN_PLACEHOLDER__</script>
 
   <script>
-    // [한글 주석: 페이지 로딩 완료 후 마크다운 파싱 및 Mermaid 다이어그램 렌더링 엔진 작동]
+    // 페이지 로딩 완료 후 마크다운 파싱 및 Mermaid 다이어그램 렌더링 엔진 작동
     document.addEventListener("DOMContentLoaded", () => {
       // 1. 마크다운 마크업 획득
       const markdownText = document.getElementById("markdown-source").textContent;
@@ -171,7 +171,7 @@
       // 다이어그램 렌더러 구동
       mermaid.init(undefined, document.querySelectorAll(".mermaid"));
       
-      // [한글 주석: 헤드리스 엣지 브라우저가 렌더링 완료 상태를 인지할 수 있도록 window 객체에 상태값 기록]
+      // 헤드리스 엣지 브라우저가 렌더링 완료 상태를 인지할 수 있도록 window 객체에 상태값 기록
       window.renderComplete = true;
     });
   </script>

@@ -14,7 +14,7 @@ import {
   orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// 초기 시연용 기본 통역사 Seed 데이터셋]
+// 초기 시연용 기본 통역사 Seed 데이터셋
 const seedInterpreters = [
   // 1. IGPartners 소속 통역사 (사진 포함, 명함 카드 레이아웃)
   {
@@ -274,7 +274,7 @@ function renderStaffInterpreters(list, container) {
     const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
     const { nameKo, nameEn } = parseInterpreterName(item);
 
-    // 연락처 및 이메일 전용 블록 생성 - 정보가 없더라도 일정한 하단 높이의 staff-contact-box를 항상 유지하여 상단 이름 위치 고정]
+    // 연락처 및 이메일 전용 블록 생성 - 정보가 없더라도 일정한 하단 높이의 staff-contact-box를 항상 유지하여 상단 이름 위치 고정
     let contactItems = "";
     if (item.phone) {
       const phoneTel = item.phone.replace(/[^0-9+]/g, "");

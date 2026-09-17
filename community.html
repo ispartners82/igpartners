@@ -30,11 +30,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- 웹 브라우저 탭 및 즐겨찾기용 공식 파비콘(대표 로고) 설정 -->
-  <link rel="icon" type="image/png" href="/img/logo.png?v=260916_12">
-  <link rel="apple-touch-icon" href="/img/logo.png?v=260916_12">
+  <link rel="icon" type="image/png" href="/img/logo.png?v=260917_1">
+  <link rel="apple-touch-icon" href="/img/logo.png?v=260917_1">
 
   <!-- 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=260914_5) -->
-  <link rel="stylesheet" href="css/style.css?v=260916_12">
+  <link rel="stylesheet" href="css/style.css?v=260917_1">
 
   <!-- 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장 -->
   <script>
@@ -71,7 +71,7 @@
       if (listEl) listEl.style.display = "block";
     }
 
-    // 카테고리 관리 · 설정 인라인 편집 화면으로 전환하는 함수]
+    // 카테고리 관리 · 설정 인라인 편집 화면으로 전환하는 함수
     function showCafeCategoryManageSection() {
       var listEl = document.getElementById("cafe-post-list-section");
       var writeEl = document.getElementById("cafe-post-write-section");
@@ -168,7 +168,7 @@
           compressImage(evt.target.result, 900, 0.85, function(compressedUrl) {
             window.attachedPhotos.push({ name: file.name, dataUrl: compressedUrl });
             renderPhotoPreviews();
-            // 네이버 카페 스마트 에디터 - 사진 선택 즉시 본문 작성창 커서 위치에 대형 사진 자동 쏙 삽입]
+            // 네이버 카페 스마트 에디터 - 사진 선택 즉시 본문 작성창 커서 위치에 대형 사진 자동 쏙 삽입
             if (typeof window.insertImageAtCursor === "function") {
               window.insertImageAtCursor(compressedUrl, file.name);
             }
@@ -204,7 +204,7 @@
       renderFilePreviews();
     }
 
-    // 단일통합 전역 제출 엔진 - js/community.js 마스터 엔진 연동]
+    // 단일통합 전역 제출 엔진 - js/community.js 마스터 엔진 연동
     function submitNewPost() {
       if (typeof window.submitNewPost === "function" && window.submitNewPost !== submitNewPost) {
         return window.submitNewPost();
@@ -664,7 +664,7 @@
         <!-- 2열 에디터 본문 컨테이너 -->
         <div class="cat-editor-grid-container">
           
-          <!-- [좌측 1열] 카테고리 트리 목록 및 상단 조작 툴바 -->
+          <!-- 좌측 1열: 카테고리 트리 목록 및 상단 조작 툴바 -->
           <div class="cat-editor-left-box">
             <div class="cat-toolbar-btns">
               <button type="button" class="btn-cat-tool" id="btn-add-category" onclick="window.addNewCategoryItem()">
@@ -695,7 +695,7 @@
             </div>
           </div>
 
-          <!-- [우측 2열] 선택된 카테고리 세부 설정 폼 패널 -->
+          <!-- 우측 2열: 선택된 카테고리 세부 설정 폼 패널 -->
           <div class="cat-editor-right-box" id="cat-detail-panel">
             <div id="cat-empty-notice" style="display: none; text-align: center; padding: 4rem 1rem; color: #64748b;">
               <i class="fa-solid fa-hand-pointer" style="font-size: 2rem; margin-bottom: 1rem; color: #00f3ff;"></i>
@@ -780,7 +780,7 @@
                 </div>
               </div>
 
-              <!-- 3-1. 글쓰기 권한 - 시스템에 등록된 모든 등급 중 선택된 등급만 글쓰기 버튼 노출] -->
+              <!-- 3-1. 글쓰기 권한 - 시스템에 등록된 모든 등급 중 선택된 등급만 글쓰기 버튼 노출 -->
               <div class="cat-form-row" style="align-items: flex-start;">
                 <span class="cat-form-label" style="margin-top: 0.2rem;">글쓰기 권한</span>
                 <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
@@ -864,9 +864,9 @@
   <footer id="global-footer" class="global-footer"></footer>
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260914_5) -->
-  <script type="module" src="/js/navigation.js?v=260916_12"></script>
-  <script type="module" src="/js/auth.js?v=260916_12"></script>
-  <script type="module" src="/js/community.js?v=260916_12"></script>
+  <script type="module" src="/js/navigation.js?v=260917_1"></script>
+  <script type="module" src="/js/auth.js?v=260917_1"></script>
+  <script type="module" src="/js/community.js?v=260917_1"></script>
 </body>
 
 </html>

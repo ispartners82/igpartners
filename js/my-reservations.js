@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// SPA 및 일반 로드 환경 모두에서 정상 구동되도록 내 예약 목록 초기화 메인 함수 정의]
+// SPA 및 일반 로드 환경 모두에서 정상 구동되도록 내 예약 목록 초기화 메인 함수 정의
 function initPage() {
   const reservationList = document.getElementById("my-reservation-list");
   const btnRefresh = document.getElementById("btn-refresh");
@@ -246,7 +246,7 @@ function initPage() {
       }
 
       localStorage.setItem("local_reservations", JSON.stringify(localData));
-      // [성능 최적화] loadMyReservations() 재호출 제거
+      // 성능 최적화: loadMyReservations() 재호출 제거
       // onSnapshot 리스너가 이미 Firestore 변경사항을 실시간으로 수신하여 자동 렌더링합니다.
       // 재호출 시 기존 리스너를 해제하고 새 리스너를 등록하는 불필요한 Firestore 재구독이 발생합니다.
     } catch (e) {
@@ -309,7 +309,7 @@ function initPage() {
   });
 }
 
-// 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
+// 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initPage);
 } else {

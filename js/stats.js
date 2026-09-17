@@ -2,7 +2,7 @@ import { auth, db } from "/js/firebase-db.js?v=2.0.7";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// SPA 및 일반 로드 환경 모두에서 정상 구동되도록 통계 페이지 초기화 메인 함수 정의]
+// SPA 및 일반 로드 환경 모두에서 정상 구동되도록 통계 페이지 초기화 메인 함수 정의
 function initPage() {
   // 1. DOM 요소 취득
   const filterLang = document.getElementById("filter-lang");
@@ -87,7 +87,7 @@ function initPage() {
       if (userDocSnap.exists()) {
         const role = userDocSnap.data().role || "user";
         
-        // 등급 권한 관리에서 설정한 예약통계 권한 실시간 체크]
+        // 등급 권한 관리에서 설정한 예약통계 권한 실시간 체크
         let hasStats = false;
         try {
           const roleDocRef = doc(db, "roles", role);
@@ -126,13 +126,13 @@ function initPage() {
   function startRealtimeSubscription() {
     if (unsubscribe) unsubscribe();
 
-    // 병원 필터 드롭다운 옵션 로드]
+    // 병원 필터 드롭다운 옵션 로드
     loadClinicsFilter();
 
     // 넉넉하게 최근 500개 예약을 가져옵니다. (통계 목적)
     const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"), limit(500));
     
-    // 유입경로 컬럼 추가에 따른 colspan을 15로 수정]
+    // 유입경로 컬럼 추가에 따른 colspan을 15로 수정
     statsResultList.innerHTML = `<tr><td colspan="15" class="table-loading">실시간 데이터를 동기화하는 중입니다...</td></tr>`;
 
     // 로컬스토리지 백업 데이터 선 로딩
@@ -184,7 +184,7 @@ function initPage() {
   // =========================================================================
   function applyFiltersAndRender(items) {
     if (!items || items.length === 0) {
-      // 유입경로 컬럼 추가에 따른 colspan을 15로 수정]
+      // 유입경로 컬럼 추가에 따른 colspan을 15로 수정
       statsResultList.innerHTML = `<tr><td colspan="15" class="table-empty">조회할 데이터가 존재하지 않습니다.</td></tr>`;
       updateStatsCounters(0, 0, 0, 0);
       currentFilteredReservations = [];
@@ -210,7 +210,7 @@ function initPage() {
       // A. 선택 언어 필터
       if (langVal !== "all" && item.lang !== langVal) return false;
 
-      // 선택 병원 필터 적용]
+      // 선택 병원 필터 적용
       if (clinicVal !== "all" && item.clinic !== clinicVal) return false;
 
       // B. 성별 필터
@@ -274,7 +274,7 @@ function initPage() {
   // 7. 테이블 및 통계 화면 렌더링
   // =========================================================================
   function renderTable(items) {
-    // 엑셀 파일 다운로드 추출용으로 현재 필터링된 배열 데이터 동기화]
+    // 엑셀 파일 다운로드 추출용으로 현재 필터링된 배열 데이터 동기화
     currentFilteredReservations = items;
     statsResultList.innerHTML = "";
 
@@ -284,7 +284,7 @@ function initPage() {
     let cancelled = 0;
 
     if (items.length === 0) {
-      // 유입경로 컬럼 추가에 따른 colspan을 15로 수정]
+      // 유입경로 컬럼 추가에 따른 colspan을 15로 수정
       statsResultList.innerHTML = `<tr><td colspan="15" class="table-empty">조회 조건에 만족하는 예약 내역이 없습니다.</td></tr>`;
       updateStatsCounters(0, 0, 0, 0);
       return;
@@ -428,7 +428,7 @@ function initPage() {
   // 10. 엑셀 다운로드 미리보기 모달 제어 및 ExcelJS 고품질 저장 기능
   // =========================================================================
 
-  // 예약 목록의 언어 코드를 한국어 이름으로 매핑하는 딕셔너리]
+  // 예약 목록의 언어 코드를 한국어 이름으로 매핑하는 딕셔너리
   const langLabels = {
     "ko": "한국어", "ja": "일본어", "vi": "베트남어", "en": "영어",
     "zh": "중국어", "ru": "러시아어", "my": "미얀마어", "km": "캄보디아어",
@@ -436,14 +436,14 @@ function initPage() {
     "id": "인도네시아어", "si": "스리랑카어", "bn": "방글라데시어"
   };
 
-  // 엑셀 미리보기 모달 닫기 함수]
+  // 엑셀 미리보기 모달 닫기 함수
   function closeExcelPreview() {
     if (excelPreviewModal) {
       excelPreviewModal.classList.remove("active");
     }
   }
 
-  // 엑셀 미리보기 화면을 구성하고 모달을 띄우는 함수]
+  // 엑셀 미리보기 화면을 구성하고 모달을 띄우는 함수
   function openExcelPreview() {
     if (!currentFilteredReservations || currentFilteredReservations.length === 0) {
       alert("다운로드할 데이터가 없습니다. 먼저 조회 조건 필터를 이용해 예약 내역을 조회해 주세요.");
@@ -503,7 +503,7 @@ function initPage() {
     excelPreviewModal.classList.add("active");
   }
 
-  // ExcelJS 라이브러리를 이용하여 고도로 디자인된 엑셀 파일을 빌드하고 내보내는 핵심 함수]
+  // ExcelJS 라이브러리를 이용하여 고도로 디자인된 엑셀 파일을 빌드하고 내보내는 핵심 함수
   async function downloadStyledExcel() {
     if (!currentFilteredReservations || currentFilteredReservations.length === 0) {
       alert("다운로드할 예약 데이터가 존재하지 않습니다.");
@@ -519,7 +519,7 @@ function initPage() {
       worksheet.views = [{ showGridLines: true }];
 
       // 3) 대형 타이틀 셀 병합 및 스타일링 (1행 ~ 2행 병합)
-      // 유입경로 컬럼이 추가되어 열 크기가 15로 확장됨에 따라 병합 범위 수정]
+      // 유입경로 컬럼이 추가되어 열 크기가 15로 확장됨에 따라 병합 범위 수정
       worksheet.mergeCells("A1:O2");
       const titleCell = worksheet.getCell("A1");
       titleCell.value = "IGPartners 예약 상세 통계 리스트";
@@ -551,7 +551,7 @@ function initPage() {
       dateCell.font = { name: "Malgun Gothic", size: 10, bold: true, color: { argb: "FF475569" } };
       dateCell.alignment = { vertical: "middle", horizontal: "left" };
 
-      // 유입경로 컬럼 추가로 15열(O열)까지 병합 범위 확장]
+      // 유입경로 컬럼 추가로 15열(O열)까지 병합 범위 확장
       worksheet.mergeCells("F4:O4");
       const summaryCell = worksheet.getCell("F4");
       summaryCell.value = `상태 통계 요약:  총 ${total}건  [ 예약 확정: ${confirmed}건 | 예약 취소: ${cancelled}건 | 대기중: ${pending}건 ]`;
@@ -561,7 +561,7 @@ function initPage() {
       // 요약 줄 스타일링 테두리 및 옅은 배경
       const summaryRow = worksheet.getRow(4);
       summaryRow.height = 24;
-      // 컬럼 개수 증가에 따라 테두리 스타일 지정 루프 범위를 15로 확장]
+      // 컬럼 개수 증가에 따라 테두리 스타일 지정 루프 범위를 15로 확장
       for (let c = 1; c <= 15; c++) {
         const cell = summaryRow.getCell(c);
         cell.fill = {
@@ -576,7 +576,7 @@ function initPage() {
       }
 
       // 5) 테이블 헤더 정의 (6행)
-      // 엑셀 파일 내의 컬럼 헤더 목록에 유입경로 추가]
+      // 엑셀 파일 내의 컬럼 헤더 목록에 유입경로 추가
       const headers = [
         "선택언어", "이 름", "선택 병원", "성 별", "비자타입", 
         "생년월일", "신원정보 (외국인등록번호/여권)", "체류만료일", "연락처", 
@@ -637,7 +637,7 @@ function initPage() {
         }
 
         // 값들 배열에 배치
-        // 엑셀 파일 내부 행 데이터에 유입경로(inflow) 연동 추가]
+        // 엑셀 파일 내부 행 데이터에 유입경로(inflow) 연동 추가
         const rowValues = [
           langLabels[item.lang] || item.lang || "-",
           item.name || "-",
@@ -672,7 +672,7 @@ function initPage() {
 
           // 데이터 정렬 정밀 세팅
           // 텍스트 길이나 컬럼 특성에 맞춰 정렬
-          // 유입경로 추가에 따라 상태 열 인덱스가 14에서 15로 확장되어 가운데 정렬 목록 수정]
+          // 유입경로 추가에 따라 상태 열 인덱스가 14에서 15로 확장되어 가운데 정렬 목록 수정
           if ([1, 4, 5, 6, 8, 9, 10, 11, 15].includes(cIdx + 1)) {
             // 언어, 성별, 비자, 생일, 만료일, 연락처, 접수일, 진료희망일, 상태는 가운데 정렬
             cell.alignment = { vertical: "middle", horizontal: "center" };
@@ -681,7 +681,7 @@ function initPage() {
             cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
           }
 
-          // 유입경로 추가에 따라 상태 열(15번째 컬럼) 고유 배경 하이라이트 맵핑 수정]
+          // 유입경로 추가에 따라 상태 열(15번째 컬럼) 고유 배경 하이라이트 맵핑 수정
           if (cIdx + 1 === 15) {
             cell.fill = {
               type: "pattern",
@@ -748,7 +748,7 @@ function initPage() {
   }
 }
 
-// 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리]
+// 최초 하드 로딩 시점에는 DOMContentLoaded를 대기하고, SPA 뷰 전환 시점에는 즉시 실행되도록 readyState 감지 분기 처리
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initPage);
 } else {

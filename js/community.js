@@ -9,7 +9,7 @@ import { auth, db } from "/js/firebase-db.js?v=2.0.7";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, limit, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// Firestore SDK 전역 객체 바인딩]
+// Firestore SDK 전역 객체 바인딩
 window.db = db;
 window.collection = collection;
 window.query = query;
@@ -22,7 +22,7 @@ window.updateDoc = updateDoc;
 window.deleteDoc = deleteDoc;
 window.serverTimestamp = serverTimestamp;
 
-// 기본 9대 회원 등급 목록 정의 - Firestore roles 컬렉션과 동적 동기화 지원]
+// 기본 9대 회원 등급 목록 정의 - Firestore roles 컬렉션과 동적 동기화 지원
 const DEFAULT_AVAILABLE_ROLES = [
   { key: "super_admin", label: "최고 관리자" },
   { key: "admin", label: "일반 관리자" },
@@ -36,11 +36,11 @@ const DEFAULT_AVAILABLE_ROLES = [
 ];
 let availableRoles = [...DEFAULT_AVAILABLE_ROLES];
 
-// 전체 등급 및 관리자 등급 키 헬퍼 배열]
+// 전체 등급 및 관리자 등급 키 헬퍼 배열
 const ALL_ROLE_KEYS = DEFAULT_AVAILABLE_ROLES.map(r => r.key);
 const ADMIN_ROLE_KEYS = ["super_admin", "admin", "admin_user"];
 
-// 기본 6대 커뮤니티 카테고리 정의 - readPermission(열람 권한), writeRoles(글쓰기 허용 등급 배열)]
+// 기본 6대 커뮤니티 카테고리 정의 - readPermission(열람 권한), writeRoles(글쓰기 허용 등급 배열)
 const DEFAULT_CATEGORIES = [
   { id: "notice", name: "공지사항", icon: "📢", isPublic: true, readPermission: "all", writeRoles: [...ADMIN_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
   { id: "clinic", name: "병원정보", icon: "🏥", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
@@ -50,7 +50,7 @@ const DEFAULT_CATEGORIES = [
   { id: "resume", name: "이력서업로드", icon: "📄", isPublic: true, readPermission: "admin", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" }
 ];
 
-// SWR 로컬 스토리지 캐시 우선 로드 - 초기 렌더링 딜레이 및 깜빡임 완전 차단]
+// SWR 로컬 스토리지 캐시 우선 로드 - 초기 렌더링 딜레이 및 깜빡임 완전 차단
 let currentCategories = (function () {
   try {
     const cached = localStorage.getItem("community_cached_categories");
@@ -65,7 +65,7 @@ let editingCategories = [];
 let selectedCatIndex = 0;
 window.canCommunitySetting = false;
 
-// 전역 상태 변수 정돈]
+// 전역 상태 변수 정돈
 let currentBoard = "all";
 let itemsPerPage = 15;
 let currentPage = 1;
@@ -193,15 +193,15 @@ function initCommunityPage() {
   const mainContent = document.getElementById("community-main-content");
   const btnGuardLogin = document.getElementById("btn-guard-login");
 
-  // 비로그인 회원도 커뮤니티 목록 및 글을 자유롭게 열람할 수 있도록 메인 콘텐츠를 상시 표시]
+  // 비로그인 회원도 커뮤니티 목록 및 글을 자유롭게 열람할 수 있도록 메인 콘텐츠를 상시 표시
   if (guardOverlay) guardOverlay.style.display = "none";
   if (mainContent) mainContent.style.display = "grid";
 
-  // 페이지 진입 즉시 메모리에 있는 기본 카테고리를 0ms에 선렌더링하여 메뉴 깜빡임과 딜레이 제거]
+  // 페이지 진입 즉시 메모리에 있는 기본 카테고리를 0ms에 선렌더링하여 메뉴 깜빡임과 딜레이 제거
   renderSidebarMenu();
   renderWriteBoardSelect();
 
-  // 2단계 최적화 - 세션 인증 캐시를 즉시 읽어 사이드바 프로필('이희승/최고관리자/설정')을 0ms에 선표출하여 깜빡임 제거]
+  // 2단계 최적화 - 세션 인증 캐시를 즉시 읽어 사이드바 프로필('이희승/최고관리자/설정')을 0ms에 선표출하여 깜빡임 제거
   try {
     const rawUserCache = sessionStorage.getItem("auth_user_cache");
     if (rawUserCache) {
@@ -241,7 +241,7 @@ function initCommunityPage() {
     console.warn("[Community] 프로필 캐시 즉시 동기화 예외:", e);
   }
 
-  // SWR 패턴 - Firestore 비동기 응답 대기 전, 로컬 캐시 기반으로 사이드바 메뉴 0초 즉시 바인딩]
+  // SWR 패턴 - Firestore 비동기 응답 대기 전, 로컬 캐시 기반으로 사이드바 메뉴 0초 즉시 바인딩
   renderSidebarMenu();
   renderWriteBoardSelect();
 
@@ -283,7 +283,7 @@ function initCommunityPage() {
           else if (uData.role === "partner") userTier = "협력사";
         }
 
-        // 로그인한 사용자의 등급(role)에 부여된 '커뮤니티설정(hasCommunitySettings)' 권한 조회]
+        // 로그인한 사용자의 등급(role)에 부여된 '커뮤니티설정(hasCommunitySettings)' 권한 조회
         const roleKey = (window.currentUserRole || "user").toLowerCase();
         if (roleKey === "super_admin" || userTier === "최고관리자" || userName === "최고관리자") {
           canCommunitySetting = true;
@@ -303,19 +303,19 @@ function initCommunityPage() {
       if (nameEl) nameEl.textContent = userName;
       if (badgeEl) badgeEl.textContent = userTier;
 
-      // '커뮤니티설정' 권한이 켜져 있으면 프로필 타일의 '설정' 버튼 표시, 꺼져 있으면 숨김]
+      // '커뮤니티설정' 권한이 켜져 있으면 프로필 타일의 '설정' 버튼 표시, 꺼져 있으면 숨김
       if (btnSidebarSetting) {
         btnSidebarSetting.style.display = canCommunitySetting ? "inline-flex" : "none";
       }
 
-      // 관리자/설정 권한 여부에 따라 비공개 카테고리 표시 동기화]
+      // 관리자/설정 권한 여부에 따라 비공개 카테고리 표시 동기화
       renderSidebarMenu();
 
-      // 사용자 등급 확정 후 글쓰기 버튼 가시성 및 글쓰기 카테고리 드롭다운 즉시 동기화]
+      // 사용자 등급 확정 후 글쓰기 버튼 가시성 및 글쓰기 카테고리 드롭다운 즉시 동기화
       updateWriteButtonVisibility();
       renderWriteBoardSelect();
     } else {
-      // 비로그인 방문자일 때 프로필 카드 안내 처리 및 설정 버튼 숨김]
+      // 비로그인 방문자일 때 프로필 카드 안내 처리 및 설정 버튼 숨김
       window.currentUserUid = "";
       window.currentUserRole = "";
       window.canCommunitySetting = false;
@@ -327,13 +327,13 @@ function initCommunityPage() {
       }
       renderSidebarMenu();
 
-      // 비로그인 방문자 상태에 맞춰 글쓰기 버튼 숨김 처리 및 드롭다운 동기화]
+      // 비로그인 방문자 상태에 맞춰 글쓰기 버튼 숨김 처리 및 드롭다운 동기화
       updateWriteButtonVisibility();
       renderWriteBoardSelect();
     }
   });
 
-  // 프로필 타일의 커뮤니티 '설정' 버튼 클릭 시 우측 메인 영역을 카테고리 관리 에디터 화면으로 전환]
+  // 프로필 타일의 커뮤니티 '설정' 버튼 클릭 시 우측 메인 영역을 카테고리 관리 에디터 화면으로 전환
   const btnSidebarSetting = document.getElementById("btn-sidebar-setting");
   if (btnSidebarSetting) {
     btnSidebarSetting.addEventListener("click", () => {
@@ -352,7 +352,7 @@ function initCommunityPage() {
   initEventHandlers();
 }
 
-// 최초 로딩 시점에는 DOMContentLoaded를 대기하고, 모듈 지연 로드 또는 readyState 완료 시점에는 즉시 실행되도록 분기 처리]
+// 최초 로딩 시점에는 DOMContentLoaded를 대기하고, 모듈 지연 로드 또는 readyState 완료 시점에는 즉시 실행되도록 분기 처리
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initCommunityPage);
 } else {
@@ -465,7 +465,7 @@ function renderCommunityTable() {
   const totalCountEl = document.getElementById("total-count-display");
   if (!tbody) return;
 
-  // 동적 카테고리별 글 수 집계 및 뱃지 업데이트]
+  // 동적 카테고리별 글 수 집계 및 뱃지 업데이트
   updateCategoryCounts();
 
   // 1. 기간 및 검색어 필터가 적용된 전체 유효 게시글 추출
@@ -492,10 +492,10 @@ function renderCommunityTable() {
     return true;
   });
 
-  // 공지글 판별 헬퍼 - 공지사항 카테고리 글 또는 isNotice:true 또는 공지/필독 말머리]
+  // 공지글 판별 헬퍼 - 공지사항 카테고리 글 또는 isNotice:true 또는 공지/필독 말머리
   const checkIsNotice = (p) => p.isNotice === true || p.board === "notice" || p.prefix === "공지" || p.prefix === "필독";
 
-  // 2. 상단 고정 공지 목록 추출 (Pinned Notices)]
+  // 2. 상단 고정 공지 목록 추출 (Pinned Notices)
   let pinnedNotices = [];
   if (!hideNotice) {
     if (currentBoard === "all") {
@@ -509,7 +509,7 @@ function renderCommunityTable() {
     pinnedNotices.sort((a, b) => b.timestampMs - a.timestampMs);
   }
 
-  // 3. 하단 일반 시간순 게시글 피드 목록 추출 (General Feed)]
+  // 3. 하단 일반 시간순 게시글 피드 목록 추출 (General Feed)
   let normalPosts = [];
   if (currentBoard === "all") {
     // 전체글보기: 공지사항 전용 카테고리를 제외한 모든 일반 글 (공지 등록된 타 카테고리 글도 일반 번호로 동시 노출)
@@ -546,7 +546,7 @@ function renderCommunityTable() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const pageNormalPosts = normalPosts.slice(startIndex, startIndex + itemsPerPage);
 
-  // 게시글 단일 행(TR) 생성 헬퍼 함수]
+  // 게시글 단일 행(TR) 생성 헬퍼 함수
   const createPostRowHtml = (post, isPinned, displayNo) => {
     const globalIdx = window.combinedPosts.indexOf(post);
 
@@ -628,7 +628,7 @@ function renderCommunityTable() {
     `;
   };
 
-  // 4. 상단 고정 공지 행 목록 + 현재 페이지 일반 게시글 행 목록 결합 렌더링]
+  // 4. 상단 고정 공지 행 목록 + 현재 페이지 일반 게시글 행 목록 결합 렌더링
   let rowsHtml = "";
 
   // 1페이지(또는 모든 페이지 상단)에 상단 고정 공지 표출
@@ -720,20 +720,20 @@ function showCafeDetailSection(postIndex) {
                          currentUserName === "최고관리자" ||
                          currentUserName === "관리자";
 
-  // 해당 게시글이 속한 카테고리의 글 열람 권한(readPermission) 동적 판별]
+  // 해당 게시글이 속한 카테고리의 글 열람 권한(readPermission) 동적 판별
   const targetBoard = post.board || "notice";
   const catConfig = currentCategories.find(c => c.id === targetBoard);
   const catReadPerm = catConfig ? (catConfig.readPermission || "all") : (targetBoard === "resume" ? "admin" : "all");
 
   const isSecretPost = post.isSecret === true || catReadPerm === "admin";
 
-  // 1단계 - 비밀글 / 관리자 전용 게시판 열람 권한 체크: 작성자 본인 및 관리자만 허용]
+  // 1단계 - 비밀글 / 관리자 전용 게시판 열람 권한 체크: 작성자 본인 및 관리자만 허용
   if (isSecretPost && !isAuthor && !isAllowedAdmin) {
     alert("🔒 비밀글입니다. 작성자 본인과 지정된 관리자(super_admin, admin, admin_user) 등급만 열람하실 수 있습니다.");
     return;
   }
 
-  // 2단계 - 로그인 회원 전용 게시판 열람 권한 체크: 비로그인 사용자 차단 및 로그인 유도]
+  // 2단계 - 로그인 회원 전용 게시판 열람 권한 체크: 비로그인 사용자 차단 및 로그인 유도
   if (catReadPerm === "member" && !currentUid) {
     alert("👥 회원 전용 게시판입니다. 로그인 후 열람해 주시기 바랍니다.");
     const btnLogin = document.getElementById("btn-login");
@@ -743,7 +743,7 @@ function showCafeDetailSection(postIndex) {
 
   const postCategoryManageSection = document.getElementById("cafe-category-manage-section");
 
-  // 게시글 상세보기 전환 시 목록/글쓰기/카테고리 관리 섹션 모두 배타적 숨김 처리]
+  // 게시글 상세보기 전환 시 목록/글쓰기/카테고리 관리 섹션 모두 배타적 숨김 처리
   if (postListSection) postListSection.style.display = "none";
   if (postWriteSection) postWriteSection.style.display = "none";
   if (postCategoryManageSection) postCategoryManageSection.style.display = "none";
@@ -765,7 +765,7 @@ function showCafeDetailSection(postIndex) {
     } catch (e) {}
   }
 
-  // 동적 카테고리 설정에 기반한 게시판 라벨 매핑]
+  // 동적 카테고리 설정에 기반한 게시판 라벨 매핑
   const boardLabel = getBoardLabel(post.board);
 
   let authorActionsHtml = "";
@@ -932,7 +932,7 @@ function showCafeDetailSection(postIndex) {
     </div>
   `;
 
-  // 상세 화면 진입 시 해당 게시글의 댓글 목록 및 작성 폼 비동기 로딩]
+  // 상세 화면 진입 시 해당 게시글의 댓글 목록 및 작성 폼 비동기 로딩
   loadPostComments(post.id || "", postIndex);
 
   const mainCard = document.querySelector(".cafe-main-card");
@@ -1052,7 +1052,7 @@ async function loadPostComments(postId, postIndex) {
 
   window.currentLoadedComments = comments;
 
-  // 부모 댓글과 대댓글(답글) 구조 분리 및 다중 뎁스 연속 답글 지원]
+  // 부모 댓글과 대댓글(답글) 구조 분리 및 다중 뎁스 연속 답글 지원
   const allCommentIds = new Set(comments.map(c => c.id));
   const rootComments = comments.filter(c => !c.parentId || !allCommentIds.has(c.parentId));
 
@@ -1062,10 +1062,10 @@ async function loadPostComments(postId, postIndex) {
     childrenMap[r.parentId].push(r);
   });
 
-  // 무한 계층 지원을 위한 다크 테마 전용 5대 순환 컬러 팔레트]
+  // 무한 계층 지원을 위한 다크 테마 전용 5대 순환 컬러 팔레트
   const THREAD_COLORS = ["#00f3ff", "#c084fc", "#34d399", "#fbbf24", "#fb923c"];
 
-  // 재귀적으로 모든 하위 답글을 계층별 깊이(depth)와 색상, 부모 작성자 멘션을 매핑하여 렌더링하는 헬퍼 함수]
+  // 재귀적으로 모든 하위 답글을 계층별 깊이(depth)와 색상, 부모 작성자 멘션을 매핑하여 렌더링하는 헬퍼 함수
   function renderThread(comment, depth = 0, parentAuthor = null) {
     let threadHtml = renderSingleCommentHtml(comment, depth, postId, postIndex, currentUid, currentUserName, isAllowedAdmin, parentAuthor, THREAD_COLORS);
     const childList = childrenMap[comment.id] || [];
@@ -1114,18 +1114,18 @@ function renderSingleCommentHtml(c, depth, postId, postIndex, currentUid, curren
   const colorIndex = isReply ? ((depth - 1) % colors.length) : 0;
   const threadColor = colors[colorIndex];
 
-  // 깊이(depth)별 동적 들여쓰기 - 1단계: 1.5rem(24px), 2단계: 3.0rem(48px), 3단계: 4.5rem, 4단계 이상: 5.0rem 상한 고정]
+  // 깊이(depth)별 동적 들여쓰기 - 1단계: 1.5rem(24px), 2단계: 3.0rem(48px), 3단계: 4.5rem, 4단계 이상: 5.0rem 상한 고정
   const marginRem = isReply ? Math.min(depth * 1.5, 5.0) : 0;
   const itemStyle = isReply ? `style="margin-left: ${marginRem}rem; border-left: 2.5px solid ${threadColor}; background: rgba(15, 23, 42, 0.45); border-radius: 0 10px 10px 0; padding-left: 1rem; margin-top: 0.5rem; margin-bottom: 0.5rem;"` : '';
 
-  // 2단계 이상 답글의 경우 누구의 말에 대한 답글인지 명확히 전달하는 멘션 뱃지]
+  // 2단계 이상 답글의 경우 누구의 말에 대한 답글인지 명확히 전달하는 멘션 뱃지
   const targetAuthor = c.parentAuthorName || parentAuthor;
   let mentionBadgeHtml = "";
   if (isReply && targetAuthor) {
     mentionBadgeHtml = `<span class="reply-mention-tag" style="display: inline-flex; align-items: center; background: rgba(255, 255, 255, 0.08); color: ${threadColor}; border: 1px solid ${threadColor}66; padding: 0.1rem 0.45rem; border-radius: 6px; font-size: 0.78rem; font-weight: 700; margin-right: 0.45rem;">@${escapeHtml(targetAuthor)}</span>`;
   }
 
-  // 원댓글뿐만 아니라 모든 답글(대댓글)에도 '↪ 답글' 버튼을 노출하여 답글에 연속 답글 작성 지원]
+  // 원댓글뿐만 아니라 모든 답글(대댓글)에도 '↪ 답글' 버튼을 노출하여 답글에 연속 답글 작성 지원
   const replyBtnHtml = `
     <button type="button" class="btn-comment-action" onclick="window.toggleReplyForm('${c.id}', '${postId}', ${postIndex})" title="답글 달기">
       <i class="fa-solid fa-reply" style="${isReply ? `color: ${threadColor};` : ''}"></i> 답글
@@ -1248,7 +1248,7 @@ async function submitPostComment(postId, postIndex, parentId = null) {
   const now = new Date();
   const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}. ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  // 대댓글 대상 부모 작성자명 추출]
+  // 대댓글 대상 부모 작성자명 추출
   let parentAuthorName = "";
   if (parentId && Array.isArray(window.currentLoadedComments)) {
     const parentComment = window.currentLoadedComments.find(c => c.id === parentId);
@@ -1280,7 +1280,7 @@ async function submitPostComment(postId, postIndex, parentId = null) {
         createdAt: serverTimestamp()
       });
 
-      // 게시글 총 댓글 수 카운트 실시간 업데이트]
+      // 게시글 총 댓글 수 카운트 실시간 업데이트
       const snap = await getDocs(commentsRef);
       const count = snap.size;
       await updateDoc(doc(db, "community_posts", postId), {
@@ -1379,7 +1379,7 @@ function showCafeWriteSection() {
 
   const isLoggedIn = Boolean(auth.currentUser || window.isLoggedIn || (currentUid && currentUserName && currentUserName !== "방문자님" && currentUserName !== "로그인 필요"));
 
-  // 비로그인 사용자가 글쓰기 시도 시 로그인 모달 팝업으로 자연스럽게 유도]
+  // 비로그인 사용자가 글쓰기 시도 시 로그인 모달 팝업으로 자연스럽게 유도
   if (!isLoggedIn) {
     if (typeof window.showAuthModal === "function") {
       window.showAuthModal("login");
@@ -1389,7 +1389,7 @@ function showCafeWriteSection() {
     return;
   }
 
-  // 카테고리별 글쓰기 권한 검증 가드 - 미인가 등급의 글 작성 차단]
+  // 카테고리별 글쓰기 권한 검증 가드 - 미인가 등급의 글 작성 차단
   if (userRole !== "super_admin") {
     if (currentBoard !== "all") {
       const currentCat = currentCategories.find(c => c.id === currentBoard);
@@ -1419,13 +1419,13 @@ function showCafeWriteSection() {
   const postDetailSection = document.getElementById("cafe-post-detail-section");
   const postCategoryManageSection = document.getElementById("cafe-category-manage-section");
 
-  // 글 작성 폼 전환 시 목록/상세보기/카테고리 관리 섹션 배타적 숨김 처리]
+  // 글 작성 폼 전환 시 목록/상세보기/카테고리 관리 섹션 배타적 숨김 처리
   if (postListSection) postListSection.style.display = "none";
   if (postDetailSection) postDetailSection.style.display = "none";
   if (postCategoryManageSection) postCategoryManageSection.style.display = "none";
   if (postWriteSection) postWriteSection.style.display = "block";
 
-  // 사용자가 작성 가능한 카테고리만 셀렉트 옵션으로 재구성 및 기본값 동기화]
+  // 사용자가 작성 가능한 카테고리만 셀렉트 옵션으로 재구성 및 기본값 동기화
   renderWriteBoardSelect();
   const writeBoardSelect = document.getElementById("write-board-select");
   if (writeBoardSelect) {
@@ -1441,7 +1441,7 @@ function showCafeWriteSection() {
     }
   }
 
-  // 관리자 전용 공지글 설정 체크박스 표출 및 초기화]
+  // 관리자 전용 공지글 설정 체크박스 표출 및 초기화
   const noticeCheckWrap = document.getElementById("write-notice-check-wrapper");
   const noticeCheck = document.getElementById("write-notice-check");
   if (noticeCheckWrap) {
@@ -1464,7 +1464,7 @@ function showCafeListSection() {
   const postDetailSection = document.getElementById("cafe-post-detail-section");
   const postCategoryManageSection = document.getElementById("cafe-category-manage-section");
 
-  // 게시글 목록 전환 시 글쓰기/상세보기/카테고리 관리 섹션을 확실하게 숨겨 화면 겹침 방지]
+  // 게시글 목록 전환 시 글쓰기/상세보기/카테고리 관리 섹션을 확실하게 숨겨 화면 겹침 방지
   if (postWriteSection) postWriteSection.style.display = "none";
   if (postDetailSection) postDetailSection.style.display = "none";
   if (postCategoryManageSection) postCategoryManageSection.style.display = "none";
@@ -1480,7 +1480,7 @@ function showCafeCategoryManageSection() {
   const postDetailSection = document.getElementById("cafe-post-detail-section");
   const postCategoryManageSection = document.getElementById("cafe-category-manage-section");
 
-  // 카테고리 관리 전환 시 목록/글쓰기/상세보기 섹션 배타적 숨김 처리]
+  // 카테고리 관리 전환 시 목록/글쓰기/상세보기 섹션 배타적 숨김 처리
   if (postListSection) postListSection.style.display = "none";
   if (postWriteSection) postWriteSection.style.display = "none";
   if (postDetailSection) postDetailSection.style.display = "none";
@@ -1532,7 +1532,7 @@ window.editPost = function(postIndex) {
   if (contentInput) contentInput.value = post.content || "";
   if (tagsInput) tagsInput.value = post.tags || "";
 
-  // 수정 시 기존 공지글 여부 체크박스 상태 복원]
+  // 수정 시 기존 공지글 여부 체크박스 상태 복원
   if (noticeCheck) {
     noticeCheck.checked = (post.isNotice === true || post.board === "notice" || post.prefix === "공지" || post.prefix === "필독");
   }
@@ -1621,7 +1621,7 @@ async function submitNewPost() {
   const contentHtml = editorEl ? editorEl.innerHTML : content.replace(/\n/g, "<br>");
   const tags = tagsEl ? tagsEl.value.trim() : "";
 
-  // 관리자 공지 체크박스 체크 여부 또는 공지사항 카테고리 여부에 따라 공지 플래그 판별]
+  // 관리자 공지 체크박스 체크 여부 또는 공지사항 카테고리 여부에 따라 공지 플래그 판별
   const noticeCheckEl = document.getElementById("write-notice-check");
   const isNotice = (noticeCheckEl && noticeCheckEl.checked) || board === "notice" || prefix === "공지" || prefix === "필독";
   if (isNotice && (!prefix || prefix === "일반")) {
@@ -1633,7 +1633,7 @@ async function submitNewPost() {
     return false;
   }
 
-  // 글 등록 최종 권한 가드 - 선택된 카테고리에 대한 글쓰기 권한 검증]
+  // 글 등록 최종 권한 가드 - 선택된 카테고리에 대한 글쓰기 권한 검증
   const userRole = (window.currentUserRole || "").toLowerCase();
   if (userRole !== "super_admin") {
     const targetCat = currentCategories.find(c => c.id === board);
@@ -1725,7 +1725,7 @@ function initEventHandlers() {
     renderCommunityTable();
   };
 
-  // 5단계 최적화 - 검색어 타이핑 시 150ms 디바운스를 적용하여 엔터 없이도 0ms 즉시 실시간 인메모리 필터링]
+  // 5단계 최적화 - 검색어 타이핑 시 150ms 디바운스를 적용하여 엔터 없이도 0ms 즉시 실시간 인메모리 필터링
   let searchDebounceTimer = null;
   const debouncedSearch = () => {
     clearTimeout(searchDebounceTimer);
@@ -1742,7 +1742,7 @@ function initEventHandlers() {
       }
     });
   }
-  // 기간 및 대상 필터 변경 시 별도 검색 버튼 클릭 없이 즉시 실시간 반영]
+  // 기간 및 대상 필터 변경 시 별도 검색 버튼 클릭 없이 즉시 실시간 반영
   if (selectPeriod) selectPeriod.addEventListener("change", runSearch);
   if (selectTarget) selectTarget.addEventListener("change", runSearch);
 
@@ -1760,7 +1760,7 @@ function initEventHandlers() {
       for (const file of files) {
         if (!file.type.startsWith("image/")) continue;
         try {
-          // 고용량 이미지 첨부 시 0.1초 클라이언트 자동 리사이징 & 압축으로 90% 용량 절감]
+          // 고용량 이미지 첨부 시 0.1초 클라이언트 자동 리사이징 & 압축으로 90% 용량 절감
           const compressedDataUrl = await compressImage(file, 1600, 0.85);
           if (compressedDataUrl) {
             window.attachedPhotos.push({ name: file.name, dataUrl: compressedDataUrl });
@@ -1952,7 +1952,7 @@ async function loadCommunityCategories() {
     if (catDocSnap.exists()) {
       const data = catDocSnap.data();
       if (Array.isArray(data.categories) && data.categories.length > 0) {
-        // Firestore에 저장된 카테고리 데이터에 readPermission 및 writeRoles 필드가 누락된 경우 기본값으로 안전 보정]
+        // Firestore에 저장된 카테고리 데이터에 readPermission 및 writeRoles 필드가 누락된 경우 기본값으로 안전 보정
         currentCategories = data.categories.map(c => {
           if (c.type === "divider") return c;
           const defaultWriteRoles = (c.id === "notice") ? [...ADMIN_ROLE_KEYS] : availableRoles.map(r => r.key);
@@ -1967,7 +1967,7 @@ async function loadCommunityCategories() {
       }
     } else {
       currentCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-      // [성능 최적화] 백그라운드 1회 시딩
+      // 성능 최적화: 백그라운드 1회 시딩
       setDoc(catDocRef, {
         categories: DEFAULT_CATEGORIES,
         updatedAt: serverTimestamp()
@@ -1978,7 +1978,7 @@ async function loadCommunityCategories() {
     currentCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
   }
 
-  // Firestore 조회 완료 즉시 브라우저 로컬 스토리지에 캐싱하여 다음 접속 시 0.001초 로딩 보장]
+  // Firestore 조회 완료 즉시 브라우저 로컬 스토리지에 캐싱하여 다음 접속 시 0.001초 로딩 보장
   try {
     localStorage.setItem("community_cached_categories", JSON.stringify(currentCategories));
   } catch (err) { }
@@ -1987,7 +1987,7 @@ async function loadCommunityCategories() {
   renderWriteBoardSelect();
   updateCategoryCounts();
   updateBoardTitleDisplay();
-  // 카테고리 설정 로드 직후 현재 사용자의 글쓰기 권한에 맞춰 버튼 노출/숨김 즉시 동기화]
+  // 카테고리 설정 로드 직후 현재 사용자의 글쓰기 권한에 맞춰 버튼 노출/숨김 즉시 동기화
   updateWriteButtonVisibility();
 }
 
@@ -2010,7 +2010,7 @@ function renderSidebarMenu() {
       html += `<li class="cafe-menu-divider"></li>`;
       return;
     }
-    // 비공개 카테고리는 일반 사용자에게 숨김 처리, 관리자/설정 권한자에게는 표출]
+    // 비공개 카테고리는 일반 사용자에게 숨김 처리, 관리자/설정 권한자에게는 표출
     if (!cat.isPublic && !window.canCommunitySetting) {
       return;
     }
@@ -2038,12 +2038,12 @@ function renderSidebarMenu() {
       showCafeListSection();
       updateBoardTitleDisplay();
       renderCommunityTable();
-      // 카테고리 전환 시 해당 카테고리의 글쓰기 권한에 맞춰 글쓰기 버튼 노출/숨김 즉시 갱신]
+      // 카테고리 전환 시 해당 카테고리의 글쓰기 권한에 맞춰 글쓰기 버튼 노출/숨김 즉시 갱신
       updateWriteButtonVisibility();
     });
   });
 
-  // 사이드바 메뉴 HTML 구성 완료 후 현재 로드된 게시글 데이터(window.combinedPosts)를 기반으로 카테고리별 글 수 뱃지 실시간 동기화 갱신]
+  // 사이드바 메뉴 HTML 구성 완료 후 현재 로드된 게시글 데이터(window.combinedPosts)를 기반으로 카테고리별 글 수 뱃지 실시간 동기화 갱신
   updateCategoryCounts();
 }
 
@@ -2062,7 +2062,7 @@ function renderWriteBoardSelect() {
   currentCategories.forEach(cat => {
     if (cat.type === "divider") return;
 
-    // 사용자가 글쓰기 권한을 가진 카테고리만 옵션으로 노출하여 미인가 작성을 원천 방지]
+    // 사용자가 글쓰기 권한을 가진 카테고리만 옵션으로 노출하여 미인가 작성을 원천 방지
     const allowed = Array.isArray(cat.writeRoles) ? cat.writeRoles : availableRoles.map(r => r.key);
     if (!isSuperAdmin && userRole && !allowed.includes(userRole)) {
       return;
@@ -2140,7 +2140,7 @@ function updateCategoryCounts() {
  * 카테고리 관리 · 설정 인라인 에디터 초기화 함수
  */
 async function initCategoryManageEditor() {
-  // 에디터 오픈 시 최신 회원 등급 목록 먼저 백그라운드 동기화]
+  // 에디터 오픈 시 최신 회원 등급 목록 먼저 백그라운드 동기화
   await loadAvailableRoles();
   editingCategories = JSON.parse(JSON.stringify(currentCategories));
   if (editingCategories.length > 0) {
@@ -2190,7 +2190,7 @@ function renderCategoryEditorList() {
       const privateBadge = !cat.isPublic ? `<span class="cat-item-private-badge">비공개</span>` : "";
       const defaultBadge = cat.isDefault ? `<span style="background: rgba(16,185,129,0.2); color:#34d399; font-size:0.68rem; padding:0.1rem 0.35rem; border-radius:4px; margin-left:0.25rem;">대표</span>` : "";
       
-      // 카테고리별 글 열람 권한 뱃지 (all: 전체공개, member: 회원전용, admin: 비밀글·관리자)]
+      // 카테고리별 글 열람 권한 뱃지 (all: 전체공개, member: 회원전용, admin: 비밀글·관리자)
       let permBadge = "";
       const rp = cat.readPermission || (cat.id === "resume" ? "admin" : "all");
       if (rp === "admin") {
@@ -2199,7 +2199,7 @@ function renderCategoryEditorList() {
         permBadge = `<span class="cat-item-perm-badge member"><i class="fa-solid fa-user-group"></i> 회원</span>`;
       }
 
-      // 글쓰기 권한 뱃지 - 전체 등급이 아닌 특정 등급으로 제한된 경우 시각적 표출]
+      // 글쓰기 권한 뱃지 - 전체 등급이 아닌 특정 등급으로 제한된 경우 시각적 표출
       let writePermBadge = "";
       const wr = Array.isArray(cat.writeRoles) ? cat.writeRoles : availableRoles.map(r => r.key);
       if (wr.length > 0 && wr.length < availableRoles.length) {
@@ -2243,7 +2243,7 @@ function renderCategoryEditorList() {
   });
 }
 
-// HTML5 드래그 앤 드롭 순서 변경 이벤트 핸들러]
+// HTML5 드래그 앤 드롭 순서 변경 이벤트 핸들러
 let dragSrcIndex = null;
 function handleCatDragStart(e) {
   dragSrcIndex = parseInt(this.dataset.index, 10);
@@ -2340,13 +2340,13 @@ function bindCategoryDetailForm() {
     if (publicNo) publicNo.checked = true;
   }
 
-  // 글 열람 권한 라디오 선택 바인딩]
+  // 글 열람 권한 라디오 선택 바인딩
   const rp = cat.readPermission || (cat.id === "resume" ? "admin" : "all");
   if (rp === "admin" && readPermAdmin) readPermAdmin.checked = true;
   else if (rp === "member" && readPermMember) readPermMember.checked = true;
   else if (readPermAll) readPermAll.checked = true;
 
-  // 글쓰기 권한 등급 다중 선택 체크박스 그리드 동적 바인딩]
+  // 글쓰기 권한 등급 다중 선택 체크박스 그리드 동적 바인딩
   const writeRolesContainer = document.getElementById("cat-write-roles-container");
   if (writeRolesContainer) {
     if (!Array.isArray(cat.writeRoles)) {
@@ -2445,7 +2445,7 @@ window.handleCatSettingChange = function() {
   cat.showCount = showCountChk ? showCountChk.checked : true;
   cat.isPublic = publicYes ? publicYes.checked : true;
   
-  // 글 열람 권한 상태 저장 (all / member / admin)]
+  // 글 열람 권한 상태 저장 (all / member / admin)
   if (readPermAdmin && readPermAdmin.checked) cat.readPermission = "admin";
   else if (readPermMember && readPermMember.checked) cat.readPermission = "member";
   else cat.readPermission = "all";
@@ -2590,7 +2590,7 @@ async function saveCategoryManageChanges() {
       updatedBy: window.currentUserUid || "admin"
     });
     currentCategories = JSON.parse(JSON.stringify(editingCategories));
-    // 카테고리 저장 즉시 로컬 캐시를 최신화하여 화면 새로고침 시에도 지연 없이 즉시 반영]
+    // 카테고리 저장 즉시 로컬 캐시를 최신화하여 화면 새로고침 시에도 지연 없이 즉시 반영
     try {
       localStorage.setItem("community_cached_categories", JSON.stringify(currentCategories));
     } catch (err) { }
@@ -2599,9 +2599,9 @@ async function saveCategoryManageChanges() {
     renderWriteBoardSelect();
     updateCategoryCounts();
     updateBoardTitleDisplay();
-    // 카테고리 권한/설정 변경사항을 현재 글 목록 테이블에 즉시 재렌더링하여 회원전용/비밀글/전체공개 뱃지 실시간 반영]
+    // 카테고리 권한/설정 변경사항을 현재 글 목록 테이블에 즉시 재렌더링하여 회원전용/비밀글/전체공개 뱃지 실시간 반영
     renderCommunityTable();
-    // 카테고리 저장 완료 시 현재 사용자의 등급에 맞춰 글쓰기 버튼 노출/숨김 상태 즉시 동기화]
+    // 카테고리 저장 완료 시 현재 사용자의 등급에 맞춰 글쓰기 버튼 노출/숨김 상태 즉시 동기화
     updateWriteButtonVisibility();
     alert("카테고리 설정이 성공적으로 저장되었습니다.");
     showCafeListSection();
