@@ -3489,114 +3489,141 @@ body.home-page {
      모바일 및 태블릿 통합 대응 (1024px 이하)
      ========================================================================== */
 
-  /* 모바일 고정 메뉴바에 버튼이 가려지지 않도록 상단 패딩을 6.5rem으로 적당히 띄워 배치 */
+  /* 모바일 고정 메뉴바에 버튼이 가려지지 않도록 상단 패딩을 2단 헤더 높이에 맞추어 7.5rem으로 배치 */
   .hero-section {
-    padding-top: 6.5rem;
+    padding-top: 7.5rem;
   }
 
-  /* 모바일 화면 가로 공간을 최대한 활용하기 위해 전체 컨테이너 여백 및 간격 축소 */
+  /* 모바일/태블릿 환경에서 2단 상단바를 수용하기 위해 네비게이션 바 높이를 유연하게 자동 확장 */
+  .common-navbar,
+  .common-navbar.navbar-scrolled {
+    height: auto !important;
+    min-height: 94px !important;
+    padding: 0.45rem 0 0.4rem 0 !important;
+  }
+
+  /* 모바일 화면 가로 공간 최적화 및 1행(로고+햄버거), 2행(가로 스크롤 탭 메뉴) 2단 분기 flex-wrap 적용 */
   .nav-container {
-    padding: 0 1rem; /* 좌우 여백을 2rem에서 1rem으로 줄여 공간 확보 */
-    gap: 0.5rem; /* 아이템 간 간격을 1.5rem에서 0.5rem으로 줄여 겹침 방지 */
+    padding: 0 1rem; /* 좌우 여백 확보 */
+    gap: 0; /* 불필요한 자동 간격 제거 */
+    flex-wrap: wrap; /* 1행과 2행 구분을 위한 줄바꿈 허용 */
+    justify-content: space-between;
+    align-items: center;
   }
 
-  /* 로고 텍스트 크기와 이미지 높이를 모바일 화면에 알맞게 축소하여 가로 공간 확보 */
+  /* 1행 좌측: 로고 텍스트 크기와 이미지 높이를 모바일 화면에 알맞게 축소 배치 */
   .nav-brand {
-    font-size: 1.35rem; /* 1.75rem에서 1.35rem으로 축소 */
-    gap: 0.5rem; /* 로고 이미지와 글자 사이 간격 축소 */
+    font-size: 1.35rem;
+    gap: 0.5rem;
+    order: 1; /* 1행 좌측 첫 번째 순서 배치 */
+    margin-right: auto;
   }
 
   .nav-logo {
-    height: 28px; /* 36px에서 28px로 축소 */
+    height: 28px;
   }
 
-  /* 햄버거 토글 단추 노출 */
+  /* 1행 우측: 햄버거 토글 단추 노출 */
   .nav-toggle {
     display: flex;
+    order: 2; /* 1행 우측 두 번째 순서 배치 */
+    margin-left: auto;
   }
 
-
-  /* 신규 추가: 모바일 및 태블릿(1024px 이하) 환경에서 상단 퀵 메뉴 바 활성화 및 정렬 여백 최적화 */
+  /* 2행 전체: 시안 A 모바일 상단 텍스트 탭 바 (가로 스크롤 가능한 100% 가로폭 레이아웃) */
   .nav-mobile-quick {
     display: flex;
     align-items: center;
-    gap: 0.35rem; /* 아이콘 개수 증가에 맞춰 간격을 0.6rem -> 0.35rem으로 조밀하게 튜닝 */
-    margin-left: auto;
-    margin-right: 0.6rem; /* 햄버거 버튼과의 간격 최적화 */
+    gap: 0.45rem; /* 알약 텍스트 버튼 간의 정돈된 여백 */
+    order: 3; /* 2행 전체 영역 배치 */
+    width: 100%;
+    margin-top: 0.35rem;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0.15rem 0.2rem 0.35rem 0.2rem;
     z-index: 1000;
     
-    /* 가로 슬라이드 스크롤 기능 활성화 및 미려한 제어 */
-    overflow-x: auto; /* 가로 스크롤 가능하도록 설정 */
-    white-space: nowrap; /* 아이템들이 줄바꿈되지 않고 가로 한 줄로 유지되도록 보장 */
-    -webkit-overflow-scrolling: touch; /* iOS 모바일 터치 스크롤 시 튕기듯 부드럽게 감속 스크롤 지원 */
-    flex-wrap: nowrap; /* flex 컨테이너 내부 래핑 금지 */
-    min-width: 0; /* flex 내부에서 유연하게 줄어들어 overflow-x가 실제로 동작하도록 최소너비 해제 */
+    /* 가로 슬라이드 스크롤 기능 활성화 */
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* iOS 부드러운 감속 스크롤 지원 */
+    flex-wrap: nowrap;
+    min-width: 0;
     
-    /* 깔끔한 디자인 유지를 위해 스크롤바 노출 차단 */
-    -ms-overflow-style: none;  /* IE 및 Edge 브라우저에서 스크롤바 숨김 */
-    scrollbar-width: none;  /* Firefox 브라우저에서 스크롤바 숨김 */
+    /* 깔끔한 디자인 유지를 위해 스크롤바 숨김 */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  /* 크롬, 사파리, 오페라 브라우저용 스크롤바 노출 방지 스타일 정의 */
+  /* 크롬, 사파리 브라우저용 스크롤바 노출 방지 */
   .nav-mobile-quick::-webkit-scrollbar {
-    display: none; /* 스크롤바 영역을 보이지 않게 처리 */
+    display: none;
   }
 
-  /* 신규 추가: 퀵 바로가기 아이콘 버튼 디자인 (아이콘 증가로 인해 크기를 36px -> 30px로 콤팩트 튜닝) */
+  /* 시안 A: 알약(Pill) 형태의 선명한 글자 탭 버튼 디자인 */
   .quick-icon-btn {
-    width: 30px;
-    height: 30px;
-    display: flex;
+    width: auto !important;
+    height: 32px !important;
+    padding: 0 0.85rem !important;
+    border-radius: 100px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #cbd5e1 !important;
+    text-decoration: none !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important; /* 가로 스크롤 시 버튼 너비 축소 방지 */
+    display: inline-flex; /* 인라인 display: none 및 JS 동적 숨김 제어가 정상 동작하도록 !important 제거 */
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 0.95rem; /* 아이콘 배율에 맞춰 폰트 크기 소폭 축소 */
-    transition: var(--transition-smooth);
-    cursor: pointer;
-    padding: 0;
-    box-sizing: border-box;
-    flex-shrink: 0; /* 가로 공간이 협소할 때 아이콘 원형 형태가 찌그러지지 않도록 차단 */
   }
 
-  /* 신규 추가: 모바일 퀵 버튼 호버/활성화 시 브랜드 테마 네온 글로우 테두리 및 배경 반사 효과 */
+  /* 비로그인 및 권한 미보유 상태의 퀵 메뉴 버튼 인라인 숨김 강제 보장 가드 */
+  .quick-icon-btn[style*="display: none"] {
+    display: none !important;
+  }
+
+  /* 탭 버튼 호버 및 활성화(선택됨) 시 네온 하이라이트 효과 */
   .quick-icon-btn:hover,
   .quick-icon-btn.active {
-    background: rgba(99, 102, 241, 0.25);
-    border-color: rgba(99, 102, 241, 0.6);
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
-    color: #ffffff;
+    background: rgba(0, 243, 255, 0.2) !important;
+    border-color: #00f3ff !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.35) !important;
   }
 
-  /* 세로형 슬라이딩 서랍 메뉴 디자인 정의 (가로 사이즈를 210px로 축소하고 우측 슬라이드로 최적화) */
+  /* 세로형 슬라이딩 서랍 메뉴 (2단 헤더 높이 94px에 맞춰 상단 시작점 정밀 조정) */
   .nav-menu {
     position: fixed;
-    top: 80px;
-    right: -210px; /* 기존 right: -260px에서 210px로 축소하여 컴팩트화 */
-    left: auto; /* 좌측 정렬 초기화 */
-    width: 210px; /* 가로폭을 컴팩트하게 210px로 고정하여 모바일 가용 화면 확보 */
-    height: calc(100vh - 80px);
-    background: rgba(12, 16, 32, 0.96); /* 일관된 프리미엄 다크 네이비 투명 광택 배경 적용 */
+    top: 94px;
+    right: -210px;
+    left: auto;
+    width: 210px;
+    height: calc(100vh - 94px);
+    background: rgba(12, 16, 32, 0.96);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     flex-direction: column;
-    padding: 1.5rem 1.25rem; /* 세로 패딩 축소로 한눈에 들어오게 조정 */
-    gap: 0.75rem; /* 자식 요소 간의 수직 여백을 조밀하게 조정 */
-    align-items: center; /* 메뉴 및 모든 구성 요소를 가로 정중앙 정렬 */
-    border-left: 2px solid rgba(0, 243, 255, 0.85); /* 예쁜 형광 시안 테두리 변경 및 두께 확대 */
+    padding: 1.5rem 1.25rem;
+    gap: 0.75rem;
+    align-items: center;
+    border-left: 2px solid rgba(0, 243, 255, 0.85);
     border-top: none;
     transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow-y: auto; /* 스크롤 활성화 */
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.45), -3px 0 12px rgba(0, 243, 255, 0.25); /* 예쁜 형광 글로우 그림자 추가 */
+    overflow-y: auto;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.45), -3px 0 12px rgba(0, 243, 255, 0.25);
+    z-index: 1005;
   }
 
-  /* 스크롤 시 서랍 상단 위치 조율 */
+  /* 스크롤 시에도 2단 헤더 높이에 맞추어 서랍 메뉴 위치 고정 */
   .common-navbar.navbar-scrolled .nav-menu {
-    top: 70px;
-    height: calc(100vh - 70px);
+    top: 94px;
+    height: calc(100vh - 94px);
   }
 
   /* 햄버거 클릭 시 우측에서 등장하는 활성화 클래스 */

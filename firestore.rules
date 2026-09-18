@@ -11,10 +11,24 @@ service cloud.firestore {
     match /users/{userId} {
       // 읽기(read) 규칙: 회원가입 시 아이디/이메일 중복 체크 및 프로필 조회가 가능하도록 전체 읽기 허용
       allow read: if true;
-      // 쓰기(write) 규칙: 로그인된 상태이며, 본인 데이터이거나 최고 관리자인 경우에만 허용합니다
-      allow write: if request.auth != null && (
+      
+      // 생성(create) 규칙: 로그인된 본인 계정 데이터 생성 허용
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // 삭제(delete) 규칙: 회원 계정 DB 영구 삭제는 최고 관리자(super_admin)만 수행 허용
+      allow delete: if request.auth != null && getUserRole() == "super_admin";
+      
+      // 수정(update) 규칙:
+      // 1. 본인 프로필 정보 수정 허용
+      // 2. 최고 관리자(super_admin)는 등급 변경을 포함한 모든 필드 수정 허용
+      // 3. 관리자 등급군(admin, admin_user)은 등급(role) 임의 변경을 제외한 일반 회원 정보(국가/선호언어 등) 수정 허용
+      allow update: if request.auth != null && (
         request.auth.uid == userId || 
-        getUserRole() == "super_admin"
+        getUserRole() == "super_admin" ||
+        (
+          getUserRole() in ["admin", "admin_user"] &&
+          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+        )
       );
     }
 

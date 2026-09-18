@@ -109,7 +109,32 @@ function applyNavTranslations(langCode) {
   if (menuPartners) menuPartners.textContent = t.partners;
   if (menuCommunity) menuCommunity.textContent = t.community;
 
-  // 3. 우측 인증 뱃지 및 액션 버튼 번역 적용
+  // 3. 모바일 상단 2단 가로 탭 바(시안 A) 텍스트 다국어 번역 동기화
+  const qHome = document.querySelector("#nav-mobile-quick a[href='/index.html']");
+  const qAbout = document.querySelector("#nav-mobile-quick a[href='/about.html']:not([href*='#'])");
+  const qServices = document.querySelector("#nav-mobile-quick a[href='/about.html#services']");
+  const qInterpretation = document.querySelector("#nav-mobile-quick a[href='/interpreters.html']");
+  const qBooking = document.querySelector("#nav-mobile-quick a[href='/booking-lang.html']");
+  const qPartners = document.querySelector("#nav-mobile-quick a[href='/partners.html'], #nav-mobile-quick a[href='/index.html#partners']");
+  const qCommunity = document.querySelector("#nav-mobile-quick a[href='/community.html']");
+  const qMyRes = document.getElementById("quick-btn-my-reservations");
+  const qAdmin = document.getElementById("quick-btn-admin-dashboard");
+  const qStats = document.getElementById("quick-btn-stats-dashboard");
+  const qLogin = document.getElementById("quick-btn-login");
+
+  if (qHome) qHome.textContent = t.home;
+  if (qAbout) qAbout.textContent = t.about;
+  if (qServices) qServices.textContent = t.services;
+  if (qInterpretation) qInterpretation.textContent = t.interpretation;
+  if (qBooking) qBooking.textContent = t.booking;
+  if (qPartners) qPartners.textContent = t.partners;
+  if (qCommunity) qCommunity.textContent = t.community;
+  if (qMyRes) qMyRes.textContent = t.myRes;
+  if (qAdmin) qAdmin.textContent = t.admin;
+  if (qStats) qStats.textContent = t.stats;
+  if (qLogin) qLogin.textContent = t.login;
+
+  // 4. 우측 인증 뱃지 및 액션 버튼 번역 적용
   const btnMyRes = document.getElementById("btn-my-reservations");
   const btnAdmin = document.getElementById("btn-admin-dashboard");
   const btnStats = document.getElementById("btn-stats-dashboard");
@@ -122,7 +147,7 @@ function applyNavTranslations(langCode) {
   if (btnLogout) btnLogout.textContent = t.logout;
   if (btnLogin) btnLogin.textContent = t.login;
 
-  // 4. 언어 변경 전역 이벤트 전파 (다른 컴포넌트 동기화용)
+  // 5. 언어 변경 전역 이벤트 전파 (다른 컴포넌트 동기화용)
   window.dispatchEvent(new CustomEvent("appLanguageChanged", { detail: { lang: langCode, t: t } }));
 }
 
@@ -352,8 +377,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 로그인 세션 복원 시 모바일 퀵 버튼 상태도 동시에 즉시 0ms로 노출 조정
-        if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
-        if (quickBtnLogin) quickBtnLogin.style.display = "none";
+        if (quickBtnMyReservations) quickBtnMyReservations.style.setProperty("display", "inline-flex");
+        if (quickBtnLogin) quickBtnLogin.style.setProperty("display", "none", "important");
 
         // 세션 캐시에 기록된 관리자 및 예약통계 권한 확인 후 0초 만에 인메모리 노출/숨김 제어
         const permCacheStr = sessionStorage.getItem(`admin_permissions_${userObj.uid}`);
@@ -374,15 +399,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (btnAdminElem) btnAdminElem.style.display = isAdmin ? "inline-block" : "none";
         if (btnStatsElem) btnStatsElem.style.display = hasStats ? "inline-block" : "none";
 
-        // 모바일용 퀵 버튼 관리자/통계 상태 동시 0ms 제어
-        if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = isAdmin ? "inline-flex" : "none";
-        if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = hasStats ? "inline-flex" : "none";
+        // 모바일용 퀵 버튼 관리자/통계 상태 동시 0ms 제어 (미권한 시 !important 숨김 보장)
+        if (quickBtnAdminDashboard) {
+          if (isAdmin) {
+            quickBtnAdminDashboard.style.setProperty("display", "inline-flex");
+          } else {
+            quickBtnAdminDashboard.style.setProperty("display", "none", "important");
+          }
+        }
+        if (quickBtnStatsDashboard) {
+          if (hasStats) {
+            quickBtnStatsDashboard.style.setProperty("display", "inline-flex");
+          } else {
+            quickBtnStatsDashboard.style.setProperty("display", "none", "important");
+          }
+        }
       } else {
         // 로그인 세션 캐시가 없는 상태(비로그인)일 때의 모바일 퀵버튼 노출 상태 0ms 세팅
-        if (quickBtnMyReservations) quickBtnMyReservations.style.display = "none";
-        if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.display = "none";
-        if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = "none";
-        if (quickBtnLogin) quickBtnLogin.style.display = "inline-flex";
+        if (quickBtnMyReservations) quickBtnMyReservations.style.setProperty("display", "none", "important");
+        if (quickBtnAdminDashboard) quickBtnAdminDashboard.style.setProperty("display", "none", "important");
+        if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.setProperty("display", "none", "important");
+        if (quickBtnLogin) quickBtnLogin.style.setProperty("display", "inline-flex");
 
         // 비로그인 상태일 때 데스크톱용 상단 네비게이션 로그인 바인딩 영역도 즉시 리셋하여 이전 사용자의 프로필, 예약내역 배지 등이 노출되는 버그를 예방함
         if (authUserElem) authUserElem.style.display = "none";
@@ -413,6 +450,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const navMenu = document.getElementById("nav-menu");
   const navContainer = document.querySelector(".nav-container");
   const authArea = document.getElementById("nav-auth-area");
+  // 모바일 퀵메뉴 요소 사전 캐싱 (ResizeObserver 참조 오류 예방)
+  const mobileQuick = document.querySelector(".nav-mobile-quick");
 
   // =========================================================================
   // 1. 화면 가로 크기(Breakpoint: 1024px)에 반응하는 동적 레이아웃 제어 로직
@@ -440,50 +479,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * 홈버튼 아이콘이 'IGPartners'의 'S'에 닿는 순간을 실시간 감지하여 텍스트를 숨기거나 복원하는 스마트 충돌 감지 함수]
-   * Flexbox 레이아웃 특성상 nav-container 내 요소 간 flex 간격(약 8px)이 유지되므로,
-   * 여유 거리를 16px로 현실화하여 홈버튼이 'S' 글자에 맞닿는 즉시 숨김 클래스를 적용합니다.
+   * 상단 네비게이션 브랜드 텍스트 노출 가시성 제어 함수
+   * 시안 A(2단 헤더)에서는 1행에 브랜드 로고와 햄버거 토글이 단독 배치되고, 퀵메뉴는 2행에 위치하므로
+   * 1행 내에서 햄버거 버튼과 충돌하지 않는 한 브랜드 텍스트('IGPartners')를 항상 선명하게 노출합니다.
    */
   function updateBrandTextVisibility() {
     const brandText = document.querySelector(".nav-brand-text");
     const navLogo = document.querySelector(".nav-logo");
-    const mobileQuick = document.querySelector(".nav-mobile-quick");
+    const navToggle = document.getElementById("nav-toggle");
     if (!brandText || !navLogo) return;
 
     // 데스크톱 모드(1024px 초과)에서는 텍스트 항상 표시
-    if (window.innerWidth > 1024 || !mobileQuick || window.getComputedStyle(mobileQuick).display === "none") {
+    if (window.innerWidth > 1024) {
       brandText.classList.remove("brand-text-collapsed");
       return;
     }
 
-    // 모바일 퀵메뉴 내 첫 번째로 보이는 버튼(홈버튼 🏠 등) 탐색
-    const visibleBtns = Array.from(mobileQuick.querySelectorAll(".quick-icon-btn")).filter(btn => {
-      return btn.style.display !== "none" && window.getComputedStyle(btn).display !== "none";
-    });
-
-    if (visibleBtns.length === 0) {
-      brandText.classList.remove("brand-text-collapsed");
-      return;
-    }
-
-    const firstQuickBtn = visibleBtns[0];
-    // 모바일 퀵메뉴 컨테이너 시작점과 첫 번째 버튼의 시작점 중 더 좌측인 좌표를 안전하게 계산
-    const quickLeft = Math.min(mobileQuick.getBoundingClientRect().left, firstQuickBtn.getBoundingClientRect().left);
-
-    // 1. 현재 텍스트가 표시되고 있는 경우: 홈버튼의 왼쪽 경계가 'S' 오른쪽 끝에 닿는 순간 숨김 (Flex 간격 8px 고려하여 임계값 16px 적용)
-    if (!brandText.classList.contains("brand-text-collapsed")) {
+    // 모바일 1행 내에서 로고와 햄버거 버튼 간의 물리적 충돌 여부 판별 (초소형 화면 대응)
+    if (navToggle && window.getComputedStyle(navToggle).display !== "none") {
+      const toggleLeft = navToggle.getBoundingClientRect().left;
       const textRight = brandText.getBoundingClientRect().right;
-      if (quickLeft <= textRight + 16) {
+      if (toggleLeft <= textRight + 10) {
         brandText.classList.add("brand-text-collapsed");
-      }
-    } else {
-      // 2. 현재 텍스트가 숨겨져 있는 경우: 로고 이미지와 홈버튼 사이에 텍스트 공간(약 135px)이 충분히 확보되면 복원하여 깜빡임 방지
-      const logoRight = navLogo.getBoundingClientRect().right;
-      const requiredSpace = 135; // 로고텍스트 너비(약 105px) + gap(8px) + 복원 여유 버퍼(22px)
-      if (quickLeft - logoRight >= requiredSpace) {
-        brandText.classList.remove("brand-text-collapsed");
+        return;
       }
     }
+
+    // 일반적인 모든 모바일 기기 화면에서 로고 텍스트 정상 노출
+    brandText.classList.remove("brand-text-collapsed");
   }
   window.updateBrandTextVisibility = updateBrandTextVisibility;
 
@@ -517,18 +540,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // 2. 모바일 햄버거 메뉴 토글 기능
   // =========================================================================
   if (navToggle && navMenu) {
-    navToggle.addEventListener("click", () => {
+    // 햄버거 버튼 클릭 시 메뉴 토글 (이벤트 전파 방지 적용)
+    navToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
       navToggle.classList.toggle("active");
       navMenu.classList.toggle("active");
     });
 
-    // 메뉴 클릭 시 모바일 메뉴 자동 닫힘 (해시 태그 스크롤링 시 유용)
+    // 서랍 메뉴 내부 링크 클릭 시 모바일 메뉴 자동 닫힘 (해시 태그 스크롤링 및 페이지 이동 지원)
     const navLinks = document.querySelectorAll(".nav-link");
     navLinks.forEach(link => {
       link.addEventListener("click", () => {
         navToggle.classList.remove("active");
         navMenu.classList.remove("active");
       });
+    });
+
+    // 모바일 서랍 메뉴 외부 영역(배경) 클릭/터치 시 메뉴 자동 닫힘
+    document.addEventListener("click", (e) => {
+      if (navMenu.classList.contains("active")) {
+        if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+          navToggle.classList.remove("active");
+          navMenu.classList.remove("active");
+        }
+      }
     });
   }
 

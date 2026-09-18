@@ -1709,6 +1709,89 @@ function initPage() {
     });
   }
 
+  /**
+   * 가입 회원 전체 및 15개 지원 국가(선호언어)별 회원수 통계 타일 렌더링 함수
+   * 예약내역 섹션과 100% 동일한 타일 디자인(클래스 및 테두리 색상)을 적용하며, 한국어 왼쪽에 '전체회원수'를 배치합니다.
+   * @param {Array} allUsers - 가입 회원 전체 데이터 객체 배열
+   */
+  function renderUserLangStats(allUsers = []) {
+    const userLangStatsContainer = document.getElementById("admin-user-lang-stats");
+    if (!userLangStatsContainer) return;
+
+    // 전체 가입 회원 수 집계
+    const totalCount = allUsers.length;
+
+    // 15개 공식 지원 언어별 카운트 초기화 객체
+    const langCounts = {
+      ko: 0, ja: 0, vi: 0, en: 0, zh: 0, ru: 0, my: 0, km: 0, mn: 0, th: 0, lo: 0, ne: 0, id: 0, si: 0, bn: 0
+    };
+
+    // 국가 식별 코드(ISO-2)를 언어 코드로 매핑하기 위한 호환 맵
+    const countryToLangMap = {
+      kr: "ko", jp: "ja", vn: "vi", us: "en", gb: "en", cn: "zh", ru: "ru",
+      mm: "my", kh: "km", mn: "mn", th: "th", la: "lo", np: "ne", id: "id", lk: "si", bd: "bn"
+    };
+
+    // 전체 가입 회원의 국가(선호언어) 데이터 분석 및 인원수 집계
+    allUsers.forEach((user) => {
+      // countryLanguage, country, lang 필드를 순차적으로 탐색하여 소문자 정규화
+      let lKey = (user.countryLanguage || user.country || user.lang || "ko").toLowerCase().trim();
+      
+      // 만약 국가 코드로 저장되어 있는 경우 언어 코드로 변환
+      if (countryToLangMap[lKey]) {
+        lKey = countryToLangMap[lKey];
+      }
+
+      // 지원 언어 목록에 존재하면 카운트 증가, 없으면 기본 한국어로 산입
+      if (langCounts[lKey] !== undefined) {
+        langCounts[lKey]++;
+      } else {
+        langCounts.ko++;
+      }
+    });
+
+    // 예약내역 통계와 완벽히 동일한 15개 국기, 언어명, 테마 색상 및 테두리 설정
+    const langConfig = {
+      ko: { flag: "🇰🇷", label: "한국어", color: "#ffffff", border: "rgba(255, 255, 255, 0.2)" },
+      ja: { flag: "🇯🇵", label: "일본어", color: "#38bdf8", border: "rgba(56, 189, 248, 0.2)" },
+      vi: { flag: "🇻🇳", label: "베트남어", color: "#e2e8f0", border: "rgba(226, 232, 240, 0.2)" },
+      en: { flag: "🇺🇸", label: "영어", color: "#ec4899", border: "rgba(236, 72, 153, 0.2)" },
+      zh: { flag: "🇨🇳", label: "중국어", color: "#3b82f6", border: "rgba(59, 130, 246, 0.2)" },
+      ru: { flag: "🇷🇺", label: "러시아어", color: "#f59e0b", border: "rgba(245, 158, 11, 0.2)" },
+      my: { flag: "🇲🇲", label: "미얀마어", color: "#a855f7", border: "rgba(168, 85, 247, 0.2)" },
+      km: { flag: "🇰🇭", label: "캄보디아어", color: "#ef4444", border: "rgba(239, 68, 68, 0.2)" },
+      mn: { flag: "🇲🇳", label: "몽골어", color: "#10b981", border: "rgba(16, 185, 129, 0.2)" },
+      th: { flag: "🇹🇭", label: "태국어", color: "#14b8a6", border: "rgba(20, 184, 166, 0.2)" },
+      lo: { flag: "🇱🇦", label: "라오스어", color: "#f43f5e", border: "rgba(244, 63, 94, 0.2)" },
+      ne: { flag: "🇳🇵", label: "네팔어", color: "#84cc16", border: "rgba(132, 204, 22, 0.2)" },
+      id: { flag: "🇮🇩", label: "인도네시아어", color: "#06b6d4", border: "rgba(6, 182, 212, 0.2)" },
+      si: { flag: "🇱🇰", label: "스리랑카어", color: "#6366f1", border: "rgba(99, 102, 241, 0.2)" },
+      bn: { flag: "🇧🇩", label: "방글라데시어", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
+    };
+
+    // 1. 한국어 왼쪽에 '전체회원수' 타일을 먼저 추가 (시안 네온 포인트 색상 적용)
+    let html = `
+      <div class="lang-stat-tile" style="border-color: rgba(0, 243, 255, 0.4); background: rgba(0, 243, 255, 0.05);">
+        <span class="lang-tile-title" style="color: #00f3ff; font-weight: 700;">👥 전체회원수</span>
+        <span class="lang-tile-value" style="color: #00f3ff; font-weight: 800;">${totalCount}<small>명</small></span>
+      </div>
+    `;
+
+    // 2. 15개 지원 국가(선호언어)별 회원수 타일을 순서대로 결합
+    Object.entries(langConfig).forEach(([key, cfg]) => {
+      const count = langCounts[key] || 0;
+      html += `
+        <div class="lang-stat-tile" style="border-color: ${cfg.border};">
+          <span class="lang-tile-title" style="color: ${cfg.color};">${cfg.flag} ${cfg.label}</span>
+          <span class="lang-tile-value" style="color: ${cfg.color};">${count}<small>명</small></span>
+        </div>
+      `;
+    });
+
+    // 완성된 16개 타일 HTML을 컨테이너에 주입
+    userLangStatsContainer.innerHTML = html;
+  }
+
   // 가입 회원 목록 로드 및 동적 옵션 바인딩
   async function loadUsers(resetPage = false) {
     if (!userList) return;
@@ -1746,6 +1829,9 @@ function initPage() {
         rawUsers.push(uData);
         loadedUsersMap[docSnap.id] = uData;
       });
+
+      // 가입 회원 전체 국가(선호언어)별 및 전체회원수 통계 타일 렌더링 호출
+      renderUserLangStats(rawUsers);
 
       let filteredUsers = rawUsers;
       if (currentRoleFilter !== "all") {
