@@ -546,15 +546,20 @@ function renderCommunityTable() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const pageNormalPosts = normalPosts.slice(startIndex, startIndex + itemsPerPage);
 
-  // 게시글 단일 행(TR) 생성 헬퍼 함수
-  const createPostRowHtml = (post, isPinned, displayNo) => {
+  // 게시글 단일 행(TR) 생성 헬퍼 함수 (마지막 공지글 여부 추가하여 구분선 적용 지원)
+  const createPostRowHtml = (post, isPinned, displayNo, isLastNotice = false) => {
     const globalIdx = window.combinedPosts.indexOf(post);
 
     let badgeHtml = "";
     if (post.prefix === "필독") {
       badgeHtml = `<span class="badge-must-read">필독</span>`;
     } else if (post.prefix === "공지" || isPinned) {
-      badgeHtml = `<span class="badge-notice">공지</span>`;
+      if (isPinned) {
+        // 데스크톱에서는 번호 컬럼에 이미 [공지] 뱃지가 있으므로 제목 앞에서는 숨기고, 번호 컬럼이 숨겨지는 모바일 환경에서만 노출
+        badgeHtml = `<span class="badge-notice cafe-mobile-only"><i class="fa-solid fa-bullhorn" style="font-size: 0.65rem; margin-right: 2px;"></i>공지</span>`;
+      } else {
+        badgeHtml = `<span class="badge-notice">공지</span>`;
+      }
     } else if (post.prefix && post.prefix !== "일반") {
       badgeHtml = `<span class="badge-general">${escapeHtml(post.prefix)}</span>`;
     }
@@ -580,8 +585,14 @@ function renderCommunityTable() {
     const commentHtml = post.commentCount > 0 ? `<span class="cafe-comment-cnt">[${post.commentCount}]</span>` : "";
     const newHtml = post.isNew ? `<span class="cafe-new-icon">N</span>` : "";
 
+    // 공지글 및 마지막 공지글 구분 클래스 조합
+    const rowClasses = [
+      isPinned ? 'cafe-tr-notice' : '',
+      isLastNotice ? 'cafe-tr-notice-last' : ''
+    ].filter(Boolean).join(' ');
+
     return `
-      <tr class="${isPinned ? 'cafe-tr-notice' : ''}">
+      <tr class="${rowClasses}">
         <!-- 글 번호 컬럼 (공지는 '공지' 뱃지, 일반글은 순수 번호) -->
         <td class="cafe-col-no cafe-post-no">${displayNo}</td>
         
@@ -631,10 +642,16 @@ function renderCommunityTable() {
   // 4. 상단 고정 공지 행 목록 + 현재 페이지 일반 게시글 행 목록 결합 렌더링
   let rowsHtml = "";
 
-  // 1페이지(또는 모든 페이지 상단)에 상단 고정 공지 표출
+  // 1페이지(또는 모든 페이지 상단)에 상단 고정 공지 표출 (확성기 아이콘 뱃지 및 마지막 공지 분리선 전달)
   if (currentPage === 1 && pinnedNotices.length > 0) {
-    pinnedNotices.forEach(post => {
-      rowsHtml += createPostRowHtml(post, true, `<span class="cafe-notice-pin">공지</span>`);
+    pinnedNotices.forEach((post, nIdx) => {
+      const isLastNotice = (nIdx === pinnedNotices.length - 1);
+      rowsHtml += createPostRowHtml(
+        post,
+        true,
+        `<span class="cafe-notice-pin"><i class="fa-solid fa-bullhorn"></i> 공지</span>`,
+        isLastNotice
+      );
     });
   }
 

@@ -11,7 +11,10 @@
       "**/node_modules/**",
       "firebase-debug.log",
       ".firebaserc",
-      "git/**"
+      "git/**",
+      "firebase-key.json",
+      "*-key.json",
+      "**/*serviceAccount*.json"
     ],
     "headers": [
       {

@@ -9,3 +9,8 @@ firebase.exe
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Firebase 서비스 계정 비공개 키 및 인증 JSON 파일 제외 (보안 사고 원천 차단)
+firebase-key.json
+*-key.json
+*serviceAccount*.json

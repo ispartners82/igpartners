@@ -5283,6 +5283,11 @@ body.home-page {
   margin-right: 0.4rem;
 }
 
+/* 모바일 전용 뱃지 (데스크톱 기본 숨김) */
+.cafe-mobile-only {
+  display: none !important;
+}
+
 .badge-general {
   background: rgba(0, 243, 255, 0.1);
   color: #00f3ff;
@@ -5294,30 +5299,55 @@ body.home-page {
   margin-right: 0.4rem;
 }
 
-/* 상단 고정 공지글 전용 번호 뱃지 및 행 하이라이트 스타일 - 줄바꿈 100% 차단 및 단정 정렬 */
+/* 상단 고정 공지글 전용 번호 뱃지 (확성기 아이콘 포함) - 줄바꿈 100% 차단 및 단정 정렬 */
 .cafe-notice-pin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.25rem;
   white-space: nowrap;
-  background: rgba(245, 158, 11, 0.18);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  padding: 0.15rem 0.45rem;
-  border-radius: 5px;
+  background: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.5px;
   line-height: 1.2;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
 }
 
+.cafe-notice-pin i {
+  font-size: 0.68rem;
+  color: #fbbf24;
+}
+
+/* 공지글 행 스타일 - 배경 틴트 상향 및 좌측 골드 포인트 바(Accent Bar) 적용 */
 .cafe-tr-notice {
-  background: rgba(245, 158, 11, 0.035) !important;
-  border-bottom: 1px solid rgba(245, 158, 11, 0.15) !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.16) !important;
+  border-left: 3.5px solid #f59e0b !important;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .cafe-tr-notice:hover {
-  background: rgba(245, 158, 11, 0.08) !important;
+  background: rgba(245, 158, 11, 0.14) !important;
+}
+
+.cafe-tr-notice td {
+  background: transparent;
+}
+
+.cafe-tr-notice .cafe-post-link {
+  color: #fffbeb !important;
+  font-weight: 700;
+}
+
+/* 상단 마지막 공지글 하단 구분선 - 공지와 일반글 영역 시각적 분리 */
+.cafe-tr-notice-last {
+  border-bottom: 2px solid rgba(245, 158, 11, 0.45) !important;
+  box-shadow: 0 4px 12px -2px rgba(245, 158, 11, 0.15);
 }
 
 /* 상세 보기 페이지 내 관리자 전용 공지 등록/해제 버튼 인터랙션 스타일 */
@@ -5555,11 +5585,30 @@ body.home-page {
     box-sizing: border-box;
   }
 
+  /* 모바일 화면에서는 모바일 전용 공지 뱃지 표출 */
+  .cafe-mobile-only {
+    display: inline-flex !important;
+    align-items: center;
+  }
+
   /* 각 게시글 행 카드 스타일 지정 */
   .cafe-table tr {
     padding: 0.85rem 0.65rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: background 0.2s;
+  }
+
+  /* 모바일 공지글 행 스타일 (좌측 포인트 바 유지 및 구분) */
+  .cafe-table tr.cafe-tr-notice {
+    border-left: 3.5px solid #f59e0b !important;
+    background: rgba(245, 158, 11, 0.08) !important;
+    margin-bottom: 0.35rem;
+    border-radius: 4px;
+  }
+
+  .cafe-table tr.cafe-tr-notice-last {
+    border-bottom: 2px solid rgba(245, 158, 11, 0.45) !important;
+    margin-bottom: 0.85rem;
   }
 
   /* 데스크톱 전용 4개 컬럼(번호, 작성자, 작성일, 조회수) 모바일 숨김 */
