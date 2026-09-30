@@ -106,15 +106,31 @@ service cloud.firestore {
       allow write: if request.auth != null && getUserRole() == "super_admin";
     }
 
-    // community_posts (커뮤니티 게시판 및 하위 comments 댓글 서브컬렉션) 보안 규칙 - 누구나 읽기, 작성, 수정, 삭제 허용
-    match /community_posts/{postId}/{document=**} {
-      allow read: if true; // 커뮤니티 게시글 및 댓글 전체 읽기 허용
-      allow create, update, delete, write: if true; // 게시글 및 댓글 작성, 수정, 삭제 허용
+    // community_posts (커뮤니티 게시판 및 하위 comments 댓글 서브컬렉션) 보안 규칙 - 누구나 열람 가능, 작성은 로그인 회원, 수정/삭제는 작성자 본인 및 관리자 전용
+    match /community_posts/{postId} {
+      allow read: if true; // 커뮤니티 게시글 전체 읽기 허용
+      allow create: if request.auth != null; // 게시글 작성은 로그인된 회원만 허용 (일일 쓰기 한도 및 악성 봇 방어)
+      allow update, delete: if request.auth != null && (
+        resource.data.authorUid == request.auth.uid || 
+        getUserRole() in ["admin", "super_admin", "admin_user"]
+      );
+
+      // 하위 comments 댓글 서브컬렉션 보안 규칙
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null;
+        allow update, delete: if request.auth != null && (
+          resource.data.authorUid == request.auth.uid || 
+          getUserRole() in ["admin", "super_admin", "admin_user"]
+        );
+      }
     }
 
-    // deleted_community_posts (삭제 게시글 백업 보관소) 보안 규칙 - 누구나 백업 생성 및 읽기 허용
+    // deleted_community_posts (삭제 게시글 백업 보관소) 보안 규칙 - 로그인 회원 백업 생성 허용, 조회/삭제는 관리자 전용
     match /deleted_community_posts/{postId} {
-      allow read, create, update, delete, write: if true;
+      allow create: if request.auth != null;
+      allow read, delete: if request.auth != null && 
+        getUserRole() in ["admin", "super_admin", "admin_user"];
     }
   }
 }

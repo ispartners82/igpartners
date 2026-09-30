@@ -5,9 +5,9 @@
  * =========================================================================
  */
 
-import { auth, db } from "/js/firebase-db.js?v=2.0.7";
+import { auth, db } from "/js/firebase-db.js?v=260930_7";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, query, limit, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, query, limit, orderBy, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // Firestore SDK 전역 객체 바인딩
 window.db = db;
@@ -21,6 +21,7 @@ window.setDoc = setDoc;
 window.updateDoc = updateDoc;
 window.deleteDoc = deleteDoc;
 window.serverTimestamp = serverTimestamp;
+window.increment = increment;
 
 // 기본 9대 회원 등급 목록 정의 - Firestore roles 컬렉션과 동적 동기화 지원
 const DEFAULT_AVAILABLE_ROLES = [
@@ -40,14 +41,14 @@ let availableRoles = [...DEFAULT_AVAILABLE_ROLES];
 const ALL_ROLE_KEYS = DEFAULT_AVAILABLE_ROLES.map(r => r.key);
 const ADMIN_ROLE_KEYS = ["super_admin", "admin", "admin_user"];
 
-// 기본 6대 커뮤니티 카테고리 정의 - readPermission(열람 권한), writeRoles(글쓰기 허용 등급 배열)
+// 기본 6대 커뮤니티 카테고리 정의 - readPermission(열람 권한), writeRoles(글쓰기 허용 등급 배열), description(주의 및 설명)
 const DEFAULT_CATEGORIES = [
-  { id: "notice", name: "공지사항", icon: "📢", isPublic: true, readPermission: "all", writeRoles: [...ADMIN_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
-  { id: "clinic", name: "병원정보", icon: "🏥", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
-  { id: "insurance", name: "보험정보", icon: "🛡️", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
-  { id: "visa", name: "비자정보", icon: "🛂", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
-  { id: "job", name: "구인구직", icon: "💼", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
-  { id: "resume", name: "이력서업로드", icon: "📄", isPublic: true, readPermission: "admin", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" }
+  { id: "notice", name: "공지사항", icon: "📢", description: "", isPublic: true, readPermission: "all", writeRoles: [...ADMIN_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "clinic", name: "병원정보", icon: "🏥", description: "", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "insurance", name: "보험정보", icon: "🛡️", description: "", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "visa", name: "비자정보", icon: "🛂", description: "", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "job", name: "구인구직", icon: "💼", description: "", isPublic: true, readPermission: "all", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" },
+  { id: "resume", name: "이력서업로드", icon: "📄", description: "", isPublic: true, readPermission: "admin", writeRoles: [...ALL_ROLE_KEYS], showCount: true, viewType: "list", isDefault: false, type: "category" }
 ];
 
 // SWR 로컬 스토리지 캐시 우선 로드 - 초기 렌더링 딜레이 및 깜빡임 완전 차단
@@ -366,7 +367,8 @@ async function fetchCommunityPosts() {
   let fetched = [];
 
   try {
-    const postsQuery = query(collection(db, "community_posts"), limit(50));
+    // 최신 등록 글 50개를 역순 정렬하여 안전하게 로드
+    const postsQuery = query(collection(db, "community_posts"), orderBy("createdAt", "desc"), limit(50));
     const snapshot = await getDocs(postsQuery);
     snapshot.forEach(docSnap => {
       try {
@@ -1028,7 +1030,9 @@ async function loadPostComments(postId, postIndex) {
   if (postId && !postId.startsWith("local-")) {
     try {
       const commentsRef = collection(db, "community_posts", postId, "comments");
-      const snap = await getDocs(commentsRef);
+      // 댓글 등록 시간순 오름차순 정렬 쿼리 적용 (정렬 인덱스 보장)
+      const commentsQuery = query(commentsRef, orderBy("createdAt", "asc"));
+      const snap = await getDocs(commentsQuery);
       snap.forEach(d => {
         comments.push({ id: d.id, ...d.data() });
       });
@@ -1297,14 +1301,12 @@ async function submitPostComment(postId, postIndex, parentId = null) {
         createdAt: serverTimestamp()
       });
 
-      // 게시글 총 댓글 수 카운트 실시간 업데이트
-      const snap = await getDocs(commentsRef);
-      const count = snap.size;
+      // 게시글 총 댓글 수 카운트 원자적(atomic) 실시간 1 증가 업데이트 (전체 문서 전수 다운로드 제거로 0ms 및 읽기 비용 0회 실현)
       await updateDoc(doc(db, "community_posts", postId), {
-        commentCount: count
+        commentCount: increment(1)
       }).catch(() => {});
 
-      if (post) post.commentCount = count;
+      if (post) post.commentCount = (post.commentCount || 0) + 1;
     } catch (err) {
       console.error("댓글 저장 실패:", err);
       alert("댓글 저장 중 오류가 발생했습니다: " + err.message);
@@ -1336,14 +1338,12 @@ async function deletePostComment(postId, postIndex, commentId) {
     try {
       await deleteDoc(doc(db, "community_posts", postId, "comments", commentId));
       
-      const commentsRef = collection(db, "community_posts", postId, "comments");
-      const snap = await getDocs(commentsRef);
-      const count = snap.size;
+      // 게시글 총 댓글 수 카운트 원자적(atomic) 실시간 1 감소 업데이트 (전체 문서 전수 다운로드 제거로 0ms 및 읽기 비용 0회 실현)
       await updateDoc(doc(db, "community_posts", postId), {
-        commentCount: count
+        commentCount: increment(-1)
       }).catch(() => {});
 
-      if (post) post.commentCount = count;
+      if (post && post.commentCount > 0) post.commentCount = post.commentCount - 1;
     } catch (err) {
       console.error("댓글 삭제 실패:", err);
       alert("댓글 삭제 중 오류가 발생했습니다: " + err.message);
@@ -1975,6 +1975,7 @@ async function loadCommunityCategories() {
           const defaultWriteRoles = (c.id === "notice") ? [...ADMIN_ROLE_KEYS] : availableRoles.map(r => r.key);
           return {
             ...c,
+            description: c.description || "",
             readPermission: c.readPermission || (c.id === "resume" ? "admin" : "all"),
             writeRoles: Array.isArray(c.writeRoles) && c.writeRoles.length > 0 ? c.writeRoles : defaultWriteRoles
           };
@@ -2108,12 +2109,36 @@ function getBoardLabel(boardId) {
 }
 
 /**
- * 상단 게시판 제목 헤더 업데이트 함수
+ * 상단 게시판 제목 및 카테고리 주의·설명 헤더 업데이트 함수
  */
 function updateBoardTitleDisplay() {
   const titleEl = document.getElementById("board-title-display");
   if (titleEl) {
     titleEl.textContent = getBoardLabel(currentBoard);
+  }
+
+  // 게시판 제목 바로 아래 카테고리 주의 및 설명 문구 갱신
+  const descWrap = document.getElementById("board-desc-wrapper");
+  const descEl = document.getElementById("board-desc-display");
+  if (descWrap && descEl) {
+    if (currentBoard === "all") {
+      // 전체글보기 모드에서는 개별 카테고리 주의사항을 표시하지 않고 숨김 처리
+      descWrap.style.display = "none";
+      descEl.textContent = "";
+    } else {
+      // 현재 선택된 카테고리 설정 정보 조회
+      const curCat = currentCategories.find(c => c.id === currentBoard);
+      const descText = (curCat && curCat.description) ? curCat.description.trim() : "";
+      if (descText) {
+        // 주의 및 설명 내용이 있는 경우 정보 박스 노출 및 텍스트 반영
+        descEl.textContent = descText;
+        descWrap.style.display = "flex";
+      } else {
+        // 주의 및 설명 내용이 비어있으면 숨김 처리
+        descWrap.style.display = "none";
+        descEl.textContent = "";
+      }
+    }
   }
 }
 
@@ -2334,6 +2359,7 @@ function bindCategoryDetailForm() {
   if (emptyNotice) emptyNotice.style.display = "none";
 
   const nameInput = document.getElementById("cat-detail-name");
+  const descInput = document.getElementById("cat-detail-desc");
   const iconPreview = document.getElementById("cat-selected-icon-preview");
   const showCountChk = document.getElementById("cat-detail-show-count");
   const isDefaultChk = document.getElementById("cat-detail-is-default");
@@ -2347,6 +2373,7 @@ function bindCategoryDetailForm() {
   const viewAlbum = document.getElementById("cat-view-album");
 
   if (nameInput) nameInput.value = cat.name || "";
+  if (descInput) descInput.value = cat.description || "";
   if (iconPreview) iconPreview.textContent = cat.icon || "📢";
   if (showCountChk) showCountChk.checked = cat.showCount !== false;
   if (isDefaultChk) isDefaultChk.checked = cat.isDefault === true;
@@ -2446,6 +2473,15 @@ window.handleCatNameInput = function(val) {
   }
 };
 
+/**
+ * 카테고리 주의 및 설명 실시간 입력 핸들러
+ */
+window.handleCatDescInput = function(val) {
+  if (selectedCatIndex >= 0 && selectedCatIndex < editingCategories.length) {
+    editingCategories[selectedCatIndex].description = val;
+  }
+};
+
 window.handleCatSettingChange = function() {
   if (selectedCatIndex < 0 || selectedCatIndex >= editingCategories.length) return;
   const cat = editingCategories[selectedCatIndex];
@@ -2514,9 +2550,10 @@ window.addNewCategoryItem = function() {
     id: newId,
     name: "새 카테고리",
     icon: "📁",
+    description: "",
     isPublic: true,
     readPermission: "all",
-    writeRoles: availableRoles.map(r => r.key), // 새 카테고리는 기본적으로 모든 등급 글쓰기 허용]
+    writeRoles: availableRoles.map(r => r.key), // 새 카테고리는 기본적으로 모든 등급 글쓰기 허용
     showCount: true,
     viewType: "list",
     isDefault: false,

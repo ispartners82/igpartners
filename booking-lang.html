@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -24,6 +24,9 @@
   <meta property="og:image" content="https://igpartners.co.kr/img/logo.png">
 
   <!-- 폰트 불러오기 (Outfit & Noto Sans KR) -->
+    <!-- 15개국 국기 이미지 CDN 초고속 로딩을 위한 DNS Prefetch 및 Preconnect 사전 연결 -->
+  <link rel="preconnect" href="https://flagcdn.com" crossorigin>
+  <link rel="dns-prefetch" href="https://flagcdn.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -34,8 +37,8 @@
   <link rel="icon" type="image/png" href="/img/logo.png?v=260918_5">
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260918_3) -->
-  <link rel="stylesheet" href="css/style.css?v=260929_1">
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=260930_7) -->
+  <link rel="stylesheet" href="css/style.css?v=260930_7">
 </head>
 
 <body style="display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: flex-start;">
@@ -192,186 +195,57 @@
       <p class="subtitle lang-select-subtitle">예약을 진행하기 위해 편리한 언어를 선택해 주세요.</p>
     </header>
 
-    <!-- 4열 반응형 언어 그리드 영역 -->
-    <main class="grid-container">
-
-      <!-- 1. 한국어 (신규 추가: 베트남어 왼쪽 배치) -->
-      <button class="lang-card" onclick="selectLanguage('ko')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/kr.png" alt="South Korea Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">한국어</span>
-          <span class="lang-ko">한국어</span>
-        </div>
-      </button>
-
-      <!-- 2. 일본어 (신규 추가: 베트남어 왼쪽 배치) -->
-      <button class="lang-card" onclick="selectLanguage('ja')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/jp.png" alt="Japan Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">日本語</span>
-          <span class="lang-ko">일본어</span>
-        </div>
-      </button>
-
-      <!-- 3. 베트남 -->
-      <button class="lang-card" onclick="selectLanguage('vi')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/vn.png" alt="Vietnam Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">Tiếng Việt</span>
-          <span class="lang-ko">베트남어</span>
-        </div>
-      </button>
-
-      <!-- 4. 영어 (신규 이동: 베트남어 오른쪽 배치) -->
-      <button class="lang-card" onclick="selectLanguage('en')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/gb.png" alt="English Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">English</span>
-          <span class="lang-ko">영어</span>
-        </div>
-      </button>
-
-      <!-- 5. 중국어 (신규 이동: 러시아어 왼쪽 배치) -->
-      <button class="lang-card" onclick="selectLanguage('zh')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/cn.png" alt="China Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">中文 (简体)</span>
-          <span class="lang-ko">중국어</span>
-        </div>
-      </button>
-
-      <!-- 6. 러시아 (기존 5번에서 6번으로 순서 정렬) -->
-      <button class="lang-card" onclick="selectLanguage('ru')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/ru.png" alt="Russia Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">Русский</span>
-          <span class="lang-ko">러시아어</span>
-        </div>
-      </button>
-
-      <!-- 3. 미얀마 -->
-      <button class="lang-card" onclick="selectLanguage('my')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/mm.png" alt="Myanmar Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">မြန်မာစာ</span>
-          <span class="lang-ko">미얀마어</span>
-        </div>
-      </button>
-
-      <!-- 4. 캄보디아 -->
-      <button class="lang-card" onclick="selectLanguage('km')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/kh.png" alt="Cambodia Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">ភាសាខ្មែរ</span>
-          <span class="lang-ko">캄보디아어</span>
-        </div>
-      </button>
-
-      <!-- 5. 몽골 -->
-      <button class="lang-card" onclick="selectLanguage('mn')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/mn.png" alt="Mongolia Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">Монгол хэл</span>
-          <span class="lang-ko">몽골어</span>
-        </div>
-      </button>
-
-      <!-- 6. 태국 -->
-      <button class="lang-card" onclick="selectLanguage('th')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/th.png" alt="Thailand Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">ภาษาไทย</span>
-          <span class="lang-ko">태국어</span>
-        </div>
-      </button>
-
-      <!-- 7. 라오스 -->
-      <button class="lang-card" onclick="selectLanguage('lo')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/la.png" alt="Laos Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">ພາສາລາວ</span>
-          <span class="lang-ko">라오스어</span>
-        </div>
-      </button>
-
-      <!-- 8. 네팔 -->
-      <button class="lang-card" onclick="selectLanguage('ne')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/np.png" alt="Nepal Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">नेपाली</span>
-          <span class="lang-ko">네팔어</span>
-        </div>
-      </button>
-
-
-      <!-- 10. 인도네시아 -->
-      <button class="lang-card" onclick="selectLanguage('id')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/id.png" alt="Indonesia Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">Bahasa Indonesia</span>
-          <span class="lang-ko">인도네시아어</span>
-        </div>
-      </button>
-
-      <!-- 11. 스리랑카 -->
-      <button class="lang-card" onclick="selectLanguage('si')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/lk.png" alt="Sri Lanka Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">සිංහල</span>
-          <span class="lang-ko">스리랑카어</span>
-        </div>
-      </button>
-
-      <!-- 12. 방글라데시 -->
-      <button class="lang-card" onclick="selectLanguage('bn')">
-        <div class="flag-wrapper">
-          <img class="flag" src="https://flagcdn.com/w80/bd.png" alt="Bangladesh Flag">
-        </div>
-        <div class="lang-info">
-          <span class="lang-native">বাংলা</span>
-          <span class="lang-ko">방글라데시어</span>
-        </div>
-      </button>
-
-
+    <!-- 4열 반응형 언어 그리드 영역 (15개국어 공통 기준 데이터 기반 동적 렌더링) -->
+    <main class="grid-container" id="lang-grid-container">
+      <!-- navigation.js의 단일 기준 데이터(LANG_LIST)로 0ms 즉시 자동 렌더링됩니다 -->
     </main>
+    <script>
+      /* 15개국어 언어 카드를 단일 기준 데이터(GLOBAL_LANG_LIST)로부터 0ms 만에 즉시 동적 렌더링 */
+      (function renderLangCards() {
+        var list = window.GLOBAL_LANG_LIST || [
+          { code: 'ko', native: '한국어', koName: '한국어', flag: 'https://flagcdn.com/w80/kr.png' },
+          { code: 'ja', native: '日本語', koName: '일본어', flag: 'https://flagcdn.com/w80/jp.png' },
+          { code: 'vi', native: 'Tiếng Việt', koName: '베트남어', flag: 'https://flagcdn.com/w80/vn.png' },
+          { code: 'en', native: 'English', koName: '영어', flag: 'https://flagcdn.com/w80/gb.png' },
+          { code: 'zh', native: '中文 (简体)', koName: '중국어', flag: 'https://flagcdn.com/w80/cn.png' },
+          { code: 'ru', native: 'Русский', koName: '러시아어', flag: 'https://flagcdn.com/w80/ru.png' },
+          { code: 'my', native: 'မြန်မာစာ', koName: '미얀마어', flag: 'https://flagcdn.com/w80/mm.png' },
+          { code: 'km', native: 'ភាសាខ្មែរ', koName: '캄보디아어', flag: 'https://flagcdn.com/w80/kh.png' },
+          { code: 'mn', native: 'Монгол хэл', koName: '몽골어', flag: 'https://flagcdn.com/w80/mn.png' },
+          { code: 'th', native: 'ภาษาไทย', koName: '태국어', flag: 'https://flagcdn.com/w80/th.png' },
+          { code: 'lo', native: 'ພາສາລາວ', koName: '라오스어', flag: 'https://flagcdn.com/w80/la.png' },
+          { code: 'ne', native: 'नेपाली', koName: '네팔어', flag: 'https://flagcdn.com/w80/np.png' },
+          { code: 'id', native: 'Bahasa Indonesia', koName: '인도네시아어', flag: 'https://flagcdn.com/w80/id.png' },
+          { code: 'si', native: 'සිංහල', koName: '스리랑카어', flag: 'https://flagcdn.com/w80/lk.png' },
+          { code: 'bn', native: 'বাংলা', koName: '방글라데시어', flag: 'https://flagcdn.com/w80/bd.png' }
+        ];
+        var container = document.getElementById("lang-grid-container");
+        if (!container) return;
+        var htmlStr = "";
+        for (var i = 0; i < list.length; i++) {
+          var item = list[i];
+          htmlStr += '<button class="lang-card" onclick="selectLanguage(\'' + item.code + '\')" type="button">' +
+            '<div class="flag-wrapper">' +
+            '<img class="flag" src="' + item.flag + '" alt="' + item.native + '">' +
+            '</div>' +
+            '<div class="lang-info">' +
+            '<span class="lang-native">' + item.native + '</span>' +
+            '<span class="lang-ko">' + item.koName + '</span>' +
+            '</div>' +
+            '</button>';
+        }
+        container.innerHTML = htmlStr;
+      })();
+    </script>
   </div>
 
   <!-- 유지보수 용이성을 위해 푸터 내용을 공통 JS(navigation.js)에서 동적 주입하도록 구조 개선 -->
   <footer id="global-footer" class="global-footer" style="width: 100%; margin-top: auto;"></footer>
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260918_3) -->
-  <script type="module" src="/js/navigation.js?v=260918_5"></script>
-  <script type="module" src="/js/auth.js?v=260918_5"></script>
-  <script type="module" src="/js/main.js?v=260918_5"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=260930_7) -->
+  <script type="module" src="/js/navigation.js?v=260930_7"></script>
+  <script type="module" src="/js/auth.js?v=260930_7"></script>
+  <script type="module" src="/js/main.js?v=260930_7"></script>
 
   <!-- 구글 로그인 유도 안내 모달 팝업 - 다국어 편의성을 위해 한국어와 영어를 병기하고 로그인 버튼 내 베트남어를 제거함 -->
   <div id="login-required-modal" class="modal-backdrop" style="display: none;">
@@ -399,4 +273,4 @@
 </body>
 
 </html>
-
+<!-- Deploy build: 2026-09-30T13:22:57.357Z -->

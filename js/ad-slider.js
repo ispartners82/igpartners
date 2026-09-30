@@ -5,7 +5,7 @@
  * DB가 비어있는 경우 사이트 정돈감을 위해 8개의 고화질 웰니스 샘플 광고를 자동 백업(Fallback) 노출합니다.
  */
 
-import { db } from "/js/firebase-db.js?v=260904_1";
+import { db } from "/js/firebase-db.js?v=260930_7";
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // 통합 광고 배너 로컬 캐시 키 정의 (SWR 캐시 엔진용)

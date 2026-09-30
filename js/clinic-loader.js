@@ -1,4 +1,4 @@
-import { db } from "./firebase-db.js?v=2.0.7";
+import { db } from "./firebase-db.js?v=260930_7";
 // 성능 최적화: 병원 목록은 관리자가 수정할 때만 변경되므로 실시간 리스너(onSnapshot) 대신
 // getDocs 일회성 조회를 사용하여 불필요한 Firestore 연결 유지와 비용을 제거합니다.
 import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";

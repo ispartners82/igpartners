@@ -5,7 +5,7 @@
  * - 초기 데이터 부재 시 자동 시딩(Seed) 기능 내장
  */
 
-import { db } from "/js/firebase-db.js?v=2.0.7";
+import { db } from "/js/firebase-db.js?v=260930_7";
 import { 
   collection, 
   getDocs, 

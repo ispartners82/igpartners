@@ -1,4 +1,4 @@
-import { auth, db } from "/js/firebase-db.js?v=2.0.7";
+import { auth, db } from "/js/firebase-db.js?v=260930_7";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -11,7 +11,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /**
  * IGPartners 회원가입 & 로그인 모듈
@@ -923,7 +923,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // 만약 입력값에 '@'가 없다면 (아이디 입력 시) Firestore에서 해당 loginId의 이메일을 검색
       if (!accountInput.includes("@")) {
         const usersRef = collection(db, "users");
-        const q = query(usersRef, where("loginId", "==", accountInput));
+        // 단일 계정 조회 쿼리 최적화: 불필요한 전체 스캔 방지 및 즉각 응답을 위한 limit(1) 적용
+        const q = query(usersRef, where("loginId", "==", accountInput), limit(1));
         const querySnap = await getDocs(q);
 
         if (querySnap.empty) {
@@ -1003,7 +1004,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1. 아이디 중복 체크 (안전한 try-catch 방어)
       try {
         const usersRef = collection(db, "users");
-        const q = query(usersRef, where("loginId", "==", loginId));
+        // 아이디 중복 체크 쿼리 최적화: 1건 발견 즉시 검사 완료 처리를 위한 limit(1) 적용
+        const q = query(usersRef, where("loginId", "==", loginId), limit(1));
         const querySnap = await getDocs(q);
         if (!querySnap.empty) {
           alert("이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.");

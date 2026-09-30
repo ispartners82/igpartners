@@ -1,7 +1,8 @@
 /**
- * 15개 국어 정보 정의 - 국기 이미지 URL, 원어명, 한국어명]
+ * 15개 국어 정보 정의 - 국기 이미지 URL, 원어명, 한국어명
+ * 프로젝트 전역에서 공유되는 단일 기준 언어 데이터(Single Source of Truth)
  */
-const LANG_LIST = [
+export const LANG_LIST = [
   { code: 'ko', native: '한국어', koName: '한국어', flag: 'https://flagcdn.com/w80/kr.png' },
   { code: 'ja', native: '日本語', koName: '일본어', flag: 'https://flagcdn.com/w80/jp.png' },
   { code: 'vi', native: 'Tiếng Việt', koName: '베트남어', flag: 'https://flagcdn.com/w80/vn.png' },
@@ -18,6 +19,11 @@ const LANG_LIST = [
   { code: 'si', native: 'සිංහල', koName: '스리랑카어', flag: 'https://flagcdn.com/w80/lk.png' },
   { code: 'bn', native: 'বাংলা', koName: '방글라데시어', flag: 'https://flagcdn.com/w80/bd.png' }
 ];
+
+// 비모듈 일반 스크립트에서도 전역적으로 접근할 수 있도록 window 객체에 바인딩
+if (typeof window !== "undefined") {
+  window.GLOBAL_LANG_LIST = LANG_LIST;
+}
 
 /**
  * 상단 메뉴 항목별 15개국어 번역 딕셔너리 데이터베이스]
@@ -285,17 +291,25 @@ document.addEventListener("DOMContentLoaded", () => {
       quickLangTrigger.onclick = window.toggleLangDropdown;
     }
 
-    // 언어 선택 패널 및 트리거 영역 외 외부 클릭 시 드롭다운 패널 자동으로 닫기 처리
-    document.addEventListener("click", (e) => {
-      const target = e.target;
-      const isInsideTrigger = langTrigger && langTrigger.contains(target);
-      const isInsideQuick = quickLangTrigger && quickLangTrigger.contains(target);
-      const isInsidePanel = langPanel && langPanel.contains(target);
+    // 언어 선택 패널 및 트리거 영역 외 외부 클릭 시 드롭다운 패널 자동으로 닫기 처리 (중복 리스너 등록 방지 가드)
+    if (!window._navLangClickBound) {
+      window._navLangClickBound = true;
+      document.addEventListener("click", (e) => {
+        const curLangTrigger = document.getElementById("nav-lang-trigger");
+        const curQuickLangTrigger = document.getElementById("quick-btn-lang");
+        const curLangPanel = document.getElementById("nav-lang-menu-panel");
+        if (!curLangPanel) return;
 
-      if (!isInsideTrigger && !isInsideQuick && !isInsidePanel) {
-        langPanel.classList.remove("show", "active");
-      }
-    });
+        const target = e.target;
+        const isInsideTrigger = curLangTrigger && curLangTrigger.contains(target);
+        const isInsideQuick = curQuickLangTrigger && curQuickLangTrigger.contains(target);
+        const isInsidePanel = curLangPanel && curLangPanel.contains(target);
+
+        if (!isInsideTrigger && !isInsideQuick && !isInsidePanel) {
+          curLangPanel.classList.remove("show", "active");
+        }
+      });
+    }
   }
 
   // 무한 루프를 완전 차단하고 탭 active 하이라이트만 0.01초 만에 스마트 스위칭하는 독립 함수

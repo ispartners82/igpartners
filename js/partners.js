@@ -9,7 +9,7 @@
  * ==============================================================================
  */
 
-import { db } from "/js/firebase-db.js?v=260910_1";
+import { db } from "/js/firebase-db.js?v=260930_7";
 import {
   collection,
   onSnapshot,
@@ -98,13 +98,21 @@ function initPartnersList() {
     console.warn("협력업체 로컬 캐시 파싱 예외]", e);
   }
 
+  // 이전 실시간 리스너가 이미 등록되어 있다면 중복 구독 방지를 위해 안전하게 사전 해제
+  if (typeof window._partnersUnsubscribe === "function") {
+    try {
+      window._partnersUnsubscribe();
+    } catch (e) {}
+    window._partnersUnsubscribe = null;
+  }
+
   // ── [2단계: Revalidate & Real-time] Firestore 실시간 리스너 구독으로 최신 변경 감지 ──
   try {
     const partnersRef = collection(db, "partners");
     // 관리자가 지정한 노출 순서(order) 기준 오름차순 실시간 정렬
     const q = query(partnersRef, orderBy("order", "asc"));
 
-    onSnapshot(q, (snapshot) => {
+    window._partnersUnsubscribe = onSnapshot(q, (snapshot) => {
       // Firestore에 등록된 데이터가 0건인 경우 로컬 캐시도 비우고 안내 화면 표시
       if (snapshot.empty) {
         localStorage.removeItem(CACHE_KEY);
@@ -114,13 +122,10 @@ function initPartnersList() {
       }
 
       const freshList = [];
-      const dummyTitles = ["아이지 글로벌 헬스케어 센터", "서울 프리미엄 메디컬 파트너스", "글로벌 라이프 케어 솔루션"];
       snapshot.forEach((doc) => {
         const data = doc.data();
-        // 과거 임시로 생성되었던 샘플 업체는 화면에서 제외
-        if (dummyTitles.includes(data.title)) {
-          return;
-        }
+        // 정상 등록된 협력업체 데이터 추출
+        if (data.isDeleted) return;
         freshList.push({ id: doc.id, ...data });
       });
 
@@ -148,6 +153,16 @@ function initPartnersList() {
         `;
       }
     });
+
+    // 화면 이탈 시 백그라운드 리스너 메모리 누수 및 불필요한 DB 읽기를 원천 차단하기 위한 언로드 훅 등록
+    window.addEventListener("beforeunload", () => {
+      if (typeof window._partnersUnsubscribe === "function") {
+        try {
+          window._partnersUnsubscribe();
+        } catch (e) {}
+        window._partnersUnsubscribe = null;
+      }
+    }, { once: true });
   } catch (err) {
     console.error("협력업체 초기화 실패]", err);
   }

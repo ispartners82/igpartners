@@ -1,4 +1,4 @@
-import { db, auth } from "./firebase-db.js?v=2.0.7";
+import { db, auth } from "./firebase-db.js?v=260930_7";
 import { 
   collection, 
   query, 

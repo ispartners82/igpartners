@@ -1,4 +1,6 @@
-import { db, auth } from "./firebase-db.js?v=260904_1";
+import { db, auth } from "./firebase-db.js?v=260930_7";
+// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=260930_7)
+import { LANG_LIST } from "./navigation.js?v=260930_7";
 import { 
   collection, 
   query, 
@@ -80,12 +82,12 @@ function initPage() {
     let confirmedCount = 0;
     let cancelledCount = 0;
 
-    // 선택언어별 카운팅 (언어 필터링이 적용되지 않은 전체 items 기준 또는 allItems 기준 전달)
-    // 원본 데이터가 있으면 그것을 기준으로 언어별 카운트를 세어 정확성을 기합니다.
+    // 선택언어별 카운팅 (단일 소스인 LANG_LIST를 기준으로 동적 카운팅 수행)
     const statsItems = allItems.length > 0 ? allItems : items;
-    const langCounts = {
-      ko: 0, ja: 0, vi: 0, en: 0, zh: 0, ru: 0, my: 0, km: 0, mn: 0, th: 0, lo: 0, ne: 0, id: 0, si: 0, bn: 0
-    };
+    const langCounts = {};
+    const refLangList = Array.isArray(LANG_LIST) ? LANG_LIST : (window.GLOBAL_LANG_LIST || []);
+    refLangList.forEach(l => { langCounts[l.code] = 0; });
+
     statsItems.forEach(item => {
       if (item.lang && langCounts[item.lang] !== undefined) {
         langCounts[item.lang]++;
@@ -95,33 +97,35 @@ function initPage() {
     // 선택언어별 예약수 타일 렌더링 (#admin-lang-stats)
     const langStatsContainer = document.getElementById("admin-lang-stats");
     if (langStatsContainer) {
-      // 예약캡처 디자인 모사: 둥근 모서리, 은은한 테두리 색상, 언어별 고유 텍스트 색상 및 아이콘 매핑
-      const langConfig = {
-        ko: { flag: "🇰🇷", label: "한국어", color: "#ffffff", border: "rgba(255, 255, 255, 0.2)" },
-        ja: { flag: "🇯🇵", label: "일본어", color: "#38bdf8", border: "rgba(56, 189, 248, 0.2)" },
-        vi: { flag: "🇻🇳", label: "베트남어", color: "#e2e8f0", border: "rgba(226, 232, 240, 0.2)" },
-        en: { flag: "🇺🇸", label: "영어", color: "#ec4899", border: "rgba(236, 72, 153, 0.2)" },
-        zh: { flag: "🇨🇳", label: "중국어", color: "#3b82f6", border: "rgba(59, 130, 246, 0.2)" },
-        ru: { flag: "🇷🇺", label: "러시아어", color: "#f59e0b", border: "rgba(245, 158, 11, 0.2)" },
-        my: { flag: "🇲🇲", label: "미얀마어", color: "#a855f7", border: "rgba(168, 85, 247, 0.2)" },
-        km: { flag: "🇰🇭", label: "캄보디아어", color: "#ef4444", border: "rgba(239, 68, 68, 0.2)" },
-        mn: { flag: "🇲🇳", label: "몽골어", color: "#10b981", border: "rgba(16, 185, 129, 0.2)" },
-        th: { flag: "🇹🇭", label: "태국어", color: "#14b8a6", border: "rgba(20, 184, 166, 0.2)" },
-        lo: { flag: "🇱🇦", label: "라오스어", color: "#f43f5e", border: "rgba(244, 63, 94, 0.2)" },
-        ne: { flag: "🇳🇵", label: "네팔어", color: "#84cc16", border: "rgba(132, 204, 22, 0.2)" },
-        id: { flag: "🇮🇩", label: "인도네시아어", color: "#06b6d4", border: "rgba(6, 182, 212, 0.2)" },
-        si: { flag: "🇱🇰", label: "스리랑카어", color: "#6366f1", border: "rgba(99, 102, 241, 0.2)" },
-        bn: { flag: "🇧🇩", label: "방글라데시어", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
+      // 언어별 고유 텍스트 색상 및 테두리 스타일 매핑
+      const langStyleMap = {
+        ko: { flag: "🇰🇷", color: "#ffffff", border: "rgba(255, 255, 255, 0.2)" },
+        ja: { flag: "🇯🇵", color: "#38bdf8", border: "rgba(56, 189, 248, 0.2)" },
+        vi: { flag: "🇻🇳", color: "#e2e8f0", border: "rgba(226, 232, 240, 0.2)" },
+        en: { flag: "🇺🇸", color: "#ec4899", border: "rgba(236, 72, 153, 0.2)" },
+        zh: { flag: "🇨🇳", color: "#3b82f6", border: "rgba(59, 130, 246, 0.2)" },
+        ru: { flag: "🇷🇺", color: "#f59e0b", border: "rgba(245, 158, 11, 0.2)" },
+        my: { flag: "🇲🇲", color: "#a855f7", border: "rgba(168, 85, 247, 0.2)" },
+        km: { flag: "🇰🇭", color: "#ef4444", border: "rgba(239, 68, 68, 0.2)" },
+        mn: { flag: "🇲🇳", color: "#10b981", border: "rgba(16, 185, 129, 0.2)" },
+        th: { flag: "🇹🇭", color: "#14b8a6", border: "rgba(20, 184, 166, 0.2)" },
+        lo: { flag: "🇱🇦", color: "#f43f5e", border: "rgba(244, 63, 94, 0.2)" },
+        ne: { flag: "🇳🇵", color: "#84cc16", border: "rgba(132, 204, 22, 0.2)" },
+        id: { flag: "🇮🇩", color: "#06b6d4", border: "rgba(6, 182, 212, 0.2)" },
+        si: { flag: "🇱🇰", color: "#6366f1", border: "rgba(99, 102, 241, 0.2)" },
+        bn: { flag: "🇧🇩", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
       };
 
       let html = "";
-      Object.entries(langConfig).forEach(([key, cfg]) => {
+      refLangList.forEach(l => {
+        const key = l.code;
+        const style = langStyleMap[key] || { flag: "🌐", color: "#ffffff", border: "rgba(255, 255, 255, 0.2)" };
+        const label = l.koName || key;
         const count = langCounts[key] || 0;
-        // 캡처 디자인처럼: 상단에 flag와 label, 하단에 숫자와 '명' or '건'
         html += `
-          <div class="lang-stat-tile" style="border-color: ${cfg.border};">
-            <span class="lang-tile-title" style="color: ${cfg.color};">${cfg.flag} ${cfg.label}</span>
-            <span class="lang-tile-value" style="color: ${cfg.color};">${count}<small>명</small></span>
+          <div class="lang-stat-tile" style="border-color: ${style.border};">
+            <span class="lang-tile-title" style="color: ${style.color};">${style.flag} ${label}</span>
+            <span class="lang-tile-value" style="color: ${style.color};">${count}<small>명</small></span>
           </div>
         `;
       });
