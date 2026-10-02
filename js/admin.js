@@ -1,6 +1,6 @@
-import { db, auth } from "./firebase-db.js?v=260930_7";
-// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=260930_7)
-import { LANG_LIST } from "./navigation.js?v=260930_7";
+import { db, auth } from "./firebase-db.js?v=261002_5";
+// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=261002_5)
+import { LANG_LIST } from "./navigation.js?v=261002_5";
 import { 
   collection, 
   query, 
@@ -21,6 +21,182 @@ import {
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // SPA 및 일반 로드 환경 모두에서 정상 구동되도록 관리자 페이지 초기화 메인 함수 정의
+// 솔라피(Solapi) API 설정 상수 및 Web Crypto HMAC-SHA256 인증 모듈
+const SOLAPI_API_KEY = "NCS6QTA1RKWBG0P5";
+const SOLAPI_API_SECRET = "YO0S9SMY2XTAKI3ZRH93X7FB4UC0BIGS";
+const SOLAPI_SENDER_NUMBER = "01048444115"; // 업무폰 발신번호 (고객 문자 회신 수신용)
+
+// 솔라피 HMAC-SHA256 인증 헤더 생성 함수 (Web Crypto API 활용)
+const createSolapiAuthHeader = async (apiKey, apiSecret) => {
+  const date = new Date().toISOString();
+  const salt = Math.random().toString(36).substring(2, 15);
+
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(apiSecret);
+  const messageData = encoder.encode(date + salt);
+
+  const cryptoKey = await window.crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signatureBuffer = await window.crypto.subtle.sign(
+    "HMAC",
+    cryptoKey,
+    messageData
+  );
+
+  const hashArray = Array.from(new Uint8Array(signatureBuffer));
+  const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+  return `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`;
+};
+
+// 예약 확정 및 취소 시 환자 연락처로 솔라피 LMS 장문 문자 발송 함수
+const sendCustomerStatusLms = async (resData, statusType) => {
+  if (!resData || !resData.phone) {
+    console.warn("환자 연락처가 없어 알림 문자를 발송하지 못했습니다.");
+    return { status: "fail", error: "환자 연락처 없음" };
+  }
+
+  const cleanPhone = String(resData.phone).replace(/[^0-9]/g, "");
+  if (!cleanPhone || cleanPhone.length < 9) {
+    console.warn("유효하지 않은 환자 연락처:", resData.phone);
+    return { status: "fail", error: "유효하지 않은 연락처" };
+  }
+
+  const patientName = resData.name || "고객";
+  const clinicName = resData.clinic || "-";
+  const reservationDate = resData.reservationDate || "-";
+  const reservationTime = resData.reservationTime || "-";
+
+  let subject = "";
+  let messageText = "";
+
+  if (statusType === "confirmed") {
+    subject = "[IGPartners 병원 진료 예약 확정 안내]";
+    messageText = `[IGPartners 병원 진료 예약 확정 안내]
+
+안녕하세요, ${patientName}님.
+IGPartners를 통해 신청하신 병원 진료 예약이 정상적으로 확정되었습니다.
+
+■ 예약 상세 정보
+• 환자 성명: ${patientName}
+• 진료 병원: ${clinicName}
+• 예약 일시: ${reservationDate} ${reservationTime}
+
+■ 내원 안내 사항
+• 원활한 진료 접수를 위해 예약 시간 10분 전까지 병원에 내원해 주시기 바랍니다.
+• 본인 확인을 위한 신분증(외국인등록증 또는 여권)을 반드시 지참해 주시기 바랍니다.
+
+■ IGPartners 카톡
+http://pf.kakao.com/_YxoxjfX/chat`;
+  } else if (statusType === "cancelled") {
+    subject = "[IGPartners 병원 진료 예약 취소 안내]";
+    messageText = `[IGPartners 병원 진료 예약 취소 안내]
+
+안녕하세요, ${patientName}님.
+신청하신 병원 진료 예약이 아래와 같이 취소 처리되었습니다.
+
+■ 예약 취소 정보
+• 환자 성명: ${patientName}
+• 진료 병원: ${clinicName}
+• 예약 일시: ${reservationDate} ${reservationTime}
+• 처리 상태: 예약 취소 완료
+
+■ 안내 사항
+• 진료 일정 재조정이나 신규 예약을 원하실 경우 재예약 부탁드립니다.
+
+■ IGPartners 카톡
+http://pf.kakao.com/_YxoxjfX/chat`;
+  } else {
+    return { status: "ignored" };
+  }
+
+  try {
+    // 발신번호 결정: DB 설정에 등록된 발신번호가 있으면 우선 사용, 없으면 업무폰 번호(01048444115) 사용
+    let senderNumber = SOLAPI_SENDER_NUMBER;
+    try {
+      const solapiDocRef = doc(db, "settings", "solapi");
+      const solapiDocSnap = await getDoc(solapiDocRef);
+      if (solapiDocSnap.exists() && solapiDocSnap.data().senderNumber) {
+        senderNumber = String(solapiDocSnap.data().senderNumber).replace(/[^0-9]/g, "");
+      }
+    } catch (e) {
+      console.warn("DB 발신번호 설정 조회 실패, 기본 업무폰 번호 사용:", e);
+    }
+
+    const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
+
+    const requestBody = {
+      message: {
+        to: cleanPhone,
+        from: senderNumber,
+        type: "LMS",
+        subject: subject,
+        text: messageText
+      }
+    };
+
+    const response = await fetch("https://api.solapi.com/messages/v4/send", {
+      method: "POST",
+      headers: {
+        "Authorization": authHeader,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData.errorMessage || `HTTP status ${response.status}`);
+    }
+
+    // 발송 접수 후 통신사 차단/전송 상태를 정밀 확인하기 위해 1.2초 대기 후 상태 단건 조회
+    let finalStatus = "success";
+    let finalError = "";
+    if (responseData && responseData.messageId) {
+      await new Promise(r => setTimeout(r, 1200));
+      try {
+        const checkAuth = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
+        const checkRes = await fetch(`https://api.solapi.com/messages/v4/list?criteria=messageId&value=${responseData.messageId}&limit=1`, {
+          headers: { "Authorization": checkAuth }
+        });
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          const targetMsg = checkData.messageList && checkData.messageList[responseData.messageId];
+          if (targetMsg) {
+            const sCode = parseInt(targetMsg.statusCode, 10);
+            // 3000번대 상태 코드는 통신사 차단 및 전송 실패를 의미함
+            if (sCode >= 3000 && sCode < 4000) {
+              finalStatus = "fail";
+              finalError = targetMsg.reason || `전송 실패 (코드 ${sCode})`;
+              if (sCode === 3113) {
+                finalError = "통신사 번호도용문자차단서비스로 인해 차단되었습니다. 발신번호 통신사(114)에서 해당 부가서비스를 해지해 주세요.";
+              }
+            }
+          }
+        }
+      } catch (checkErr) {
+        console.warn("솔라피 상태 후속 조회 예외:", checkErr);
+      }
+    }
+
+    if (finalStatus === "fail") {
+      return { status: "fail", error: finalError };
+    }
+
+    console.log(`고객 알림 LMS 발송 성공 (${statusType}):`, responseData);
+    return { status: "success", data: responseData };
+  } catch (err) {
+    console.error(`고객 알림 LMS 발송 실패 (${statusType}):`, err);
+    return { status: "fail", error: err.message };
+  }
+};
+
 function initPage() {
   const reservationList = document.getElementById("reservation-list");
   const btnRefresh = document.getElementById("btn-refresh");
@@ -532,9 +708,32 @@ function initPage() {
     const originalText = button.textContent;
     button.textContent = "...";
 
-    // 1. 로컬 데이터인 경우 로컬스토리지만 업데이트
+    // 1. 로컬 데이터인 경우 로컬스토리지 업데이트 및 알림 문자 발송
     if (docId.startsWith("local_")) {
-      updateLocalReservation(docId, action);
+      const localDataStr = localStorage.getItem("local_reservations");
+      let localItem = null;
+      if (localDataStr) {
+        try {
+          const arr = JSON.parse(localDataStr);
+          localItem = arr.find(i => i.id === docId);
+        } catch (e) {}
+      }
+
+      if (action === "confirm") {
+        updateLocalReservation(docId, action);
+        if (localItem && localItem.phone) {
+          sendCustomerStatusLms(localItem, "confirmed");
+        }
+      } else if (action === "cancel") {
+        if (confirm("정말 이 예약을 취소하시겠습니까?")) {
+          updateLocalReservation(docId, action);
+          if (localItem && localItem.phone) {
+            sendCustomerStatusLms(localItem, "cancelled");
+          }
+        }
+      } else {
+        updateLocalReservation(docId, action);
+      }
       button.disabled = false;
       button.textContent = originalText;
       return;
@@ -546,9 +745,61 @@ function initPage() {
 
       if (action === "confirm") {
         await updateDoc(docRef, { status: "confirmed" });
+
+        // 고객에게 예약 확정 LMS 문자 발송
+        let targetData = null;
+        try {
+          const snap = await getDoc(docRef);
+          if (snap.exists()) targetData = snap.data();
+        } catch (e) {}
+
+        if (targetData && targetData.phone) {
+          const lmsRes = await sendCustomerStatusLms(targetData, "confirmed");
+          if (lmsRes.status === "success") {
+            await updateDoc(docRef, {
+              customerSmsStatus: "success",
+              customerSmsSentAt: serverTimestamp()
+            }).catch(() => {});
+            alert(`예약이 확정되었습니다.\n환자분(${targetData.phone})께 확정 안내 문자가 정상 발송되었습니다.`);
+          } else {
+            await updateDoc(docRef, {
+              customerSmsStatus: "fail",
+              customerSmsError: lmsRes.error || ""
+            }).catch(() => {});
+            alert(`예약이 확정되었습니다.\n(단, 환자 안내 문자 발송 실패: ${lmsRes.error || '오류'})`);
+          }
+        } else {
+          alert("예약이 확정되었습니다.");
+        }
       } else if (action === "cancel") {
         if (confirm("정말 이 예약을 취소하시겠습니까?")) {
           await updateDoc(docRef, { status: "cancelled" });
+
+          // 고객에게 예약 취소 LMS 문자 발송
+          let targetData = null;
+          try {
+            const snap = await getDoc(docRef);
+            if (snap.exists()) targetData = snap.data();
+          } catch (e) {}
+
+          if (targetData && targetData.phone) {
+            const lmsRes = await sendCustomerStatusLms(targetData, "cancelled");
+            if (lmsRes.status === "success") {
+              await updateDoc(docRef, {
+                customerSmsStatus: "success",
+                customerSmsSentAt: serverTimestamp()
+              }).catch(() => {});
+              alert(`예약이 취소되었습니다.\n환자분(${targetData.phone})께 취소 안내 문자가 정상 발송되었습니다.`);
+            } else {
+              await updateDoc(docRef, {
+                customerSmsStatus: "fail",
+                customerSmsError: lmsRes.error || ""
+              }).catch(() => {});
+              alert(`예약이 취소되었습니다.\n(단, 환자 안내 문자 발송 실패: ${lmsRes.error || '오류'})`);
+            }
+          } else {
+            alert("예약이 취소되었습니다.");
+          }
         }
       } else if (action === "pending") {
         await updateDoc(docRef, { status: "pending" });

@@ -5,7 +5,7 @@
  * =========================================================================
  */
 
-import { auth, db } from "/js/firebase-db.js?v=260930_7";
+import { auth, db } from "/js/firebase-db.js?v=261002_5";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, limit, orderBy, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -145,12 +145,28 @@ function insertImageAtCursor(imgDataUrl, fileName) {
 window.insertImageAtCursor = insertImageAtCursor;
 
 /**
- * 업로드 이미지 고효율 자동 리사이징 & 압축 유틸리티 - 최대 1600px, 85% 품질로 용량 90% 이상 절감]
+ * 이미지 자동 리사이징 & 고효율 압축 엔진 - File, Blob 및 DataURL 다형성 완벽 지원 (Promise 및 Callback 동시 호환)
  */
-function compressImage(file, maxDimension = 1600, quality = 0.85) {
+function compressImage(inputData, maxDimension = 900, quality = 0.72, callback = null) {
   return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    // 콜백 함수와 Promise resolve를 동시에 안전하게 수행하는 래퍼 함수
+    const handleResolve = (result) => {
+      if (typeof callback === "function") {
+        try {
+          callback(result);
+        } catch (cbErr) {
+          console.warn("압축 콜백 실행 오류:", cbErr);
+        }
+      }
+      resolve(result);
+    };
+
+    // DataURL 문자열을 Image 객체로 로드하여 캔버스 리사이징 및 압축을 수행하는 내부 함수
+    const processDataUrl = (dataUrl) => {
+      if (!dataUrl) {
+        handleResolve("");
+        return;
+      }
       const img = new Image();
       img.onload = () => {
         let width = img.width;
@@ -172,15 +188,25 @@ function compressImage(file, maxDimension = 1600, quality = 0.85) {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
 
-        // JPEG 포맷 85% 고품질 압축 데이터 URL 생성
+        // JPEG 포맷 고품질 압축 데이터 URL 생성
         const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
-        resolve(compressedDataUrl);
+        handleResolve(compressedDataUrl);
       };
-      img.onerror = () => resolve(e.target.result);
-      img.src = e.target.result;
+      img.onerror = () => handleResolve(dataUrl);
+      img.src = dataUrl;
     };
-    reader.onerror = () => resolve("");
-    reader.readAsDataURL(file);
+
+    // 입력 데이터 타입에 따라 적절한 파이프라인 분기 처리
+    if (typeof inputData === "string") {
+      processDataUrl(inputData);
+    } else if (inputData instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = (e) => processDataUrl(e.target.result);
+      reader.onerror = () => handleResolve("");
+      reader.readAsDataURL(inputData);
+    } else {
+      handleResolve("");
+    }
   });
 }
 
@@ -1380,7 +1406,45 @@ function toggleReplyForm(commentId, postId, postIndex) {
 window.toggleReplyForm = toggleReplyForm;
 
 
+/**
+ * 글쓰기 폼 입력 데이터 및 첨부파일 완전 초기화 엔진 - 취소 또는 다른 카테고리 이동 시 잔여 데이터 제거
+ */
+function resetCafeWriteForm() {
+  window.editingPostId = null;
+  const titleEl = document.getElementById("write-title-input");
+  const contentEl = document.getElementById("write-content-input");
+  const editorEl = document.getElementById("write-content-editor");
+  const tagsEl = document.getElementById("write-tags-input");
+  const noticeCheck = document.getElementById("write-notice-check");
+  const photoInput = document.getElementById("write-photo-input");
+  const fileInput = document.getElementById("write-file-input");
+  const submitBtnTop = document.getElementById("btn-submit-cafe-post");
+  const submitBtnBottom = document.getElementById("btn-submit-cafe-post-bottom");
+
+  if (titleEl) titleEl.value = "";
+  if (contentEl) contentEl.value = "";
+  if (editorEl) editorEl.innerHTML = "";
+  if (tagsEl) tagsEl.value = "";
+  if (noticeCheck) noticeCheck.checked = false;
+  if (photoInput) photoInput.value = "";
+  if (fileInput) fileInput.value = "";
+  if (submitBtnTop) submitBtnTop.textContent = "등록";
+  if (submitBtnBottom) submitBtnBottom.textContent = "등록";
+
+  window.attachedPhotos = [];
+  window.attachedFiles = [];
+  if (typeof window.renderPhotoPreviews === "function") window.renderPhotoPreviews();
+  if (typeof window.renderFilePreviews === "function") window.renderFilePreviews();
+}
+
+window.resetCafeWriteForm = resetCafeWriteForm;
+
 function showCafeWriteSection() {
+  // 신규 글쓰기 진입 시 이전 작성 잔여 데이터 완전 초기화
+  if (!window.editingPostId) {
+    resetCafeWriteForm();
+  }
+
   const currentUid = auth.currentUser ? auth.currentUser.uid : (window.currentUserUid || "");
   const sidebarNameEl = document.getElementById("sidebar-user-name");
   const sidebarRoleBadgeEl = document.getElementById("sidebar-user-badge");
@@ -1480,6 +1544,9 @@ function showCafeListSection() {
   const postWriteSection = document.getElementById("cafe-post-write-section");
   const postDetailSection = document.getElementById("cafe-post-detail-section");
   const postCategoryManageSection = document.getElementById("cafe-category-manage-section");
+
+  // 글쓰기 화면 이탈 시 미완료 작성 내용 및 첨부 데이터 완전 초기화
+  resetCafeWriteForm();
 
   // 게시글 목록 전환 시 글쓰기/상세보기/카테고리 관리 섹션을 확실하게 숨겨 화면 겹침 방지
   if (postWriteSection) postWriteSection.style.display = "none";
@@ -1672,6 +1739,14 @@ async function submitNewPost() {
   const authorUid = currentUser ? currentUser.uid : (window.currentUserUid || "");
   const isSecret = board === "resume";
 
+  // Cloud Firestore 단일 문서 1MB (1,048,576 bytes) 초과 차단 안전 가드
+  const testPayload = { board, prefix, title, content, contentHtml, isSecret, tags, photos, files };
+  const approxSizeBytes = new Blob([JSON.stringify(testPayload)]).size;
+  if (approxSizeBytes > 920000) {
+    // 920KB를 초과할 경우 본문(contentHtml)에 이미 이미지가 있으므로 photos 배열의 dataUrl 중복을 비워 용량을 50% 절감
+    photos.forEach(p => { p.dataUrl = ""; });
+  }
+
   try {
     if (window.editingPostId && !window.editingPostId.startsWith("local-")) {
       await updateDoc(doc(db, "community_posts", window.editingPostId), {
@@ -1772,24 +1847,12 @@ function initEventHandlers() {
 
   const photoInput = document.getElementById("write-photo-input");
   if (photoInput) {
-    photoInput.addEventListener("change", async (e) => {
-      const files = Array.from(e.target.files);
-      for (const file of files) {
-        if (!file.type.startsWith("image/")) continue;
-        try {
-          // 고용량 이미지 첨부 시 0.1초 클라이언트 자동 리사이징 & 압축으로 90% 용량 절감
-          const compressedDataUrl = await compressImage(file, 1600, 0.85);
-          if (compressedDataUrl) {
-            window.attachedPhotos.push({ name: file.name, dataUrl: compressedDataUrl });
-            renderPhotoPreviews();
-            insertImageAtCursor(compressedDataUrl, file.name);
-          }
-        } catch (err) {
-          console.error("사진 압축 중 예외 발생:", err);
-        }
+    // community.html의 onchange="window.handlePhotoSelect(event)" 단일 핸들러와 상호 연동
+    photoInput.onchange = (e) => {
+      if (typeof window.handlePhotoSelect === "function") {
+        window.handlePhotoSelect(e);
       }
-      photoInput.value = "";
-    });
+    };
   }
 
   const fileInput = document.getElementById("write-file-input");

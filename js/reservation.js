@@ -1,10 +1,10 @@
-// Firebase App, DB 및 Auth 공통 모듈 연동 (캐시 무효화 버전: v=260930_7)
-import { db, auth } from "./firebase-db.js?v=260930_7";
+// Firebase App, DB 및 Auth 공통 모듈 연동 (캐시 무효화 버전: v=261002_5)
+import { db, auth } from "./firebase-db.js?v=261002_5";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // 15개국어 진료 예약 폼 번역 및 개인정보 수집 이용 안내문 전용 모듈 연동 (코드 경량화 및 모듈화 적용)
-import { i18n, privacyContents } from "./i18n-reservation.js?v=260930_7";
+import { i18n, privacyContents } from "./i18n-reservation.js?v=261002_5";
 
 document.addEventListener("DOMContentLoaded", () => {
 
