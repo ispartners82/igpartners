@@ -5,7 +5,7 @@
  * - 초기 데이터 부재 시 자동 시딩(Seed) 기능 내장
  */
 
-import { db } from "/js/firebase-db.js?v=260930_7";
+import { db } from "/js/firebase-db.js?v=261020_3";
 import { 
   collection, 
   getDocs, 
@@ -202,6 +202,20 @@ async function loadInterpreters() {
       } else {
         freelanceList.push(data);
       }
+    });
+
+    // 1차 순서(order) 오름차순, 2차 등록일시(createdAt) 오름차순으로 완벽 정렬 보장
+    staffList.sort((a, b) => {
+      const orderA = Number(a.order) || 999;
+      const orderB = Number(b.order) || 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return (a.createdAt || "").localeCompare(b.createdAt || "");
+    });
+    freelanceList.sort((a, b) => {
+      const orderA = Number(a.order) || 999;
+      const orderB = Number(b.order) || 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return (a.createdAt || "").localeCompare(b.createdAt || "");
     });
 
     // 최신 데이터를 로컬 스토리지에 캐싱

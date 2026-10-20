@@ -4353,6 +4353,10 @@ body.home-page {
   text-decoration: none;
   background: linear-gradient(135deg, #6366f1 0%, #00f3ff 100%); /* 인디고 & 네온 시안 하모니 그라데이션 */
   border-radius: 100px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
   box-shadow: 0 4px 20px rgba(0, 243, 255, 0.25); /* 기본 네온 글로우 효과 */
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* 미세 인터랙션 애니메이션 */
   position: relative;
@@ -5642,21 +5646,94 @@ body.home-page {
   gap: 0.35rem;
 }
 
-/* 모바일 화면 (768px 이하) 전용 반응형 카드리스트 전환 */
+/* ==========================================================================
+   커뮤니티 모바일 반응형 카드리스트 및 여백 최적화 (768px 이하)
+   - 좌측 불필요한 여백 대폭 축소하여 화면을 넓게 활용
+   - 긴 제목 시 오른쪽으로 잘리지 않고 화면 너비에 맞게 자연스럽게 줄바꿈 허용
+   - 상단 컨트롤 바가 오른쪽 밖으로 넘치지 않도록 유연한 줄바꿈 및 컴팩트 배치 적용
+   ========================================================================== */
 @media (max-width: 768px) {
+  /* 모바일 화면에서 커뮤니티 전체 레이아웃 컨테이너의 좌우 불필요한 여백을 대폭 축소하여 화면을 넓게 활용 */
+  .cafe-layout-container {
+    padding: 5.25rem 0.65rem 3rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    gap: 1rem;
+  }
+
+  /* 우측 메인 카드의 내부 좌우 패딩을 슬림화하여 본문 콘텐츠의 가로 공간을 극대화 */
+  .cafe-main-card {
+    padding: 1.1rem 0.75rem !important;
+    border-radius: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* 상단 헤더 바 - 제목과 컨트롤을 위아래로 유연하게 분리 배치하여 가로 스크롤 방지 */
+  .cafe-header-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding-bottom: 0.85rem !important;
+    margin-bottom: 0.85rem !important;
+  }
+
+  .cafe-header-left {
+    width: 100%;
+  }
+
+  /* 상단 컨트롤 영역 - 모바일 100% 가로 폭 안에서 유연하게 줄바꿈 및 컴팩트 배치 */
+  .cafe-header-controls {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  /* 모바일 글쓰기 버튼 크기 최적화 */
+  .cafe-header-controls .btn-cafe-write {
+    padding: 0.42rem 0.9rem !important;
+    font-size: 0.82rem !important;
+    margin-right: 0 !important;
+  }
+
+  .cafe-checkbox-label {
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+  }
+
+  .cafe-select-perpage {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* 테이블 래퍼 가로 스크롤 방지 및 너비 100% 제한 */
+  .cafe-table-wrapper {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+  }
+
   /* 모바일에서 테이블 헤더 숨김 */
   .cafe-table thead {
     display: none;
   }
 
-  /* 테이블 구성요소를 블록/플렉스 구조로 변경하여 카드 형태 생성 */
+  /* 테이블 구성요소를 블록 구조로 변경하여 반응형 카드 형태 생성 */
   .cafe-table,
   .cafe-table tbody,
   .cafe-table tr,
   .cafe-table td {
     display: block;
-    width: 100%;
-    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   /* 모바일 화면에서는 모바일 전용 공지 뱃지 표출 */
@@ -5665,11 +5742,13 @@ body.home-page {
     align-items: center;
   }
 
-  /* 각 게시글 행 카드 스타일 지정 */
+  /* 각 게시글 행 카드 스타일 지정 - 불필요한 여백 축소 */
   .cafe-table tr {
-    padding: 0.85rem 0.65rem;
+    padding: 0.85rem 0.5rem !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: background 0.2s;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   /* 모바일 공지글 행 스타일 (좌측 포인트 바 유지 및 구분) */
@@ -5697,38 +5776,45 @@ body.home-page {
   .cafe-col-title {
     padding: 0 !important;
     border-bottom: none !important;
+    width: 100% !important;
   }
 
-  /* 1번째 줄 - 제목 라인 (한 줄 고정 및 overflow ellipsis 말줄임) */
+  /* 1번째 줄 - 제목 라인 (긴 제목 시 자연스러운 멀티라인 줄바꿈 허용) */
   .cafe-title-line {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    overflow: hidden;
-    white-space: nowrap;
-    width: 100%;
-    gap: 0.35rem;
+    display: flex !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 0.35rem 0.45rem !important;
+    width: 100% !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.45 !important;
   }
 
+  /* 게시글 제목 링크 - 긴 제목이 오른쪽 밖으로 잘리지 않고 화면 너비에 맞게 자연스럽게 줄바꿈되도록 처리 */
   .cafe-title-line .cafe-post-link {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-    min-width: 0;
-    font-size: 0.92rem;
-    font-weight: 600;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    line-height: 1.45 !important;
   }
 
   /* 2번째 줄 - 모바일 전용 메타 정보 (작성자 / 작성일 / 조회수) */
   .cafe-mobile-meta {
     display: flex !important;
-    align-items: center;
-    gap: 0.4rem;
-    color: #64748b;
-    font-size: 0.78rem;
-    margin-top: 0.4rem;
-    flex-wrap: nowrap;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    color: #64748b !important;
+    font-size: 0.78rem !important;
+    margin-top: 0.45rem !important;
+    flex-wrap: wrap !important;
   }
 
   .cafe-mobile-meta .meta-author {
@@ -5749,6 +5835,19 @@ body.home-page {
   .cafe-mobile-meta .meta-views {
     color: #64748b;
     white-space: nowrap;
+  }
+}
+
+/* 초소형 모바일 화면 (480px 이하) 추가 여백 최적화 */
+@media (max-width: 480px) {
+  .cafe-layout-container {
+    padding: 5.25rem 0.4rem 2.5rem !important;
+  }
+  .cafe-main-card {
+    padding: 0.9rem 0.55rem !important;
+  }
+  .cafe-header-controls {
+    gap: 0.35rem !important;
   }
 }
 

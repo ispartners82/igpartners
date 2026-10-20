@@ -1084,7 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!target) return;
 
     // 로그인 버튼 클릭 시 모달 팝업 열기
-    if (target.id === "btn-login" || target.closest("#btn-login") || target.id === "quick-btn-login" || target.closest("#quick-btn-login")) {
+    if (target.id === "btn-login" || target.closest("#btn-login") || target.id === "quick-btn-login" || target.closest("#quick-btn-login") || target.id === "hero-btn-login" || target.closest("#hero-btn-login")) {
       showAuthModal("login");
     }
 
@@ -1315,6 +1315,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (quickBtnMyReservations) quickBtnMyReservations.style.display = "inline-flex";
       if (quickBtnLogin) quickBtnLogin.style.display = "none";
+      const heroBtnLogin = document.getElementById("hero-btn-login");
+      if (heroBtnLogin) heroBtnLogin.style.display = "none";
 
       // 로그인한 회원에게만 상단 '커뮤니티' 메뉴 노출 처리
       const communityMenuItems = document.querySelectorAll(".nav-community-item, #nav-item-community");
@@ -1466,6 +1468,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const quickBtnStatsDashboard = document.getElementById("quick-btn-stats-dashboard");
       if (quickBtnStatsDashboard) quickBtnStatsDashboard.style.display = "none";
       if (quickBtnLogin) quickBtnLogin.style.display = "inline-flex";
+      const heroBtnLogin = document.getElementById("hero-btn-login");
+      if (heroBtnLogin) heroBtnLogin.style.display = "inline-flex";
 
       if (btnAdminDashboard) btnAdminDashboard.style.display = "none";
       const btnStatsDashboard = document.getElementById("btn-stats-dashboard");

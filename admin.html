@@ -22,7 +22,7 @@
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261002_5) -->
-  <link rel="stylesheet" href="/css/style.css?v=261002_5">
+  <link rel="stylesheet" href="/css/style.css?v=261020_3">
 </head>
 
 <body>
@@ -1185,15 +1185,20 @@
 
           <!-- 통역사 목록 관리 테이블 (하단 100% Full-Width) -->
           <section class="clinic-list-section" style="width: 100%; max-width: 100%; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
               <h2>등록된 전문 통역사 목록</h2>
-              <button id="btn-refresh-interpreters" class="btn-refresh">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" id="btn-reorder-interpreters" class="btn btn-secondary" style="display: flex; align-items: center; gap: 6px; padding: 0.5rem 0.9rem; font-size: 0.85rem; border-radius: 6px; background: rgba(0, 243, 255, 0.12); border: 1px solid #00f3ff; color: #00f3ff; cursor: pointer; font-weight: bold; transition: all 0.2s ease;">
+                  🔄 순서 일괄 자동 정리
+                </button>
+                <button id="btn-refresh-interpreters" class="btn-refresh">
                 <svg viewBox="0 0 24 24" width="16" height="16">
                   <path fill="currentColor"
                     d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
                 </svg>
                 새로고침
-              </button>
+                </button>
+              </div>
             </div>
 
             <!-- 서브 타이틀 및 소속 통역사 테이블 -->
@@ -1261,9 +1266,9 @@
   </div>
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261002_5) -->
-  <script type="module" src="/js/navigation.js?v=261002_5"></script>
-  <script type="module" src="/js/admin.js?v=261002_5"></script>
-  <script type="module" src="/js/auth.js?v=261002_5"></script>
+  <script type="module" src="/js/navigation.js?v=261020_3"></script>
+  <script type="module" src="/js/admin.js?v=261020_3"></script>
+  <script type="module" src="/js/auth.js?v=261020_3"></script>
 </body>
 
 </html>

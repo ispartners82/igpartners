@@ -1,6 +1,6 @@
-import { db, auth } from "./firebase-db.js?v=261002_5";
+import { db, auth } from "./firebase-db.js?v=261020_3";
 // 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=261002_5)
-import { LANG_LIST } from "./navigation.js?v=261002_5";
+import { LANG_LIST } from "./navigation.js?v=261020_3";
 import { 
   collection, 
   query, 
@@ -4120,14 +4120,38 @@ function initPage() {
   const regInterpreterPhotoPreviewContainer = document.getElementById("reg-interpreter-photo-preview-container");
   const regInterpreterOrder = document.getElementById("reg-interpreter-order");
   const btnRefreshInterpreters = document.getElementById("btn-refresh-interpreters");
+  // 순서 일괄 자동 정리 버튼 DOM 요소 바인딩
+  const btnReorderInterpreters = document.getElementById("btn-reorder-interpreters");
 
   const adminStaffInterpreterList = document.getElementById("admin-staff-interpreter-list");
   const adminFreelanceInterpreterList = document.getElementById("admin-freelance-interpreter-list");
 
   let regInterpreterBase64Photo = "";
   let loadedInterpretersMap = {};
+  // 순서 자동 계산 및 위/아래 이동 처리를 위해 현재 로드된 통역사 목록을 보관하는 캐시 배열
+  let currentStaffList = [];
+  let currentFreelanceList = [];
 
-  // 통역사 구분 변경 시 사진 업로드 영역 노출/숨김 토글
+  /**
+   * 통역사 구분(소속 통역사 / 프리랜서)에 따라 다음 순번(최대 순서 + 1)을 계산하여 입력창에 자동 세팅하는 함수
+   * @param {string} type - 'staff' 또는 'freelance'
+   */
+  function updateNextInterpreterOrder(type) {
+    if (!regInterpreterOrder) return;
+    const targetType = type || (regInterpreterType ? regInterpreterType.value : "staff");
+    const targetList = targetType === "staff" ? currentStaffList : currentFreelanceList;
+    let nextOrder = 1;
+    if (targetList && targetList.length > 0) {
+      const maxOrder = targetList.reduce((max, item) => {
+        const val = parseInt(item.order, 10);
+        return !isNaN(val) && val > max ? val : max;
+      }, 0);
+      nextOrder = maxOrder + 1;
+    }
+    regInterpreterOrder.value = nextOrder;
+  }
+
+  // 통역사 구분 변경 시 사진 업로드 영역 노출/숨김 토글 및 해당 구분의 다음 순번 자동 반영
   if (regInterpreterType && regInterpreterPhotoGroup) {
     regInterpreterType.addEventListener("change", (e) => {
       if (e.target.value === "staff") {
@@ -4135,6 +4159,8 @@ function initPage() {
       } else {
         regInterpreterPhotoGroup.style.display = "none";
       }
+      // 선택된 구분의 다음 순서 숫자를 계산하여 입력창에 즉시 자동 채움
+      updateNextInterpreterOrder(e.target.value);
     });
   }
 
@@ -4266,12 +4292,33 @@ function initPage() {
         }
       });
 
+      // 1차 순서(order) 오름차순, 2차 등록일시(createdAt) 오름차순으로 안정적인 정렬 순서 보장
+      staffList.sort((a, b) => {
+        const orderA = Number(a.order) || 999;
+        const orderB = Number(b.order) || 999;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.createdAt || "").localeCompare(b.createdAt || "");
+      });
+      freelanceList.sort((a, b) => {
+        const orderA = Number(a.order) || 999;
+        const orderB = Number(b.order) || 999;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.createdAt || "").localeCompare(b.createdAt || "");
+      });
+
+      // 전역 목록 캐시 업데이트
+      currentStaffList = staffList;
+      currentFreelanceList = freelanceList;
+
+      // 신규 등록 폼의 순서 필드에 다음 추천 순번 자동 설정
+      updateNextInterpreterOrder();
+
       // 1. 소속 통역사 테이블 렌더링
       adminStaffInterpreterList.innerHTML = "";
       if (staffList.length === 0) {
         adminStaffInterpreterList.innerHTML = `<tr><td colspan="6" class="table-empty">등록된 소속 통역사가 없습니다.</td></tr>`;
       } else {
-        staffList.forEach((item) => {
+        staffList.forEach((item, index) => {
           const tr = document.createElement("tr");
           const photoUrl = item.image || "/img/default_avatar.png";
           const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
@@ -4291,7 +4338,15 @@ function initPage() {
               <div>${item.phone || "-"}</div>
               <small style="color: #94a3b8;">${item.email || ""}</small>
             </td>
-            <td><span class="role-badge" style="background: rgba(0,243,255,0.15); color: #00f3ff;">${item.order || 1}</span></td>
+            <td>
+              <div style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="role-badge" style="background: rgba(0,243,255,0.15); color: #00f3ff; min-width: 26px; text-align: center; font-weight: bold;">${item.order || 1}</span>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <button type="button" class="btn-move-interpreter-order btn-move-up" data-id="${item.id}" data-type="staff" title="위로 이동" style="background: rgba(0,243,255,0.1); border: 1px solid rgba(0,243,255,0.3); color: #00f3ff; border-radius: 3px; font-size: 8px; line-height: 1; padding: 2px 4px; cursor: pointer; ${index === 0 ? 'opacity:0.25; cursor:not-allowed;' : ''}">▲</button>
+                  <button type="button" class="btn-move-interpreter-order btn-move-down" data-id="${item.id}" data-type="staff" title="아래로 이동" style="background: rgba(0,243,255,0.1); border: 1px solid rgba(0,243,255,0.3); color: #00f3ff; border-radius: 3px; font-size: 8px; line-height: 1; padding: 2px 4px; cursor: pointer; ${index === staffList.length - 1 ? 'opacity:0.25; cursor:not-allowed;' : ''}">▼</button>
+                </div>
+              </div>
+            </td>
             <td>
               <button class="btn-action confirm btn-edit-interpreter" data-id="${item.id}" style="margin-right: 6px;">수정</button>
               <button class="btn-action cancel btn-delete-interpreter" data-id="${item.id}">삭제</button>
@@ -4306,7 +4361,7 @@ function initPage() {
       if (freelanceList.length === 0) {
         adminFreelanceInterpreterList.innerHTML = `<tr><td colspan="6" class="table-empty">등록된 프리랜서 통역사가 없습니다.</td></tr>`;
       } else {
-        freelanceList.forEach((item) => {
+        freelanceList.forEach((item, index) => {
           const tr = document.createElement("tr");
           const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
 
@@ -4317,7 +4372,15 @@ function initPage() {
             <td class="font-bold">${item.country}</td>
             <td>${item.name}</td>
             <td>${item.phone || "-"}</td>
-            <td><span class="role-badge" style="background: rgba(96,165,250,0.15); color: #60a5fa;">${item.order || 1}</span></td>
+            <td>
+              <div style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="role-badge" style="background: rgba(96,165,250,0.15); color: #60a5fa; min-width: 26px; text-align: center; font-weight: bold;">${item.order || 1}</span>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <button type="button" class="btn-move-interpreter-order btn-move-up" data-id="${item.id}" data-type="freelance" title="위로 이동" style="background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); color: #60a5fa; border-radius: 3px; font-size: 8px; line-height: 1; padding: 2px 4px; cursor: pointer; ${index === 0 ? 'opacity:0.25; cursor:not-allowed;' : ''}">▲</button>
+                  <button type="button" class="btn-move-interpreter-order btn-move-down" data-id="${item.id}" data-type="freelance" title="아래로 이동" style="background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); color: #60a5fa; border-radius: 3px; font-size: 8px; line-height: 1; padding: 2px 4px; cursor: pointer; ${index === freelanceList.length - 1 ? 'opacity:0.25; cursor:not-allowed;' : ''}">▼</button>
+                </div>
+              </div>
+            </td>
             <td>
               <button class="btn-action confirm btn-edit-interpreter" data-id="${item.id}" style="margin-right: 6px;">수정</button>
               <button class="btn-action cancel btn-delete-interpreter" data-id="${item.id}">삭제</button>
@@ -4334,13 +4397,144 @@ function initPage() {
     }
   }
 
+  /**
+   * 등록된 모든 통역사의 순서를 1번부터 중복 없이 연속적으로 일괄 재부여하여 Firestore에 저장하는 함수
+   * @param {boolean} showSuccessAlert - 완료 알림 팝업 노출 여부
+   */
+  async function reorderAllInterpreters(showSuccessAlert = true) {
+    try {
+      const q = query(collection(db, "interpreters"), orderBy("order", "asc"));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        if (showSuccessAlert) alert("정리할 통역사 데이터가 없습니다.");
+        return;
+      }
+
+      const staffDocs = [];
+      const freelanceDocs = [];
+
+      snap.forEach((docSnap) => {
+        const d = { ...docSnap.data(), id: docSnap.id };
+        if (d.type === "staff") {
+          staffDocs.push(d);
+        } else {
+          freelanceDocs.push(d);
+        }
+      });
+
+      // 기존 순서 및 생성일시 기준 안정 정렬
+      staffDocs.sort((a, b) => {
+        const orderA = Number(a.order) || 999;
+        const orderB = Number(b.order) || 999;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.createdAt || "").localeCompare(b.createdAt || "");
+      });
+      freelanceDocs.sort((a, b) => {
+        const orderA = Number(a.order) || 999;
+        const orderB = Number(b.order) || 999;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.createdAt || "").localeCompare(b.createdAt || "");
+      });
+
+      const batch = writeBatch(db);
+      let updatedCount = 0;
+
+      // 1) 소속 통역사 1번부터 중복 없이 연속 순차 재부여
+      staffDocs.forEach((item, idx) => {
+        const properOrder = idx + 1;
+        if (item.order !== properOrder) {
+          batch.update(doc(db, "interpreters", item.id), { order: properOrder });
+          updatedCount++;
+        }
+      });
+
+      // 2) 프리랜서 통역사 1번부터 중복 없이 연속 순차 재부여
+      freelanceDocs.forEach((item, idx) => {
+        const properOrder = idx + 1;
+        if (item.order !== properOrder) {
+          batch.update(doc(db, "interpreters", item.id), { order: properOrder });
+          updatedCount++;
+        }
+      });
+
+      if (updatedCount > 0) {
+        await batch.commit();
+      }
+
+      // 로컬 스토리지 캐시 초기화
+      try {
+        localStorage.removeItem("igpartners_cached_interpreters");
+      } catch (cacheErr) { }
+
+      if (showSuccessAlert) {
+        alert(`총 ${staffDocs.length + freelanceDocs.length}명의 통역사 순서가 1번부터 중복 없이 연속되게 재정렬되었습니다.`);
+      }
+      await loadAdminInterpreters();
+    } catch (err) {
+      console.error("Reorder interpreters error:", err);
+      alert("통역사 순서 일괄 정리 중 오류가 발생했습니다: " + err.message);
+    }
+  }
+
+  /**
+   * 통역사 목록 테이블 내 위로(▲)/아래로(▼) 이동 버튼 클릭 시 인접 행과 위치를 맞바꾸고 순서를 재정렬하는 함수
+   */
+  async function handleMoveInterpreterOrder(id, type, direction) {
+    const list = type === "staff" ? [...currentStaffList] : [...currentFreelanceList];
+    const currentIndex = list.findIndex(item => item.id === id);
+    if (currentIndex === -1) return;
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    // 리스트 내 위치 교환
+    const temp = list[currentIndex];
+    list[currentIndex] = list[targetIndex];
+    list[targetIndex] = temp;
+
+    try {
+      const batch = writeBatch(db);
+      // 1번부터 순차 재부여하여 순서 중복을 원천 차단하고 순서를 확정
+      list.forEach((item, index) => {
+        const newOrder = index + 1;
+        batch.update(doc(db, "interpreters", item.id), { order: newOrder });
+      });
+      await batch.commit();
+
+      try {
+        localStorage.removeItem("igpartners_cached_interpreters");
+      } catch (cacheErr) { }
+
+      await loadAdminInterpreters();
+    } catch (err) {
+      console.error("Move interpreter order error:", err);
+      alert("순서 이동 처리 중 오류가 발생했습니다: " + err.message);
+    }
+  }
+
+  // 순서 일괄 자동 정리 버튼 이벤트 바인딩
+  if (btnReorderInterpreters) {
+    btnReorderInterpreters.addEventListener("click", async () => {
+      if (confirm("현재 목록 순서대로 모든 통역사의 순서를 1번부터 차례대로 중복 없이 연속되게 재정렬하시겠습니까?")) {
+        btnReorderInterpreters.disabled = true;
+        btnReorderInterpreters.textContent = "정리 중...";
+        try {
+          await reorderAllInterpreters(true);
+        } finally {
+          btnReorderInterpreters.disabled = false;
+          btnReorderInterpreters.textContent = "🔄 순서 일괄 자동 정리";
+        }
+      }
+    });
+  }
+
   // 통역사 신규 등록 폼 제출 이벤트 처리
   if (interpreterRegisterForm) {
     interpreterRegisterForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const type = regInterpreterType ? regInterpreterType.value : "staff";
-      const nameKo = regInterpreterNameKo ? regInterpreterNameKo.value.trim() : (regInterpreterName ? regInterpreterName.value.trim() : "");
+      const nameKo = regInterpreterNameKo ? regInterpreterNameKo.value.trim() : "";
       const nameEn = regInterpreterNameEn ? regInterpreterNameEn.value.trim() : "";
       const name = nameEn ? `${nameKo}, ${nameEn}` : nameKo;
       const country = regInterpreterCountry ? regInterpreterCountry.value.trim() : "";
@@ -4388,20 +4582,27 @@ function initPage() {
         }
 
         await addDoc(collection(db, "interpreters"), newInterpreterData);
+
+        // 신규 등록 후 순서 중복을 방지하기 위해 1부터 순차 재정렬 자동 실행
+        await reorderAllInterpreters(false);
+
         try {
           localStorage.removeItem("igpartners_cached_interpreters");
         } catch (cacheErr) { }
         alert("전문 통역사가 성공적으로 등록되었습니다!");
 
-        // 폼 초기화
+        // 폼 초기화 및 다음 순번 자동 세팅
         interpreterRegisterForm.reset();
         regInterpreterBase64Photo = "";
         if (regInterpreterPhotoFilename) regInterpreterPhotoFilename.textContent = "선택된 파일 없음";
         if (regInterpreterPhotoPreviewContainer) regInterpreterPhotoPreviewContainer.style.display = "none";
         if (regInterpreterCountry) regInterpreterCountry.value = "한국 (Korea)";
 
+        // 다음 등록을 위한 순서 번호 자동 세팅
+        updateNextInterpreterOrder();
+
         // 목록 새로고침
-        loadAdminInterpreters();
+        await loadAdminInterpreters();
       } catch (error) {
         console.error("Register interpreter failed:", error);
         alert("통역사 등록 중 오류가 발생했습니다: " + error.message);
@@ -4540,7 +4741,6 @@ function initPage() {
     if (closeBtn) closeBtn.onclick = () => editModal.remove();
     if (cancelBtn) cancelBtn.onclick = () => editModal.remove();
 
-    // 수정 팝업에서 국가 선택 변경 시 국가명 텍스트 자동 동기화
     if (editCountrySelect && editCountryInput) {
       editCountrySelect.onchange = (e) => {
         const val = e.target.value;
@@ -4607,7 +4807,6 @@ function initPage() {
           return;
         }
 
-        // 수정 시 선택된 국가 코드 및 국기 이미지 URL 계산
         let updatedCountryCode = data.countryCode || "kr";
         let updatedFlag = data.flag || "https://flagcdn.com/w80/kr.png";
         if (editCountrySelect) {
@@ -4633,12 +4832,17 @@ function initPage() {
             image: (updatedType === "staff") ? editBase64Photo : "",
             order: updatedOrder
           });
+
+          // 수정 후 순서 중복을 정리하기 위해 재정렬 실행
+          await reorderAllInterpreters(false);
+
           try {
             localStorage.removeItem("igpartners_cached_interpreters");
           } catch (cacheErr) { }
+
           alert("통역사 정보가 성공적으로 수정되었습니다.");
           editModal.remove();
-          loadAdminInterpreters();
+          await loadAdminInterpreters();
         } catch (err) {
           console.error("Update interpreter error:", err);
           alert("수정 중 오류 발생: " + err.message);
@@ -4647,10 +4851,32 @@ function initPage() {
     }
   }
 
-  // 관리자 테이블 내 수정 / 삭제 버튼 클릭 이벤트 위임 바인딩
+  // 관리자 테이블 내 위/아래 이동 및 수정/삭제 버튼 클릭 이벤트 위임 바인딩
   function bindInterpreterTableEvents(container) {
     if (!container) return;
     container.addEventListener("click", async (e) => {
+      // 위로 이동 버튼 클릭
+      const moveUpBtn = e.target.closest(".btn-move-up");
+      if (moveUpBtn) {
+        const id = moveUpBtn.getAttribute("data-id");
+        const type = moveUpBtn.getAttribute("data-type");
+        if (id && type) {
+          await handleMoveInterpreterOrder(id, type, "up");
+        }
+        return;
+      }
+
+      // 아래로 이동 버튼 클릭
+      const moveDownBtn = e.target.closest(".btn-move-down");
+      if (moveDownBtn) {
+        const id = moveDownBtn.getAttribute("data-id");
+        const type = moveDownBtn.getAttribute("data-type");
+        if (id && type) {
+          await handleMoveInterpreterOrder(id, type, "down");
+        }
+        return;
+      }
+
       // 수정 버튼
       if (e.target.classList.contains("btn-edit-interpreter")) {
         const id = e.target.getAttribute("data-id");
@@ -4667,11 +4893,16 @@ function initPage() {
           e.target.textContent = "삭제중...";
           try {
             await deleteDoc(doc(db, "interpreters", id));
+
+            // 삭제 후 순번 공백 방지를 위해 남아있는 통역사들의 순서를 1부터 연속되게 자동 재정렬
+            await reorderAllInterpreters(false);
+
             try {
               localStorage.removeItem("igpartners_cached_interpreters");
             } catch (cacheErr) { }
+
             alert("통역사 데이터가 삭제되었습니다.");
-            loadAdminInterpreters();
+            await loadAdminInterpreters();
           } catch (err) {
             console.error("Delete interpreter error:", err);
             alert("삭제 실패: " + err.message);
@@ -4693,8 +4924,10 @@ function initPage() {
   }
 
   window.loadAdminInterpreters = loadAdminInterpreters;
+  window.reorderAllInterpreters = reorderAllInterpreters;
 
-  // ==============================================================================
+
+    // ==============================================================================
   // 6. 협력업체 관리 (CRUD) 기능 구현
   // ==============================================================================
   setupPartnerTab();
