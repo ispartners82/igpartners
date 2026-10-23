@@ -400,7 +400,7 @@ async function fetchCommunityPosts() {
       try {
         const data = docSnap.data();
         let formattedDate = data.dateStr || "2026.08.13.";
-        let timestampMs = Date.now();
+        let timestampMs = 0;
 
         if (data.createdAt) {
           if (typeof data.createdAt.toDate === "function") {
@@ -442,6 +442,19 @@ async function fetchCommunityPosts() {
         const isCatSecret = catConfig ? catConfig.readPermission === "admin" : (targetBoard === "resume");
         const isSecretPost = data.isSecret === true || isCatSecret;
 
+        // createdAt 필드가 누락되었거나 변환되지 않은 구형 게시글은 dateStr(예: 2026.08.13.)을 파싱하여 작성 시각 산출
+        if (!timestampMs && formattedDate) {
+          const cleanDate = formattedDate.replace(/\./g, "-").replace(/-$/, "");
+          const parsedDt = new Date(cleanDate);
+          if (!isNaN(parsedDt.getTime())) {
+            timestampMs = parsedDt.getTime();
+          }
+        }
+
+        // 게시글 작성 후 일주일(7일)이 지나지 않은 경우에만 새 글 표시(isNew) 활성화
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        const isWithinOneWeek = timestampMs > 0 && (Date.now() - timestampMs) <= sevenDaysMs;
+
         fetched.push({
           id: docSnap.id,
           board: targetBoard,
@@ -455,7 +468,7 @@ async function fetchCommunityPosts() {
           commentCount: typeof data.commentCount === "number" ? data.commentCount : parseInt(data.commentCount || "0", 10),
           photos: safePhotos,
           files: safeFiles,
-          isNew: true,
+          isNew: isWithinOneWeek,
           authorName: data.authorName || "회원",
           authorRole: "U",
           date: formattedDate,
@@ -611,7 +624,9 @@ function renderCommunityTable() {
     }
 
     const commentHtml = post.commentCount > 0 ? `<span class="cafe-comment-cnt">[${post.commentCount}]</span>` : "";
-    const newHtml = post.isNew ? `<span class="cafe-new-icon">N</span>` : "";
+    // 게시글 작성일로부터 일주일(7일) 이내인 경우에만 제목 뒤에 새 글(N) 배지 표시
+    const isRecentPost = post.isNew && post.timestampMs > 0 && (Date.now() - post.timestampMs) <= (7 * 24 * 60 * 60 * 1000);
+    const newHtml = isRecentPost ? `<span class="cafe-new-icon">N</span>` : "";
 
     // 공지글 및 마지막 공지글 구분 클래스 조합
     const rowClasses = [
