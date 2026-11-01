@@ -249,8 +249,8 @@ function initPage() {
     if (statCancelled) statCancelled.textContent = cancelled;
   }
 
-  // 렌더링 전용 함수 정의
-  function renderReservations(items, allItems = []) {
+  // 렌더링 전용 함수 정의 (상단 상태 카드 및 국가별 타일 통계는 항상 전체 예약 목록 allItems 기준으로 고정 집계)
+  function renderReservations(items, allItems = null) {
     reservationList.innerHTML = "";
 
     let totalCount = 0;
@@ -258,17 +258,26 @@ function initPage() {
     let confirmedCount = 0;
     let cancelledCount = 0;
 
-    // 선택언어별 카운팅 (단일 소스인 LANG_LIST를 기준으로 동적 카운팅 수행)
-    const statsItems = allItems.length > 0 ? allItems : items;
+    // 보기 개수(10/20/50/100개) 및 언어/검색 필터와 무관하게 항상 전체 예약 원본 배열을 기준으로 통계를 산출합니다.
+    const statsItems = Array.isArray(allItems) ? allItems : items;
     const langCounts = {};
     const refLangList = Array.isArray(LANG_LIST) ? LANG_LIST : (window.GLOBAL_LANG_LIST || []);
     refLangList.forEach(l => { langCounts[l.code] = 0; });
 
+    // 전체 예약 데이터를 순회하며 상태별 통계(전체/대기중/확정/취소)와 국가별 카운트를 동시에 집계합니다.
     statsItems.forEach(item => {
+      totalCount++;
+      if (item.status === "pending") pendingCount++;
+      else if (item.status === "confirmed") confirmedCount++;
+      else if (item.status === "cancelled") cancelledCount++;
+
       if (item.lang && langCounts[item.lang] !== undefined) {
         langCounts[item.lang]++;
       }
     });
+
+    // 상단 4대 요약 통계 카드(전체 예약, 대기 중, 예약 확정, 예약 취소)를 전체 데이터 기준으로 고정 업데이트합니다.
+    updateStats(totalCount, pendingCount, confirmedCount, cancelledCount);
 
     // 선택언어별 예약수 타일 렌더링 (#admin-lang-stats)
     const langStatsContainer = document.getElementById("admin-lang-stats");
@@ -310,18 +319,13 @@ function initPage() {
 
     if (items.length === 0) {
       // '희망진료시간' 컬럼이 추가되어 전체 컬럼 개수가 18개로 변경됨에 따라 빈 테이블 노출 시 colspan을 18로 수정
+      // 검색 또는 언어 필터 결과 행이 0건이더라도 상단 전체 통계는 0으로 초기화하지 않고 전체 수치를 그대로 유지합니다.
       reservationList.innerHTML = `<tr><td colspan="18" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
-      updateStats(0, 0, 0, 0);
       return;
     }
 
     items.forEach((data) => {
       const docId = data.id;
-
-      totalCount++;
-      if (data.status === "pending") pendingCount++;
-      else if (data.status === "confirmed") confirmedCount++;
-      else if (data.status === "cancelled") cancelledCount++;
 
       // 테이블 행 생성
       const tr = document.createElement("tr");
@@ -452,8 +456,6 @@ function initPage() {
 
       reservationList.appendChild(tr);
     });
-
-    updateStats(totalCount, pendingCount, confirmedCount, cancelledCount);
   }
 
   // 실시간 수신 대기 및 병합 (동적 limit 개수 제한 연동)
@@ -462,9 +464,8 @@ function initPage() {
       unsubscribe();
     }
 
-    // 복합색인 에러 회피: where와 orderBy를 엮으면 인덱스 에러가 발생하므로 단일 정렬 쿼리 후 클라이언트 필터링 진행
-    // 필터링 적용을 고려해 넉넉하게 최근 200개 목록을 가져옵니다.
-    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"), limit(200));
+    // 복합색인 에러 회피 및 전체 예약 통계 정합성 보장: 전체 예약 데이터를 조회한 뒤 클라이언트에서 필터링 및 페이지 표시 수량 제한을 수행합니다.
+    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
     
     // 최초 로드 시에만 로딩 표시 및 로컬스토리지 즉시 반환 처리
     if (isFirstLoad) {
@@ -544,14 +545,11 @@ function initPage() {
         console.error("Local storage read error in admin snapshot:", e);
       }
 
-      // 3. 중복을 제거하며 병합 (Firestore 데이터 우선)
+      // 3. 중복을 제거하며 병합 (Firestore 데이터 우선, 전체 통계 정합성을 위해 언어 필터 적용 전 전체 병합)
       const mergedMap = new Map();
 
       localItems.forEach(item => {
-        // 예약 언어 필터: 로컬 아이템에 대해서도 언어가 일치하는 경우에만 병합
-        if (currentLangFilter === "all" || item.lang === currentLangFilter) {
-          mergedMap.set(item.id, item);
-        }
+        mergedMap.set(item.id, item);
       });
 
       firestoreItems.forEach(item => {

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>IGPartners 시스템 상세 분석 보고서, 운영 매뉴얼 및 개발 견적서</title>
+  <!-- 마크다운 파싱을 위한 Marked.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- 다이어그램 시각화 렌더링을 위한 Mermaid.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  
+  <style>
+    /* 구글 웹폰트 Noto Sans KR 및 Outfit 로드 */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.68;
+      color: #1e293b;
+      background-color: #ffffff;
+      padding: 0;
+      margin: 0 auto;
+      max-width: 920px;
+      font-size: 13.5px;
+      word-break: keep-all;
+    }
+    
+    /* 인쇄 및 PDF 페이지 설정 */
+    @page {
+      size: A4;
+      margin: 16mm 14mm 16mm 14mm;
+    }
+    
+    /* 문서 전체 타이틀 커버 헤더 */
+    .document-header {
+      padding: 30px 0 25px 0;
+      border-bottom: 3px solid #3b82f6;
+      margin-bottom: 35px;
+    }
+    
+    .document-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    
+    .document-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.35;
+      margin: 0 0 10px 0;
+    }
+    
+    .document-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+    }
+    
+    /* 대제목 스타일링 */
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-top: 36px;
+      margin-bottom: 16px;
+      page-break-after: avoid;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    h2 {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: #1e293b;
+      border-left: 4px solid #3b82f6;
+      padding-left: 10px;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      page-break-after: avoid;
+    }
+    
+    h3 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 22px;
+      margin-bottom: 10px;
+      page-break-after: avoid;
+    }
+    
+    h4 {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      page-break-after: avoid;
+    }
+    
+    p {
+      margin: 0 0 12px 0;
+      color: #334155;
+    }
+    
+    /* 구분선 */
+    hr {
+      border: 0;
+      height: 1px;
+      background: #e2e8f0;
+      margin: 30px 0;
+    }
+    
+    /* 표 (Table) 고도화 디자인 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0 24px 0;
+      font-size: 11.8px;
+      line-height: 1.5;
+      page-break-inside: auto;
+    }
+    
+    thead {
+      display: table-header-group;
+    }
+    
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+    
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    
+    th {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 11.5px;
+      letter-spacing: 0.3px;
+      border-color: #0f172a;
+    }
+    
+    tbody tr:nth-child(even) {
+      background-color: #f8fafc !important;
+    }
+    
+    tbody tr:hover {
+      background-color: #f1f5f9;
+    }
+    
+    /* 코드 및 신택스 하이라이트 블록 */
+    code {
+      font-family: 'Fira Code', Consolas, Menlo, monospace;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    pre {
+      background-color: #0b1120 !important;
+      color: #f8fafc !important;
+      padding: 14px 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 14px 0 18px 0;
+      font-size: 11.5px;
+      line-height: 1.55;
+      page-break-inside: avoid;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    pre code {
+      background-color: transparent !important;
+      color: #e2e8f0 !important;
+      padding: 0;
+      border: none;
+      font-size: inherit;
+    }
+    
+    /* 리스트 스타일 */
+    ul, ol {
+      margin: 0 0 14px 0;
+      padding-left: 22px;
+      color: #334155;
+    }
+    
+    li {
+      margin-bottom: 5px;
+    }
+    
+    /* 인용구 및 알림창 (Callouts) */
+    blockquote {
+      margin: 16px 0;
+      padding: 12px 16px;
+      background-color: #eff6ff !important;
+      border-left: 4px solid #3b82f6 !important;
+      border-radius: 0 8px 8px 0;
+      color: #1e3a8a;
+      font-size: 12.5px;
+      page-break-inside: avoid;
+    }
+    
+    blockquote p {
+      margin: 0;
+      color: inherit;
+    }
+    
+    /* Alert Note 커스텀 디자인 */
+    .alert-box {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.55;
+      page-break-inside: avoid;
+    }
+    
+    .alert-note {
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    
+    /* Mermaid 다이어그램 렌더러 */
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0 25px 0;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      page-break-inside: avoid;
+    }
+    
+    .mermaid svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    
+    /* 인쇄 최적화 규칙 */
+    @media print {
+      body {
+        max-width: 100%;
+        padding: 0;
+      }
+      h1, h2, h3 {
+        page-break-after: avoid;
+      }
+      table, pre, blockquote, .mermaid {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 문서 헤더 영역 -->
+  <header class="document-header">
+    <span class="document-badge">Official Technical Specification & Cost Estimation</span>
+    <h1 class="document-title">IGPartners 글로벌 의료 매칭 플랫폼<br>상세 분석 보고서, 운영 매뉴얼 및 개발 견적서</h1>
+    <p class="document-subtitle">발행일시: 2026년 10월 | 시스템 대상: IGPartners Web Platform | 작성: 시스템 엔지니어링 본부</p>
+  </header>
+
+  <!-- 마크다운 파싱 결과 본문 컨테이너 -->
+  <main id="content"></main>
+
+  <!-- 파워쉘 스크립트에 의해 동적으로 마크다운 원본 텍스트가 바인딩되는 플레이스홀더 -->
+  <script type="text/markdown" id="markdown-source">__MARKDOWN_PLACEHOLDER__</script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. 마크다운 원본 텍스트 추출
+      let markdownText = document.getElementById("markdown-source").textContent;
+      
+      // 2. Alert 블록 (> [!NOTE] 등) HTML 변환 처리
+      markdownText = markdownText.replace(/>\s*\[!NOTE\]\s*([\s\S]*?)(?=\n\n|\n$|$)/g, (match, p1) => {
+        return `<div class="alert-box alert-note"><strong>📌 참고 안내 사항</strong><br>${p1.trim().replace(/^>\s*/gm, '')}</div>\n\n`;
+      });
+
+      // 3. Marked.js 설정 및 마크다운 렌더링
+      marked.setOptions({
+        gfm: true,
+        breaks: true
+      });
+      
+      document.getElementById("content").innerHTML = marked.parse(markdownText);
+      
+      // 4. Mermaid.js 다이어그램 초기화 및 변환
+      mermaid.initialize({ 
+        startOnLoad: false,
+        theme: 'neutral',
+        securityLevel: 'loose',
+        fontFamily: "'Outfit', 'Noto Sans KR', sans-serif"
+      });
+      
+      // 'pre code.language-mermaid' 요소를 'div.mermaid'로 변환
+      const mermaidCodes = document.querySelectorAll("pre code.language-mermaid");
+      mermaidCodes.forEach((codeEl) => {
+        const preEl = codeEl.parentElement;
+        const div = document.createElement("div");
+        div.className = "mermaid";
+        div.textContent = codeEl.textContent;
+        preEl.replaceWith(div);
+      });
+      
+      // Mermaid 렌더링 실행
+      try {
+        mermaid.run({
+          querySelector: '.mermaid'
+        });
+      } catch (err) {
+        console.warn("Mermaid rendering warning:", err);
+      }
+      
+      // 렌더링 완료 플래그 설정
+      window.renderComplete = true;
+    });
+  </script>
+</body>
+</html>

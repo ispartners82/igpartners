@@ -50,22 +50,197 @@ function initPage() {
   let unsubscribe = null;
   let currentUser = null;
 
-  // 등록된 병원 목록을 Firestore에서 로드하여 셀렉트박스 옵션 빌드
+  // 병원 필터링을 위한 현재 운영 병원, 레거시 병원 및 별칭(한글명/영문명/다국어명) 매핑 상태 관리
+  let activeClinicsDocs = [];
+  let legacyClinicsDocs = [];
+  const clinicAliasMap = new Map();
+  const SUPPORTED_LANG_CODES = ["en", "ja", "vi", "zh", "ru", "my", "km", "mn", "th", "lo", "ne", "id", "si", "bn"];
+
+  // 공백 및 대소문자 차이를 무시하고 병원명을 비교하기 위한 정규화 헬퍼 함수
+  function normalizeClinicStr(str) {
+    return String(str || "").replace(/\s+/g, "").toLowerCase();
+  }
+
+  // 단일 병원 문서에서 한글 표시명, 영문 예약 식별명, 14개 다국어 병원명을 모두 추출하여 정규화 배열로 반환하는 함수
+  function extractClinicAliases(clinicData) {
+    if (!clinicData) return [];
+    const aliases = [];
+    if (clinicData.name) aliases.push(normalizeClinicStr(clinicData.name));
+    if (clinicData.englishName) aliases.push(normalizeClinicStr(clinicData.englishName));
+    SUPPORTED_LANG_CODES.forEach(code => {
+      const localized = clinicData[`name_${code}`];
+      if (localized) aliases.push(normalizeClinicStr(localized));
+    });
+    return aliases.filter(Boolean);
+  }
+
+  // 현재 예약 가능 병원(clinics)과 과거 예약 내역에만 존재하는 병원(reservations + legacy)을 구분하여 드롭다운 옵션을 구성하는 함수
+  function buildClinicFilterOptions() {
+    if (!filterClinic) return;
+
+    const prevSelected = filterClinic.value || "all";
+    clinicAliasMap.clear();
+
+    // 1단계: 현재 예약 가능 병원 목록 구성 (중복 이름 제거 및 다국어/영문 별칭 통합)
+    const activeEntries = [];
+    const findMatchingEntry = (entries, aliasesToCheck) => {
+      for (const entry of entries) {
+        for (const alias of aliasesToCheck) {
+          if (entry.aliasSet.has(alias)) {
+            return entry;
+          }
+        }
+      }
+      return null;
+    };
+
+    activeClinicsDocs.forEach(docData => {
+      const displayName = (docData.name || docData.englishName || "").trim();
+      if (!displayName) return;
+
+      const aliases = extractClinicAliases(docData);
+      const existing = findMatchingEntry(activeEntries, aliases);
+      if (existing) {
+        aliases.forEach(a => existing.aliasSet.add(a));
+      } else {
+        activeEntries.push({
+          key: displayName,
+          label: displayName,
+          aliasSet: new Set(aliases)
+        });
+      }
+    });
+
+    // 레거시 병원 문서 중 현재 운영 중인 병원과 이름이 일치하는 경우 과거 영문명/다국어명 별칭만 현재 병원에 병합
+    const remainingLegacyDocs = [];
+    legacyClinicsDocs.forEach(docData => {
+      const aliases = extractClinicAliases(docData);
+      const matchedActive = findMatchingEntry(activeEntries, aliases);
+      if (matchedActive) {
+        aliases.forEach(a => matchedActive.aliasSet.add(a));
+      } else {
+        remainingLegacyDocs.push(docData);
+      }
+    });
+
+    // 현재 예약 가능한 모든 병원의 정규화 별칭 전체 집합 생성
+    const allActiveAliases = new Set();
+    activeEntries.forEach(entry => {
+      entry.aliasSet.forEach(a => allActiveAliases.add(a));
+    });
+
+    // 2단계: 과거 예약 병원 (현재 선택 불가) 목록 구성
+    const pastEntries = [];
+
+    // (2-1) 현재 운영 목록에서 제외된 레거시 병원 문서 반영 (중복 제거)
+    remainingLegacyDocs.forEach(docData => {
+      const displayName = (docData.name || docData.englishName || "").trim();
+      if (!displayName) return;
+
+      const aliases = extractClinicAliases(docData);
+      const existingPast = findMatchingEntry(pastEntries, aliases);
+      if (existingPast) {
+        aliases.forEach(a => existingPast.aliasSet.add(a));
+      } else {
+        pastEntries.push({
+          key: displayName,
+          label: displayName,
+          aliasSet: new Set(aliases)
+        });
+      }
+    });
+
+    // (2-2) 실제 전체 예약 데이터(allReservations)에 기록된 병원 중 현재 예약 가능 병원에 속하지 않는 병원 추출
+    allReservations.forEach(resItem => {
+      const rawClinic = (resItem.clinic || "").trim();
+      if (!rawClinic || rawClinic === "-") return;
+
+      const normClinic = normalizeClinicStr(rawClinic);
+      if (!normClinic) return;
+
+      // 현재 예약 가능한 병원의 한글명/영문명/다국어명 중 하나라도 일치하면 이미 현재 병원 그룹에 포함됨
+      if (allActiveAliases.has(normClinic)) return;
+
+      // 과거 예약 병원 목록에 이미 등록된 별칭인지 확인 후 없으면 새로 추가
+      const existingPast = findMatchingEntry(pastEntries, [normClinic]);
+      if (!existingPast) {
+        pastEntries.push({
+          key: rawClinic,
+          label: rawClinic,
+          aliasSet: new Set([normClinic])
+        });
+      }
+    });
+
+    // 3단계: 드롭다운 HTML 옵션 및 별칭 조회 맵(clinicAliasMap) 생성
+    let optionsHTML = `<option value="all">전체보기</option>`;
+
+    optionsHTML += `<optgroup label="🟢 현재 예약 가능 병원">`;
+    if (activeEntries.length > 0) {
+      activeEntries.forEach(entry => {
+        clinicAliasMap.set(entry.key, entry.aliasSet);
+        const escapedKey = entry.key.replace(/"/g, "&quot;");
+        optionsHTML += `<option value="${escapedKey}">${entry.label}</option>`;
+      });
+    } else {
+      optionsHTML += `<option value="" disabled>등록된 병원 없음</option>`;
+    }
+    optionsHTML += `</optgroup>`;
+
+    optionsHTML += `<optgroup label="⚪ 과거 예약 병원 (현재 선택 불가)">`;
+    if (pastEntries.length > 0) {
+      pastEntries.forEach(entry => {
+        clinicAliasMap.set(entry.key, entry.aliasSet);
+        const escapedKey = entry.key.replace(/"/g, "&quot;");
+        optionsHTML += `<option value="${escapedKey}">${entry.label}</option>`;
+      });
+    } else {
+      optionsHTML += `<option value="" disabled>해당 병원 없음</option>`;
+    }
+    optionsHTML += `</optgroup>`;
+
+    filterClinic.innerHTML = optionsHTML;
+
+    // 기존 선택값이 새 옵션 목록에도 존재하면 선택 상태 유지
+    if (prevSelected === "all" || clinicAliasMap.has(prevSelected)) {
+      filterClinic.value = prevSelected;
+    } else {
+      filterClinic.value = "all";
+    }
+  }
+
+  // 등록된 병원 목록을 Firestore에서 로드하여 현재 운영 병원과 구버전 병원을 분류한 뒤 셀렉트박스 빌드
   async function loadClinicsFilter() {
     if (!filterClinic) return;
     try {
       const querySnapshot = await getDocs(collection(db, "clinics"));
-      let optionsHTML = `<option value="all">전체보기</option>`;
+      const withOrder = [];
+      const withoutOrder = [];
+
       querySnapshot.forEach(docSnap => {
         const data = docSnap.data();
-        if (data.name) {
-          optionsHTML += `<option value="${data.name}">${data.name}</option>`;
+        // 예약 페이지(clinic-loader.js) 및 관리자 병원관리(admin.js)와 동일하게 order 필드가 존재하는 병원이 현재 예약 가능 병원임
+        if (typeof data.order === "number") {
+          withOrder.push(data);
+        } else {
+          withoutOrder.push(data);
         }
       });
-      filterClinic.innerHTML = optionsHTML;
+
+      // 관리자 설정 순서(order 오름차순)대로 정렬
+      withOrder.sort((a, b) => a.order - b.order);
+
+      activeClinicsDocs = withOrder.length > 0 ? withOrder : withoutOrder;
+      legacyClinicsDocs = withOrder.length > 0 ? withoutOrder : [];
+
+      buildClinicFilterOptions();
+      // 병원 별칭 매핑 완료 후 현재 필터 조건으로 즉시 재렌더링
+      if (allReservations.length > 0) {
+        applyFiltersAndRender(allReservations);
+      }
     } catch (e) {
       console.error("Failed to load clinics for filter:", e);
-      filterClinic.innerHTML = `<option value="all">전체보기 (로드 실패)</option>`;
+      buildClinicFilterOptions();
     }
   }
 
@@ -129,8 +304,8 @@ function initPage() {
     // 병원 필터 드롭다운 옵션 로드
     loadClinicsFilter();
 
-    // 넉넉하게 최근 500개 예약을 가져옵니다. (통계 목적)
-    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"), limit(500));
+    // 전체 예약 내역을 빠짐없이 조회하여 정확한 통계 및 과거 예약 병원 목록을 산출합니다.
+    const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
     
     // 유입경로 컬럼 추가에 따른 colspan을 15로 수정
     statsResultList.innerHTML = `<tr><td colspan="15" class="table-loading">실시간 데이터를 동기화하는 중입니다...</td></tr>`;
@@ -140,6 +315,7 @@ function initPage() {
       const localData = localStorage.getItem("local_reservations");
       if (localData) {
         allReservations = JSON.parse(localData);
+        buildClinicFilterOptions();
         // 초기 로드 시 전체 내역으로 렌더링
         applyFiltersAndRender(allReservations);
       }
@@ -170,11 +346,15 @@ function initPage() {
         localStorage.setItem("local_reservations", JSON.stringify(serverItems));
       } catch (e) {}
 
+      // 예약 데이터 내 과거 병원까지 포함하여 병원 드롭다운 옵션 갱신
+      buildClinicFilterOptions();
+
       // 기본 상태로 필터 적용 및 렌더링
       applyFiltersAndRender(allReservations);
     }, (error) => {
       console.error("Firestore loading error:", error);
       // 오프라인/에러 시 기존 로컬 캐시로 계속 진행
+      buildClinicFilterOptions();
       applyFiltersAndRender(allReservations);
     });
   }
@@ -192,9 +372,9 @@ function initPage() {
     }
 
     const langVal = filterLang.value;
-    const clinicVal = filterClinic ? filterClinic.value : "all"; // 신설: 병원 필터 선택값
+    const clinicVal = filterClinic ? filterClinic.value : "all"; // 병원 필터 선택값
     const genderVal = filterGender.value;
-    const inflowVal = filterInflow ? filterInflow.value.trim().toLowerCase() : ""; // 신설: 유입경로 입력 검색어 획득
+    const inflowVal = filterInflow ? filterInflow.value.trim().toLowerCase() : ""; // 유입경로 입력 검색어 획득
     
     const expStartVal = filterExpiryStart.value;
     const expEndVal = filterExpiryEnd.value;
@@ -205,13 +385,25 @@ function initPage() {
     const hopeStartVal = filterHopeStart.value;
     const hopeEndVal = filterHopeEnd.value;
 
+    // 선택된 병원의 별칭(한글명, 영문 예약 식별명, 14개 다국어 병원명) 집합 조회
+    const selectedClinicAliases = clinicVal !== "all" ? clinicAliasMap.get(clinicVal) : null;
+    const normSelectedClinic = clinicVal !== "all" ? normalizeClinicStr(clinicVal) : "";
+
     // 필터 연산 수행
     const filtered = items.filter(item => {
       // A. 선택 언어 필터
       if (langVal !== "all" && item.lang !== langVal) return false;
 
-      // 선택 병원 필터 적용
-      if (clinicVal !== "all" && item.clinic !== clinicVal) return false;
+      // 선택 병원 필터 적용 (한글 표시명, 영문 식별명, 다국어 병원명 및 공백 정규화 통합 매칭)
+      if (clinicVal !== "all") {
+        const normItemClinic = normalizeClinicStr(item.clinic);
+        if (!normItemClinic) return false;
+        if (selectedClinicAliases && selectedClinicAliases.size > 0) {
+          if (!selectedClinicAliases.has(normItemClinic)) return false;
+        } else {
+          if (normItemClinic !== normSelectedClinic) return false;
+        }
+      }
 
       // B. 성별 필터
       if (genderVal !== "all") {
@@ -398,6 +590,25 @@ function initPage() {
   if (btnStatsQuery) {
     btnStatsQuery.addEventListener("click", () => {
       applyFiltersAndRender(allReservations);
+    });
+  }
+
+  // 드롭다운(선택 언어, 선택 병원, 성별) 값 변경 시 즉시 필터링 결과 갱신
+  if (filterLang) {
+    filterLang.addEventListener("change", () => applyFiltersAndRender(allReservations));
+  }
+  if (filterClinic) {
+    filterClinic.addEventListener("change", () => applyFiltersAndRender(allReservations));
+  }
+  if (filterGender) {
+    filterGender.addEventListener("change", () => applyFiltersAndRender(allReservations));
+  }
+  if (filterInflow) {
+    filterInflow.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyFiltersAndRender(allReservations);
+      }
     });
   }
 

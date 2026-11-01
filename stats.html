@@ -25,8 +25,8 @@
   <link rel="icon" type="image/png" href="/img/logo.png?v=260918_5">
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261002_5) -->
-  <link rel="stylesheet" href="/css/style.css?v=261002_5">
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261030_2) -->
+  <link rel="stylesheet" href="/css/style.css?v=261030_2">
   <!-- 데스크톱/모바일 반응형 필터 그리드 스타일 정의 -->
   <style>
     /* 기본적으로 모바일 1열 세로 레이아웃 */
@@ -48,6 +48,22 @@
       border: 1px solid rgba(0, 243, 255, 0.25) !important;
       border-radius: 8px !important;
       transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    /* 선택 병원 드롭다운 내부 그룹(현재 예약 가능 병원 / 과거 예약 병원) 구분 가독성 스타일 */
+    #stats-filter-form select optgroup {
+      background: #131c36;
+      color: #67e8f9;
+      font-weight: 700;
+      font-style: normal;
+      padding: 6px 4px;
+    }
+
+    #stats-filter-form select option {
+      background: #0c1020;
+      color: #ffffff;
+      font-weight: 400;
+      padding: 4px 8px;
     }
 
     #stats-filter-form select:focus,
@@ -701,10 +717,10 @@
     </div>
   </div>
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261002_5) -->
-  <script type="module" src="/js/navigation.js?v=261002_5"></script>
-  <script type="module" src="/js/stats.js?v=261002_5"></script>
-  <script type="module" src="/js/auth.js?v=261002_5"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261030_2) -->
+  <script type="module" src="/js/navigation.js?v=261030_2"></script>
+  <script type="module" src="/js/stats.js?v=261030_2"></script>
+  <script type="module" src="/js/auth.js?v=261030_2"></script>
 </body>
 
 </html>
