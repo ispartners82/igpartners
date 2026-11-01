@@ -234,8 +234,12 @@ function initPage() {
   let currentLimitUsers = parseInt(localStorage.getItem("admin_user_limit") || "10", 10);
   // 회원 목록 현재 페이지 번호 관리 상태 변수 (기본값: 1페이지)
   let currentUserPage = 1;
-  // 회원 등급 필터: 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
+  // 회원 등급 필터: 동적 필터링 제어 상태 변수 (기본값: "all" 등급별 보기 전체)
   let currentRoleFilter = localStorage.getItem("admin_user_role_filter") || "all";
+  // 회원 국가(선호언어) 타일 클릭 필터 상태 변수 (기본값: "all" 전체 회원 보기)
+  let currentUserLangFilter = "all";
+  // 회원 이름 검색어 상태 변수 (기본값: 빈 문자열)
+  let currentUserSearchQuery = "";
   // 예약 언어 필터: 동적 필터링 제어 상태 변수 (기본값: "all" 전체보기)
   let currentLangFilter = localStorage.getItem("admin_reservation_lang_filter") || "all";
   // 예약 검색 필터] 실시간 검색어 상태 변수 (기본값: 빈 문자열)
@@ -1597,15 +1601,12 @@ function initPage() {
         }
       });
 
-      // 회원 등급별 보기 필터: 수집된 rolesCache 기반으로 등급 필터 드롭다운 옵션 동적 빌드
-      const selectRoleFilter = document.getElementById("select-role-filter");
-      if (selectRoleFilter) {
-        let filterHTML = `<option value="all" ${currentRoleFilter === "all" ? "selected" : ""}>전체보기</option>`;
-        Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
-          const isSelected = currentRoleFilter === roleKey ? "selected" : "";
-          filterHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel} 보기</option>`;
-        });
-        selectRoleFilter.innerHTML = filterHTML;
+      // 수집된 등급 캐시를 기반으로 회원 리스트 탭의 등급별 보기 드롭다운 옵션 최신화
+      buildUserRoleFilterOptions();
+
+      // 이미 메모리에 회원 목록이 로드되어 있는 경우 추가 DB 조회 없이 화면 내 등급 표시 및 필터 상태만 즉시 동기화
+      if (allLoadedUsers.length > 0) {
+        applyUserFiltersAndRender(false);
       }
 
       // 성능 최적화: roles onSnapshot 콜백에서 loadUsers() 자동 호출 제거
@@ -1743,8 +1744,114 @@ function initPage() {
     });
   }
 
+  // Firestore에서 로드된 원본 전체 가입 회원 목록을 보관하여 추가 읽기 비용 없이 즉시 필터링하기 위한 메모리 배열
+  let allLoadedUsers = [];
   // 현재 조회된 필터링 회원 목록 캐시 저장 변수
   let cachedFilteredUsers = [];
+
+  /**
+   * 회원 리스트 상단 '등급별 보기' 드롭다운 옵션을 등록된 등급 및 실제 회원 등급 데이터를 통합하여 구성하는 함수
+   */
+  function buildUserRoleFilterOptions() {
+    const selectRoleFilterEl = document.getElementById("select-role-filter");
+    if (!selectRoleFilterEl) return;
+
+    // rolesCache가 아직 채워지지 않은 초기 시점에도 기본 등급 목록(defaultRoles)을 폴백으로 참조하여 빈 옵션 방지
+    const mergedRoleMap = new Map();
+    if (Object.keys(rolesCache).length > 0) {
+      Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
+        mergedRoleMap.set(roleKey, roleLabel);
+      });
+    } else {
+      defaultRoles.forEach((r) => {
+        mergedRoleMap.set(r.key, r.label);
+      });
+    }
+
+    // 실제 가입 회원 데이터에만 존재하는 미등록 커스텀 등급 코드가 있는 경우에도 누락 없이 옵션에 포함
+    allLoadedUsers.forEach((u) => {
+      const rKey = u.role || "user";
+      if (!mergedRoleMap.has(rKey)) {
+        const fallbackRole = defaultRoles.find((dr) => dr.key === rKey);
+        mergedRoleMap.set(rKey, fallbackRole ? fallbackRole.label : `${rKey} (미등록)`);
+      }
+    });
+
+    // 로컬스토리지에 남아 있던 이전 선택 등급이 현재 목록에 존재하지 않으면 안전하게 전체 보기로 복원
+    if (currentRoleFilter !== "all" && !mergedRoleMap.has(currentRoleFilter)) {
+      currentRoleFilter = "all";
+      localStorage.setItem("admin_user_role_filter", "all");
+    }
+
+    let filterHTML = `<option value="all" ${currentRoleFilter === "all" ? "selected" : ""}>등급별 보기 (전체)</option>`;
+    mergedRoleMap.forEach((roleLabel, roleKey) => {
+      const isSelected = currentRoleFilter === roleKey ? "selected" : "";
+      filterHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel} 보기</option>`;
+    });
+
+    selectRoleFilterEl.innerHTML = filterHTML;
+    selectRoleFilterEl.value = currentRoleFilter;
+  }
+
+  // 국가 식별 코드(ISO-2)를 15개 공식 지원 언어 코드로 매핑하기 위한 호환 맵
+  const USER_COUNTRY_TO_LANG_MAP = {
+    kr: "ko", jp: "ja", vn: "vi", us: "en", gb: "en", cn: "zh", ru: "ru",
+    mm: "my", kh: "km", mn: "mn", th: "th", la: "lo", np: "ne", id: "id", lk: "si", bd: "bn"
+  };
+
+  /**
+   * 가입 회원 객체에서 국가(선호언어) 코드를 추출하여 15개 공식 지원 언어 코드로 정규화하는 함수
+   * 상단 국가 타일 인원수 집계와 타일 클릭 시 하단 리스트 필터링 결과를 100% 일치시킵니다.
+   * @param {Object} user - 가입 회원 데이터 객체
+   * @returns {string} 정규화된 2자리 언어 코드 (미지정 또는 미지원 코드는 기본값 'ko' 반환)
+   */
+  function normalizeUserLangKey(user) {
+    if (!user) return "ko";
+    // countryLanguage, country, lang 필드를 순차적으로 확인하여 소문자 및 공백 제거 정규화
+    let lKey = String(user.countryLanguage || user.country || user.lang || "ko").toLowerCase().trim();
+    // 국가 코드(ISO-2) 형태로 저장된 경우 대응하는 언어 코드로 변환
+    if (USER_COUNTRY_TO_LANG_MAP[lKey]) {
+      lKey = USER_COUNTRY_TO_LANG_MAP[lKey];
+    }
+    // 15개 지원 언어 목록에 존재하면 해당 코드 반환, 없으면 기본 한국어('ko')로 분류
+    return SUPPORTED_COUNTRY_LANGS[lKey] ? lKey : "ko";
+  }
+
+  /**
+   * 메모리에 로드된 전체 회원 배열(allLoadedUsers)을 대상으로 국가 타일, 등급별 보기 및 회원 이름 검색 조건을 복합 필터링하여 렌더링하는 함수
+   * @param {boolean} resetPage - 필터 또는 검색 조건 변경 시 1페이지로 초기화할지 여부
+   */
+  function applyUserFiltersAndRender(resetPage = false) {
+    if (resetPage) {
+      currentUserPage = 1;
+    }
+
+    let filtered = allLoadedUsers;
+
+    // 1. 상단 국가(선호언어) 타일 선택 필터 적용 ('all'이 아닌 경우 클릭한 국가의 회원만 추출)
+    if (currentUserLangFilter !== "all") {
+      filtered = filtered.filter((user) => normalizeUserLangKey(user) === currentUserLangFilter);
+    }
+
+    // 2. 등급별 보기 필터 적용 (role 필드가 비어 있는 초기 가입 계정은 일반 회원 'user'로 매칭)
+    if (currentRoleFilter !== "all") {
+      filtered = filtered.filter((user) => (user.role || "user") === currentRoleFilter);
+    }
+
+    // 3. 회원 이름 검색어 부분 일치 필터 적용 (대소문자 및 띄어쓰기 유무 모두 유연하게 매칭)
+    if (currentUserSearchQuery) {
+      const normalizedQuery = currentUserSearchQuery.toLowerCase();
+      const compactQuery = normalizedQuery.replace(/\s+/g, "");
+      filtered = filtered.filter((user) => {
+        const rawName = String(user.name || "").toLowerCase();
+        const compactName = rawName.replace(/\s+/g, "");
+        return rawName.includes(normalizedQuery) || (compactQuery.length > 0 && compactName.includes(compactQuery));
+      });
+    }
+
+    cachedFilteredUsers = filtered;
+    renderUsersPage(cachedFilteredUsers);
+  }
 
   /**
    * 회원 목록 페이지네이션 컨트롤러 렌더링 함수
@@ -1839,7 +1946,11 @@ function initPage() {
     const totalUsers = usersToRender.length;
 
     if (totalUsers === 0) {
-      userList.innerHTML = `<tr><td colspan="9" class="table-empty">가입된 회원이 없습니다.</td></tr>`;
+      // 전체 가입 회원이 0명인 경우와 국가/등급/이름 검색 필터 결과가 0명인 경우를 구분하여 안내 문구 노출
+      const emptyMessage = allLoadedUsers.length > 0
+        ? "선택한 국가, 등급 또는 이름 검색 조건에 일치하는 회원이 없습니다."
+        : "가입된 회원이 없습니다.";
+      userList.innerHTML = `<tr><td colspan="9" class="table-empty">${emptyMessage}</td></tr>`;
       if (usersPagination) usersPagination.innerHTML = "";
       return;
     }
@@ -1906,8 +2017,9 @@ function initPage() {
         </div>
       `;
 
-      // 회원의 기존 국가(선호언어) 키 식별 (countryLanguage, country, lang 순차 호환)
-      const userLangKey = (userData.countryLanguage || userData.country || userData.lang || "ko").toLowerCase();
+      // 회원의 기존 국가(선호언어) 키 식별 (countryLanguage, country, lang 순차 호환 및 ISO 국가코드 매핑 지원)
+      const rawUserLangKey = String(userData.countryLanguage || userData.country || userData.lang || "ko").toLowerCase().trim();
+      const userLangKey = USER_COUNTRY_TO_LANG_MAP[rawUserLangKey] || rawUserLangKey;
       const matchedLangInfo = SUPPORTED_COUNTRY_LANGS[userLangKey];
       const countryLangDisplay = matchedLangInfo ? `${matchedLangInfo.flag} ${matchedLangInfo.label}` : (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
 
@@ -1979,23 +2091,9 @@ function initPage() {
       ko: 0, ja: 0, vi: 0, en: 0, zh: 0, ru: 0, my: 0, km: 0, mn: 0, th: 0, lo: 0, ne: 0, id: 0, si: 0, bn: 0
     };
 
-    // 국가 식별 코드(ISO-2)를 언어 코드로 매핑하기 위한 호환 맵
-    const countryToLangMap = {
-      kr: "ko", jp: "ja", vn: "vi", us: "en", gb: "en", cn: "zh", ru: "ru",
-      mm: "my", kh: "km", mn: "mn", th: "th", la: "lo", np: "ne", id: "id", lk: "si", bd: "bn"
-    };
-
-    // 전체 가입 회원의 국가(선호언어) 데이터 분석 및 인원수 집계
+    // 전체 가입 회원의 국가(선호언어) 데이터를 공통 정규화 함수로 분석하여 인원수 집계
     allUsers.forEach((user) => {
-      // countryLanguage, country, lang 필드를 순차적으로 탐색하여 소문자 정규화
-      let lKey = (user.countryLanguage || user.country || user.lang || "ko").toLowerCase().trim();
-      
-      // 만약 국가 코드로 저장되어 있는 경우 언어 코드로 변환
-      if (countryToLangMap[lKey]) {
-        lKey = countryToLangMap[lKey];
-      }
-
-      // 지원 언어 목록에 존재하면 카운트 증가, 없으면 기본 한국어로 산입
+      const lKey = normalizeUserLangKey(user);
       if (langCounts[lKey] !== undefined) {
         langCounts[lKey]++;
       } else {
@@ -2022,19 +2120,21 @@ function initPage() {
       bn: { flag: "🇧🇩", label: "방글라데시어", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
     };
 
-    // 1. 한국어 왼쪽에 '전체회원수' 타일을 먼저 추가 (시안 네온 포인트 색상 적용)
+    // 1. 한국어 왼쪽에 '전체회원수' 타일을 먼저 추가 (클릭 시 전체 회원 보기 전환용 data-user-lang="all" 및 활성 상태 부여)
+    const isAllActive = currentUserLangFilter === "all" ? "active" : "";
     let html = `
-      <div class="lang-stat-tile" style="border-color: rgba(0, 243, 255, 0.4); background: rgba(0, 243, 255, 0.05);">
+      <div class="lang-stat-tile ${isAllActive}" data-user-lang="all" title="전체 회원 보기" style="--tile-accent: #00f3ff; color: #00f3ff; border-color: rgba(0, 243, 255, 0.4); background: rgba(0, 243, 255, 0.05);">
         <span class="lang-tile-title" style="color: #00f3ff; font-weight: 700;">👥 전체회원수</span>
         <span class="lang-tile-value" style="color: #00f3ff; font-weight: 800;">${totalCount}<small>명</small></span>
       </div>
     `;
 
-    // 2. 15개 지원 국가(선호언어)별 회원수 타일을 순서대로 결합
+    // 2. 15개 지원 국가(선호언어)별 회원수 타일을 순서대로 결합 (클릭 시 해당 국가 회원만 필터링되도록 data-user-lang 부여)
     Object.entries(langConfig).forEach(([key, cfg]) => {
       const count = langCounts[key] || 0;
+      const isTileActive = currentUserLangFilter === key ? "active" : "";
       html += `
-        <div class="lang-stat-tile" style="border-color: ${cfg.border};">
+        <div class="lang-stat-tile ${isTileActive}" data-user-lang="${key}" title="${cfg.label} 회원만 보기 (다시 클릭 시 전체 보기)" style="--tile-accent: ${cfg.color}; color: ${cfg.color}; border-color: ${cfg.border};">
           <span class="lang-tile-title" style="color: ${cfg.color};">${cfg.flag} ${cfg.label}</span>
           <span class="lang-tile-value" style="color: ${cfg.color};">${count}<small>명</small></span>
         </div>
@@ -2067,6 +2167,12 @@ function initPage() {
       } catch (e) {
         console.error("Fallback roles loading failed in loadUsers:", e);
       }
+      // DB 조회 결과가 비어 있거나 권한 제약 시 기본 등급 정의로 캐시 보완
+      if (Object.keys(rolesCache).length === 0) {
+        defaultRoles.forEach((r) => {
+          rolesCache[r.key] = r.label;
+        });
+      }
     }
 
     try {
@@ -2083,16 +2189,17 @@ function initPage() {
         loadedUsersMap[docSnap.id] = uData;
       });
 
-      // 가입 회원 전체 국가(선호언어)별 및 전체회원수 통계 타일 렌더링 호출
-      renderUserLangStats(rawUsers);
+      // 메모리 캐시 배열에 원본 전체 가입 회원 저장 (이후 등급 필터/이름 검색/노출 개수 변경 시 DB 재조회 비용 0원)
+      allLoadedUsers = rawUsers;
 
-      let filteredUsers = rawUsers;
-      if (currentRoleFilter !== "all") {
-        filteredUsers = rawUsers.filter(user => user.role === currentRoleFilter);
-      }
+      // 등급별 보기 드롭다운 옵션 최신화
+      buildUserRoleFilterOptions();
 
-      cachedFilteredUsers = filteredUsers;
-      renderUsersPage(cachedFilteredUsers);
+      // 가입 회원 전체 국가(선호언어)별 및 전체회원수 통계 타일은 필터와 무관하게 전체 회원 기준으로 렌더링
+      renderUserLangStats(allLoadedUsers);
+
+      // 현재 선택된 등급 필터 및 회원 이름 검색 조건을 반영하여 페이지 렌더링
+      applyUserFiltersAndRender(resetPage);
 
     } catch (error) {
       console.error("Load users failed:", error);
@@ -2210,7 +2317,38 @@ function initPage() {
     });
   }
 
-  // 회원 개수 제한 필터: 드롭다운 select 요소 바인딩 및 초기값 로컬스토리지 동기화
+  // 회원 리스트 상단 국가(선호언어) 통계 타일 클릭 시 해당 국가 회원만 리스트에 표시하는 이벤트 위임 바인딩
+  const userLangStatsEl = document.getElementById("admin-user-lang-stats");
+  if (userLangStatsEl) {
+    userLangStatsEl.addEventListener("click", (e) => {
+      const clickedTile = e.target.closest(".lang-stat-tile[data-user-lang]");
+      if (!clickedTile) return;
+
+      const selectedLang = clickedTile.getAttribute("data-user-lang") || "all";
+
+      // '전체회원수' 타일을 클릭했거나 이미 활성화된 국가 타일을 다시 클릭한 경우 전체 회원 보기로 복원
+      if (selectedLang === "all" || currentUserLangFilter === selectedLang) {
+        currentUserLangFilter = "all";
+      } else {
+        currentUserLangFilter = selectedLang;
+      }
+
+      // 상단 타일들의 선택 강조(.active) 클래스 즉시 갱신
+      userLangStatsEl.querySelectorAll(".lang-stat-tile[data-user-lang]").forEach((tile) => {
+        const tileLang = tile.getAttribute("data-user-lang");
+        tile.classList.toggle("active", tileLang === currentUserLangFilter);
+      });
+
+      // 메모리 캐시를 활용하여 DB 추가 읽기 비용 없이 1페이지부터 즉시 필터링 렌더링 수행
+      if (allLoadedUsers.length > 0) {
+        applyUserFiltersAndRender(true);
+      } else {
+        loadUsers(true);
+      }
+    });
+  }
+
+  // 회원 개수 제한 필터: 드롭다운 select 요소 바인딩 및 초기값 로컬스토리지 동기화 (메모리 캐시 기반 즉시 재렌더링)
   const selectLimitUsers = document.getElementById("select-limit-users");
   if (selectLimitUsers) {
     // 저장된 수치가 있으면 드롭다운 초기값으로 자동 적용
@@ -2219,17 +2357,68 @@ function initPage() {
     selectLimitUsers.addEventListener("change", (e) => {
       currentLimitUsers = parseInt(e.target.value, 10);
       localStorage.setItem("admin_user_limit", currentLimitUsers.toString());
-      loadUsers(true); // 필터 선택값 변경 시 1페이지로 리셋 및 목록 재렌더링
+      if (allLoadedUsers.length > 0) {
+        applyUserFiltersAndRender(true);
+      } else {
+        loadUsers(true);
+      }
     });
   }
 
-  // 회원 등급별 보기 필터: 드롭다운 select 요소 바인딩
+  // 회원 등급별 보기 필터: 초기 옵션 구성 및 선택 변경 시 메모리 기반 즉시 필터링
   const selectRoleFilter = document.getElementById("select-role-filter");
   if (selectRoleFilter) {
+    buildUserRoleFilterOptions();
     selectRoleFilter.addEventListener("change", (e) => {
       currentRoleFilter = e.target.value;
       localStorage.setItem("admin_user_role_filter", currentRoleFilter);
-      loadUsers(true); // 등급 필터 선택 변경 시 1페이지로 리셋 및 목록 재렌더링
+      if (allLoadedUsers.length > 0) {
+        applyUserFiltersAndRender(true);
+      } else {
+        loadUsers(true);
+      }
+    });
+  }
+
+  // 회원 이름 검색창 및 검색 버튼 이벤트 바인딩 (검색 버튼 클릭, Enter 키 입력, 입력창 비움 시 즉시 복원 지원)
+  const inputSearchUsers = document.getElementById("input-search-users");
+  const btnSearchUsers = document.getElementById("btn-search-users");
+
+  function executeUserNameSearch() {
+    if (!inputSearchUsers) return;
+    currentUserSearchQuery = inputSearchUsers.value.trim();
+    if (allLoadedUsers.length > 0) {
+      applyUserFiltersAndRender(true);
+    } else {
+      loadUsers(true);
+    }
+  }
+
+  if (inputSearchUsers) {
+    inputSearchUsers.value = currentUserSearchQuery;
+
+    // 검색어 입력 후 Enter 키를 누르면 즉시 이름 검색 실행
+    inputSearchUsers.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        executeUserNameSearch();
+      }
+    });
+
+    // 검색창의 글자를 모두 지웠을 때 버튼을 다시 누르지 않아도 전체 목록이 즉시 복원되도록 처리
+    inputSearchUsers.addEventListener("input", () => {
+      if (inputSearchUsers.value.trim() === "" && currentUserSearchQuery !== "") {
+        currentUserSearchQuery = "";
+        if (allLoadedUsers.length > 0) {
+          applyUserFiltersAndRender(true);
+        }
+      }
+    });
+  }
+
+  if (btnSearchUsers) {
+    btnSearchUsers.addEventListener("click", () => {
+      executeUserNameSearch();
     });
   }
 

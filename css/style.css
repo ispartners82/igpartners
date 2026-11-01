@@ -1118,6 +1118,35 @@ body {
   border-color: currentColor !important;
 }
 
+/* 회원 리스트 섹션 상단 국가별 통계 타일 클릭 필터링 커서 및 선택(Active) 강조 디자인 */
+#admin-user-lang-stats .lang-stat-tile {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+#admin-user-lang-stats .lang-stat-tile:active {
+  transform: translateY(0) scale(0.98);
+}
+
+#admin-user-lang-stats .lang-stat-tile.active {
+  transform: translateY(-2px);
+  background: rgba(20, 28, 56, 0.95) !important;
+  border-color: var(--tile-accent, #00f3ff) !important;
+  box-shadow: 0 0 0 1px var(--tile-accent, #00f3ff), 0 8px 22px rgba(0, 0, 0, 0.45), inset 0 0 14px rgba(255, 255, 255, 0.06);
+}
+
+#admin-user-lang-stats .lang-stat-tile.active::after {
+  content: "✓";
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--tile-accent, #00f3ff);
+  line-height: 1;
+}
+
 .lang-tile-title {
   font-size: 0.75rem;
   font-weight: 600;
