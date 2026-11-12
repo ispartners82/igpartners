@@ -1,6 +1,8 @@
-import { db, auth } from "./firebase-db.js?v=261020_3";
-// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=261002_5)
-import { LANG_LIST } from "./navigation.js?v=261020_3";
+import { db, auth } from "./firebase-db.js?v=261112_4";
+// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=261112_4)
+import { LANG_LIST } from "./navigation.js?v=261112_4";
+// 비어 있는 8개국어(ja, zh, th, lo, ne, id, si, bn) 병원 번역 보강 헬퍼 모듈 임포트
+import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261112_4";
 import { 
   collection, 
   query, 
@@ -209,16 +211,24 @@ function initPage() {
   const tabPartners = document.getElementById("tab-partners");
   // 전문 의료 통역 관리 탭 버튼 및 콘텐츠 패널 요소 캐싱
   const tabInterpreters = document.getElementById("tab-interpreters");
+  // 가입 회원 대상 문자발송 전용 탭 버튼 및 콘텐츠 패널 요소 캐싱
+  const tabSms = document.getElementById("tab-sms");
   const contentReservations = document.getElementById("content-reservations");
   const contentUsers = document.getElementById("content-users");
   const contentAds = document.getElementById("content-ads");
   const contentPartners = document.getElementById("content-partners");
   const contentInterpreters = document.getElementById("content-interpreters");
+  const contentSms = document.getElementById("content-sms");
 
   const userList = document.getElementById("user-list");
   const btnRefreshUsers = document.getElementById("btn-refresh-users");
   // 회원 목록 전용 페이지네이션 컨테이너 DOM 요소
   const usersPagination = document.getElementById("users-pagination");
+
+  // 문자발송 탭 전용 회원 리스트 및 페이지네이션 DOM 요소
+  const smsUserList = document.getElementById("sms-user-list");
+  const smsUsersPagination = document.getElementById("sms-users-pagination");
+  const btnRefreshSmsUsers = document.getElementById("btn-refresh-sms-users");
 
   let currentLoginUserRole = "user"; // 현재 로그인한 사용자의 등급 저장
 
@@ -980,6 +990,11 @@ function initPage() {
     if (tabPermissions) {
       tabPermissions.style.display = (permissions.hasPermissions || isSuper) ? "inline-block" : "none";
     }
+    // 문자발송 탭 노출 제어 (등급권한 관리의 hasSms 권한 보유자 또는 최고관리자에게 노출)
+    const tabSmsEl = document.getElementById("tab-sms");
+    if (tabSmsEl) {
+      tabSmsEl.style.display = (permissions.hasSms || isSuper) ? "inline-block" : "none";
+    }
     if (tabClinics) {
       tabClinics.style.display = (permissions.hasClinics || isSuper) ? "inline-block" : "none";
     }
@@ -1011,6 +1026,8 @@ function initPage() {
         if (tabReservations) tabReservations.click();
       } else if (activeTab.id === "tab-permissions" && !permissions.hasPermissions) {
         if (tabReservations) tabReservations.click();
+      } else if (activeTab.id === "tab-sms" && !permissions.hasSms) {
+        if (tabReservations) tabReservations.click();
       }
     }
   }
@@ -1027,14 +1044,14 @@ function initPage() {
   async function verifyAndApplyPermissions(user, forceRefresh = false) {
     if (!user) return false;
 
-    // 세션 캐시 검색 및 복원 처리 - 9개 세부 권한 프로퍼티가 온전히 존재하는지 무결성 검증
+    // 세션 캐시 검색 및 복원 처리 - 11개 세부 권한 프로퍼티가 온전히 존재하는지 무결성 검증
     const cacheKey = `admin_permissions_${user.uid}`;
     if (!forceRefresh) {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
           const cachedObj = JSON.parse(cached);
-          if (cachedObj && cachedObj.permissions && typeof cachedObj.permissions.hasReservations === "boolean") {
+          if (cachedObj && cachedObj.permissions && typeof cachedObj.permissions.hasReservations === "boolean" && typeof cachedObj.permissions.hasSms === "boolean") {
             console.log("Admin permissions restored from Session Cache (0 Firestore Read cost)");
             currentLoginUserRole = cachedObj.role;
             applyPermissionsUI(cachedObj.permissions);
@@ -1066,6 +1083,7 @@ function initPage() {
           hasClinics: true,
           hasRoles: true,
           hasPermissions: true,
+          hasSms: true,
           hasStats: true,
           hasAds: true,
           hasPartners: true,
@@ -1073,7 +1091,7 @@ function initPage() {
           hasCommunitySettings: true
         };
       } else {
-        // roles 문서로부터 10가지 세부 기능 권한 로드
+        // roles 문서로부터 11가지 세부 기능 권한 로드
         const roleDocRef = doc(db, "roles", userRole);
         const roleDocSnap = await getDoc(roleDocRef);
         
@@ -1083,6 +1101,7 @@ function initPage() {
           hasClinics: false,
           hasRoles: false,
           hasPermissions: false,
+          hasSms: false,
           hasStats: false,
           hasAds: false,
           hasPartners: false,
@@ -1098,6 +1117,7 @@ function initPage() {
             hasClinics: roleData.hasClinics !== undefined ? roleData.hasClinics : ["admin", "admin_user"].includes(userRole),
             hasRoles: roleData.hasRoles !== undefined ? roleData.hasRoles : false,
             hasPermissions: roleData.hasPermissions !== undefined ? roleData.hasPermissions : false,
+            hasSms: roleData.hasSms !== undefined ? roleData.hasSms : false,
             hasStats: roleData.hasStats !== undefined ? roleData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole),
             hasAds: roleData.hasAds !== undefined ? roleData.hasAds : false,
             hasPartners: roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || false),
@@ -1107,9 +1127,9 @@ function initPage() {
         } else {
           // 예외 상황 - roles 문서가 DB에 없을 경우 하위 호환 권한 매핑
           if (["admin", "admin_user"].includes(userRole)) {
-            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true };
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasSms: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true };
           } else if (["top_manager", "res_manager"].includes(userRole)) {
-            permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false };
+            permissions = { isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasSms: false, hasStats: true, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false };
           }
         }
       }
@@ -1149,10 +1169,32 @@ function initPage() {
       // 권한 검증 및 UI 갱신 함수 실행
       const permissions = await verifyAndApplyPermissions(user);
       if (permissions) {
-        // 모든 탭 버튼 및 콘텐츠 숨김 처리 헬퍼 함수 - 7개 전체 관리 탭 및 패널 완벽 반영
+        // 관리자 로그인 시 비어 있는 8개국어(ja, zh, th, lo, ne, id, si, bn) 병원 번역이 DB에 누락되어 있다면 백그라운드에서 1회 자동 동기화
+        (async () => {
+          try {
+            const clinicsSnap = await getDocs(query(collection(db, "clinics"), orderBy("order", "asc")));
+            let updatedCount = 0;
+            for (const docSnap of clinicsSnap.docs) {
+              const clinicObj = { id: docSnap.id, ...docSnap.data() };
+              const missingPatch = enrichClinicWithMissing8Langs(clinicObj);
+              if (Object.keys(missingPatch).length > 0) {
+                await updateDoc(doc(db, "clinics", docSnap.id), missingPatch);
+                updatedCount++;
+              }
+            }
+            if (updatedCount > 0) {
+              localStorage.removeItem("cached_clinics_list");
+              console.log(`🌐 백그라운드 동기화 완료: ${updatedCount}개 병원의 8개국어 번역이 Firestore에 반영되었습니다.`);
+            }
+          } catch (syncErr) {
+            console.warn("병원 8개국어 백그라운드 동기화 예외:", syncErr);
+          }
+        })();
+
+        // 모든 탭 버튼 및 콘텐츠 숨김 처리 헬퍼 함수 - 8개 전체 관리 탭 및 패널 완벽 반영
         const hideAllTabsAndContents = () => {
-          const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabPartners, tabInterpreters];
-          const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds, contentPartners, contentInterpreters];
+          const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabSms, tabAds, tabPartners, tabInterpreters];
+          const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentSms, contentAds, contentPartners, contentInterpreters];
           tabs.forEach(t => { if (t) t.classList.remove("active"); });
           contents.forEach(c => { if (c) c.style.display = "none"; });
         };
@@ -1195,6 +1237,8 @@ function initPage() {
             tabUsers.click();
           } else if (permissions.hasPermissions && tabPermissions) {
             tabPermissions.click();
+          } else if (permissions.hasSms && tabSms) {
+            tabSms.click();
           } else {
             // 모든 항목이 비활성화 되어 있는 경우 아무것도 보이지 않게 처리
             hideAllTabsAndContents();
@@ -1274,8 +1318,8 @@ function initPage() {
   // 탭 전환 시 메뉴 영역 랙 및 깜빡임(Layout Shift)을 방지하는 통합 탭 스위칭 헬퍼 함수
   function switchTabSeamlessly(activeBtn, activeContent, tabStorageKey, fetchCallback) {
     // 1. 모든 탭 버튼 및 패널 스위칭 처리 (메뉴는 고정되고 내용만 즉각 변경됨)
-    const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabAds, tabPartners, tabInterpreters];
-    const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentAds, contentPartners, contentInterpreters];
+    const tabs = [tabReservations, tabClinics, tabUsers, tabPermissions, tabSms, tabAds, tabPartners, tabInterpreters];
+    const contents = [contentReservations, contentClinics, contentUsers, contentPermissions, contentSms, contentAds, contentPartners, contentInterpreters];
 
     tabs.forEach(t => { if (t) t.classList.remove("active"); });
     contents.forEach(c => { if (c) c.style.display = "none"; });
@@ -1329,6 +1373,24 @@ function initPage() {
       });
     }
 
+    // 문자발송 탭 클릭 시 스위칭 및 가입 회원 목록 연동 렌더링
+    if (tabSms) {
+      tabSms.addEventListener("click", () => {
+        switchTabSeamlessly(tabSms, contentSms, "tab-sms", () => {
+          // 이미 메모리에 가입 회원 목록이 로드되어 있으면 추가 DB 조회 없이 즉시 문자발송 리스트를 렌더링하고, 없으면 loadUsers() 실행
+          if (allLoadedUsers.length > 0) {
+            buildSmsRoleFilterOptions();
+            renderSmsLangStats(allLoadedUsers);
+            applySmsUserFiltersAndRender(false);
+          } else if (unsubscribeRoles) {
+            loadUsers();
+          } else {
+            initRolesAndListen();
+          }
+        });
+      });
+    }
+
     tabClinics.addEventListener("click", () => {
       switchTabSeamlessly(tabClinics, contentClinics, "tab-clinics", () => {
         loadClinics();
@@ -1366,17 +1428,17 @@ function initPage() {
   let unsubscribeRoles = null;
   let rolesCache = {}; // { super_admin: "최고 관리자", ... }
 
-  // 기본 등급 데이터셋 선언 - hasAds(광고배너관리), hasPartners(협력업체관리), hasInterpreters(전문통역관리), hasCommunitySettings(커뮤니티설정) 권한 정의
+  // 기본 등급 데이터셋 선언 - hasAds(광고배너관리), hasPartners(협력업체관리), hasInterpreters(전문통역관리), hasSms(문자발송), hasCommunitySettings(커뮤니티설정) 권한 정의
   const defaultRoles = [
-    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasAds: true, hasPartners: true, hasInterpreters: true, hasCommunitySettings: true },
-    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true },
-    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true },
-    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
-    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
-    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
-    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
-    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
-    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false }
+    { key: "super_admin", label: "최고 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: true, hasPermissions: true, hasSms: true, hasAds: true, hasPartners: true, hasInterpreters: true, hasCommunitySettings: true },
+    { key: "admin", label: "일반 관리자", isSystem: true, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true },
+    { key: "admin_user", label: "관리자", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: true, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: true },
+    { key: "top_manager", label: "최고 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "res_manager", label: "예약 매니저", isSystem: false, isAdmin: true, hasReservations: true, hasClinics: false, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "partner", label: "제휴 병원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "vip", label: "VIP 회원", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "general", label: "일반", isSystem: false, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false },
+    { key: "user", label: "일반 회원", isSystem: true, isAdmin: false, hasReservations: false, hasClinics: false, hasRoles: false, hasPermissions: false, hasSms: false, hasAds: false, hasPartners: false, hasInterpreters: false, hasCommunitySettings: false }
   ];
 
   // 솔라피 알림톡 수신 설정 데이터를 Firestore에서 비동기 로드하여 입력 필드 및 하단 목록 렌더링 적용
@@ -1477,7 +1539,7 @@ function initPage() {
         let needsMigration = snap.empty;
         if (!snap.empty) {
           const superAdminSnap = await getDoc(doc(db, "roles", "super_admin"));
-          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined || superAdminSnap.data().hasAds === undefined || superAdminSnap.data().hasPartners === undefined || superAdminSnap.data().hasCommunitySettings === undefined) {
+          if (!superAdminSnap.exists() || superAdminSnap.data().isAdmin === undefined || superAdminSnap.data().hasAds === undefined || superAdminSnap.data().hasPartners === undefined || superAdminSnap.data().hasSms === undefined || superAdminSnap.data().hasCommunitySettings === undefined) {
             needsMigration = true;
           }
         }
@@ -1498,6 +1560,7 @@ function initPage() {
                 hasClinics: r.hasClinics,
                 hasRoles: r.hasRoles,
                 hasPermissions: r.hasPermissions,
+                hasSms: r.hasSms,
                 hasAds: r.hasAds,
                 hasPartners: r.hasPartners,
                 hasInterpreters: r.hasInterpreters,
@@ -1513,6 +1576,7 @@ function initPage() {
                 hasClinics: existingData.hasClinics !== undefined ? existingData.hasClinics : r.hasClinics,
                 hasRoles: existingData.hasRoles !== undefined ? existingData.hasRoles : r.hasRoles,
                 hasPermissions: existingData.hasPermissions !== undefined ? existingData.hasPermissions : r.hasPermissions,
+                hasSms: existingData.hasSms !== undefined ? existingData.hasSms : (r.hasSms || false),
                 hasAds: existingData.hasAds !== undefined ? existingData.hasAds : r.hasAds,
                 hasPartners: existingData.hasPartners !== undefined ? existingData.hasPartners : (r.hasPartners || false),
                 hasInterpreters: existingData.hasInterpreters !== undefined ? existingData.hasInterpreters : (r.hasInterpreters || false),
@@ -1586,6 +1650,8 @@ function initPage() {
             <td>${makeToggleHTML(roleKey, "hasInterpreters", roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || lockAdmin), false)}</td>
             <!-- 회원리스트 권한 컬럼 스위치 -->
             <td>${makeToggleHTML(roleKey, "hasPermissions", roleData.hasPermissions, false)}</td>
+            <!-- 회원리스트 오른쪽 옆에 신설된 문자발송 권한 컬럼 스위치 -->
+            <td>${makeToggleHTML(roleKey, "hasSms", roleData.hasSms !== undefined ? roleData.hasSms : lockAdmin, false)}</td>
             <!-- 예약통계 권한 컬럼 스위치 -->
             <td>${makeToggleHTML(roleKey, "hasStats", roleData.hasStats, false)}</td>
             <!-- 커뮤니티설정 권한 컬럼 스위치 -->
@@ -1601,12 +1667,14 @@ function initPage() {
         }
       });
 
-      // 수집된 등급 캐시를 기반으로 회원 리스트 탭의 등급별 보기 드롭다운 옵션 최신화
+      // 수집된 등급 캐시를 기반으로 회원 리스트 탭 및 문자발송 탭의 등급별 보기 드롭다운 옵션 최신화
       buildUserRoleFilterOptions();
+      buildSmsRoleFilterOptions();
 
       // 이미 메모리에 회원 목록이 로드되어 있는 경우 추가 DB 조회 없이 화면 내 등급 표시 및 필터 상태만 즉시 동기화
       if (allLoadedUsers.length > 0) {
         applyUserFiltersAndRender(false);
+        applySmsUserFiltersAndRender(false);
       }
 
       // 성능 최적화: roles onSnapshot 콜백에서 loadUsers() 자동 호출 제거
@@ -1615,7 +1683,7 @@ function initPage() {
     }, (error) => {
       console.error("Roles subscription error:", error);
       if (roleList) {
-        roleList.innerHTML = `<tr><td colspan="11" class="table-error" style="color:#fda4af; text-align:center; padding:1.5rem; background:rgba(244,63,94,0.05); border-radius:8px;">등급 정보를 불러올 수 없습니다. (Firestore 보안 규칙 배포 확인 필요)</td></tr>`;
+        roleList.innerHTML = `<tr><td colspan="14" class="table-error" style="color:#fda4af; text-align:center; padding:1.5rem; background:rgba(244,63,94,0.05); border-radius:8px;">등급 정보를 불러올 수 없습니다. (Firestore 보안 규칙 배포 확인 필요)</td></tr>`;
       }
     });
   }
@@ -2192,19 +2260,26 @@ function initPage() {
       // 메모리 캐시 배열에 원본 전체 가입 회원 저장 (이후 등급 필터/이름 검색/노출 개수 변경 시 DB 재조회 비용 0원)
       allLoadedUsers = rawUsers;
 
-      // 등급별 보기 드롭다운 옵션 최신화
+      // 등급별 보기 드롭다운 옵션 최신화 (회원 리스트 탭 및 문자발송 탭 동시 반영)
       buildUserRoleFilterOptions();
+      buildSmsRoleFilterOptions();
 
       // 가입 회원 전체 국가(선호언어)별 및 전체회원수 통계 타일은 필터와 무관하게 전체 회원 기준으로 렌더링
       renderUserLangStats(allLoadedUsers);
+      renderSmsLangStats(allLoadedUsers);
 
       // 현재 선택된 등급 필터 및 회원 이름 검색 조건을 반영하여 페이지 렌더링
       applyUserFiltersAndRender(resetPage);
+      applySmsUserFiltersAndRender(resetPage);
 
     } catch (error) {
       console.error("Load users failed:", error);
       userList.innerHTML = `<tr><td colspan="9" class="table-empty">회원 데이터를 로드하지 못했습니다. (권한 오류 등)</td></tr>`;
       if (usersPagination) usersPagination.innerHTML = "";
+      if (smsUserList) {
+        smsUserList.innerHTML = `<tr><td colspan="7" class="table-empty">회원 데이터를 로드하지 못했습니다. (권한 오류 등)</td></tr>`;
+      }
+      if (smsUsersPagination) smsUsersPagination.innerHTML = "";
     }
   }
 
@@ -2463,6 +2538,7 @@ function initPage() {
           hasRoles: false,
           hasInterpreters: false,
           hasPermissions: false,
+          hasSms: false,
           hasStats: false,
           hasCommunitySettings: false,
           createdAt: new Date().toISOString()
@@ -2801,6 +2877,1377 @@ function initPage() {
     });
   }
 
+  // =========================================================================
+  // 가입 회원 대상 선택형 문자메시지(SMS/LMS) 발송 전용 모듈 (#content-sms)
+  // =========================================================================
+
+  // 체크박스로 선택된 발송 대상 회원의 고유 UID 집합 (페이지 이동 및 필터 변경 시에도 선택 상태 보존)
+  const selectedSmsUserIds = new Set();
+  // 문자발송 탭 상단 국가(선호언어) 통계 타일 클릭 필터 상태 변수 (기본값: "all" 전체 회원 보기)
+  let currentSmsLangFilter = "all";
+  // 문자발송 탭 등급별 보기 필터 상태 변수 (기본값: "all")
+  let currentSmsRoleFilter = localStorage.getItem("admin_sms_role_filter") || "all";
+  // 문자발송 탭 페이지당 노출 인원수 상태 변수 (기본값: 20개)
+  let currentLimitSmsUsers = parseInt(localStorage.getItem("admin_sms_user_limit") || "20", 10);
+  // 문자발송 탭 현재 페이지 번호
+  let currentSmsUserPage = 1;
+  // 문자발송 탭 이름/연락처 검색어 상태 변수
+  let currentSmsSearchQuery = "";
+  // 문자발송 탭 현재 필터링된 회원 목록 캐시 배열
+  let cachedSmsFilteredUsers = [];
+
+  /**
+   * 전화번호 문자열에서 숫자만 추출하여 유효한 휴대폰/연락처 번호인지 검증하고 보기 좋은 포맷을 반환하는 헬퍼 함수
+   * @param {string} rawPhone - 원본 전화번호 문자열
+   * @returns {{ isValid: boolean, clean: string, formatted: string }}
+   */
+  function parseSmsUserPhone(rawPhone) {
+    const clean = String(rawPhone || "").replace(/[^0-9]/g, "");
+    if (!clean || clean.length < 9) {
+      return { isValid: false, clean: "", formatted: "-" };
+    }
+    let formatted = clean;
+    if (clean.length === 11) {
+      formatted = `${clean.slice(0, 3)}-${clean.slice(3, 7)}-${clean.slice(7)}`;
+    } else if (clean.length === 10) {
+      formatted = `${clean.slice(0, 3)}-${clean.slice(3, 6)}-${clean.slice(6)}`;
+    }
+    return { isValid: true, clean, formatted };
+  }
+
+  /**
+   * 한글(2Byte) 및 영문/숫자/기호(1Byte) 기준의 통신사 표준 EUC-KR 문자 바이트 길이를 계산하는 함수
+   * @param {string} text - 계산할 문자열
+   * @returns {number} 총 바이트(Byte) 수
+   */
+  function calculateSmsByteLength(text) {
+    const str = String(text || "");
+    let byteLen = 0;
+    for (let i = 0; i < str.length; i++) {
+      const charCode = str.charCodeAt(i);
+      // ASCII 범위(0~127)는 1Byte, 한글 및 다국어 문자는 2Byte로 집계
+      byteLen += (charCode <= 0x007f) ? 1 : 2;
+    }
+    return byteLen;
+  }
+
+  /**
+   * 문자발송 탭 상단 '등급별 보기' 드롭다운 옵션을 최신 등급 데이터로 갱신하는 함수
+   */
+  function buildSmsRoleFilterOptions() {
+    const selectSmsRoleEl = document.getElementById("select-sms-role-filter");
+    if (!selectSmsRoleEl) return;
+
+    const mergedRoleMap = new Map();
+    if (Object.keys(rolesCache).length > 0) {
+      Object.entries(rolesCache).forEach(([roleKey, roleLabel]) => {
+        mergedRoleMap.set(roleKey, roleLabel);
+      });
+    } else {
+      defaultRoles.forEach((r) => {
+        mergedRoleMap.set(r.key, r.label);
+      });
+    }
+
+    allLoadedUsers.forEach((u) => {
+      const rKey = u.role || "user";
+      if (!mergedRoleMap.has(rKey)) {
+        const fallbackRole = defaultRoles.find((dr) => dr.key === rKey);
+        mergedRoleMap.set(rKey, fallbackRole ? fallbackRole.label : `${rKey} (미등록)`);
+      }
+    });
+
+    if (currentSmsRoleFilter !== "all" && !mergedRoleMap.has(currentSmsRoleFilter)) {
+      currentSmsRoleFilter = "all";
+      localStorage.setItem("admin_sms_role_filter", "all");
+    }
+
+    let filterHTML = `<option value="all" ${currentSmsRoleFilter === "all" ? "selected" : ""}>등급별 보기 (전체)</option>`;
+    mergedRoleMap.forEach((roleLabel, roleKey) => {
+      const isSelected = currentSmsRoleFilter === roleKey ? "selected" : "";
+      filterHTML += `<option value="${roleKey}" ${isSelected}>${roleLabel} 보기</option>`;
+    });
+
+    selectSmsRoleEl.innerHTML = filterHTML;
+    selectSmsRoleEl.value = currentSmsRoleFilter;
+  }
+
+  /**
+   * 문자발송 탭 상단 15개 지원 국가(선호언어)별 및 전체회원수 통계 타일 렌더링 함수
+   * @param {Array} allUsers - 가입 회원 전체 데이터 배열
+   */
+  function renderSmsLangStats(allUsers = []) {
+    const smsLangStatsContainer = document.getElementById("admin-sms-lang-stats");
+    if (!smsLangStatsContainer) return;
+
+    const totalCount = allUsers.length;
+    const langCounts = {
+      ko: 0, ja: 0, vi: 0, en: 0, zh: 0, ru: 0, my: 0, km: 0, mn: 0, th: 0, lo: 0, ne: 0, id: 0, si: 0, bn: 0
+    };
+
+    allUsers.forEach((user) => {
+      const lKey = normalizeUserLangKey(user);
+      if (langCounts[lKey] !== undefined) {
+        langCounts[lKey]++;
+      } else {
+        langCounts.ko++;
+      }
+    });
+
+    const langConfig = {
+      ko: { flag: "🇰🇷", label: "한국어", color: "#ffffff", border: "rgba(255, 255, 255, 0.2)" },
+      ja: { flag: "🇯🇵", label: "일본어", color: "#38bdf8", border: "rgba(56, 189, 248, 0.2)" },
+      vi: { flag: "🇻🇳", label: "베트남어", color: "#e2e8f0", border: "rgba(226, 232, 240, 0.2)" },
+      en: { flag: "🇺🇸", label: "영어", color: "#ec4899", border: "rgba(236, 72, 153, 0.2)" },
+      zh: { flag: "🇨🇳", label: "중국어", color: "#3b82f6", border: "rgba(59, 130, 246, 0.2)" },
+      ru: { flag: "🇷🇺", label: "러시아어", color: "#f59e0b", border: "rgba(245, 158, 11, 0.2)" },
+      my: { flag: "🇲🇲", label: "미얀마어", color: "#a855f7", border: "rgba(168, 85, 247, 0.2)" },
+      km: { flag: "🇰🇭", label: "캄보디아어", color: "#ef4444", border: "rgba(239, 68, 68, 0.2)" },
+      mn: { flag: "🇲🇳", label: "몽골어", color: "#10b981", border: "rgba(16, 185, 129, 0.2)" },
+      th: { flag: "🇹🇭", label: "태국어", color: "#14b8a6", border: "rgba(20, 184, 166, 0.2)" },
+      lo: { flag: "🇱🇦", label: "라오스어", color: "#f43f5e", border: "rgba(244, 63, 94, 0.2)" },
+      ne: { flag: "🇳🇵", label: "네팔어", color: "#84cc16", border: "rgba(132, 204, 22, 0.2)" },
+      id: { flag: "🇮🇩", label: "인도네시아어", color: "#06b6d4", border: "rgba(6, 182, 212, 0.2)" },
+      si: { flag: "🇱🇰", label: "스리랑카어", color: "#6366f1", border: "rgba(99, 102, 241, 0.2)" },
+      bn: { flag: "🇧🇩", label: "방글라데시어", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
+    };
+
+    const isAllActive = currentSmsLangFilter === "all" ? "active" : "";
+    let html = `
+      <div class="lang-stat-tile ${isAllActive}" data-sms-lang="all" title="전체 회원 보기" style="--tile-accent: #00f3ff; color: #00f3ff; border-color: rgba(0, 243, 255, 0.4); background: rgba(0, 243, 255, 0.05);">
+        <span class="lang-tile-title" style="color: #00f3ff; font-weight: 700;">👥 전체회원수</span>
+        <span class="lang-tile-value" style="color: #00f3ff; font-weight: 800;">${totalCount}<small>명</small></span>
+      </div>
+    `;
+
+    Object.entries(langConfig).forEach(([key, cfg]) => {
+      const count = langCounts[key] || 0;
+      const isTileActive = currentSmsLangFilter === key ? "active" : "";
+      html += `
+        <div class="lang-stat-tile ${isTileActive}" data-sms-lang="${key}" title="${cfg.label} 회원만 보기 (다시 클릭 시 전체 보기)" style="--tile-accent: ${cfg.color}; color: ${cfg.color}; border-color: ${cfg.border};">
+          <span class="lang-tile-title" style="color: ${cfg.color};">${cfg.flag} ${cfg.label}</span>
+          <span class="lang-tile-value" style="color: ${cfg.color};">${count}<small>명</small></span>
+        </div>
+      `;
+    });
+
+    smsLangStatsContainer.innerHTML = html;
+  }
+
+  /**
+   * 체크된 수신 대상자 변경 시 상단 선택 배지, 선택된 수신자 칩 목록, 테이블 요약 배지, 발송 버튼 문구를 실시간 동기화하는 함수
+   */
+  function updateSmsSelectionUI() {
+    // 현재까지 로드된 회원 중 실제로 존재하는 유효 회원의 선택만 유지
+    const selectedUsers = [];
+    selectedSmsUserIds.forEach((uid) => {
+      const u = loadedUsersMap[uid];
+      if (u && parseSmsUserPhone(u.phone).isValid) {
+        selectedUsers.push(u);
+      } else if (Object.keys(loadedUsersMap).length > 0 && !u) {
+        selectedSmsUserIds.delete(uid);
+      }
+    });
+
+    const selectedCount = selectedUsers.length;
+
+    // 1. 상단 선택 인원 카운트 배지 업데이트
+    const countBadge = document.getElementById("sms-selected-count-badge");
+    if (countBadge) {
+      countBadge.textContent = `${selectedCount}명 선택됨`;
+    }
+
+    // 2. 테이블 상단 조회/선택 요약 배지 업데이트
+    const summaryBadge = document.getElementById("sms-table-summary-badge");
+    if (summaryBadge) {
+      summaryBadge.textContent = `조회 ${cachedSmsFilteredUsers.length}명 · 선택 ${selectedCount}명`;
+    }
+
+    // 3. 우측 하단 발송 실행 버튼 텍스트 업데이트
+    const btnSendMain = document.getElementById("btn-sms-send-submit");
+    if (btnSendMain && !btnSendMain.dataset.sending) {
+      btnSendMain.textContent = `📨 체크한 회원 문자 발송 (${selectedCount}명)`;
+    }
+
+    // 4. 선택된 회원 칩(Tag) 미리보기 리스트 업데이트
+    const chipsContainer = document.getElementById("sms-selected-chips");
+    if (chipsContainer) {
+      if (selectedCount === 0) {
+        chipsContainer.innerHTML = `
+          <div class="sms-chips-empty">
+            아래 회원 목록에서 국가(선호언어) 앞의 체크박스를 선택하면 이곳에 발송 대상자가 표시됩니다.
+          </div>
+        `;
+      } else {
+        chipsContainer.innerHTML = selectedUsers.map((u) => {
+          const langKey = normalizeUserLangKey(u);
+          const flag = SUPPORTED_COUNTRY_LANGS[langKey] ? SUPPORTED_COUNTRY_LANGS[langKey].flag : "🌐";
+          const phoneInfo = parseSmsUserPhone(u.phone);
+          const safeName = String(u.name || "회원").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          return `
+            <span class="sms-recipient-chip" data-uid="${u.id}">
+              <span>${flag} ${safeName}</span>
+              <span class="chip-phone">(${phoneInfo.formatted})</span>
+              <button type="button" class="chip-remove" data-remove-uid="${u.id}" title="선택 해제">✕</button>
+            </span>
+          `;
+        }).join("");
+      }
+    }
+  }
+
+  /**
+   * 문자발송 탭의 필터 조건(국가 타일, 등급, 이름/연락처 검색어)을 적용하고 테이블을 렌더링하는 함수
+   * @param {boolean} resetPage - 1페이지로 초기화할지 여부
+   */
+  function applySmsUserFiltersAndRender(resetPage = false) {
+    if (resetPage) {
+      currentSmsUserPage = 1;
+    }
+
+    let filtered = allLoadedUsers;
+
+    // 1. 상단 국가(선호언어) 타일 선택 필터 적용
+    if (currentSmsLangFilter !== "all") {
+      filtered = filtered.filter((user) => normalizeUserLangKey(user) === currentSmsLangFilter);
+    }
+
+    // 2. 등급별 보기 필터 적용
+    if (currentSmsRoleFilter !== "all") {
+      filtered = filtered.filter((user) => (user.role || "user") === currentSmsRoleFilter);
+    }
+
+    // 3. 회원 이름 또는 연락처 부분 일치 검색 필터 적용
+    if (currentSmsSearchQuery) {
+      const normalizedQuery = currentSmsSearchQuery.toLowerCase();
+      const compactQuery = normalizedQuery.replace(/\s+/g, "");
+      const digitQuery = normalizedQuery.replace(/[^0-9]/g, "");
+
+      filtered = filtered.filter((user) => {
+        const rawName = String(user.name || "").toLowerCase();
+        const compactName = rawName.replace(/\s+/g, "");
+        const rawPhone = String(user.phone || "").replace(/[^0-9]/g, "");
+
+        const nameMatch = rawName.includes(normalizedQuery) || (compactQuery.length > 0 && compactName.includes(compactQuery));
+        const phoneMatch = digitQuery.length > 0 && rawPhone.includes(digitQuery);
+        return nameMatch || phoneMatch;
+      });
+    }
+
+    cachedSmsFilteredUsers = filtered;
+    renderSmsUsersPage(cachedSmsFilteredUsers);
+  }
+
+  /**
+   * 문자발송 탭 전용 페이지네이션 컨트롤러 렌더링 함수
+   */
+  function renderSmsUsersPagination(totalItems, itemsPerPage, currentPage, onPageChange) {
+    if (!smsUsersPagination) return;
+
+    if (totalItems <= 0) {
+      smsUsersPagination.innerHTML = "";
+      return;
+    }
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    let paginationHTML = `
+      <div class="admin-pagination-info">
+        조회된 대상 <strong>${totalItems}</strong>명 (페이지 <strong>${currentPage}</strong> / ${totalPages})
+      </div>
+      <div class="admin-pagination">
+        <button type="button" class="admin-page-btn btn-first" ${currentPage <= 1 ? "disabled" : ""} title="첫 페이지">«</button>
+        <button type="button" class="admin-page-btn btn-prev" ${currentPage <= 1 ? "disabled" : ""} title="이전 페이지">‹</button>
+    `;
+
+    for (let p = startPage; p <= endPage; p++) {
+      const isActive = (p === currentPage) ? "active" : "";
+      paginationHTML += `<button type="button" class="admin-page-btn btn-num ${isActive}" data-page="${p}">${p}</button>`;
+    }
+
+    paginationHTML += `
+        <button type="button" class="admin-page-btn btn-next" ${currentPage >= totalPages ? "disabled" : ""} title="다음 페이지">›</button>
+        <button type="button" class="admin-page-btn btn-last" ${currentPage >= totalPages ? "disabled" : ""} title="마지막 페이지">»</button>
+      </div>
+    `;
+
+    smsUsersPagination.innerHTML = paginationHTML;
+
+    const btnFirst = smsUsersPagination.querySelector(".btn-first");
+    const btnPrev = smsUsersPagination.querySelector(".btn-prev");
+    const btnNext = smsUsersPagination.querySelector(".btn-next");
+    const btnLast = smsUsersPagination.querySelector(".btn-last");
+    const numBtns = smsUsersPagination.querySelectorAll(".btn-num");
+
+    if (btnFirst && !btnFirst.disabled) btnFirst.addEventListener("click", () => onPageChange(1));
+    if (btnPrev && !btnPrev.disabled) btnPrev.addEventListener("click", () => onPageChange(Math.max(1, currentPage - 1)));
+    if (btnNext && !btnNext.disabled) btnNext.addEventListener("click", () => onPageChange(Math.min(totalPages, currentPage + 1)));
+    if (btnLast && !btnLast.disabled) btnLast.addEventListener("click", () => onPageChange(totalPages));
+
+    numBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetPage = parseInt(btn.getAttribute("data-page"), 10);
+        if (targetPage && targetPage !== currentPage) {
+          onPageChange(targetPage);
+        }
+      });
+    });
+  }
+
+  /**
+   * 문자발송 대상 회원 리스트 테이블 렌더링 함수 (체크박스 + 국가 + 이름 + 연락처 + 가입일 + 현재등급 + 상세보기 7열 구성)
+   * @param {Array} usersToRender - 필터링된 회원 배열
+   */
+  function renderSmsUsersPage(usersToRender) {
+    if (!smsUserList) return;
+
+    smsUserList.innerHTML = "";
+    const totalUsers = usersToRender.length;
+    const checkAllPageEl = document.getElementById("sms-check-all-page");
+
+    if (totalUsers === 0) {
+      const emptyMessage = allLoadedUsers.length > 0
+        ? "선택한 국가, 등급 또는 이름/연락처 검색 조건에 일치하는 회원이 없습니다."
+        : "가입된 회원이 없습니다.";
+      smsUserList.innerHTML = `<tr><td colspan="7" class="table-empty">${emptyMessage}</td></tr>`;
+      if (smsUsersPagination) smsUsersPagination.innerHTML = "";
+      if (checkAllPageEl) {
+        checkAllPageEl.checked = false;
+        checkAllPageEl.indeterminate = false;
+      }
+      updateSmsSelectionUI();
+      return;
+    }
+
+    const totalPages = Math.ceil(totalUsers / currentLimitSmsUsers) || 1;
+    if (currentSmsUserPage > totalPages) currentSmsUserPage = totalPages;
+    if (currentSmsUserPage < 1) currentSmsUserPage = 1;
+
+    const startIndex = (currentSmsUserPage - 1) * currentLimitSmsUsers;
+    const endIndex = startIndex + currentLimitSmsUsers;
+    const pageUsers = usersToRender.slice(startIndex, endIndex);
+
+    let selectablePageCount = 0;
+    let selectedPageCount = 0;
+
+    pageUsers.forEach((userData) => {
+      const userId = userData.id;
+      const tr = document.createElement("tr");
+
+      // 가입일 포맷팅
+      let registerDate = "-";
+      if (userData.createdAt) {
+        let dateObj = null;
+        if (typeof userData.createdAt.toDate === "function") {
+          dateObj = userData.createdAt.toDate();
+        } else if (userData.createdAt.seconds) {
+          dateObj = new Date(userData.createdAt.seconds * 1000);
+        } else {
+          dateObj = new Date(userData.createdAt);
+        }
+        registerDate = (dateObj && !isNaN(dateObj.getTime())) ? dateObj.toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        }) : "-";
+      }
+
+      // 현재 등급 라벨
+      const currentRoleLabel = rolesCache[userData.role] || userData.role || "일반 회원";
+
+      // 국가(선호언어) 표시 라벨
+      const userLangKey = normalizeUserLangKey(userData);
+      const matchedLangInfo = SUPPORTED_COUNTRY_LANGS[userLangKey];
+      const countryLangDisplay = matchedLangInfo
+        ? `${matchedLangInfo.flag} ${matchedLangInfo.label}`
+        : (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
+
+      // 연락처 유효성 판별
+      const phoneInfo = parseSmsUserPhone(userData.phone);
+      const isChecked = phoneInfo.isValid && selectedSmsUserIds.has(userId);
+
+      if (phoneInfo.isValid) {
+        selectablePageCount++;
+        if (isChecked) selectedPageCount++;
+      }
+
+      tr.className = `sms-user-row ${isChecked ? "sms-row-selected" : ""} ${!phoneInfo.isValid ? "sms-row-disabled" : ""}`;
+      tr.setAttribute("data-uid", userId);
+
+      const phoneDisplayHTML = phoneInfo.isValid
+        ? `<span class="sms-phone-badge">${phoneInfo.formatted}</span>`
+        : `<span class="sms-no-phone">연락처 미등록</span>`;
+
+      tr.innerHTML = `
+        <td class="sms-col-check">
+          <label class="sms-checkbox-wrapper">
+            <input type="checkbox" class="sms-checkbox-input sms-row-checkbox"
+              data-uid="${userId}"
+              ${isChecked ? "checked" : ""}
+              ${!phoneInfo.isValid ? "disabled" : ""}>
+            <span class="sms-checkbox-custom"></span>
+          </label>
+        </td>
+        <td>
+          <span class="sms-country-badge">${countryLangDisplay}</span>
+        </td>
+        <td class="font-bold">${userData.name || "-"}</td>
+        <td>${phoneDisplayHTML}</td>
+        <td>${registerDate}</td>
+        <td><span class="role-badge ${userData.role || 'user'}">${currentRoleLabel}</span></td>
+        <td>
+          <button type="button" class="btn-user-detail" data-uid="${userId}">상세보기</button>
+        </td>
+      `;
+
+      smsUserList.appendChild(tr);
+    });
+
+    // 헤더의 현재 페이지 전체 선택 체크박스 상태 동기화
+    if (checkAllPageEl) {
+      if (selectablePageCount === 0) {
+        checkAllPageEl.checked = false;
+        checkAllPageEl.indeterminate = false;
+      } else {
+        checkAllPageEl.checked = (selectedPageCount === selectablePageCount);
+        checkAllPageEl.indeterminate = (selectedPageCount > 0 && selectedPageCount < selectablePageCount);
+      }
+    }
+
+    // 페이지네이션 렌더링 및 상단 선택 현황 UI 업데이트
+    renderSmsUsersPagination(totalUsers, currentLimitSmsUsers, currentSmsUserPage, (newPage) => {
+      currentSmsUserPage = newPage;
+      renderSmsUsersPage(usersToRender);
+    });
+
+    updateSmsSelectionUI();
+  }
+
+  // 문자발송 탭: 상단 국가(선호언어) 타일 클릭 시 해당 국가 회원만 필터링하는 이벤트 바인딩
+  const smsLangStatsEl = document.getElementById("admin-sms-lang-stats");
+  if (smsLangStatsEl) {
+    smsLangStatsEl.addEventListener("click", (e) => {
+      const clickedTile = e.target.closest(".lang-stat-tile[data-sms-lang]");
+      if (!clickedTile) return;
+
+      const selectedLang = clickedTile.getAttribute("data-sms-lang") || "all";
+      if (selectedLang === "all" || currentSmsLangFilter === selectedLang) {
+        currentSmsLangFilter = "all";
+      } else {
+        currentSmsLangFilter = selectedLang;
+      }
+
+      smsLangStatsEl.querySelectorAll(".lang-stat-tile[data-sms-lang]").forEach((tile) => {
+        const tileLang = tile.getAttribute("data-sms-lang");
+        tile.classList.toggle("active", tileLang === currentSmsLangFilter);
+      });
+
+      if (allLoadedUsers.length > 0) {
+        applySmsUserFiltersAndRender(true);
+      } else {
+        loadUsers(true);
+      }
+    });
+  }
+
+  // 문자발송 탭: 새로고침 버튼 이벤트
+  if (btnRefreshSmsUsers) {
+    btnRefreshSmsUsers.addEventListener("click", () => {
+      loadUsers(true);
+    });
+  }
+
+  // 문자발송 탭: 등급별 보기 필터 변경 이벤트
+  const selectSmsRoleFilter = document.getElementById("select-sms-role-filter");
+  if (selectSmsRoleFilter) {
+    buildSmsRoleFilterOptions();
+    selectSmsRoleFilter.addEventListener("change", (e) => {
+      currentSmsRoleFilter = e.target.value;
+      localStorage.setItem("admin_sms_role_filter", currentSmsRoleFilter);
+      if (allLoadedUsers.length > 0) {
+        applySmsUserFiltersAndRender(true);
+      } else {
+        loadUsers(true);
+      }
+    });
+  }
+
+  // 문자발송 탭: 페이지당 노출 인원수 드롭다운 변경 이벤트
+  const selectLimitSmsUsers = document.getElementById("select-limit-sms-users");
+  if (selectLimitSmsUsers) {
+    selectLimitSmsUsers.value = currentLimitSmsUsers.toString();
+    selectLimitSmsUsers.addEventListener("change", (e) => {
+      currentLimitSmsUsers = parseInt(e.target.value, 10) || 20;
+      localStorage.setItem("admin_sms_user_limit", currentLimitSmsUsers.toString());
+      if (allLoadedUsers.length > 0) {
+        applySmsUserFiltersAndRender(true);
+      } else {
+        loadUsers(true);
+      }
+    });
+  }
+
+  // 문자발송 탭: 이름/연락처 검색창 및 검색 버튼 이벤트
+  const inputSearchSmsUsers = document.getElementById("input-search-sms-users");
+  const btnSearchSmsUsers = document.getElementById("btn-search-sms-users");
+
+  function executeSmsUserSearch() {
+    if (!inputSearchSmsUsers) return;
+    currentSmsSearchQuery = inputSearchSmsUsers.value.trim();
+    if (allLoadedUsers.length > 0) {
+      applySmsUserFiltersAndRender(true);
+    } else {
+      loadUsers(true);
+    }
+  }
+
+  if (inputSearchSmsUsers) {
+    inputSearchSmsUsers.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        executeSmsUserSearch();
+      }
+    });
+
+    inputSearchSmsUsers.addEventListener("input", () => {
+      if (inputSearchSmsUsers.value.trim() === "" && currentSmsSearchQuery !== "") {
+        currentSmsSearchQuery = "";
+        if (allLoadedUsers.length > 0) {
+          applySmsUserFiltersAndRender(true);
+        }
+      }
+    });
+  }
+
+  if (btnSearchSmsUsers) {
+    btnSearchSmsUsers.addEventListener("click", () => {
+      executeSmsUserSearch();
+    });
+  }
+
+  // 문자발송 탭: 테이블 헤더의 '현재 페이지 전체 선택/해제' 마스터 체크박스 이벤트
+  const checkAllPageInput = document.getElementById("sms-check-all-page");
+  if (checkAllPageInput) {
+    checkAllPageInput.addEventListener("change", (e) => {
+      const shouldSelect = e.target.checked;
+      if (!smsUserList) return;
+
+      smsUserList.querySelectorAll(".sms-row-checkbox:not(:disabled)").forEach((cb) => {
+        const uid = cb.getAttribute("data-uid");
+        if (!uid) return;
+        cb.checked = shouldSelect;
+        const row = cb.closest("tr");
+        if (shouldSelect) {
+          selectedSmsUserIds.add(uid);
+          if (row) row.classList.add("sms-row-selected");
+        } else {
+          selectedSmsUserIds.delete(uid);
+          if (row) row.classList.remove("sms-row-selected");
+        }
+      });
+
+      updateSmsSelectionUI();
+    });
+  }
+
+  // 문자발송 탭: 테이블 내부 개별 체크박스 변경, 행 클릭 토글, 상세보기 버튼 클릭 이벤트 위임
+  if (smsUserList) {
+    // 1. 체크박스 직접 변경 이벤트
+    smsUserList.addEventListener("change", (e) => {
+      if (e.target.classList.contains("sms-row-checkbox")) {
+        const uid = e.target.getAttribute("data-uid");
+        if (!uid) return;
+
+        const row = e.target.closest("tr");
+        if (e.target.checked) {
+          selectedSmsUserIds.add(uid);
+          if (row) row.classList.add("sms-row-selected");
+        } else {
+          selectedSmsUserIds.delete(uid);
+          if (row) row.classList.remove("sms-row-selected");
+        }
+
+        // 헤더 전체선택 체크박스 상태 동기화
+        const allCbs = Array.from(smsUserList.querySelectorAll(".sms-row-checkbox:not(:disabled)"));
+        const checkedCbs = allCbs.filter((cb) => cb.checked);
+        if (checkAllPageInput) {
+          checkAllPageInput.checked = allCbs.length > 0 && checkedCbs.length === allCbs.length;
+          checkAllPageInput.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+        }
+
+        updateSmsSelectionUI();
+      }
+    });
+
+    // 2. 상세보기 버튼 클릭 및 행(Row) 클릭 시 체크박스 편의 토글 이벤트
+    smsUserList.addEventListener("click", async (e) => {
+      const detailBtn = e.target.closest(".btn-user-detail");
+      if (detailBtn) {
+        const uid = detailBtn.getAttribute("data-uid");
+        if (uid) {
+          if (loadedUsersMap[uid]) {
+            showUserDetailModal(loadedUsersMap[uid]);
+          } else {
+            try {
+              const userDocSnap = await getDoc(doc(db, "users", uid));
+              if (userDocSnap.exists()) {
+                const fetchedUserData = { ...userDocSnap.data(), id: userDocSnap.id, uid: userDocSnap.id };
+                loadedUsersMap[uid] = fetchedUserData;
+                showUserDetailModal(fetchedUserData);
+              }
+            } catch (err) {
+              console.error("Load user detail in SMS tab failed:", err);
+            }
+          }
+        }
+        return;
+      }
+
+      // 체크박스 라벨 자체를 클릭한 경우는 change 이벤트가 처리하므로 중복 토글 방지
+      if (e.target.closest(".sms-checkbox-wrapper") || e.target.closest("button")) return;
+
+      // 일반 셀(국가, 이름, 연락처, 가입일, 등급)을 클릭했을 때 해당 행의 체크박스를 자연스럽게 토글
+      const clickedRow = e.target.closest("tr.sms-user-row");
+      if (clickedRow) {
+        const cb = clickedRow.querySelector(".sms-row-checkbox");
+        if (cb && !cb.disabled) {
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+    });
+  }
+
+  // 문자발송 탭: 상단 선택된 수신자 칩(Tag)의 '✕' 버튼 클릭 시 개별 선택 해제
+  const smsSelectedChipsBox = document.getElementById("sms-selected-chips");
+  if (smsSelectedChipsBox) {
+    smsSelectedChipsBox.addEventListener("click", (e) => {
+      const removeBtn = e.target.closest(".chip-remove[data-remove-uid]");
+      if (!removeBtn) return;
+
+      const uid = removeBtn.getAttribute("data-remove-uid");
+      if (uid) {
+        selectedSmsUserIds.delete(uid);
+        renderSmsUsersPage(cachedSmsFilteredUsers);
+      }
+    });
+  }
+
+  // 문자발송 탭: '현재 목록 전체 선택' 버튼 클릭 시 현재 필터링된 모든 유효 연락처 회원을 일괄 선택
+  const btnSmsSelectFiltered = document.getElementById("btn-sms-select-filtered");
+  if (btnSmsSelectFiltered) {
+    btnSmsSelectFiltered.addEventListener("click", () => {
+      const targetList = cachedSmsFilteredUsers.length > 0 ? cachedSmsFilteredUsers : allLoadedUsers;
+      let addedCount = 0;
+      targetList.forEach((u) => {
+        if (parseSmsUserPhone(u.phone).isValid) {
+          selectedSmsUserIds.add(u.id);
+          addedCount++;
+        }
+      });
+
+      if (addedCount === 0) {
+        alert("현재 목록에 유효한 연락처가 등록된 회원이 없습니다.");
+        return;
+      }
+      renderSmsUsersPage(cachedSmsFilteredUsers);
+    });
+  }
+
+  // 문자발송 탭: '전체 선택 해제' 버튼 클릭 시 모든 체크 해제
+  const btnSmsClearSelection = document.getElementById("btn-sms-clear-selection");
+  if (btnSmsClearSelection) {
+    btnSmsClearSelection.addEventListener("click", () => {
+      if (selectedSmsUserIds.size === 0) return;
+      selectedSmsUserIds.clear();
+      renderSmsUsersPage(cachedSmsFilteredUsers);
+    });
+  }
+
+  // 문자발송 탭: '선택 연락처 복사' 버튼 클릭 시 체크된 회원들의 전화번호를 클립보드에 일괄 복사
+  const btnSmsCopyPhones = document.getElementById("btn-sms-copy-phones");
+  if (btnSmsCopyPhones) {
+    btnSmsCopyPhones.addEventListener("click", async () => {
+      const phones = [];
+      selectedSmsUserIds.forEach((uid) => {
+        const u = loadedUsersMap[uid];
+        if (u) {
+          const pInfo = parseSmsUserPhone(u.phone);
+          if (pInfo.isValid) phones.push(pInfo.clean);
+        }
+      });
+
+      if (phones.length === 0) {
+        alert("먼저 연락처를 복사할 회원을 아래 목록에서 체크해 주세요.");
+        return;
+      }
+
+      const uniquePhones = Array.from(new Set(phones));
+      try {
+        await navigator.clipboard.writeText(uniquePhones.join(", "));
+        alert(`체크한 회원 ${uniquePhones.length}명의 연락처가 클립보드에 복사되었습니다.\n\n복사된 번호: ${uniquePhones.slice(0, 5).join(", ")}${uniquePhones.length > 5 ? ` 외 ${uniquePhones.length - 5}건` : ""}`);
+      } catch (err) {
+        console.error("Clipboard copy failed:", err);
+        prompt("아래 연락처 목록을 복사(Ctrl+C)하여 사용하세요:", uniquePhones.join(", "));
+      }
+    });
+  }
+
+  // 문자발송 탭: 본문 입력 시 실시간 바이트(Byte) 계산 및 SMS/LMS 자동 전환 배지 업데이트
+  const smsMessageTextarea = document.getElementById("sms-message-textarea");
+  const smsByteBadge = document.getElementById("sms-byte-badge");
+
+  function updateSmsByteIndicator() {
+    if (!smsMessageTextarea || !smsByteBadge) return;
+    const text = smsMessageTextarea.value;
+    const byteLen = calculateSmsByteLength(text);
+
+    smsByteBadge.classList.remove("sms-mode", "lms-mode", "over-mode");
+    if (byteLen <= 90) {
+      smsByteBadge.classList.add("sms-mode");
+      smsByteBadge.textContent = `SMS 단문 · ${byteLen} / 90 Byte`;
+    } else if (byteLen <= 2000) {
+      smsByteBadge.classList.add("lms-mode");
+      smsByteBadge.textContent = `LMS 장문 · ${byteLen} / 2,000 Byte`;
+    } else {
+      smsByteBadge.classList.add("over-mode");
+      smsByteBadge.textContent = `용량 초과 · ${byteLen} / 2,000 Byte`;
+    }
+  }
+
+  if (smsMessageTextarea) {
+    smsMessageTextarea.addEventListener("input", updateSmsByteIndicator);
+  }
+
+  // 문자발송 탭: '#{이름} 자동치환 넣기' 버튼 클릭 시 커서 위치에 #{이름} 삽입
+  const btnSmsInsertName = document.getElementById("btn-sms-insert-name");
+  if (btnSmsInsertName && smsMessageTextarea) {
+    btnSmsInsertName.addEventListener("click", () => {
+      const start = smsMessageTextarea.selectionStart || 0;
+      const end = smsMessageTextarea.selectionEnd || 0;
+      const currentVal = smsMessageTextarea.value;
+      const tag = "#{이름}";
+
+      smsMessageTextarea.value = currentVal.substring(0, start) + tag + currentVal.substring(end);
+      smsMessageTextarea.focus();
+      smsMessageTextarea.setSelectionRange(start + tag.length, start + tag.length);
+      updateSmsByteIndicator();
+    });
+  }
+
+  // =========================================================================
+  // 문자발송 탭: 빠른 문구 양식(공지 안내, 진료/예약 안내, 혜택/이벤트, 카톡 상담 안내 등)
+  // 불러오기 · 내용 편집(수정) · 개별 삭제 · 새 양식 추가 · 초기값 복원 통합 모듈
+  // =========================================================================
+
+  // 초기 기본 제공 문자메시지 양식 4종 정의
+  const DEFAULT_SMS_TEMPLATES = [
+    {
+      id: "notice",
+      label: "📢 공지 안내",
+      subject: "[IGPartners 공지 안내]",
+      body: `[IGPartners 공지 안내]\n\n안녕하세요, #{이름}님.\n아이지파트너스(IGPartners)를 이용해 주셔서 진심으로 감사드립니다.\n\n\n\n■ 문의 및 카톡 상담\nhttp://pf.kakao.com/_YxoxjfX/chat`
+    },
+    {
+      id: "medical",
+      label: "🏥 진료/예약 안내",
+      subject: "[IGPartners 병원 진료 안내]",
+      body: `[IGPartners 병원 진료 안내]\n\n안녕하세요, #{이름}님.\n전문 의료 통역 및 제휴 병원 진료 예약과 관련하여 안내해 드립니다.\n\n• 내원 시 신분증(외국인등록증 또는 여권)을 꼭 지참해 주세요.\n\n■ 실시간 카톡 상담\nhttp://pf.kakao.com/_YxoxjfX/chat`
+    },
+    {
+      id: "event",
+      label: "🎉 혜택/이벤트",
+      subject: "[IGPartners 회원 특별 혜택 안내]",
+      body: `[IGPartners 회원 혜택 안내]\n\n안녕하세요, #{이름}님!\nIGPartners 가입 회원분들을 위한 제휴 병원 특별 진료 혜택 및 의료 통역 지원 이벤트를 안내해 드립니다.\n\n■ 자세히 보기 및 상담\nhttp://pf.kakao.com/_YxoxjfX/chat`
+    },
+    {
+      id: "kakao",
+      label: "💬 카톡 상담 안내",
+      subject: "[IGPartners 상담 채널 안내]",
+      body: `[IGPartners 1:1 다국어 상담 안내]\n\n안녕하세요, #{이름}님.\n병원 예약, 일정 변경, 전문 통역 문의가 필요하신 경우 아래 공식 카카오톡 채널로 언제든 편하게 문의해 주세요.\n\n■ IGPartners 카톡 채널\nhttp://pf.kakao.com/_YxoxjfX/chat`
+    }
+  ];
+
+  const SMS_TEMPLATES_STORAGE_KEY = "admin_sms_custom_templates_v1";
+  // 현재 메모리에 로드된 문자 양식 배열
+  let smsTemplatesList = [];
+  // 현재 아래 입력창에 선택·적용되어 있는 활성 양식 ID
+  let activeSmsTemplateId = null;
+
+  const smsTemplateListContainer = document.getElementById("sms-template-list");
+  const btnSmsSaveCurrentTpl = document.getElementById("btn-sms-save-current-tpl");
+  const btnSmsAddTpl = document.getElementById("btn-sms-add-tpl");
+  const btnSmsResetTpl = document.getElementById("btn-sms-reset-tpl");
+
+  /**
+   * 초기 기본 양식 배열을 깊은 복사(Deep Copy)하여 반환하는 헬퍼 함수
+   */
+  function cloneDefaultSmsTemplates() {
+    return DEFAULT_SMS_TEMPLATES.map((tpl) => ({ ...tpl }));
+  }
+
+  /**
+   * 양식 목록을 브라우저 localStorage와 Firestore(settings/sms_templates)에 동시 저장하는 함수
+   * @param {Array} newTemplates - 저장할 양식 객체 배열
+   */
+  async function persistSmsTemplates(newTemplates) {
+    smsTemplatesList = Array.isArray(newTemplates) ? newTemplates : [];
+    try {
+      localStorage.setItem(SMS_TEMPLATES_STORAGE_KEY, JSON.stringify(smsTemplatesList));
+    } catch (e) {
+      console.warn("문자 양식 로컬 스토리지 저장 실패:", e);
+    }
+
+    try {
+      await setDoc(doc(db, "settings", "sms_templates"), {
+        templates: smsTemplatesList,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (dbErr) {
+      console.warn("문자 양식 Firestore 동기화 저장 실패 (로컬 저장본 유지):", dbErr);
+    }
+  }
+
+  /**
+   * 현재 선택된 활성 양식에 맞춰 '현재 내용으로 양식 저장' 버튼의 노출 상태와 라벨을 업데이트하는 함수
+   */
+  function updateActiveSmsTemplateSaveButton() {
+    if (!btnSmsSaveCurrentTpl) return;
+    const matchedTpl = smsTemplatesList.find((t) => t.id === activeSmsTemplateId);
+    if (matchedTpl) {
+      btnSmsSaveCurrentTpl.style.display = "inline-flex";
+      btnSmsSaveCurrentTpl.textContent = `💾 '${matchedTpl.label}' 내용 저장`;
+    } else {
+      btnSmsSaveCurrentTpl.style.display = "none";
+    }
+  }
+
+  /**
+   * 문자 양식 칩 목록(불러오기 버튼 + ✏️ 편집 버튼 + ✕ 삭제 버튼)을 화면에 렌더링하는 함수
+   */
+  function renderSmsTemplateToolbar() {
+    if (!smsTemplateListContainer) return;
+
+    if (!Array.isArray(smsTemplatesList) || smsTemplatesList.length === 0) {
+      smsTemplateListContainer.innerHTML = `
+        <span style="font-size: 0.78rem; color: #94a3b8; padding: 0.25rem 0.4rem;">
+          등록된 문자 양식이 없습니다. 우측 [＋ 양식 추가] 또는 [↺ 기본양식 복원]을 이용해 주세요.
+        </span>
+      `;
+      activeSmsTemplateId = null;
+      updateActiveSmsTemplateSaveButton();
+      return;
+    }
+
+    smsTemplateListContainer.innerHTML = smsTemplatesList.map((tpl) => {
+      const isActive = (tpl.id === activeSmsTemplateId) ? "active" : "";
+      const safeLabel = String(tpl.label || "양식").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const safeId = String(tpl.id || "").replace(/"/g, "&quot;");
+      return `
+        <div class="sms-tpl-chip-group ${isActive}" data-tpl-id="${safeId}">
+          <button type="button" class="sms-tpl-load-btn" data-action="load" data-tpl-id="${safeId}" title="클릭 시 '${safeLabel}' 양식의 제목과 본문을 입력창에 불러옵니다">
+            ${safeLabel}
+          </button>
+          <button type="button" class="sms-tpl-icon-btn edit" data-action="edit" data-tpl-id="${safeId}" title="'${safeLabel}' 양식의 이름·제목·본문 내용을 편집합니다">
+            ✏️
+          </button>
+          <button type="button" class="sms-tpl-icon-btn delete" data-action="delete" data-tpl-id="${safeId}" title="'${safeLabel}' 양식을 삭제합니다">
+            ✕
+          </button>
+        </div>
+      `;
+    }).join("");
+
+    updateActiveSmsTemplateSaveButton();
+  }
+
+  /**
+   * 초기 로딩 시 localStorage 캐시를 먼저 반영하고 Firestore(settings/sms_templates)에서 최신 양식 목록을 동기화하는 함수
+   */
+  async function loadSmsTemplatesFromStorage() {
+    // 1. 로컬 스토리지에서 즉시 로드하여 화면 깜빡임 방지
+    let loadedFromLocal = false;
+    try {
+      const rawLocal = localStorage.getItem(SMS_TEMPLATES_STORAGE_KEY);
+      if (rawLocal !== null) {
+        const parsed = JSON.parse(rawLocal);
+        if (Array.isArray(parsed)) {
+          smsTemplatesList = parsed;
+          loadedFromLocal = true;
+        }
+      }
+    } catch (e) {
+      console.warn("문자 양식 로컬 캐시 파싱 오류:", e);
+    }
+
+    if (!loadedFromLocal) {
+      smsTemplatesList = cloneDefaultSmsTemplates();
+    }
+    renderSmsTemplateToolbar();
+
+    // 2. Firestore settings/sms_templates 문서 조회 및 최신 동기화
+    try {
+      const tplSnap = await getDoc(doc(db, "settings", "sms_templates"));
+      if (tplSnap.exists() && Array.isArray(tplSnap.data().templates)) {
+        smsTemplatesList = tplSnap.data().templates;
+        try {
+          localStorage.setItem(SMS_TEMPLATES_STORAGE_KEY, JSON.stringify(smsTemplatesList));
+        } catch (e) { }
+        renderSmsTemplateToolbar();
+      }
+    } catch (err) {
+      console.warn("Firestore 문자 양식 조회 생략 (로컬 설정 사용):", err);
+    }
+  }
+
+  /**
+   * 문자 양식 편집(수정) 및 신규 추가를 위한 전용 모달 팝업을 생성·표시하는 함수
+   * @param {Object|null} targetTpl - 수정할 양식 객체 (신규 추가 시에는 null)
+   */
+  function openSmsTemplateEditModal(targetTpl = null) {
+    const existingModal = document.getElementById("sms-tpl-edit-modal");
+    if (existingModal) existingModal.remove();
+
+    const isEditMode = Boolean(targetTpl && targetTpl.id);
+    const subjectInputEl = document.getElementById("sms-subject-input");
+
+    // 현재 선택된 양식을 편집하거나 새 양식을 추가할 때, 입력창에서 방금 수정 중인 내용이 있다면 기본값으로 편리하게 연동
+    const initialLabel = isEditMode ? (targetTpl.label || "") : "📌 새 안내 양식";
+    const initialSubject = isEditMode
+      ? ((activeSmsTemplateId === targetTpl.id && subjectInputEl && subjectInputEl.value.trim()) ? subjectInputEl.value.trim() : (targetTpl.subject || "[IGPartners 안내]"))
+      : ((subjectInputEl && subjectInputEl.value.trim()) ? subjectInputEl.value.trim() : "[IGPartners 안내]");
+    const initialBody = isEditMode
+      ? ((activeSmsTemplateId === targetTpl.id && smsMessageTextarea && smsMessageTextarea.value.trim()) ? smsMessageTextarea.value : (targetTpl.body || ""))
+      : ((smsMessageTextarea && smsMessageTextarea.value.trim()) ? smsMessageTextarea.value : `안녕하세요, #{이름}님.\n아이지파트너스(IGPartners)에서 안내해 드립니다.\n\n`);
+
+    const modalOverlay = document.createElement("div");
+    modalOverlay.id = "sms-tpl-edit-modal";
+    modalOverlay.className = "sms-tpl-modal-overlay";
+
+    modalOverlay.innerHTML = `
+      <div class="sms-tpl-modal-card">
+        <div class="sms-tpl-modal-header">
+          <h3>${isEditMode ? "✏️ 문자메시지 양식 내용 편집" : "＋ 새 문자메시지 양식 추가"}</h3>
+          <button type="button" id="btn-sms-tpl-modal-close" style="background: none; border: none; color: #94a3b8; font-size: 1.35rem; cursor: pointer; line-height: 1;">&times;</button>
+        </div>
+
+        <div class="sms-tpl-modal-field">
+          <label for="sms-tpl-modal-label">양식 버튼 이름 (이모지 포함 가능)</label>
+          <input type="text" id="sms-tpl-modal-label" class="sms-tpl-modal-input" placeholder="예: 📢 공지 안내, 🏥 진료/예약 안내" maxlength="30">
+        </div>
+
+        <div class="sms-tpl-modal-field">
+          <label for="sms-tpl-modal-subject">문자 제목 (장문 LMS 전환 시 표시되는 제목)</label>
+          <input type="text" id="sms-tpl-modal-subject" class="sms-tpl-modal-input" placeholder="예: [IGPartners 회원 특별 혜택 안내]" maxlength="60">
+        </div>
+
+        <div class="sms-tpl-modal-field">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+            <label for="sms-tpl-modal-body">문자 본문 내용</label>
+            <button type="button" id="btn-sms-tpl-modal-insert-name" class="sms-tpl-btn highlight" style="padding: 0.22rem 0.55rem; font-size: 0.73rem;">
+              🏷️ #{이름} 넣기
+            </button>
+          </div>
+          <textarea id="sms-tpl-modal-body" class="sms-tpl-modal-textarea" rows="7" placeholder="양식에 저장할 문자메시지 본문을 입력해 주세요."></textarea>
+        </div>
+
+        <div class="sms-tpl-modal-footer">
+          <div>
+            ${isEditMode ? `<button type="button" id="btn-sms-tpl-modal-delete" class="sms-action-chip danger" style="padding: 0.48rem 0.9rem;">🗑️ 이 양식 삭제</button>` : ""}
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" id="btn-sms-tpl-modal-cancel" class="sms-action-chip secondary" style="padding: 0.48rem 1rem;">취소</button>
+            <button type="button" id="btn-sms-tpl-modal-save" class="sms-action-chip primary" style="padding: 0.48rem 1.15rem;">💾 양식 저장하기</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modalOverlay);
+
+    const labelEl = document.getElementById("sms-tpl-modal-label");
+    const subjectEl = document.getElementById("sms-tpl-modal-subject");
+    const bodyEl = document.getElementById("sms-tpl-modal-body");
+
+    if (labelEl) labelEl.value = initialLabel;
+    if (subjectEl) subjectEl.value = initialSubject;
+    if (bodyEl) bodyEl.value = initialBody;
+
+    // 모달 내부에서 '#{이름} 넣기' 버튼 클릭 시 본문 커서 위치에 삽입
+    const btnModalInsertName = document.getElementById("btn-sms-tpl-modal-insert-name");
+    if (btnModalInsertName && bodyEl) {
+      btnModalInsertName.addEventListener("click", () => {
+        const start = bodyEl.selectionStart || 0;
+        const end = bodyEl.selectionEnd || 0;
+        const val = bodyEl.value;
+        const tag = "#{이름}";
+        bodyEl.value = val.substring(0, start) + tag + val.substring(end);
+        bodyEl.focus();
+        bodyEl.setSelectionRange(start + tag.length, start + tag.length);
+      });
+    }
+
+    // 모달 닫기 이벤트
+    const closeModal = () => modalOverlay.remove();
+    document.getElementById("btn-sms-tpl-modal-close")?.addEventListener("click", closeModal);
+    document.getElementById("btn-sms-tpl-modal-cancel")?.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // 모달 내 삭제 버튼 클릭 이벤트 (편집 모드 전용)
+    const btnModalDelete = document.getElementById("btn-sms-tpl-modal-delete");
+    if (btnModalDelete && isEditMode) {
+      btnModalDelete.addEventListener("click", async () => {
+        if (!confirm(`'${targetTpl.label}' 양식을 정말 삭제하시겠습니까?`)) return;
+        const updated = smsTemplatesList.filter((t) => t.id !== targetTpl.id);
+        if (activeSmsTemplateId === targetTpl.id) {
+          activeSmsTemplateId = null;
+        }
+        await persistSmsTemplates(updated);
+        renderSmsTemplateToolbar();
+        closeModal();
+      });
+    }
+
+    // 모달 내 저장 버튼 클릭 이벤트
+    const btnModalSave = document.getElementById("btn-sms-tpl-modal-save");
+    if (btnModalSave) {
+      btnModalSave.addEventListener("click", async () => {
+        const newLabel = labelEl ? labelEl.value.trim() : "";
+        const newSubject = (subjectEl && subjectEl.value.trim()) ? subjectEl.value.trim() : "[IGPartners 안내]";
+        const newBody = bodyEl ? bodyEl.value.trim() : "";
+
+        if (!newLabel) {
+          alert("양식 버튼 이름을 입력해 주세요.");
+          if (labelEl) labelEl.focus();
+          return;
+        }
+        if (!newBody) {
+          alert("양식에 저장할 문자 본문 내용을 입력해 주세요.");
+          if (bodyEl) bodyEl.focus();
+          return;
+        }
+
+        btnModalSave.disabled = true;
+        btnModalSave.textContent = "저장 중...";
+
+        let savedTplId = isEditMode ? targetTpl.id : `tpl_${Date.now()}`;
+        let updatedList = [];
+
+        if (isEditMode) {
+          updatedList = smsTemplatesList.map((item) => {
+            if (item.id === targetTpl.id) {
+              return {
+                ...item,
+                label: newLabel,
+                subject: newSubject,
+                body: newBody
+              };
+            }
+            return item;
+          });
+        } else {
+          updatedList = [
+            ...smsTemplatesList,
+            {
+              id: savedTplId,
+              label: newLabel,
+              subject: newSubject,
+              body: newBody
+            }
+          ];
+        }
+
+        await persistSmsTemplates(updatedList);
+
+        // 방금 편집하거나 추가한 양식을 즉시 활성 양식으로 선택하고 아래 문자 작성창에도 최신 내용을 반영
+        activeSmsTemplateId = savedTplId;
+        renderSmsTemplateToolbar();
+
+        if (subjectInputEl) subjectInputEl.value = newSubject;
+        if (smsMessageTextarea) {
+          smsMessageTextarea.value = newBody;
+          updateSmsByteIndicator();
+        }
+
+        closeModal();
+      });
+    }
+  }
+
+  // 양식 칩 목록 클릭 이벤트 위임 (불러오기 / ✏️ 편집 / ✕ 삭제)
+  if (smsTemplateListContainer) {
+    smsTemplateListContainer.addEventListener("click", async (e) => {
+      const actionBtn = e.target.closest("button[data-action][data-tpl-id]");
+      if (!actionBtn) return;
+
+      const action = actionBtn.getAttribute("data-action");
+      const tplId = actionBtn.getAttribute("data-tpl-id");
+      const targetTpl = smsTemplatesList.find((t) => t.id === tplId);
+      if (!targetTpl) return;
+
+      // 1. 양식 이름 클릭 시: 제목 및 본문 입력창에 양식 불러오기
+      if (action === "load") {
+        const subjectInput = document.getElementById("sms-subject-input");
+        const currentBody = smsMessageTextarea ? smsMessageTextarea.value.trim() : "";
+
+        // 기존에 다른 내용을 작성 중이었고 선택한 양식의 본문과 다를 경우에만 교체 확인
+        if (currentBody.length > 0 && currentBody !== (targetTpl.body || "").trim()) {
+          if (!confirm(`현재 작성 중인 문자 내용을 '${targetTpl.label}' 양식으로 교체하시겠습니까?`)) {
+            return;
+          }
+        }
+
+        activeSmsTemplateId = targetTpl.id;
+        if (subjectInput) subjectInput.value = targetTpl.subject || "[IGPartners 안내]";
+        if (smsMessageTextarea) {
+          smsMessageTextarea.value = targetTpl.body || "";
+          smsMessageTextarea.focus();
+          updateSmsByteIndicator();
+        }
+        renderSmsTemplateToolbar();
+        return;
+      }
+
+      // 2. ✏️ 편집 아이콘 클릭 시: 양식 수정 모달 열기
+      if (action === "edit") {
+        openSmsTemplateEditModal(targetTpl);
+        return;
+      }
+
+      // 3. ✕ 삭제 아이콘 클릭 시: 확인 후 즉시 양식 삭제
+      if (action === "delete") {
+        if (!confirm(`'${targetTpl.label}' 양식을 삭제하시겠습니까?`)) {
+          return;
+        }
+        const updated = smsTemplatesList.filter((t) => t.id !== targetTpl.id);
+        if (activeSmsTemplateId === targetTpl.id) {
+          activeSmsTemplateId = null;
+        }
+        await persistSmsTemplates(updated);
+        renderSmsTemplateToolbar();
+      }
+    });
+  }
+
+  // '💾 선택 양식에 현재 내용 저장' 버튼 클릭 시: 아래 입력창에서 직접 수정한 제목과 본문을 선택된 양식에 즉시 덮어쓰기 저장
+  if (btnSmsSaveCurrentTpl) {
+    btnSmsSaveCurrentTpl.addEventListener("click", async () => {
+      if (!activeSmsTemplateId) return;
+      const targetTpl = smsTemplatesList.find((t) => t.id === activeSmsTemplateId);
+      if (!targetTpl) return;
+
+      const subjectInput = document.getElementById("sms-subject-input");
+      const newSubject = (subjectInput && subjectInput.value.trim()) ? subjectInput.value.trim() : "[IGPartners 안내]";
+      const newBody = smsMessageTextarea ? smsMessageTextarea.value.trim() : "";
+
+      if (!newBody) {
+        alert("양식에 저장할 문자 본문 내용을 먼저 입력해 주세요.");
+        if (smsMessageTextarea) smsMessageTextarea.focus();
+        return;
+      }
+
+      const updatedList = smsTemplatesList.map((item) => {
+        if (item.id === activeSmsTemplateId) {
+          return {
+            ...item,
+            subject: newSubject,
+            body: newBody
+          };
+        }
+        return item;
+      });
+
+      await persistSmsTemplates(updatedList);
+      renderSmsTemplateToolbar();
+      alert(`'${targetTpl.label}' 양식의 제목과 본문이 현재 입력창의 내용으로 저장되었습니다.`);
+    });
+  }
+
+  // '＋ 양식 추가' 버튼 클릭 시: 새 양식 등록 모달 호출
+  if (btnSmsAddTpl) {
+    btnSmsAddTpl.addEventListener("click", () => {
+      openSmsTemplateEditModal(null);
+    });
+  }
+
+  // '↺ 기본양식 복원' 버튼 클릭 시: 초기 4종 양식(공지 안내, 진료/예약 안내, 혜택/이벤트, 카톡 상담 안내)으로 초기화
+  if (btnSmsResetTpl) {
+    btnSmsResetTpl.addEventListener("click", async () => {
+      if (!confirm("문자메시지 양식을 초기 기본 4종('공지 안내', '진료/예약 안내', '혜택/이벤트', '카톡 상담 안내')으로 복원하시겠습니까?")) {
+        return;
+      }
+      const restored = cloneDefaultSmsTemplates();
+      activeSmsTemplateId = null;
+      await persistSmsTemplates(restored);
+      renderSmsTemplateToolbar();
+      alert("초기 기본 양식 4종이 모두 복원되었습니다.");
+    });
+  }
+
+  // 페이지 로드 시 저장된 문자 양식 목록 초기화 실행
+  loadSmsTemplatesFromStorage();
+
+  // 문자발송 탭: '체크한 회원 문자 발송' 메인 실행 버튼 이벤트 핸들러 (솔라피 SMS/LMS 연동)
+  const btnSmsSendSubmit = document.getElementById("btn-sms-send-submit");
+  if (btnSmsSendSubmit) {
+    btnSmsSendSubmit.addEventListener("click", async () => {
+      // 1. 체크된 수신 대상 회원 목록 추출
+      const targetUsers = [];
+      selectedSmsUserIds.forEach((uid) => {
+        const u = loadedUsersMap[uid];
+        if (u) {
+          const pInfo = parseSmsUserPhone(u.phone);
+          if (pInfo.isValid) {
+            targetUsers.push({
+              uid: u.id,
+              name: u.name || "회원",
+              cleanPhone: pInfo.clean,
+              formattedPhone: pInfo.formatted
+            });
+          }
+        }
+      });
+
+      if (targetUsers.length === 0) {
+        alert("문자를 발송할 회원을 아래 목록에서 먼저 체크해 주세요.");
+        return;
+      }
+
+      // 2. 문자 제목 및 본문 검증
+      const rawMessage = smsMessageTextarea ? smsMessageTextarea.value.trim() : "";
+      if (!rawMessage) {
+        alert("발송할 문자메시지 내용을 입력해 주세요.");
+        if (smsMessageTextarea) smsMessageTextarea.focus();
+        return;
+      }
+
+      const totalByte = calculateSmsByteLength(rawMessage);
+      if (totalByte > 2000) {
+        alert(`문자 용량이 최대 한도(2,000 Byte)를 초과했습니다. (현재: ${totalByte} Byte)\n내용을 조금 줄여주세요.`);
+        return;
+      }
+
+      const subjectInput = document.getElementById("sms-subject-input");
+      const subjectText = (subjectInput && subjectInput.value.trim()) ? subjectInput.value.trim() : "[IGPartners 안내]";
+      const msgModeLabel = totalByte <= 90 ? "SMS (단문)" : "LMS (장문)";
+
+      // 3. 발송 전 관리자 최종 확인
+      const previewRecipientText = targetUsers.length <= 3
+        ? targetUsers.map(t => `${t.name}(${t.formattedPhone})`).join(", ")
+        : `${targetUsers.slice(0, 3).map(t => `${t.name}(${t.formattedPhone})`).join(", ")} 외 ${targetUsers.length - 3}명`;
+
+      const confirmMsg = [
+        `선택하신 회원 ${targetUsers.length}명에게 문자를 발송하시겠습니까?`,
+        ``,
+        `• 발송 대상: ${previewRecipientText}`,
+        `• 발송 형태: ${msgModeLabel} (약 ${totalByte} Byte)`,
+        `• 문자 제목: ${subjectText}`
+      ].join("\n");
+
+      if (!confirm(confirmMsg)) return;
+
+      // 4. 발신번호 설정 조회 (Firestore settings/solapi 우선, 없으면 기본 업무폰 번호 사용)
+      let senderNumber = SOLAPI_SENDER_NUMBER;
+      try {
+        const solapiDocSnap = await getDoc(doc(db, "settings", "solapi"));
+        if (solapiDocSnap.exists() && solapiDocSnap.data().senderNumber) {
+          senderNumber = String(solapiDocSnap.data().senderNumber).replace(/[^0-9]/g, "");
+        }
+      } catch (e) {
+        console.warn("DB 발신번호 설정 조회 실패, 기본 업무폰 번호 사용:", e);
+      }
+
+      // 5. 발송 진행 상태 UI 활성화 및 버튼 잠금
+      const progressContainer = document.getElementById("sms-progress-container");
+      const progressText = document.getElementById("sms-progress-text");
+      const progressPercent = document.getElementById("sms-progress-percent");
+      const progressBar = document.getElementById("sms-progress-bar");
+
+      btnSmsSendSubmit.disabled = true;
+      btnSmsSendSubmit.dataset.sending = "true";
+      btnSmsSendSubmit.textContent = "⏳ 문자 발송 중...";
+
+      if (progressContainer) progressContainer.style.display = "block";
+      if (progressBar) progressBar.style.width = "0%";
+
+      let successCount = 0;
+      let failCount = 0;
+      const failDetails = [];
+
+      // 6. 각 수신자별로 #{이름} 치환 및 단문/장문 바이트 판별 후 솔라피 API 순차 발송
+      for (let i = 0; i < targetUsers.length; i++) {
+        const target = targetUsers[i];
+        const currentStep = i + 1;
+        const pct = Math.round((currentStep / targetUsers.length) * 100);
+
+        if (progressText) {
+          progressText.textContent = `문자 발송 진행 중... (${currentStep} / ${targetUsers.length}명 - ${target.name})`;
+        }
+        if (progressPercent) progressPercent.textContent = `${pct}%`;
+        if (progressBar) progressBar.style.width = `${pct}%`;
+
+        // 개인화 #{이름} 태그를 실제 회원 성명으로 치환
+        const personalizedText = rawMessage.replace(/#\{이름\}/g, target.name);
+        const personalizedBytes = calculateSmsByteLength(personalizedText);
+        const sendType = personalizedBytes <= 90 ? "SMS" : "LMS";
+
+        try {
+          const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
+          const messagePayload = {
+            to: target.cleanPhone,
+            from: senderNumber,
+            type: sendType,
+            text: personalizedText
+          };
+          if (sendType === "LMS") {
+            messagePayload.subject = subjectText;
+          }
+
+          const response = await fetch("https://api.solapi.com/messages/v4/send", {
+            method: "POST",
+            headers: {
+              "Authorization": authHeader,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: messagePayload })
+          });
+
+          const responseData = await response.json();
+          if (!response.ok) {
+            throw new Error(responseData.errorMessage || `HTTP ${response.status}`);
+          }
+          successCount++;
+        } catch (sendErr) {
+          console.error(`회원 문자 발송 실패 (${target.name} / ${target.cleanPhone}):`, sendErr);
+          failCount++;
+          failDetails.push(`${target.name}(${target.formattedPhone}): ${sendErr.message}`);
+        }
+      }
+
+      // 7. 발송 완료 후 UI 복원 및 결과 리포트 알림
+      delete btnSmsSendSubmit.dataset.sending;
+      btnSmsSendSubmit.disabled = false;
+      updateSmsSelectionUI();
+
+      setTimeout(() => {
+        if (progressContainer) progressContainer.style.display = "none";
+      }, 1500);
+
+      let resultAlert = `✅ 문자 발송 처리가 완료되었습니다.\n\n• 발송 성공: ${successCount}명\n• 발송 실패: ${failCount}명`;
+      if (failCount > 0) {
+        resultAlert += `\n\n[실패 상세 내역]\n${failDetails.slice(0, 5).join("\n")}${failDetails.length > 5 ? `\n외 ${failDetails.length - 5}건` : ""}`;
+      }
+      alert(resultAlert);
+    });
+  }
+
   // --- 병원 관리 기능 추가 ---
   const seedClinics = [
     {
@@ -2920,13 +4367,34 @@ function initPage() {
         clinicCountBadge.textContent = `총 ${querySnapshot.docs.length}개 병원`;
       }
 
-      // 메모리에 이동 처리를 위한 객체 배열 보관
+      // 메모리에 이동 처리를 위한 객체 배열 보관 및 비어 있는 8개국어(ja, zh, th, lo, ne, id, si, bn) 자동 채움·동기화
+      const migrationPromises = [];
       querySnapshot.forEach((docSnap) => {
-        currentLoadedClinics.push({
+        const clinicObj = {
           id: docSnap.id,
           ...docSnap.data()
-        });
+        };
+        // 완전히 비어 있는 8개국어 필드만 한국어 원문 기반 번역 데이터로 보강 (러시아어·미얀마어 등 기존 언어는 보존)
+        const missingPatch = enrichClinicWithMissing8Langs(clinicObj);
+        if (Object.keys(missingPatch).length > 0) {
+          migrationPromises.push(
+            updateDoc(doc(db, "clinics", docSnap.id), missingPatch).catch((migErr) => {
+              console.warn(`병원(${clinicObj.name || docSnap.id}) 8개국어 자동 저장 예외:`, migErr);
+            })
+          );
+        }
+        currentLoadedClinics.push(clinicObj);
       });
+
+      // 누락된 8개국어 번역 필드가 DB에 새로 기록된 경우 로컬 병원 캐시를 무효화하여 최신 상태 유지
+      if (migrationPromises.length > 0) {
+        Promise.all(migrationPromises).then(() => {
+          try {
+            localStorage.removeItem("cached_clinics_list");
+            console.log(`🌐 총 ${migrationPromises.length}개 병원의 비어 있던 8개국어 번역 데이터가 Firestore에 자동 저장되었습니다.`);
+          } catch (e) {}
+        });
+      }
 
       currentLoadedClinics.forEach((clinic, index) => {
         const docId = clinic.id;

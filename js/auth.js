@@ -1154,6 +1154,7 @@ document.addEventListener("DOMContentLoaded", () => {
       hasClinics: false,
       hasRoles: false,
       hasPermissions: false,
+      hasSms: false,
       hasStats: false, 
       hasAds: false,
       hasPartners: false,
@@ -1174,6 +1175,7 @@ document.addEventListener("DOMContentLoaded", () => {
       hasClinics: isSuper,
       hasRoles: isSuper,
       hasPermissions: isSuper,
+      hasSms: isSuper,
       hasStats: isSuper,
       hasAds: isSuper,
       hasPartners: isSuper,
@@ -1187,12 +1189,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const roleDocSnap = await getDoc(roleDocRef);
       if (roleDocSnap.exists()) {
         const roleData = roleDocSnap.data();
+        // 문자발송 탭 접근 권한(hasSms)을 포함하여 등급별 권한 객체를 매핑함
         perms = {
           isAdmin: isSuper || (roleData.isAdmin !== undefined ? roleData.isAdmin : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
           hasReservations: isSuper || (roleData.hasReservations !== undefined ? roleData.hasReservations : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
           hasClinics: isSuper || (roleData.hasClinics !== undefined ? roleData.hasClinics : ["admin", "admin_user"].includes(userRole)),
           hasRoles: isSuper || (roleData.hasRoles !== undefined ? roleData.hasRoles : false),
           hasPermissions: isSuper || (roleData.hasPermissions !== undefined ? roleData.hasPermissions : false),
+          hasSms: isSuper || (roleData.hasSms !== undefined ? roleData.hasSms : ["admin", "admin_user"].includes(userRole)),
           hasStats: isSuper || (roleData.hasStats !== undefined ? roleData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
           hasAds: isSuper || (roleData.hasAds !== undefined ? roleData.hasAds : false),
           hasPartners: isSuper || (roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || false)),
@@ -1210,6 +1214,7 @@ document.addEventListener("DOMContentLoaded", () => {
           hasClinics: isSuper || isLegacyAdmin,
           hasRoles: isSuper,
           hasPermissions: isSuper,
+          hasSms: isSuper || isLegacyAdmin,
           hasStats: isSuper || isLegacyAdmin || isLegacyManager,
           hasAds: isSuper,
           hasPartners: isSuper,
@@ -1356,12 +1361,14 @@ document.addEventListener("DOMContentLoaded", () => {
           if (roleSnap.exists()) {
             const rData = roleSnap.data();
             roleLabel = rData.label || roleLabel;
+            // 문자발송 권한(hasSms) 변경 사항을 실시간 감지하여 세션 스토리지 및 이벤트로 즉시 브로드캐스트함
             fullPermissions = {
               isAdmin: isSuper || (rData.isAdmin !== undefined ? rData.isAdmin : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
               hasReservations: isSuper || (rData.hasReservations !== undefined ? rData.hasReservations : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
               hasClinics: isSuper || (rData.hasClinics !== undefined ? rData.hasClinics : ["admin", "admin_user"].includes(activeRole)),
               hasRoles: isSuper || (rData.hasRoles !== undefined ? rData.hasRoles : false),
               hasPermissions: isSuper || (rData.hasPermissions !== undefined ? rData.hasPermissions : false),
+              hasSms: isSuper || (rData.hasSms !== undefined ? rData.hasSms : ["admin", "admin_user"].includes(activeRole)),
               hasStats: isSuper || (rData.hasStats !== undefined ? rData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
               hasAds: isSuper || (rData.hasAds !== undefined ? rData.hasAds : false),
               hasPartners: isSuper || (rData.hasPartners !== undefined ? rData.hasPartners : (rData.hasAds || false)),
@@ -1378,6 +1385,7 @@ document.addEventListener("DOMContentLoaded", () => {
               hasClinics: isSuper || isLegacyAdmin,
               hasRoles: isSuper,
               hasPermissions: isSuper,
+              hasSms: isSuper || isLegacyAdmin,
               hasStats: isSuper || isLegacyAdmin || isLegacyManager,
               hasAds: isSuper,
               hasPartners: isSuper,

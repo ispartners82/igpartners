@@ -1,7 +1,9 @@
-import { db } from "./firebase-db.js?v=260930_7";
+import { db } from "./firebase-db.js?v=261112_4";
 // 성능 최적화: 병원 목록은 관리자가 수정할 때만 변경되므로 실시간 리스너(onSnapshot) 대신
 // getDocs 일회성 조회를 사용하여 불필요한 Firestore 연결 유지와 비용을 제거합니다.
 import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// 비어 있는 8개국어(일본어, 중국어, 태국어, 라오스어, 네팔어, 인도네시아어, 스리랑카어, 방글라데시어) 병원 번역 보강 헬퍼 모듈 임포트
+import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261112_4";
 
 /**
  * UI 정적 문자열 및 오류 알림을 관리하기 위한 다국어(I18n) 사전 정의
@@ -274,13 +276,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     clinicsData.forEach((clinic) => {
+      // 비어 있는 8개국어(ja, zh, th, lo, ne, id, si, bn) 필드가 있을 경우 사전 번역본으로 즉시 보강
+      enrichClinicWithMissing8Langs(clinic);
+
       // 언어에 맞는 병원 필드 동적 매핑 (다국어 전용 필드가 없으면 하위 호환을 위해 기본값 fallback)
       const clinicName = clinic[`name_${lang}`] || clinic.name || "";
       const clinicDesc = clinic[`desc_${lang}`] || clinic.desc || "";
       const clinicAddress = clinic[`address_${lang}`] || clinic.address || "";
 
-      // 진료과목 배지 HTML 구성 (다국어 진료과목 지원)
-      const deptBadges = (clinic[`depts_${lang}`] || clinic.depts || [])
+      // 진료과목 배지 HTML 구성 (다국어 진료과목 배열이 비어 있으면 기본 한국어 진료과목으로 폴백)
+      const deptsForLang = (Array.isArray(clinic[`depts_${lang}`]) && clinic[`depts_${lang}`].length > 0)
+        ? clinic[`depts_${lang}`]
+        : (clinic.depts || []);
+      const deptBadges = deptsForLang
         .map(dept => `<span class="dept-badge">${dept}</span>`)
         .join("");
 
@@ -344,7 +352,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const freshList = [];
       querySnapshot.forEach((docSnap) => {
-        freshList.push(docSnap.data());
+        // Firestore에서 조회된 각 병원 데이터에 비어 있는 8개국어 번역 데이터를 보강하여 캐시 및 렌더링에 반영
+        const clinicItem = { id: docSnap.id, ...docSnap.data() };
+        enrichClinicWithMissing8Langs(clinicItem);
+        freshList.push(clinicItem);
       });
 
       const freshDataStr = JSON.stringify(freshList);

@@ -21,8 +21,8 @@
   <link rel="icon" type="image/png" href="/img/logo.png?v=260918_5">
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261101_2) -->
-  <link rel="stylesheet" href="/css/style.css?v=261101_2">
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261112_4) -->
+  <link rel="stylesheet" href="/css/style.css?v=261112_4">
 </head>
 
 <body>
@@ -197,6 +197,8 @@
       <button id="tab-interpreters" class="tab-btn" style="display: none;">전문통역 관리</button>
       <button id="tab-users" class="tab-btn" style="display: none;">등급,권한 관리</button>
       <button id="tab-permissions" class="tab-btn" style="display: none;">회원 리스트</button>
+      <!-- 가입 회원 연락처 대상 선택형 문자메시지(SMS/LMS) 발송 전용 탭 버튼 -->
+      <button id="tab-sms" class="tab-btn" style="display: none;">문자발송</button>
     </div>
 
     <!-- 예약 내역 관리 탭 콘텐츠 -->
@@ -393,6 +395,8 @@
                     <!-- 전문통역관리 권한 스위치 열을 등급권한관리 바로 오른쪽으로 추가 배치 -->
                     <th>전문통역관리</th>
                     <th>회원리스트</th>
+                    <!-- 회원리스트 오른쪽 옆에 신규 문자발송 권한 스위치 컬럼 추가 -->
+                    <th>문자발송</th>
                     <th>예약통계</th>
                     <!-- 예약통계 오른쪽 옆에 신규 커뮤니티설정 컬럼 추가 -->
                     <th>커뮤니티설정</th>
@@ -401,7 +405,7 @@
                 </thead>
                 <tbody id="role-list">
                   <tr>
-                    <td colspan="13" class="table-loading">등급 데이터를 불러오는 중입니다...</td>
+                    <td colspan="14" class="table-loading">등급 데이터를 불러오는 중입니다...</td>
                   </tr>
                 </tbody>
               </table>
@@ -476,6 +480,192 @@
         </div>
         <!-- 회원 목록 전용 페이지네이션 컨트롤러 영역 -->
         <div id="users-pagination" class="admin-pagination-container"></div>
+      </main>
+    </div>
+
+    <!-- 가입 회원 대상 문자발송 전용 탭 콘텐츠 -->
+    <div id="content-sms" class="admin-tab-content" style="display: none;">
+      <!-- 상단 국가(선호언어)별 회원수 및 전체회원수 통계 타일 그리드 영역 (클릭 시 국가별 발송 대상 즉시 필터링) -->
+      <div id="admin-sms-lang-stats" class="admin-lang-stats" style="margin-bottom: 1.5rem;"></div>
+
+      <!-- 스마트 문자메시지 작성 및 발송 컨트롤 패널 (2단 그리드 카드 레이아웃) -->
+      <section class="sms-composer-panel">
+        <!-- 좌측 카드: 선택된 발송 대상자 현황 및 일괄 제어 영역 -->
+        <div class="sms-recipient-card">
+          <div class="sms-card-header">
+            <div class="sms-card-title-group">
+              <span class="sms-card-icon">🎯</span>
+              <h3>문자 발송 대상 선택 현황</h3>
+            </div>
+            <span id="sms-selected-count-badge" class="sms-count-badge">0명 선택됨</span>
+          </div>
+
+          <p class="sms-card-guide">
+            상단 국가 타일이나 하단 목록의 체크박스를 클릭하여 문자를 보낼 회원을 선택해 주세요.
+          </p>
+
+          <!-- 선택 대상 일괄 제어 및 연락처 복사 퀵 버튼 그룹 -->
+          <div class="sms-quick-actions">
+            <button type="button" id="btn-sms-select-filtered" class="sms-action-chip primary" title="현재 필터링된 회원 전체를 일괄 체크합니다">
+              ✅ 현재 목록 전체 선택
+            </button>
+            <button type="button" id="btn-sms-clear-selection" class="sms-action-chip danger" title="체크된 모든 회원의 선택을 해제합니다">
+              ✕ 전체 선택 해제
+            </button>
+            <button type="button" id="btn-sms-copy-phones" class="sms-action-chip secondary" title="선택된 회원의 전화번호를 클립보드에 일괄 복사합니다">
+              📋 선택 연락처 복사
+            </button>
+          </div>
+
+          <!-- 선택된 수신자 태그(Chip) 실시간 미리보기 스크롤 영역 -->
+          <div id="sms-selected-chips" class="sms-selected-chips-box">
+            <div class="sms-chips-empty">
+              아래 회원 목록에서 국가(선호언어) 앞의 체크박스를 선택하면 이곳에 발송 대상자가 표시됩니다.
+            </div>
+          </div>
+
+          <!-- 발신 번호 정보 안내 바 -->
+          <div class="sms-sender-info-bar">
+            <span class="sender-label">📞 발신번호</span>
+            <span id="sms-sender-number-display" class="sender-value">010-4844-4115 (고객 회신 수신 가능 업무폰)</span>
+          </div>
+        </div>
+
+        <!-- 우측 카드: 문자 제목/본문 작성, 치환 변수, 템플릿 및 발송 실행 영역 -->
+        <div class="sms-editor-card">
+          <div class="sms-card-header">
+            <div class="sms-card-title-group">
+              <span class="sms-card-icon">✉️</span>
+              <h3>문자메시지 내용 작성</h3>
+            </div>
+            <span id="sms-byte-badge" class="sms-byte-badge sms-mode">SMS 단문 · 0 / 90 Byte</span>
+          </div>
+
+          <!-- 개인화 치환 태그 및 편집·삭제·추가가 가능한 빠른 문구 양식 툴바 영역 -->
+          <div class="sms-template-toolbar">
+            <button type="button" id="btn-sms-insert-name" class="sms-tpl-btn highlight" title="클릭 시 #{이름} 태그가 삽입되며 발송 시 각 회원의 실제 이름으로 자동 변환됩니다">
+              🏷️ #{이름} 자동치환 넣기
+            </button>
+            <!-- 동적으로 렌더링되며 개별 편집(✏️) 및 삭제(✕) 버튼을 포함하는 문구 양식 칩 목록 컨테이너 -->
+            <div id="sms-template-list" class="sms-template-list"></div>
+            <!-- 선택된 양식에 현재 아래 입력창 내용을 즉시 덮어쓰기 저장하거나 새 양식을 추가·복원하는 제어 버튼 그룹 -->
+            <div class="sms-template-manage-bar">
+              <button type="button" id="btn-sms-save-current-tpl" class="sms-tpl-action-btn save-current" style="display: none;" title="현재 아래 제목과 본문 입력창에 작성된 내용을 선택된 양식에 즉시 덮어쓰기 저장합니다">
+                💾 현재 내용으로 양식 저장
+              </button>
+              <button type="button" id="btn-sms-add-tpl" class="sms-tpl-action-btn add-new" title="자주 사용하는 새로운 문자메시지 양식 버튼을 추가합니다">
+                ＋ 양식 추가
+              </button>
+              <button type="button" id="btn-sms-reset-tpl" class="sms-tpl-action-btn reset-default" title="초기 기본 양식 4종(공지안내, 진료/예약안내, 혜택/이벤트, 카톡상담안내)으로 복원합니다">
+                ↺ 기본양식 복원
+              </button>
+            </div>
+          </div>
+
+          <!-- 문자 제목 입력창 (LMS 장문 전환 시 적용) -->
+          <div class="sms-input-group">
+            <input type="text" id="sms-subject-input" class="sms-subject-input"
+              placeholder="문자 제목 (장문 LMS 발송 시 적용 · 미입력 시 [IGPartners 안내] 자동 적용)"
+              value="[IGPartners 안내]">
+          </div>
+
+          <!-- 문자 본문 입력 텍스트에어리어 -->
+          <div class="sms-input-group" style="flex: 1; display: flex; flex-direction: column;">
+            <textarea id="sms-message-textarea" class="sms-message-textarea" rows="5"
+              placeholder="발송할 문자 내용을 입력해 주세요.&#10;팁: 상단의 [#{이름} 자동치환 넣기] 버튼을 누르면 각 회원의 성명으로 자동 변환되어 발송됩니다."></textarea>
+          </div>
+
+          <!-- 실시간 발송 진행률 표시 영역 (발송 중에만 노출) -->
+          <div id="sms-progress-container" class="sms-progress-container" style="display: none;">
+            <div class="sms-progress-header">
+              <span id="sms-progress-text">문자 발송 진행 중... (0 / 0)</span>
+              <span id="sms-progress-percent">0%</span>
+            </div>
+            <div class="sms-progress-track">
+              <div id="sms-progress-bar" class="sms-progress-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- 하단 발송 실행 버튼 바 -->
+          <div class="sms-submit-bar">
+            <span class="sms-submit-hint">* 90Byte 초과 시 장문(LMS)으로 자동 전환되어 끊김 없이 발송됩니다.</span>
+            <button type="button" id="btn-sms-send-submit" class="btn-sms-send-main">
+              📨 체크한 회원 문자 발송 (0명)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 하단 가입 회원 체크박스 선택 테이블 영역 -->
+      <main class="admin-main">
+        <div class="table-controls"
+          style="margin-bottom: 1.5rem; justify-content: space-between; align-items: center; display: flex; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <h2 style="margin: 0;">문자 발송 대상 회원 리스트</h2>
+            <span id="sms-table-summary-badge" class="sms-summary-pill">조회 0명 · 선택 0명</span>
+          </div>
+
+          <!-- 우측 조작계: 새로고침 -> 등급별 보기 -> 페이지당 노출 개수 -> 이름/연락처 검색창 -->
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button id="btn-refresh-sms-users" class="btn-refresh" style="height: 36px;">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor"
+                  d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+              </svg>
+              새로고침
+            </button>
+            <!-- 등급별 보기 필터 드롭다운 -->
+            <select id="select-sms-role-filter" class="admin-select-limit"
+              style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0 1rem; height: 36px; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+              <option value="all">등급별 보기 (전체)</option>
+            </select>
+            <!-- 페이지당 노출 인원수 제한 드롭다운 (문자 일괄 선택 편의를 위해 전체 보기 옵션 포함) -->
+            <select id="select-limit-sms-users" class="admin-select-limit"
+              style="background: #0c1020; color: #00f3ff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0 1rem; height: 36px; font-weight: bold; cursor: pointer; outline: none; font-size: 0.9rem; transition: border-color 0.3s;">
+              <option value="10">10개씩 보기</option>
+              <option value="20" selected>20개씩 보기</option>
+              <option value="50">50개씩 보기</option>
+              <option value="100">100개씩 보기</option>
+              <option value="500">전체 보기 (최대 500명)</option>
+            </select>
+            <!-- 회원 이름 또는 연락처 검색 입력창 및 검색 실행 버튼 -->
+            <div style="display: flex; gap: 4px; align-items: center; flex-wrap: nowrap;">
+              <input type="text" id="input-search-sms-users" placeholder="이름 또는 연락처 검색..."
+                style="background: #0c1020; color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.4); border-radius: 8px; padding: 0 1rem; height: 36px; font-size: 0.9rem; width: 200px; max-width: 100%; outline: none; transition: border-color 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); box-sizing: border-box;">
+              <button type="button" id="btn-search-sms-users"
+                style="background: #00f3ff; color: #0c1020; border: none; border-radius: 8px; padding: 0 1rem; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; height: 36px; white-space: nowrap;">검색</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 문자발송 대상 선택 테이블: 국가(선호언어) 앞 체크박스 신설 및 불필요한 이메일/등급관리/삭제 열 제거 -->
+        <div class="table-responsive">
+          <table class="admin-table sms-target-table">
+            <thead>
+              <tr>
+                <th class="sms-col-check">
+                  <label class="sms-checkbox-wrapper" title="현재 페이지 회원 전체 선택/해제">
+                    <input type="checkbox" id="sms-check-all-page" class="sms-checkbox-input">
+                    <span class="sms-checkbox-custom"></span>
+                  </label>
+                </th>
+                <th>국가(선호언어)</th>
+                <th>이름</th>
+                <th>연락처</th>
+                <th>가입일</th>
+                <th>현재 등급</th>
+                <th>상세보기</th>
+              </tr>
+            </thead>
+            <tbody id="sms-user-list">
+              <tr>
+                <td colspan="7" class="table-loading">회원 데이터를 불러오는 중입니다...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 문자발송 회원 목록 전용 페이지네이션 컨트롤러 영역 -->
+        <div id="sms-users-pagination" class="admin-pagination-container"></div>
       </main>
     </div>
 
@@ -1274,10 +1464,10 @@
     </div>
   </div>
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261101_2) -->
-  <script type="module" src="/js/navigation.js?v=261101_2"></script>
-  <script type="module" src="/js/admin.js?v=261101_2"></script>
-  <script type="module" src="/js/auth.js?v=261101_2"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261112_4) -->
+  <script type="module" src="/js/navigation.js?v=261112_4"></script>
+  <script type="module" src="/js/admin.js?v=261112_4"></script>
+  <script type="module" src="/js/auth.js?v=261112_4"></script>
 </body>
 
 </html>
