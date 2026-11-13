@@ -1,8 +1,8 @@
-import { db, auth } from "./firebase-db.js?v=261112_4";
-// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=261112_4)
-import { LANG_LIST } from "./navigation.js?v=261112_4";
+import { db, auth } from "./firebase-db.js?v=261113_1";
+// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트 (버전: v=261113_1)
+import { LANG_LIST } from "./navigation.js?v=261113_1";
 // 비어 있는 8개국어(ja, zh, th, lo, ne, id, si, bn) 병원 번역 보강 헬퍼 모듈 임포트
-import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261112_4";
+import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261113_1";
 import { 
   collection, 
   query, 
@@ -1861,10 +1861,23 @@ function initPage() {
     selectRoleFilterEl.value = currentRoleFilter;
   }
 
-  // 국가 식별 코드(ISO-2)를 15개 공식 지원 언어 코드로 매핑하기 위한 호환 맵
+  // 국가 식별 코드(ISO-2), 로케일 코드 및 국문/영문 국가명을 15개 공식 지원 언어 코드로 매핑하기 위한 호환 맵
   const USER_COUNTRY_TO_LANG_MAP = {
-    kr: "ko", jp: "ja", vn: "vi", us: "en", gb: "en", cn: "zh", ru: "ru",
-    mm: "my", kh: "km", mn: "mn", th: "th", la: "lo", np: "ne", id: "id", lk: "si", bd: "bn"
+    kr: "ko", "ko-kr": "ko", kor: "ko", korea: "ko", "한국": "ko", "대한민국": "ko", "한국어": "ko",
+    jp: "ja", "ja-jp": "ja", jpn: "ja", japan: "ja", "일본": "ja", "일본어": "ja",
+    vn: "vi", "vi-vn": "vi", vnm: "vi", vietnam: "vi", "베트남": "vi", "베트남어": "vi",
+    us: "en", gb: "en", uk: "en", "en-us": "en", "en-gb": "en", usa: "en", english: "en", "미국": "en", "영어": "en",
+    cn: "zh", "zh-cn": "zh", "zh-tw": "zh", chn: "zh", china: "zh", "중국": "zh", "중국어": "zh",
+    ru: "ru", "ru-ru": "ru", rus: "ru", russia: "ru", "러시아": "ru", "러시아어": "ru",
+    mm: "my", "my-mm": "my", mmr: "my", myanmar: "my", "미얀마": "my", "미얀마어": "my",
+    kh: "km", "km-kh": "km", khm: "km", cambodia: "km", "캄보디아": "km", "캄보디아어": "km",
+    mn: "mn", "mn-mn": "mn", mng: "mn", mongolia: "mn", "몽골": "mn", "몽골어": "mn",
+    th: "th", "th-th": "th", tha: "th", thailand: "th", "태국": "th", "태국어": "th",
+    la: "lo", "lo-la": "lo", lao: "lo", laos: "lo", "라오스": "lo", "라오스어": "lo",
+    np: "ne", "ne-np": "ne", npl: "ne", nepal: "ne", "네팔": "ne", "네팔어": "ne",
+    id: "id", "id-id": "id", idn: "id", indonesia: "id", "인도네시아": "id", "인도네시아어": "id",
+    lk: "si", "si-lk": "si", lka: "si", srilanka: "si", "스리랑카": "si", "스리랑카어": "si",
+    bd: "bn", "bn-bd": "bn", bgd: "bn", bangladesh: "bn", "방글라데시": "bn", "방글라데시어": "bn"
   };
 
   /**
@@ -1877,9 +1890,13 @@ function initPage() {
     if (!user) return "ko";
     // countryLanguage, country, lang 필드를 순차적으로 확인하여 소문자 및 공백 제거 정규화
     let lKey = String(user.countryLanguage || user.country || user.lang || "ko").toLowerCase().trim();
-    // 국가 코드(ISO-2) 형태로 저장된 경우 대응하는 언어 코드로 변환
+    // 국가 코드(ISO-2) 또는 국문/영문 국가명 형태로 저장된 경우 대응하는 언어 코드로 변환
     if (USER_COUNTRY_TO_LANG_MAP[lKey]) {
       lKey = USER_COUNTRY_TO_LANG_MAP[lKey];
+    } else if (lKey.includes("-") || lKey.includes("_")) {
+      // 하이픈(-) 또는 언더바(_) 로케일 형식(예: vi-VN, ko_KR)인 경우 앞자리 언어/국가 코드 추출 후 재매핑
+      const basePart = lKey.split(/[-_]/)[0];
+      lKey = USER_COUNTRY_TO_LANG_MAP[basePart] || basePart;
     }
     // 15개 지원 언어 목록에 존재하면 해당 코드 반환, 없으면 기본 한국어('ko')로 분류
     return SUPPORTED_COUNTRY_LANGS[lKey] ? lKey : "ko";
@@ -2085,9 +2102,8 @@ function initPage() {
         </div>
       `;
 
-      // 회원의 기존 국가(선호언어) 키 식별 (countryLanguage, country, lang 순차 호환 및 ISO 국가코드 매핑 지원)
-      const rawUserLangKey = String(userData.countryLanguage || userData.country || userData.lang || "ko").toLowerCase().trim();
-      const userLangKey = USER_COUNTRY_TO_LANG_MAP[rawUserLangKey] || rawUserLangKey;
+      // 회원의 기존 국가(선호언어) 키 식별 (상단 통계 타일 및 필터링 함수와 100% 동일한 정규화 함수 사용)
+      const userLangKey = normalizeUserLangKey(userData);
       const matchedLangInfo = SUPPORTED_COUNTRY_LANGS[userLangKey];
       const countryLangDisplay = matchedLangInfo ? `${matchedLangInfo.flag} ${matchedLangInfo.label}` : (userData.countryLanguage ? `🌐 ${userData.countryLanguage}` : "-");
 
@@ -2188,10 +2204,10 @@ function initPage() {
       bn: { flag: "🇧🇩", label: "방글라데시어", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
     };
 
-    // 1. 한국어 왼쪽에 '전체회원수' 타일을 먼저 추가 (클릭 시 전체 회원 보기 전환용 data-user-lang="all" 및 활성 상태 부여)
+    // 1. 한국어 왼쪽에 '전체회원수' 타일을 먼저 추가 (비활성 시 다른 언어 카드와 동일한 기본 테두리 투명도를 적용하고, active일 때만 빛나도록 설정)
     const isAllActive = currentUserLangFilter === "all" ? "active" : "";
     let html = `
-      <div class="lang-stat-tile ${isAllActive}" data-user-lang="all" title="전체 회원 보기" style="--tile-accent: #00f3ff; color: #00f3ff; border-color: rgba(0, 243, 255, 0.4); background: rgba(0, 243, 255, 0.05);">
+      <div class="lang-stat-tile ${isAllActive}" data-user-lang="all" title="전체 회원 보기" style="--tile-accent: #00f3ff; color: #00f3ff; border-color: rgba(0, 243, 255, 0.2);">
         <span class="lang-tile-title" style="color: #00f3ff; font-weight: 700;">👥 전체회원수</span>
         <span class="lang-tile-value" style="color: #00f3ff; font-weight: 800;">${totalCount}<small>명</small></span>
       </div>
@@ -3012,9 +3028,10 @@ function initPage() {
       bn: { flag: "🇧🇩", label: "방글라데시어", color: "#d946ef", border: "rgba(217, 70, 239, 0.2)" }
     };
 
+    // 한국어 왼쪽에 '전체회원수' 타일을 먼저 추가 (비활성 시 다른 언어 카드와 동일한 기본 테두리 투명도를 적용하고, active일 때만 빛나도록 설정)
     const isAllActive = currentSmsLangFilter === "all" ? "active" : "";
     let html = `
-      <div class="lang-stat-tile ${isAllActive}" data-sms-lang="all" title="전체 회원 보기" style="--tile-accent: #00f3ff; color: #00f3ff; border-color: rgba(0, 243, 255, 0.4); background: rgba(0, 243, 255, 0.05);">
+      <div class="lang-stat-tile ${isAllActive}" data-sms-lang="all" title="전체 회원 보기" style="--tile-accent: #00f3ff; color: #00f3ff; border-color: rgba(0, 243, 255, 0.2);">
         <span class="lang-tile-title" style="color: #00f3ff; font-weight: 700;">👥 전체회원수</span>
         <span class="lang-tile-value" style="color: #00f3ff; font-weight: 800;">${totalCount}<small>명</small></span>
       </div>
@@ -3057,10 +3074,12 @@ function initPage() {
       countBadge.textContent = `${selectedCount}명 선택됨`;
     }
 
-    // 2. 테이블 상단 조회/선택 요약 배지 업데이트
+    // 2. 테이블 상단 조회/선택 요약 배지 업데이트 (선택된 언어 필터 라벨을 함께 표기하여 필터링 상태를 직관적으로 안내)
     const summaryBadge = document.getElementById("sms-table-summary-badge");
     if (summaryBadge) {
-      summaryBadge.textContent = `조회 ${cachedSmsFilteredUsers.length}명 · 선택 ${selectedCount}명`;
+      const activeLangInfo = currentSmsLangFilter !== "all" ? SUPPORTED_COUNTRY_LANGS[currentSmsLangFilter] : null;
+      const filterPrefix = activeLangInfo ? `${activeLangInfo.flag} ${activeLangInfo.label} 조회` : "전체 조회";
+      summaryBadge.textContent = `${filterPrefix} ${cachedSmsFilteredUsers.length}명 · 선택 ${selectedCount}명`;
     }
 
     // 3. 우측 하단 발송 실행 버튼 텍스트 업데이트
@@ -3538,11 +3557,16 @@ function initPage() {
     });
   }
 
-  // 문자발송 탭: '현재 목록 전체 선택' 버튼 클릭 시 현재 필터링된 모든 유효 연락처 회원을 일괄 선택
+  // 문자발송 탭: '현재 목록 전체 선택' 버튼 클릭 시 현재 필터링된 목록(cachedSmsFilteredUsers)의 유효 연락처 회원만 정확히 일괄 선택
   const btnSmsSelectFiltered = document.getElementById("btn-sms-select-filtered");
   if (btnSmsSelectFiltered) {
     btnSmsSelectFiltered.addEventListener("click", () => {
-      const targetList = cachedSmsFilteredUsers.length > 0 ? cachedSmsFilteredUsers : allLoadedUsers;
+      const targetList = cachedSmsFilteredUsers;
+      if (!targetList || targetList.length === 0) {
+        alert("현재 선택된 국가 또는 검색 조건에 해당하는 회원이 없습니다.");
+        return;
+      }
+
       let addedCount = 0;
       targetList.forEach((u) => {
         if (parseSmsUserPhone(u.phone).isValid) {
