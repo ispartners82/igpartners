@@ -37,8 +37,8 @@
   <link rel="icon" type="image/png" href="/img/logo.png?v=260918_5">
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261002_5) -->
-  <link rel="stylesheet" href="css/style.css?v=261002_5">
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261116_1) -->
+  <link rel="stylesheet" href="css/style.css?v=261116_1">
 </head>
 
 <body style="display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: flex-start;">
@@ -98,42 +98,6 @@
             <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
-          <script>
-            /* HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함 */
-            (function () {
-              try {
-                var c = sessionStorage.getItem("auth_user_cache");
-                var authUser = document.getElementById("auth-user");
-                var btnLogin = document.getElementById("btn-login");
-                if (c) {
-                  if (authUser) authUser.style.display = "flex";
-                  var u = JSON.parse(c);
-                  var nameEl = document.getElementById("user-name");
-                  var photoEl = document.getElementById("user-photo");
-                  if (nameEl && u.displayName) nameEl.textContent = u.displayName;
-                  if (photoEl && u.photoURL) photoEl.src = u.photoURL;
-
-                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
-                  if (p) {
-                    var perm = JSON.parse(p);
-                    if (perm && perm.permissions) {
-                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
-                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
-                      var adm = document.getElementById("btn-admin-dashboard");
-                      if (adm) adm.style.display = isAdm ? "inline-block" : "none";
-                      var st = document.getElementById("btn-stats-dashboard");
-                      if (st) st.style.display = isSt ? "inline-block" : "none";
-                    }
-                  }
-                } else {
-                  if (btnLogin) {
-                    btnLogin.style.display = "block";
-                    btnLogin.disabled = false;
-                  }
-                }
-              } catch (e) { }
-            })();
-          </script>
         </div>
 
         <!-- 모바일 상단 2단 가로 탭 바 (시안 A: 글자 버튼 - 순서: 홈, 커뮤니티, 진료예약, 전문통역, 제공서비스, 협력업체, 회사소개) -->
@@ -149,30 +113,6 @@
           <a href="/admin.html" id="quick-btn-admin-dashboard" class="quick-icon-btn" style="display: none;" title="관리자">👑 관리자</a>
           <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;" title="예약통계">📊 예약통계</a>
           <button id="quick-btn-login" class="quick-icon-btn" title="로그인">로그인</button>
-          <script>
-            (function(){
-              try {
-                var c = sessionStorage.getItem("auth_user_cache");
-                if (c) {
-                  var u = JSON.parse(c);
-                  document.getElementById("quick-btn-login").style.display = "none";
-                  document.getElementById("quick-btn-my-reservations").style.display = "inline-flex";
-                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
-                  if (p) {
-                    var perm = JSON.parse(p);
-                    if (perm && perm.permissions) {
-                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
-                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
-                      var qAdm = document.getElementById("quick-btn-admin-dashboard");
-                      if (qAdm) qAdm.style.display = isAdm ? "inline-flex" : "none";
-                      var qSt = document.getElementById("quick-btn-stats-dashboard");
-                      if (qSt) qSt.style.display = isSt ? "inline-flex" : "none";
-                    }
-                  }
-                }
-              } catch(e){}
-            })();
-          </script>
         </div>
 
         <!-- 모바일 화면 전용 햄버거 메뉴 토글 버튼 -->
@@ -183,6 +123,8 @@
         </button>
       </div>
     </nav>
+    <!-- 공통 헤더 인증 캐시 즉시 반영 스크립트 -->
+    <script src="/js/header-init.js?v=261116_1"></script>
   </header>
 
   <!-- SPA 동적 뷰 전환 전용 메인 통일 컨테이너 - 이 상위의 global-header는 1ms도 파괴되지 않고 부동 유지됨 -->
@@ -242,34 +184,10 @@
   <!-- 유지보수 용이성을 위해 푸터 내용을 공통 JS(navigation.js)에서 동적 주입하도록 구조 개선 -->
   <footer id="global-footer" class="global-footer" style="width: 100%; margin-top: auto;"></footer>
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261002_5) -->
-  <script type="module" src="/js/navigation.js?v=261002_5"></script>
-  <script type="module" src="/js/auth.js?v=261002_5"></script>
-  <script type="module" src="/js/main.js?v=261002_5"></script>
-
-  <!-- 구글 로그인 유도 안내 모달 팝업 - 다국어 편의성을 위해 한국어와 영어를 병기하고 로그인 버튼 내 베트남어를 제거함 -->
-  <div id="login-required-modal" class="modal-backdrop" style="display: none;">
-    <div class="modal-content" style="max-width: 450px;">
-      <div class="modal-header">
-        <h2>🔒 로그인 필요<br><span style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); font-weight: 500;">Login Required</span></h2>
-        <button id="btn-close-login-modal-x" class="modal-close-x">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 2rem; text-align: center;">
-        <p style="font-size: 1.05rem; color: #ffffff; font-weight: 700; margin-bottom: 0.8rem; line-height: 1.5;">
-          이 서비스는 구글 로그인이 필요합니다.<br>
-          <span style="font-size: 0.95rem; color: rgba(255,255,255,0.8); font-weight: 500;">This service requires Google Login.</span>
-        </p>
-        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin: 0;">
-          예약 신청 및 내역 확인을 위해 구글 로그인을 진행해주세요.<br>
-          <span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Please proceed with Google Login to request or check reservations.</span>
-        </p>
-      </div>
-      <div class="modal-footer" style="gap: 0.75rem; justify-content: center; padding: 1.2rem 2rem;">
-        <button id="btn-close-login-modal" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 100px;">닫기 (Close)</button>
-        <button id="btn-trigger-login" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1.5rem; min-width: 120px; background: linear-gradient(135deg, #4f8ff7 0%, #a5b4fc 100%);">로그인 (Login)</button>
-      </div>
-    </div>
-  </div>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261116_1) -->
+  <script type="module" src="/js/navigation.js?v=261116_1"></script>
+  <script type="module" src="/js/auth.js?v=261116_1"></script>
+  <script type="module" src="/js/main.js?v=261116_1"></script>
 </body>
 
 </html>

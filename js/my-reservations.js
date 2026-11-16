@@ -1,4 +1,6 @@
-import { db, auth } from "./firebase-db.js?v=260930_7";
+import { db, auth } from "./firebase-db.js?v=261116_1";
+import { escapeHtml, formatFirestoreDate } from "./common-utils.js?v=261116_1";
+import { LANG_LABELS } from "./lang-config.js?v=261116_1";
 import { 
   collection, 
   query, 
@@ -21,6 +23,7 @@ function initPage() {
 
   let unsubscribe = null;
   let currentUser = null;
+  let currentRenderedItems = [];
 
   // 통계 업데이트
   function updateStats(total, pending, confirmed, cancelled) {
@@ -32,6 +35,7 @@ function initPage() {
 
   // 예약 렌더링
   function renderReservations(items) {
+    currentRenderedItems = Array.isArray(items) ? items : [];
     reservationList.innerHTML = "";
 
     let totalCount = 0;
@@ -39,13 +43,13 @@ function initPage() {
     let confirmedCount = 0;
     let cancelledCount = 0;
 
-    if (items.length === 0) {
+    if (currentRenderedItems.length === 0) {
       reservationList.innerHTML = `<tr><td colspan="15" class="table-empty">신청하신 예약 내역이 없습니다.</td></tr>`;
       updateStats(0, 0, 0, 0);
       return;
     }
 
-    items.forEach((data) => {
+    currentRenderedItems.forEach((data) => {
       const docId = data.id;
 
       totalCount++;
@@ -54,51 +58,24 @@ function initPage() {
       else if (data.status === "cancelled") cancelledCount++;
 
       const tr = document.createElement("tr");
-      tr.className = `status-${data.status}`;
+      tr.className = `status-${escapeHtml(data.status || "pending")}`;
 
       // 접수시간 포맷
-      let dateStr = "-";
-      if (data.createdAt) {
-        const jsDate = typeof data.createdAt.toDate === "function"
-          ? data.createdAt.toDate()
-          : new Date(data.createdAt);
+      const dateStr = formatFirestoreDate(data.createdAt, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
 
-        dateStr = jsDate.toLocaleString("ko-KR", {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit"
-        });
-      }
+      // 공통 언어 라벨 사전(LANG_LABELS) 참조 및 XSS 이스케이프 처리
+      const displayLang = LANG_LABELS[data.lang] || (data.lang ? `🌐 ${escapeHtml(data.lang)}` : "-");
 
-      // 예약 진행 시 선택한 언어 코드에 대응하는 언어명 표기 매핑 사전
-      const langLabels = {
-        "vi": "🇻🇳 베트남어 (Vietnamese)",
-        "ko": "🇰🇷 한국어 (Korean)",
-        "en": "🇺🇸 영어 (English)",
-        "ja": "🇯🇵 일본어 (Japanese)",
-        "zh": "🇨🇳 중국어 (Chinese)",
-        "ru": "🇷🇺 러시아어 (Russian)",
-        "my": "🇲🇲 미얀마어 (Burmese)",
-        "km": "🇰🇭 캄보디아어 (Khmer)",
-        "kh": "🇰🇭 캄보디아어 (Khmer)", // 하위 호환용 캄보디아어 키 유지
-        "mn": "🇲🇳 몽골어 (Mongolian)",
-        "th": "🇹🇭 태국어 (Thai)",
-        "lo": "🇱🇦 라오스어 (Lao)",
-        "la": "🇱🇦 라오스어 (Lao)", // 하위 호환용 라오스어 키 유지
-        "ne": "🇳🇵 네팔어 (Nepali)",
-        "np": "🇳🇵 네팔어 (Nepali)", // 하위 호환용 네팔어 키 유지
-        "id": "🇮🇩 인도네시아어 (Indonesian)",
-        "si": "🇱🇰 스리랑카어 (Sinhala)",
-        "bn": "🇧🇩 방글라데시어 (Bengali)"
-      };
-      const displayLang = langLabels[data.lang] || (data.lang ? `🌐 ${data.lang}` : "-");
-
-      // 신원 정보 (외국인번호/여권번호만 노출하며, 비자타입/체류만료는 독립 열로 렌더링되므로 제외)
+      // 신원 정보 (외국인번호/여권번호만 노출)
       const idInfo = [];
-      if (data.alienNo) idInfo.push(`<div class="id-badge alien">외국인: ${data.alienNo}</div>`);
-      if (data.passportNo) idInfo.push(`<div class="id-badge passport">여권: ${data.passportNo}</div>`);
+      if (data.alienNo) idInfo.push(`<div class="id-badge alien">외국인: ${escapeHtml(data.alienNo)}</div>`);
+      if (data.passportNo) idInfo.push(`<div class="id-badge passport">여권: ${escapeHtml(data.passportNo)}</div>`);
       const idInfoHTML = idInfo.length > 0 ? idInfo.join("") : "-";
 
       // 상태 배지
@@ -115,29 +92,28 @@ function initPage() {
       // 관리 액션 (본인은 대기 중일 때만 직접 취소 가능)
       let actionButtons = "-";
       if (data.status === "pending") {
-        actionButtons = `<button class="btn-action cancel" data-id="${docId}">예약 취소</button>`;
+        actionButtons = `<button class="btn-action cancel" data-id="${escapeHtml(docId)}">예약 취소</button>`;
       } else if (data.status === "confirmed") {
         actionButtons = `<small style="color:var(--text-secondary);">취소 불가 (확정됨)</small>`;
       } else if (data.status === "cancelled") {
         actionButtons = `<small style="color:#ef4444;">취소됨</small>`;
       }
 
-      // 테이블 행 내부 HTML 조립
-      // 성별-생년월일 사이에 비자타입(col-visa-type)을 넣고, 신원정보-연락처 사이에 체류만료일(col-visa-expiry)을 순서대로 추가하여 렌더링합니다.
+      // 테이블 행 내부 HTML 조립 (모든 사용자 입력 필드 XSS 이스케이프 적용)
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
-        <td class="col-name font-bold">${data.name || "-"}</td>
-        <td class="col-clinic"><span class="table-clinic-name">${data.clinic || "-"}</span></td>
-        <td class="col-gender">${data.gender || "-"}</td>
-        <td class="col-visa-type font-bold" style="color: #34d399;">${data.visaType || "-"}</td>
-        <td class="col-dob">${data.dob || "-"}</td>
+        <td class="col-name font-bold">${escapeHtml(data.name) || "-"}</td>
+        <td class="col-clinic"><span class="table-clinic-name">${escapeHtml(data.clinic) || "-"}</span></td>
+        <td class="col-gender">${escapeHtml(data.gender) || "-"}</td>
+        <td class="col-visa-type font-bold" style="color: #34d399;">${escapeHtml(data.visaType) || "-"}</td>
+        <td class="col-dob">${escapeHtml(data.dob) || "-"}</td>
         <td class="col-id">${idInfoHTML}</td>
-        <td class="col-visa-expiry text-accent">${data.visaExpiry || "-"}</td>
-        <td class="col-phone">${data.phone || "-"}</td>
-        <td class="col-date">${dateStr}</td>
-        <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}${data.reservationTime ? ` ${data.reservationTime}` : ""}</td>
-        <td class="col-address">${data.address || "-"}</td>
-        <td class="col-symptoms">${data.symptoms || "-"}</td>
+        <td class="col-visa-expiry text-accent">${escapeHtml(data.visaExpiry) || "-"}</td>
+        <td class="col-phone">${escapeHtml(data.phone) || "-"}</td>
+        <td class="col-date">${escapeHtml(dateStr)}</td>
+        <td class="col-res-date font-bold text-accent">${escapeHtml(data.reservationDate) || "-"}${data.reservationTime ? ` ${escapeHtml(data.reservationTime)}` : ""}</td>
+        <td class="col-address">${escapeHtml(data.address) || "-"}</td>
+        <td class="col-symptoms">${escapeHtml(data.symptoms) || "-"}</td>
         <td class="col-status"><span class="badge ${statusBadgeClass}">${statusBadgeText}</span></td>
         <td class="col-actions"><div class="action-wrapper">${actionButtons}</div></td>
       `;
@@ -270,9 +246,13 @@ function initPage() {
     button.disabled = true;
     button.textContent = "...";
 
-    // 1. 로컬 가상 데이터인 경우
+    // 1. 로컬 가상 데이터인 경우 스토리지 갱신 후 현재 화면 UI도 즉시 재렌더링
     if (docId.startsWith("local_")) {
       updateLocalReservation(docId, "cancelled");
+      const targetItem = currentRenderedItems.find((i) => i.id === docId);
+      if (targetItem) targetItem.status = "cancelled";
+      renderReservations(currentRenderedItems);
+      alert("예약이 취소되었습니다. (Lịch hẹn đã được hủy.)");
       return;
     }
 

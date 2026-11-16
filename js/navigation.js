@@ -1,24 +1,8 @@
 /**
- * 15개 국어 정보 정의 - 국기 이미지 URL, 원어명, 한국어명
- * 프로젝트 전역에서 공유되는 단일 기준 언어 데이터(Single Source of Truth)
+ * 15개 국어 공통 기준 데이터는 lang-config.js에서 단일 관리하며 하위 호환을 위해 재export합니다.
  */
-export const LANG_LIST = [
-  { code: 'ko', native: '한국어', koName: '한국어', flag: 'https://flagcdn.com/w80/kr.png' },
-  { code: 'ja', native: '日本語', koName: '일본어', flag: 'https://flagcdn.com/w80/jp.png' },
-  { code: 'vi', native: 'Tiếng Việt', koName: '베트남어', flag: 'https://flagcdn.com/w80/vn.png' },
-  { code: 'en', native: 'English', koName: '영어', flag: 'https://flagcdn.com/w80/gb.png' },
-  { code: 'zh', native: '中文 (简体)', koName: '중국어', flag: 'https://flagcdn.com/w80/cn.png' },
-  { code: 'ru', native: 'Русский', koName: '러시아어', flag: 'https://flagcdn.com/w80/ru.png' },
-  { code: 'my', native: 'မြန်မာစာ', koName: '미얀마어', flag: 'https://flagcdn.com/w80/mm.png' },
-  { code: 'km', native: 'ភាសាខ្មែរ', koName: '캄보디아어', flag: 'https://flagcdn.com/w80/kh.png' },
-  { code: 'mn', native: 'Монгол хэл', koName: '몽골어', flag: 'https://flagcdn.com/w80/mn.png' },
-  { code: 'th', native: 'ภาษาไทย', koName: '태국어', flag: 'https://flagcdn.com/w80/th.png' },
-  { code: 'lo', native: 'ພາສາລາວ', koName: '라오스어', flag: 'https://flagcdn.com/w80/la.png' },
-  { code: 'ne', native: 'नेपाली', koName: '네팔어', flag: 'https://flagcdn.com/w80/np.png' },
-  { code: 'id', native: 'Bahasa Indonesia', koName: '인도네시아어', flag: 'https://flagcdn.com/w80/id.png' },
-  { code: 'si', native: 'සිංහල', koName: '스리랑카어', flag: 'https://flagcdn.com/w80/lk.png' },
-  { code: 'bn', native: 'বাংলা', koName: '방글라데시어', flag: 'https://flagcdn.com/w80/bd.png' }
-];
+import { LANG_LIST } from "./lang-config.js?v=261116_1";
+export { LANG_LIST };
 
 // 비모듈 일반 스크립트에서도 전역적으로 접근할 수 있도록 window 객체에 바인딩
 if (typeof window !== "undefined") {
@@ -158,49 +142,7 @@ function applyNavTranslations(langCode) {
 }
 
 /**
- * 15개 언어 세로 수직 드롭다운 목록 HTML 조각 생성 함수]
- */
-function createLangDropdownHTML() {
-  const currentLangCode = localStorage.getItem("app_selected_language") || "ko";
-  const currentLang = LANG_LIST.find(l => l.code === currentLangCode) || LANG_LIST[0];
-  const t = MENU_TRANSLATIONS[currentLangCode] || MENU_TRANSLATIONS.ko;
-
-  let listHtml = "";
-  LANG_LIST.forEach(l => {
-    const isSelected = l.code === currentLangCode;
-    listHtml += `
-      <button class="lang-dropdown-item ${isSelected ? 'active' : ''}" data-lang="${l.code}" onclick="window.changeGlobalLanguage('${l.code}')" type="button">
-        <img class="lang-dropdown-flag" src="${l.flag}" alt="${l.native}">
-        <div class="lang-dropdown-name-group">
-          <span class="lang-dropdown-native">${l.native}</span>
-          <span class="lang-dropdown-ko">${l.koName}</span>
-        </div>
-        ${isSelected ? '<span class="lang-dropdown-check">✓</span>' : ''}
-      </button>
-    `;
-  });
-
-  return `
-    <li class="nav-item nav-lang-dropdown-wrapper" id="nav-lang-dropdown-container">
-      <div class="nav-lang-trigger" id="nav-lang-trigger">
-        <img id="nav-lang-selected-flag" class="nav-lang-flag" src="${currentLang.flag}" alt="${currentLang.native}">
-        <span id="nav-lang-selected-text" class="nav-lang-text">${t.langSelect}</span>
-        <span class="nav-lang-arrow">▾</span>
-      </div>
-      <div class="nav-lang-menu-panel" id="nav-lang-menu-panel">
-        <div class="nav-lang-panel-header">
-          <span>🌐 Select Language / 언어선택</span>
-        </div>
-        <div class="nav-lang-scroll-list" id="nav-lang-scroll-list">
-          ${listHtml}
-        </div>
-      </div>
-    </li>
-  `;
-}
-
-/**
- * 15개 언어 세로 목록을 정적/동적 드롭다운 영역에 동적으로 렌더링하고 이벤트를 바인딩하는 함수]
+ * 15개 언어 세로 목록을 정적/동적 드롭다운 영역에 동적으로 렌더링하고 이벤트를 바인딩하는 함수
  */
 function bindLangDropdownList() {
   const scrollList = document.getElementById("nav-lang-scroll-list");
@@ -718,103 +660,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // SPA 동적 뷰 스위처 엔진 - 상단 메뉴바가 1ms도 사라지지 않고 제자리에 부동 고정된 채 아래 내용만 즉시 전환
-  async function loadViewSeamlessly(targetUrl, hashTag = "") {
-    try {
-      // 1. 주소창 URL을 하드 새로고침 없이 즉시 갱신
-      const fullUrl = hashTag ? `${targetUrl}${hashTag}` : targetUrl;
-      history.pushState(null, null, fullUrl);
-
-      // 2. 백그라운드 비동기 타겟 HTML 뷰 수집
-      const response = await fetch(targetUrl);
-      if (!response.ok) {
-        location.href = fullUrl;
-        return;
-      }
-
-      const htmlText = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, "text/html");
-
-      // 3. 메인 콘텐츠 컨테이너 추출 및 인메모리 교체 (상단 global-header는 1ms도 손대지 않고 100% 온전히 유지)
-      // 파싱된 타겟 HTML 문서에서 상단 #global-header를 사전에 제거하여 상단 메뉴바가 덮어씌워지고 사라지는 버그를 원천 차단
-      const targetHeader = doc.querySelector("#global-header");
-      if (targetHeader) {
-        targetHeader.remove();
-      }
-
-      // #app-view-container 및 메인 컨테이너 영역만 정밀하게 1대1 교체하여 상단 헤더 100% 동결 보장
-      const newMain = doc.querySelector("#app-view-container") || doc.querySelector(".container.admin-container") || doc.querySelector(".container") || doc.querySelector("main");
-      const currentMain = document.querySelector("#app-view-container") || document.querySelector(".container.admin-container") || document.querySelector(".container") || document.querySelector("main");
-
-      if (newMain && currentMain) {
-        currentMain.innerHTML = newMain.innerHTML;
-      } else {
-        location.href = fullUrl;
-        return;
-      }
-
-      // 무한 루프를 완전 차단하기 위해 popstate dispatch 이벤트를 제거하고 active 하이라이트만 직접 스마트 갱신
-      window.dispatchEvent(new Event("hashchange"));
-      // 계정 프로필 노드 영구 보존 락 - 뷰 전환 시 구글 계정 및 모바일 네비게이션이 0.001초도 비어있지 않도록 즉시 동기화 보존
-      updateActiveNavLinks(fullUrl);
-      syncAuthBadgeInstantly();
-      if (typeof handleResponsiveLayout === "function") {
-        handleResponsiveLayout();
-      }
-
-      // 5. 해시 앵커(#partners, #services 등)가 있을 경우 스무스 스크롤 이동
-      if (hashTag) {
-        const targetSec = document.querySelector(hashTag);
-        if (targetSec) {
-          targetSec.scrollIntoView({ behavior: "smooth" });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      // 페이지별 전용 스크립트 강제 재실행 엔진 - SPA 전환 시 기존 DOM이 소멸하고 신규 DOM이 생성되므로 페이지 개별 스크립트는 매번 반드시 재생성 및 재실행해야 함
-      const scripts = doc.querySelectorAll("script");
-      scripts.forEach(s => {
-        const src = s.getAttribute("src");
-        if (src) {
-          // 공통 전역 싱글톤 스크립트는 중복 실행 방지를 위해 절대 건드리지 않음
-          if (src.includes("navigation.js") || src.includes("auth.js") || src.includes("firebase-config.js")) {
-            return;
-          }
-
-          // 기존에 삽입되었던 동일한 경로의 스크립트 엘리먼트 제거 (메모리 및 DOM 정리)
-          // 쿼리 스트링(?v=...) 부분을 무시하고 매칭하기 위해 src의 절대경로 패턴으로 확인
-          const cleanSrc = src.split("?")[0];
-          const existingScripts = document.querySelectorAll("script");
-          existingScripts.forEach(el => {
-            const elSrc = el.getAttribute("src");
-            if (elSrc && elSrc.includes(cleanSrc)) {
-              el.remove();
-            }
-          });
-
-          // 강제 재실행을 위해 새로운 script 태그 생성 및 캐시 방지용 타임스탬프 부착
-          const scriptElem = document.createElement("script");
-          scriptElem.src = cleanSrc + "?t=" + new Date().getTime();
-          scriptElem.type = s.type || "text/javascript";
-          document.body.appendChild(scriptElem);
-        } else if (s.textContent && !s.textContent.includes("loadViewSeamlessly")) {
-          // src가 없는 인라인 복원 스크립트도 뷰 전환 시 신규 DOM을 대상으로 0ms 즉시 구동되도록 재생성 실행
-          const scriptElem = document.createElement("script");
-          scriptElem.textContent = s.textContent;
-          scriptElem.type = s.type || "text/javascript";
-          document.body.appendChild(scriptElem);
-        }
-      });
-
-    } catch (e) {
-      console.warn("SPA View load failed, fallbacking to hard navigate:", e);
-      location.href = targetUrl;
-    }
-  }
-
-  // 상단 네비게이션 메뉴 클릭 스마트 인터셉터
+  // 동일 페이지 내 해시 이동 시 스무스 스크롤 처리 (다른 페이지 이동은 브라우저 기본 고속 내비게이션 사용)
   document.addEventListener("click", (e) => {
     const anchor = e.target.closest("a");
     if (!anchor) return;

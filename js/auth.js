@@ -1,4 +1,8 @@
-import { auth, db } from "/js/firebase-db.js?v=261002_5";
+import { auth, db } from "./firebase-db.js?v=261116_1";
+import {
+  buildCountryLangSelectOptionsHtml,
+  buildRolePermissions
+} from "./lang-config.js?v=261116_1";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -15,13 +19,13 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSn
 
 /**
  * IGPartners 회원가입 & 로그인 모듈
- * - 구글 로그인 방식을 대체하여 아이디/비밀번호 기반 회원가입 및 로그인 기능을 수행합니다.
+ * - 아이디/비밀번호 기반 회원가입 및 로그인 기능을 수행합니다.
  * - 회원가입 시 수집 항목: 아이디, 비밀번호, 비밀번호 재확인, 국가(선호언어), 이름, 생년월일, 외국인등록번호, 체류주소, 이메일, 연락처, 비자타입, 비자만료일
  * - Firestore `users/{uid}` 컬렉션 문서로 회원 프로필 데이터를 저장하여 안전하게 관리합니다.
- * - 세션 캐싱(sessionStorage)으로 DB 읽기를 최소화하며 무료 요금제(Spark Plan) 법칙을 완벽히 지킵니다.
+ * - 세션 캐싱(sessionStorage)으로 DB 읽기를 최소화하며 무료 요금제(Spark Plan) 법칙을 준수합니다.
  */
 
-document.addEventListener("DOMContentLoaded", () => {
+function initAuthModule() {
 
   // =========================================================================
   // 1. 회원가입 / 로그인 통합 모달 UI 동적 생성 및 관리
@@ -69,21 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="auth-form-group auth-field-full">
                   <label for="signup-country-lang">국가 (선호언어) / Country (Language) <span class="req">*</span></label>
                   <select id="signup-country-lang" required autocomplete="off">
-                    <option value="ko" selected>🇰🇷 대한민국 (한국어 / Korean)</option>
-                    <option value="ja">🇯🇵 일본 (日本語 / Japanese)</option>
-                    <option value="vi">🇻🇳 베트남 (Tiếng Việt / Vietnamese)</option>
-                    <option value="en">🇺🇸 미국/기타 (English)</option>
-                    <option value="zh">🇨🇳 중국 (中文 / Chinese)</option>
-                    <option value="ru">🇷🇺 러시아 (Русский / Russian)</option>
-                    <option value="my">🇲🇲 미얀마 (မြန်မာစာ / Myanmar)</option>
-                    <option value="km">🇰🇭 캄보디아 (ភាសាខ្មែរ / Khmer)</option>
-                    <option value="mn">🇲🇳 몽골 (Mongolian)</option>
-                    <option value="th">🇹🇭 태국 (ภาษาไทย / Thai)</option>
-                    <option value="lo">🇱🇦 라오스 (ພາສາລາວ / Lao)</option>
-                    <option value="ne">🇳🇵 네팔 (नेपाली / Nepali)</option>
-                    <option value="id">🇮🇩 인도네시아 (Bahasa Indonesia)</option>
-                    <option value="si">🇱🇰 스리랑카 (සිංහල / Sinhala)</option>
-                    <option value="bn">🇧🇩 방글라데시 (বাংলা / Bengali)</option>
+                    ${buildCountryLangSelectOptionsHtml("ko")}
                   </select>
                 </div>
 
@@ -459,21 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="auth-form-group auth-field-full">
                   <label for="profile-country-lang">국가 (선호언어) / Country (Language) <span class="req">*</span></label>
                   <select id="profile-country-lang" required>
-                    <option value="ko">🇰🇷 대한민국 (한국어 / Korean)</option>
-                    <option value="ja">🇯🇵 일본 (日本語 / Japanese)</option>
-                    <option value="vi">🇻🇳 베트남 (Tiếng Việt / Vietnamese)</option>
-                    <option value="en">🇺🇸 미국/기타 (English)</option>
-                    <option value="zh">🇨🇳 중국 (中文 / Chinese)</option>
-                    <option value="ru">🇷🇺 러시아 (Русский / Russian)</option>
-                    <option value="my">🇲🇲 미얀마 (မြန်မာစာ / Myanmar)</option>
-                    <option value="km">🇰🇭 캄보디아 (ភាសាខ្មែរ / Khmer)</option>
-                    <option value="mn">🇲🇳 몽골 (Mongolian)</option>
-                    <option value="th">🇹🇭 태국 (ภาษาไทย / Thai)</option>
-                    <option value="lo">🇱🇦 라오스 (ພາສາລາວ / Lao)</option>
-                    <option value="ne">🇳🇵 네팔 (नेपाली / Nepali)</option>
-                    <option value="id">🇮🇩 인도네시아 (Bahasa Indonesia)</option>
-                    <option value="si">🇱🇰 스리랑카 (සිංහල / Sinhala)</option>
-                    <option value="bn">🇧🇩 방글라데시 (বাংলা / Bengali)</option>
+                    ${buildCountryLangSelectOptionsHtml()}
                   </select>
                 </div>
 
@@ -1100,6 +1076,11 @@ document.addEventListener("DOMContentLoaded", () => {
           if (loginForm) loginForm.reset();
 
           sessionStorage.clear();
+          // 로그아웃 시 로컬 예약 임시 저장소 데이터도 함께 정리하여 다른 계정 노출 방지
+          try {
+            localStorage.removeItem("local_reservations");
+            localStorage.removeItem("local_reservations_direct");
+          } catch (e) { }
           await signOut(auth);
           console.log("User signed out.");
           alert("로그아웃되었습니다.");
@@ -1116,123 +1097,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
 
   /**
-   * 사용자 역할(role) 세션 캐싱 함수 - 강제 최신화(forceRefresh) 지원으로 등급 변경 시 실시간 반영]
-   * @param {string} uid - 사용자 고유 식별자
-   * @param {boolean} forceRefresh - 캐시를 무시하고 Firestore에서 강제로 최신 등급을 조회할지 여부
-   */
-  async function getCachedUserRole(uid, forceRefresh = false) {
-    const cacheKey = `user_role_cache_${uid}`;
-    if (!forceRefresh) {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached !== null) return cached;
-    }
-
-    try {
-      const userDocRef = doc(db, "users", uid);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        const role = userDocSnap.data().role || "user";
-        sessionStorage.setItem(cacheKey, role);
-        return role;
-      }
-    } catch (e) {
-      console.error("사용자 역할 조회 실패:", e);
-    }
-    return null;
-  }
-
-  /**
-  /**
-   * 등급(role)별 10개 세부 기능 권한 및 라벨 정보 캐싱 함수 - Firestore 읽기 비용 절감 및 세부 권한 무결성 보장]
-   * @param {string} userRole - 사용자 등급 키 (예: super_admin, admin, admin_user 등)
-   * @returns {Promise<Object>} 10개 세부 권한 및 등급 라벨을 포함한 객체
-   */
-  async function getCachedRolePermissions(userRole) {
-    if (!userRole) return { 
-      isAdmin: false, 
-      hasReservations: false,
-      hasClinics: false,
-      hasRoles: false,
-      hasPermissions: false,
-      hasSms: false,
-      hasStats: false, 
-      hasAds: false,
-      hasPartners: false,
-      hasInterpreters: false,
-      hasCommunitySettings: false,
-      label: "일반회원"
-    };
-    const cacheKey = `role_permissions_cache_${userRole}`;
-    const cached = sessionStorage.getItem(cacheKey);
-    if (cached !== null) {
-      try { return JSON.parse(cached); } catch (e) { }
-    }
-
-    const isSuper = (userRole === "super_admin");
-    let perms = {
-      isAdmin: isSuper,
-      hasReservations: isSuper,
-      hasClinics: isSuper,
-      hasRoles: isSuper,
-      hasPermissions: isSuper,
-      hasSms: isSuper,
-      hasStats: isSuper,
-      hasAds: isSuper,
-      hasPartners: isSuper,
-      hasInterpreters: isSuper,
-      hasCommunitySettings: isSuper,
-      label: isSuper ? "최고관리자" : "일반회원"
-    };
-
-    try {
-      const roleDocRef = doc(db, "roles", userRole);
-      const roleDocSnap = await getDoc(roleDocRef);
-      if (roleDocSnap.exists()) {
-        const roleData = roleDocSnap.data();
-        // 문자발송 탭 접근 권한(hasSms)을 포함하여 등급별 권한 객체를 매핑함
-        perms = {
-          isAdmin: isSuper || (roleData.isAdmin !== undefined ? roleData.isAdmin : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
-          hasReservations: isSuper || (roleData.hasReservations !== undefined ? roleData.hasReservations : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
-          hasClinics: isSuper || (roleData.hasClinics !== undefined ? roleData.hasClinics : ["admin", "admin_user"].includes(userRole)),
-          hasRoles: isSuper || (roleData.hasRoles !== undefined ? roleData.hasRoles : false),
-          hasPermissions: isSuper || (roleData.hasPermissions !== undefined ? roleData.hasPermissions : false),
-          hasSms: isSuper || (roleData.hasSms !== undefined ? roleData.hasSms : ["admin", "admin_user"].includes(userRole)),
-          hasStats: isSuper || (roleData.hasStats !== undefined ? roleData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(userRole)),
-          hasAds: isSuper || (roleData.hasAds !== undefined ? roleData.hasAds : false),
-          hasPartners: isSuper || (roleData.hasPartners !== undefined ? roleData.hasPartners : (roleData.hasAds || false)),
-          hasInterpreters: isSuper || (roleData.hasInterpreters !== undefined ? roleData.hasInterpreters : (roleData.hasAds || false)),
-          hasCommunitySettings: isSuper || (roleData.hasCommunitySettings !== undefined ? roleData.hasCommunitySettings : false),
-          label: roleData.label || (isSuper ? "최고관리자" : (userRole === "admin" ? "일반관리자" : (userRole === "admin_user" ? "관리자" : "회원")))
-        };
-      } else {
-        // DB에 roles 문서가 존재하지 않을 때의 하위 호환 폴백 매핑
-        const isLegacyAdmin = ["admin", "admin_user"].includes(userRole);
-        const isLegacyManager = ["top_manager", "res_manager"].includes(userRole);
-        perms = {
-          isAdmin: isSuper || isLegacyAdmin || isLegacyManager,
-          hasReservations: isSuper || isLegacyAdmin || isLegacyManager,
-          hasClinics: isSuper || isLegacyAdmin,
-          hasRoles: isSuper,
-          hasPermissions: isSuper,
-          hasSms: isSuper || isLegacyAdmin,
-          hasStats: isSuper || isLegacyAdmin || isLegacyManager,
-          hasAds: isSuper,
-          hasPartners: isSuper,
-          hasInterpreters: isSuper,
-          hasCommunitySettings: isSuper,
-          label: isSuper ? "최고관리자" : (userRole === "admin" ? "일반관리자" : (userRole === "admin_user" ? "관리자" : "회원"))
-        };
-      }
-    } catch (e) {
-      console.warn("getCachedRolePermissions error:", e);
-    }
-
-    try { sessionStorage.setItem(cacheKey, JSON.stringify(perms)); } catch (e) { }
-    return perms;
-  }
-
-  /**
-   * 사용자 등급 변경 또는 로그아웃 시 관련 세션 캐시 전체 무효화 함수]
+   * 사용자 등급 변경 또는 로그아웃 시 관련 세션 캐시 전체 무효화 함수
    * @param {string} uid - 캐시를 삭제할 사용자 UID
    */
   function clearUserRoleCache(uid) {
@@ -1354,45 +1219,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         unsubscribeLiveRole = onSnapshot(doc(db, "roles", activeRole), (roleSnap) => {
-          const isSuper = (activeRole === "super_admin");
-          let fullPermissions = null;
-          let roleLabel = isSuper ? "최고관리자" : "일반회원";
-
-          if (roleSnap.exists()) {
-            const rData = roleSnap.data();
-            roleLabel = rData.label || roleLabel;
-            // 문자발송 권한(hasSms) 변경 사항을 실시간 감지하여 세션 스토리지 및 이벤트로 즉시 브로드캐스트함
-            fullPermissions = {
-              isAdmin: isSuper || (rData.isAdmin !== undefined ? rData.isAdmin : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
-              hasReservations: isSuper || (rData.hasReservations !== undefined ? rData.hasReservations : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
-              hasClinics: isSuper || (rData.hasClinics !== undefined ? rData.hasClinics : ["admin", "admin_user"].includes(activeRole)),
-              hasRoles: isSuper || (rData.hasRoles !== undefined ? rData.hasRoles : false),
-              hasPermissions: isSuper || (rData.hasPermissions !== undefined ? rData.hasPermissions : false),
-              hasSms: isSuper || (rData.hasSms !== undefined ? rData.hasSms : ["admin", "admin_user"].includes(activeRole)),
-              hasStats: isSuper || (rData.hasStats !== undefined ? rData.hasStats : ["admin", "admin_user", "top_manager", "res_manager"].includes(activeRole)),
-              hasAds: isSuper || (rData.hasAds !== undefined ? rData.hasAds : false),
-              hasPartners: isSuper || (rData.hasPartners !== undefined ? rData.hasPartners : (rData.hasAds || false)),
-              hasInterpreters: isSuper || (rData.hasInterpreters !== undefined ? rData.hasInterpreters : (rData.hasAds || false)),
-              hasCommunitySettings: isSuper || (rData.hasCommunitySettings !== undefined ? rData.hasCommunitySettings : false)
-            };
-          } else {
-            // roles 문서가 DB에 없을 경우 하위 호환 폴백 매핑
-            const isLegacyAdmin = ["admin", "admin_user"].includes(activeRole);
-            const isLegacyManager = ["top_manager", "res_manager"].includes(activeRole);
-            fullPermissions = {
-              isAdmin: isSuper || isLegacyAdmin || isLegacyManager,
-              hasReservations: isSuper || isLegacyAdmin || isLegacyManager,
-              hasClinics: isSuper || isLegacyAdmin,
-              hasRoles: isSuper,
-              hasPermissions: isSuper,
-              hasSms: isSuper || isLegacyAdmin,
-              hasStats: isSuper || isLegacyAdmin || isLegacyManager,
-              hasAds: isSuper,
-              hasPartners: isSuper,
-              hasInterpreters: isSuper,
-              hasCommunitySettings: isSuper
-            };
-          }
+          // 공통 권한 매핑 헬퍼를 사용하여 등급별 권한과 라벨을 일관되게 생성
+          const mapped = buildRolePermissions(activeRole, roleSnap.exists() ? roleSnap.data() : null);
+          const roleLabel = mapped.label;
+          const fullPermissions = {
+            isAdmin: mapped.isAdmin,
+            hasReservations: mapped.hasReservations,
+            hasClinics: mapped.hasClinics,
+            hasRoles: mapped.hasRoles,
+            hasPermissions: mapped.hasPermissions,
+            hasSms: mapped.hasSms,
+            hasStats: mapped.hasStats,
+            hasAds: mapped.hasAds,
+            hasPartners: mapped.hasPartners,
+            hasInterpreters: mapped.hasInterpreters,
+            hasCommunitySettings: mapped.hasCommunitySettings
+          };
 
           // 3. 브라우저 세션 스토리지 즉각 최신화 (새로고침 시에도 즉시 유효)
           try {
@@ -1490,5 +1332,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-});
+}
+
+// 모듈 로드 시점과 무관하게 DOM 준비 상태에 따라 초기화 실행
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initAuthModule);
+} else {
+  initAuthModule();
+}
 

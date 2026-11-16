@@ -5,7 +5,8 @@
  * - 초기 데이터 부재 시 자동 시딩(Seed) 기능 내장
  */
 
-import { db } from "/js/firebase-db.js?v=261020_3";
+import { db, auth } from "/js/firebase-db.js?v=261116_1";
+import { escapeHtml, sanitizeUrl } from "/js/common-utils.js?v=261116_1";
 import { 
   collection, 
   getDocs, 
@@ -183,13 +184,23 @@ async function loadInterpreters() {
     const q = query(collection(db, "interpreters"), orderBy("order", "asc"));
     const querySnapshot = await getDocs(q);
 
-    // 데이터가 없을 경우 기본 Seed 데이터 자동 생성 및 재로드
+    // DB가 비어 있을 경우 관리자 로그인 세션이 있을 때만 기본 Seed 데이터를 자동 저장하고, 비로그인 방문자에게는 읽기 전용 폴백으로 즉시 노출
     if (querySnapshot.empty) {
-      console.log("No interpreters found. Populating default seed data...");
-      for (const item of seedInterpreters) {
-        await addDoc(collection(db, "interpreters"), item);
+      if (auth && auth.currentUser) {
+        try {
+          for (const item of seedInterpreters) {
+            await addDoc(collection(db, "interpreters"), item);
+          }
+          return loadInterpreters();
+        } catch (seedErr) {
+          console.warn("Seed interpreters skipped (insufficient permission):", seedErr);
+        }
       }
-      return loadInterpreters();
+      const fallbackStaff = seedInterpreters.filter(i => i.type === "staff");
+      const fallbackFreelance = seedInterpreters.filter(i => i.type !== "staff");
+      renderStaffInterpreters(fallbackStaff, staffContainer);
+      renderFreelanceInterpreters(fallbackFreelance, freelanceContainer);
+      return;
     }
 
     const staffList = [];
@@ -283,27 +294,31 @@ function renderStaffInterpreters(list, container) {
     const card = document.createElement("div");
     card.className = "staff-card";
 
-    // 기본 대체 이미지 처리
-    const photoUrl = item.image || "/img/default_avatar.png";
-    const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
+    // 존재하지 않는 /img/default_avatar.png 대신 공식 기본 로고 이미지 사용 및 URL/XSS 검증 적용
+    const photoUrl = escapeHtml(sanitizeUrl(item.image, "/img/logo.png"));
+    const flagUrl = escapeHtml(sanitizeUrl(item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`, ""));
     const { nameKo, nameEn } = parseInterpreterName(item);
+    const safeNameKo = escapeHtml(nameKo);
+    const safeNameEn = escapeHtml(nameEn);
+    const safeCountry = escapeHtml(item.country || "");
 
     // 연락처 및 이메일 전용 블록 생성 - 정보가 없더라도 일정한 하단 높이의 staff-contact-box를 항상 유지하여 상단 이름 위치 고정
     let contactItems = "";
     if (item.phone) {
-      const phoneTel = item.phone.replace(/[^0-9+]/g, "");
+      const phoneTel = String(item.phone).replace(/[^0-9+]/g, "");
       contactItems += `
         <div class="staff-contact-item">
           <span class="staff-contact-icon">📞</span>
-          <a href="tel:${phoneTel}" title="전화걸기">${item.phone}</a>
+          <a href="tel:${escapeHtml(phoneTel)}" title="전화걸기">${escapeHtml(item.phone)}</a>
         </div>
       `;
     }
     if (item.email) {
+      const safeEmail = escapeHtml(item.email);
       contactItems += `
         <div class="staff-contact-item">
           <span class="staff-contact-icon">✉️</span>
-          <a href="mailto:${item.email}" title="이메일 보내기">${item.email}</a>
+          <a href="mailto:${safeEmail}" title="이메일 보내기">${safeEmail}</a>
         </div>
       `;
     }
@@ -313,19 +328,19 @@ function renderStaffInterpreters(list, container) {
       <!-- 좌측: 통역사 사진 영역 -->
       <div class="staff-card-left">
         <div class="staff-photo-wrapper">
-          <img src="${photoUrl}" alt="${nameKo}" class="staff-photo" loading="lazy" onerror="this.src='/img/logo.png'">
+          <img src="${photoUrl}" alt="${safeNameKo}" class="staff-photo" loading="lazy" onerror="this.src='/img/logo.png'">
         </div>
       </div>
 
       <!-- 우측: 국기, 국가명, 2줄 이름, 소속뱃지, 연락처 영역 -->
       <div class="staff-card-right">
         <div class="staff-country-badge">
-          <img src="${flagUrl}" alt="${item.country}" class="staff-flag-icon" onerror="this.style.display='none'">
-          <span class="staff-country-name">${item.country}</span>
+          <img src="${flagUrl}" alt="${safeCountry}" class="staff-flag-icon" onerror="this.style.display='none'">
+          <span class="staff-country-name">${safeCountry}</span>
         </div>
         <div class="staff-name-box">
-          <h3 class="staff-name-ko">${nameKo}</h3>
-          ${nameEn ? `<div class="staff-name-en">${nameEn}</div>` : ''}
+          <h3 class="staff-name-ko">${safeNameKo}</h3>
+          ${safeNameEn ? `<div class="staff-name-en">${safeNameEn}</div>` : ''}
           <span class="staff-role-badge">IGPartners 전담</span>
         </div>
         ${contactHTML}
@@ -353,26 +368,30 @@ function renderFreelanceInterpreters(list, container) {
     const card = document.createElement("div");
     card.className = "freelance-card";
 
-    const flagUrl = item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`;
+    const flagUrl = escapeHtml(sanitizeUrl(item.flag || `https://flagcdn.com/w80/${item.countryCode || 'kr'}.png`, ""));
     const { nameKo, nameEn } = parseInterpreterName(item);
+    const safeNameKo = escapeHtml(nameKo);
+    const safeNameEn = escapeHtml(nameEn);
+    const safeCountry = escapeHtml(item.country || "");
 
     let contactHTML = "";
     if (item.phone || item.email) {
       contactHTML = `<div class="freelance-contact-row">`;
       if (item.phone) {
-        const phoneTel = item.phone.replace(/[^0-9+]/g, "");
+        const phoneTel = String(item.phone).replace(/[^0-9+]/g, "");
         contactHTML += `
           <div class="freelance-contact-item">
             <span>📞</span>
-            <a href="tel:${phoneTel}" title="전화걸기">${item.phone}</a>
+            <a href="tel:${escapeHtml(phoneTel)}" title="전화걸기">${escapeHtml(item.phone)}</a>
           </div>
         `;
       }
       if (item.email) {
+        const safeEmail = escapeHtml(item.email);
         contactHTML += `
           <div class="freelance-contact-item">
             <span>✉️</span>
-            <a href="mailto:${item.email}" title="이메일 보내기">${item.email}</a>
+            <a href="mailto:${safeEmail}" title="이메일 보내기">${safeEmail}</a>
           </div>
         `;
       }
@@ -383,16 +402,16 @@ function renderFreelanceInterpreters(list, container) {
       <!-- 좌측: 국기 뱃지 영역 -->
       <div class="freelance-card-left">
         <div class="freelance-flag-box">
-          <img src="${flagUrl}" alt="${item.country}" class="freelance-flag-img" onerror="this.style.display='none'">
+          <img src="${flagUrl}" alt="${safeCountry}" class="freelance-flag-img" onerror="this.style.display='none'">
         </div>
       </div>
 
       <!-- 우측: 국가명, 2줄 이름, 연락처 영역 -->
       <div class="freelance-card-right">
-        <div class="freelance-country-tag">${item.country}</div>
+        <div class="freelance-country-tag">${safeCountry}</div>
         <div class="freelance-name-box">
-          <h4 class="freelance-name-ko">${nameKo}</h4>
-          ${nameEn ? `<div class="freelance-name-en">${nameEn}</div>` : ''}
+          <h4 class="freelance-name-ko">${safeNameKo}</h4>
+          ${safeNameEn ? `<div class="freelance-name-en">${safeNameEn}</div>` : ''}
         </div>
         ${contactHTML}
       </div>

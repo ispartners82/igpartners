@@ -1,4 +1,6 @@
-import { auth, db } from "/js/firebase-db.js?v=260930_7";
+import { auth, db } from "/js/firebase-db.js?v=261116_1";
+import { escapeHtml } from "/js/common-utils.js?v=261116_1";
+import { LANG_LIST, LANG_SHORT_LABELS, LANG_PLAIN_NAMES } from "/js/lang-config.js?v=261116_1";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -54,7 +56,7 @@ function initPage() {
   let activeClinicsDocs = [];
   let legacyClinicsDocs = [];
   const clinicAliasMap = new Map();
-  const SUPPORTED_LANG_CODES = ["en", "ja", "vi", "zh", "ru", "my", "km", "mn", "th", "lo", "ne", "id", "si", "bn"];
+  const SUPPORTED_LANG_CODES = LANG_LIST.filter((l) => l.code !== "ko").map((l) => l.code);
 
   // 공백 및 대소문자 차이를 무시하고 병원명을 비교하기 위한 정규화 헬퍼 함수
   function normalizeClinicStr(str) {
@@ -179,8 +181,8 @@ function initPage() {
     if (activeEntries.length > 0) {
       activeEntries.forEach(entry => {
         clinicAliasMap.set(entry.key, entry.aliasSet);
-        const escapedKey = entry.key.replace(/"/g, "&quot;");
-        optionsHTML += `<option value="${escapedKey}">${entry.label}</option>`;
+        const escapedKey = escapeHtml(entry.key);
+        optionsHTML += `<option value="${escapedKey}">${escapeHtml(entry.label)}</option>`;
       });
     } else {
       optionsHTML += `<option value="" disabled>등록된 병원 없음</option>`;
@@ -191,8 +193,8 @@ function initPage() {
     if (pastEntries.length > 0) {
       pastEntries.forEach(entry => {
         clinicAliasMap.set(entry.key, entry.aliasSet);
-        const escapedKey = entry.key.replace(/"/g, "&quot;");
-        optionsHTML += `<option value="${escapedKey}">${entry.label}</option>`;
+        const escapedKey = escapeHtml(entry.key);
+        optionsHTML += `<option value="${escapedKey}">${escapeHtml(entry.label)}</option>`;
       });
     } else {
       optionsHTML += `<option value="" disabled>해당 병원 없음</option>`;
@@ -482,13 +484,6 @@ function initPage() {
       return;
     }
 
-    const langLabels = {
-      "ko": "🇰🇷 한국어", "ja": "🇯🇵 일본어", "vi": "🇻🇳 베트남어", "en": "🇺🇸 영어",
-      "zh": "🇨🇳 중국어", "ru": "🇷🇺 러시아어", "my": "🇲🇲 미얀마어", "km": "🇰🇭 캄보디아어",
-      "mn": "🇲🇳 몽골어", "th": "🇹🇭 태국어", "lo": "🇱🇦 라오스어", "ne": "🇳🇵 네팔어",
-      "id": "🇮🇩 인도네시아어", "si": "🇱🇰 스리랑카어", "bn": "🇧🇩 방글라데시어"
-    };
-
     items.forEach(data => {
       total++;
       if (data.status === "confirmed") confirmed++;
@@ -496,7 +491,7 @@ function initPage() {
       else pending++;
 
       const tr = document.createElement("tr");
-      tr.className = `status-${data.status || "pending"}`;
+      tr.className = `status-${escapeHtml(data.status || "pending")}`;
 
       let regDateStr = "-";
       if (data.createdAt) {
@@ -506,11 +501,11 @@ function initPage() {
         }) + " " + jsDate.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
       }
 
-      const displayLang = langLabels[data.lang] || (data.lang ? `🌐 ${data.lang}` : "-");
+      const displayLang = LANG_SHORT_LABELS[data.lang] || (data.lang ? `🌐 ${escapeHtml(data.lang)}` : "-");
 
       const idInfo = [];
-      if (data.alienNo) idInfo.push(`외국인: ${data.alienNo}`);
-      if (data.passportNo) idInfo.push(`여권: ${data.passportNo}`);
+      if (data.alienNo) idInfo.push(`외국인: ${escapeHtml(data.alienNo)}`);
+      if (data.passportNo) idInfo.push(`여권: ${escapeHtml(data.passportNo)}`);
       const idInfoText = idInfo.length > 0 ? idInfo.join("<br>") : "-";
 
       let statusBadgeText = "대기중";
@@ -523,22 +518,25 @@ function initPage() {
         statusBadgeClass = "badge-cancelled";
       }
 
+      const safeAddress = escapeHtml(data.address || "");
+      const safeSymptoms = escapeHtml(data.symptoms || "");
+
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
-        <td class="col-name font-bold">${data.name || "-"}</td>
-        <td class="col-clinic"><span class="table-clinic-name">${data.clinic || "-"}</span></td>
-        <td class="col-gender">${data.gender || "-"}</td>
-        <td class="col-visa-type font-bold" style="color: #34d399;">${data.visaType || "-"}</td>
-        <td class="col-dob">${data.dob || "-"}</td>
+        <td class="col-name font-bold">${escapeHtml(data.name) || "-"}</td>
+        <td class="col-clinic"><span class="table-clinic-name">${escapeHtml(data.clinic) || "-"}</span></td>
+        <td class="col-gender">${escapeHtml(data.gender) || "-"}</td>
+        <td class="col-visa-type font-bold" style="color: #34d399;">${escapeHtml(data.visaType) || "-"}</td>
+        <td class="col-dob">${escapeHtml(data.dob) || "-"}</td>
         <td class="col-id" style="font-size:0.8rem; line-height:1.2;">${idInfoText}</td>
-        <td class="col-visa-expiry text-accent">${data.visaExpiry || "-"}</td>
-        <td class="col-phone">${data.phone || "-"}</td>
-        <td class="col-date">${regDateStr}</td>
-        <td class="col-res-date font-bold text-accent">${data.reservationDate || "-"}${data.reservationTime ? ` ${data.reservationTime}` : ""}</td>
-        <td class="col-address" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.address || ""}">${data.address || "-"}</td>
-        <td class="col-symptoms" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${data.symptoms || ""}">${data.symptoms || "-"}</td>
+        <td class="col-visa-expiry text-accent">${escapeHtml(data.visaExpiry) || "-"}</td>
+        <td class="col-phone">${escapeHtml(data.phone) || "-"}</td>
+        <td class="col-date">${escapeHtml(regDateStr)}</td>
+        <td class="col-res-date font-bold text-accent">${escapeHtml(data.reservationDate) || "-"}${data.reservationTime ? ` ${escapeHtml(data.reservationTime)}` : ""}</td>
+        <td class="col-address" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${safeAddress}">${safeAddress || "-"}</td>
+        <td class="col-symptoms" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${safeSymptoms}">${safeSymptoms || "-"}</td>
         <!-- 예약통계 페이지 결과 리스트에 유입경로 데이터 바인딩하는 td 셀 추가 -->
-        <td class="col-inflow font-bold text-accent">${data.inflow || "-"}</td>
+        <td class="col-inflow font-bold text-accent">${escapeHtml(data.inflow) || "-"}</td>
         <td class="col-status"><span class="badge ${statusBadgeClass}">${statusBadgeText}</span></td>
       `;
 
@@ -639,14 +637,6 @@ function initPage() {
   // 10. 엑셀 다운로드 미리보기 모달 제어 및 ExcelJS 고품질 저장 기능
   // =========================================================================
 
-  // 예약 목록의 언어 코드를 한국어 이름으로 매핑하는 딕셔너리
-  const langLabels = {
-    "ko": "한국어", "ja": "일본어", "vi": "베트남어", "en": "영어",
-    "zh": "중국어", "ru": "러시아어", "my": "미얀마어", "km": "캄보디아어",
-    "mn": "몽골어", "th": "태국어", "lo": "라오스어", "ne": "네팔어",
-    "id": "인도네시아어", "si": "스리랑카어", "bn": "방글라데시어"
-  };
-
   // 엑셀 미리보기 모달 닫기 함수
   function closeExcelPreview() {
     if (excelPreviewModal) {
@@ -669,11 +659,11 @@ function initPage() {
     currentFilteredReservations.forEach(data => {
       const tr = document.createElement("tr");
 
-      const displayLang = langLabels[data.lang] || (data.lang ? `${data.lang}` : "-");
+      const displayLang = LANG_PLAIN_NAMES[data.lang] || (data.lang ? escapeHtml(data.lang) : "-");
 
       const idInfo = [];
-      if (data.alienNo) idInfo.push(`외국인: ${data.alienNo}`);
-      if (data.passportNo) idInfo.push(`여권: ${data.passportNo}`);
+      if (data.alienNo) idInfo.push(`외국인: ${escapeHtml(data.alienNo)}`);
+      if (data.passportNo) idInfo.push(`여권: ${escapeHtml(data.passportNo)}`);
       const idInfoText = idInfo.length > 0 ? idInfo.join(", ") : "-";
 
       let statusText = "대기중";
@@ -690,21 +680,21 @@ function initPage() {
 
       tr.innerHTML = `
         <td>${displayLang}</td>
-        <td style="font-weight: bold;">${data.name || "-"}</td>
-        <td>${data.clinic || "-"}</td>
-        <td>${data.gender || "-"}</td>
-        <td>${data.visaType || "-"}</td>
-        <td>${data.dob || "-"}</td>
+        <td style="font-weight: bold;">${escapeHtml(data.name) || "-"}</td>
+        <td>${escapeHtml(data.clinic) || "-"}</td>
+        <td>${escapeHtml(data.gender) || "-"}</td>
+        <td>${escapeHtml(data.visaType) || "-"}</td>
+        <td>${escapeHtml(data.dob) || "-"}</td>
         <td style="font-size: 0.8rem;">${idInfoText}</td>
-        <td>${data.visaExpiry || "-"}</td>
-        <td>${data.phone || "-"}</td>
-        <td>${regDateStr}</td>
-        <td>${data.reservationDate || "-"}${data.reservationTime ? ` ${data.reservationTime}` : ""}</td>
+        <td>${escapeHtml(data.visaExpiry) || "-"}</td>
+        <td>${escapeHtml(data.phone) || "-"}</td>
+        <td>${escapeHtml(regDateStr)}</td>
+        <td>${escapeHtml(data.reservationDate) || "-"}${data.reservationTime ? ` ${escapeHtml(data.reservationTime)}` : ""}</td>
         <!-- 엑셀 미리보기 테이블 컬럼 일치화를 위한 주소 및 증상 td 셀 추가 -->
-        <td>${data.address || "-"}</td>
-        <td>${data.symptoms || "-"}</td>
+        <td>${escapeHtml(data.address) || "-"}</td>
+        <td>${escapeHtml(data.symptoms) || "-"}</td>
         <!-- 엑셀 미리보기 모달 테이블에 유입경로 데이터 추가 -->
-        <td>${data.inflow || "-"}</td>
+        <td>${escapeHtml(data.inflow) || "-"}</td>
         <td>${statusText}</td>
       `;
       excelPreviewTbody.appendChild(tr);
@@ -850,7 +840,7 @@ function initPage() {
         // 값들 배열에 배치
         // 엑셀 파일 내부 행 데이터에 유입경로(inflow) 연동 추가
         const rowValues = [
-          langLabels[item.lang] || item.lang || "-",
+          LANG_PLAIN_NAMES[item.lang] || item.lang || "-",
           item.name || "-",
           item.clinic || "-",
           item.gender || "-",

@@ -36,259 +36,49 @@
   <link rel="icon" type="image/png" href="/img/logo.png?v=260918_5">
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
-  <!-- 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=261002_5) -->
-  <link rel="stylesheet" href="css/style.css?v=261023_1">
+  <!-- 메인 스타일시트 연동 및 캐시 관리 버전 갱신 (버전: v=261116_1) -->
+  <link rel="stylesheet" href="css/style.css?v=261116_1">
 
-  <!-- 전역 동기식 화면 전환 및 첨부 헬퍼 함수 - ES 모듈 로딩 시차와 무관하게 100% 동작 보장 -->
+  <!-- 커뮤니티 첨부 배열 초기화 및 파일 선택 위임 핸들러 (상세 렌더링·압축은 js/community.js 모듈이 담당) -->
   <script>
     window.attachedPhotos = [];
     window.attachedFiles = [];
 
-    // 글쓰기 폼 입력 데이터 및 첨부파일 완전 초기화 엔진
-    function resetCafeWriteForm() {
-      window.editingPostId = null;
-      var titleEl = document.getElementById("write-title-input");
-      var contentEl = document.getElementById("write-content-input");
-      var editorEl = document.getElementById("write-content-editor");
-      var tagsEl = document.getElementById("write-tags-input");
-      var noticeCheck = document.getElementById("write-notice-check");
-      var photoInput = document.getElementById("write-photo-input");
-      var fileInput = document.getElementById("write-file-input");
-      var submitBtnTop = document.getElementById("btn-submit-cafe-post");
-      var submitBtnBottom = document.getElementById("btn-submit-cafe-post-bottom");
-
-      if (titleEl) titleEl.value = "";
-      if (contentEl) contentEl.value = "";
-      if (editorEl) editorEl.innerHTML = "";
-      if (tagsEl) tagsEl.value = "";
-      if (noticeCheck) noticeCheck.checked = false;
-      if (photoInput) photoInput.value = "";
-      if (fileInput) fileInput.value = "";
-      if (submitBtnTop) submitBtnTop.textContent = "등록";
-      if (submitBtnBottom) submitBtnBottom.textContent = "등록";
-
-      window.attachedPhotos = [];
-      window.attachedFiles = [];
-      if (typeof window.renderPhotoPreviews === "function") window.renderPhotoPreviews();
-      if (typeof window.renderFilePreviews === "function") window.renderFilePreviews();
-    }
-    window.resetCafeWriteForm = resetCafeWriteForm;
-
-    function showCafeWriteSection() {
-      // 신규 글쓰기 진입 시 이전 작성 잔여 데이터 완전 초기화
-      if (!window.editingPostId) {
-        resetCafeWriteForm();
-      }
-
-      var listEl = document.getElementById("cafe-post-list-section");
-      var writeEl = document.getElementById("cafe-post-write-section");
-      var detailEl = document.getElementById("cafe-post-detail-section");
-      var catEl = document.getElementById("cafe-category-manage-section");
-      if (listEl) listEl.style.display = "none";
-      if (detailEl) detailEl.style.display = "none";
-      if (catEl) catEl.style.display = "none";
-      if (writeEl) writeEl.style.display = "block";
-
-      var writeBoardSelect = document.getElementById("write-board-select");
-      if (writeBoardSelect && window.currentBoard && window.currentBoard !== "all") {
-        writeBoardSelect.value = window.currentBoard;
-      }
-
-      var mainCard = document.querySelector(".cafe-main-card");
-      if (mainCard) mainCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function showCafeListSection() {
-      // 목록 전환 시 작성 중이던 폼 데이터 깨끗하게 비우기
-      resetCafeWriteForm();
-
-      var listEl = document.getElementById("cafe-post-list-section");
-      var writeEl = document.getElementById("cafe-post-write-section");
-      var detailEl = document.getElementById("cafe-post-detail-section");
-      var catEl = document.getElementById("cafe-category-manage-section");
-      if (writeEl) writeEl.style.display = "none";
-      if (detailEl) detailEl.style.display = "none";
-      if (catEl) catEl.style.display = "none";
-      if (listEl) listEl.style.display = "block";
-    }
-
-    // 카테고리 관리 · 설정 인라인 편집 화면으로 전환하는 함수
-    function showCafeCategoryManageSection() {
-      var listEl = document.getElementById("cafe-post-list-section");
-      var writeEl = document.getElementById("cafe-post-write-section");
-      var detailEl = document.getElementById("cafe-post-detail-section");
-      var catEl = document.getElementById("cafe-category-manage-section");
-      if (listEl) listEl.style.display = "none";
-      if (writeEl) writeEl.style.display = "none";
-      if (detailEl) detailEl.style.display = "none";
-      if (catEl) catEl.style.display = "block";
-
-      if (typeof window.initCategoryManageEditor === "function") {
-        window.initCategoryManageEditor();
-      }
-
-      var mainCard = document.querySelector(".cafe-main-card");
-      if (mainCard) mainCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function renderPhotoPreviews() {
-      var grid = document.getElementById("write-photo-preview-grid");
-      if (!grid) return;
-      if (!window.attachedPhotos || window.attachedPhotos.length === 0) {
-        grid.innerHTML = "";
-        return;
-      }
-      var html = "";
-      for (var i = 0; i < window.attachedPhotos.length; i++) {
-        var p = window.attachedPhotos[i];
-        html += '<div style="position: relative; width: 85px; height: 85px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(0, 243, 255, 0.4); background: #0f172a; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">' +
-          '<img src="' + p.dataUrl + '" style="width: 100%; height: 100%; object-fit: cover;">' +
-          '<button type="button" onclick="window.removeAttachedPhoto(' + i + ')" style="position: absolute; top: 3px; right: 3px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">✕</button>' +
-          '</div>';
-      }
-      grid.innerHTML = html;
-    }
-
-    function renderFilePreviews() {
-      var list = document.getElementById("write-file-preview-list");
-      if (!list) return;
-      if (!window.attachedFiles || window.attachedFiles.length === 0) {
-        list.innerHTML = "";
-        return;
-      }
-      var html = "";
-      for (var i = 0; i < window.attachedFiles.length; i++) {
-        var f = window.attachedFiles[i];
-        html += '<div style="display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(0, 243, 255, 0.25); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.88rem; color: #cbd5e1;">' +
-          '<div style="display: flex; align-items: center; gap: 0.6rem; overflow: hidden;">' +
-          '<i class="fa-solid fa-paperclip" style="color: #00f3ff;"></i>' +
-          '<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; font-weight: 600; color: #ffffff;">' + f.name + '</span>' +
-          '<span style="color: #64748b; font-size: 0.78rem;">(' + f.size + ')</span>' +
-          '</div>' +
-          '<button type="button" onclick="window.removeAttachedFile(' + i + ')" style="background: transparent; color: #ef4444; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 700; padding: 0 0.4rem;">✕</button>' +
-          '</div>';
-      }
-      list.innerHTML = html;
-    }
-
-    // 이미지 압축 처리 유틸리티 함수 - window.compressImage와 완벽 호환
-    function compressImage(dataUrl, maxDimension, quality, callback) {
-      if (typeof window.compressImage === "function" && window.compressImage !== compressImage) {
-        return window.compressImage(dataUrl, maxDimension, quality, callback);
-      }
-      var img = new Image();
-      img.onload = function() {
-        var canvas = document.createElement("canvas");
-        var width = img.width;
-        var height = img.height;
-        if (width > maxDimension || height > maxDimension) {
-          if (width > height) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-        var compressed = canvas.toDataURL("image/jpeg", quality);
-        if (typeof callback === "function") callback(compressed);
-      };
-      img.onerror = function() {
-        if (typeof callback === "function") callback(dataUrl);
-      };
-      img.src = dataUrl;
-    }
-
-    // 커뮤니티 사진 선택 이벤트 핸들러 - 비동기 압축 완료 후 미리보기 및 본문 인라인 삽입 안정적 실행
-    async function handlePhotoSelect(e) {
+    window.handlePhotoSelect = async function (e) {
       if (!e.target || !e.target.files) return;
       var files = Array.from(e.target.files);
-      if (files.length === 0) return;
-
       for (var i = 0; i < files.length; i++) {
         var file = files[i];
         if (!file.type.startsWith("image/")) continue;
         try {
-          var compressedUrl = "";
-          if (typeof window.compressImage === "function") {
-            compressedUrl = await window.compressImage(file, 900, 0.72);
-          } else {
-            compressedUrl = await new Promise(function(resolve) {
-              var reader = new FileReader();
-              reader.onload = function(evt) {
-                compressImage(evt.target.result, 900, 0.72, function(res) {
-                  resolve(res);
-                });
-              };
-              reader.onerror = function() { resolve(""); };
-              reader.readAsDataURL(file);
-            });
-          }
-
+          var compressedUrl = typeof window.compressImage === "function"
+            ? await window.compressImage(file, 900, 0.72)
+            : "";
           if (compressedUrl) {
             window.attachedPhotos.push({ name: file.name, dataUrl: compressedUrl });
-            if (typeof window.renderPhotoPreviews === "function") {
-              window.renderPhotoPreviews();
-            }
-            // 네이버 카페 스마트 에디터 - 사진 선택 즉시 본문 작성창 커서 위치에 대형 사진 자동 삽입
-            if (typeof window.insertImageAtCursor === "function") {
-              window.insertImageAtCursor(compressedUrl, file.name);
-            }
+            if (typeof window.renderPhotoPreviews === "function") window.renderPhotoPreviews();
+            if (typeof window.insertImageAtCursor === "function") window.insertImageAtCursor(compressedUrl, file.name);
           }
         } catch (err) {
           console.warn("사진 처리 중 오류:", err);
         }
       }
       e.target.value = "";
-    }
+    };
 
-    function handleFileSelect(e) {
+    window.handleFileSelect = function (e) {
       if (!e.target || !e.target.files) return;
-      var files = Array.from(e.target.files);
-      files.forEach(function(file) {
+      Array.from(e.target.files).forEach(function (file) {
         var reader = new FileReader();
-        reader.onload = function(evt) {
+        reader.onload = function (evt) {
           var sizeKb = (file.size / 1024).toFixed(1) + " KB";
           window.attachedFiles.push({ name: file.name, size: sizeKb, dataUrl: evt.target.result });
-          renderFilePreviews();
+          if (typeof window.renderFilePreviews === "function") window.renderFilePreviews();
         };
         reader.readAsDataURL(file);
       });
       e.target.value = "";
-    }
-
-    function removeAttachedPhoto(idx) {
-      window.attachedPhotos.splice(idx, 1);
-      renderPhotoPreviews();
-    }
-
-    function removeAttachedFile(idx) {
-      window.attachedFiles.splice(idx, 1);
-      renderFilePreviews();
-    }
-
-    // 단일통합 전역 제출 엔진 - js/community.js 마스터 엔진 연동
-    function submitNewPost() {
-      if (typeof window.submitNewPost === "function" && window.submitNewPost !== submitNewPost) {
-        return window.submitNewPost();
-      }
-      return false;
-    }
-
-    window.showCafeWriteSection = showCafeWriteSection;
-    window.showCafeListSection = showCafeListSection;
-    window.showCafeCategoryManageSection = showCafeCategoryManageSection;
-    window.renderPhotoPreviews = renderPhotoPreviews;
-    window.renderFilePreviews = renderFilePreviews;
-    window.handlePhotoSelect = handlePhotoSelect;
-    window.handleFileSelect = handleFileSelect;
-    window.removeAttachedPhoto = removeAttachedPhoto;
-    window.removeAttachedFile = removeAttachedFile;
-    window.submitNewPost = submitNewPost;
+    };
   </script>
 </head>
 
@@ -345,42 +135,6 @@
             <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
-          <script>
-            /* HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함 */
-            (function () {
-              try {
-                var c = sessionStorage.getItem("auth_user_cache");
-                var authUser = document.getElementById("auth-user");
-                var btnLogin = document.getElementById("btn-login");
-                if (c) {
-                  if (authUser) authUser.style.display = "flex";
-                  var u = JSON.parse(c);
-                  var nameEl = document.getElementById("user-name");
-                  var photoEl = document.getElementById("user-photo");
-                  if (nameEl && u.displayName) nameEl.textContent = u.displayName;
-                  if (photoEl && u.photoURL) photoEl.src = u.photoURL;
-
-                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
-                  if (p) {
-                    var perm = JSON.parse(p);
-                    if (perm && perm.permissions) {
-                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
-                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
-                      var adm = document.getElementById("btn-admin-dashboard");
-                      if (adm) adm.style.display = isAdm ? "inline-block" : "none";
-                      var st = document.getElementById("btn-stats-dashboard");
-                      if (st) st.style.display = isSt ? "inline-block" : "none";
-                    }
-                  }
-                } else {
-                  if (btnLogin) {
-                    btnLogin.style.display = "block";
-                    btnLogin.disabled = false;
-                  }
-                }
-              } catch (e) { }
-            })();
-          </script>
         </div>
 
         <!-- 모바일 상단 2단 가로 탭 바 (시안 A: 글자 버튼 - 순서: 홈, 커뮤니티, 진료예약, 전문통역, 제공서비스, 협력업체, 회사소개) -->
@@ -399,30 +153,6 @@
           <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;"
             title="예약통계">📊 예약통계</a>
           <button id="quick-btn-login" class="quick-icon-btn" title="로그인">로그인</button>
-          <script>
-            (function () {
-              try {
-                var c = sessionStorage.getItem("auth_user_cache");
-                if (c) {
-                  var u = JSON.parse(c);
-                  document.getElementById("quick-btn-login").style.display = "none";
-                  document.getElementById("quick-btn-my-reservations").style.display = "inline-flex";
-                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
-                  if (p) {
-                    var perm = JSON.parse(p);
-                    if (perm && perm.permissions) {
-                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
-                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
-                      var qAdm = document.getElementById("quick-btn-admin-dashboard");
-                      if (qAdm) qAdm.style.display = isAdm ? "inline-flex" : "none";
-                      var qSt = document.getElementById("quick-btn-stats-dashboard");
-                      if (qSt) qSt.style.display = isSt ? "inline-flex" : "none";
-                    }
-                  }
-                }
-              } catch (e) { }
-            })();
-          </script>
         </div>
 
         <!-- 모바일 화면 전용 햄버거 메뉴 토글 버튼 -->
@@ -433,6 +163,8 @@
         </button>
       </div>
     </nav>
+    <!-- 공통 헤더 인증 캐시 즉시 반영 스크립트 -->
+    <script src="/js/header-init.js?v=261116_1"></script>
   </header>
 
   <!-- 네이버 카페 스타일 2열 레이아웃 커뮤니티 메인 컨테이너 - 비로그인 방문자도 상시 열람 가능 -->
@@ -475,8 +207,11 @@
           </li>
         </ul>
         <script>
-          /* 0.001초 깜빡임 방지 로컬 스토리지 SWR 인라인 스크립트 - 알바공고 등 최신 카테고리 즉시 렌더링 */
+          /* 0.001초 깜빡임 방지 로컬 스토리지 SWR 인라인 스크립트 - HTML 이스케이프 적용 후 카테고리 선렌더링 */
           (function () {
+            function esc(str) {
+              return String(str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
             try {
               var cached = localStorage.getItem("community_cached_categories");
               if (cached) {
@@ -489,7 +224,8 @@
                       if (c.type === "divider") {
                         html += '<li class="cafe-menu-divider"></li>';
                       } else if (c.isPublic !== false) {
-                        html += '<li class="cafe-menu-item" data-board="' + c.id + '"><span>' + (c.icon || '📁') + ' ' + (c.name || '') + '</span><span class="cafe-menu-count" id="count-' + c.id + '">0</span></li>';
+                        var sid = esc(c.id);
+                        html += '<li class="cafe-menu-item" data-board="' + sid + '"><span>' + esc(c.icon || "📁") + " " + esc(c.name || "") + '</span><span class="cafe-menu-count" id="count-' + sid + '">0</span></li>';
                       }
                     });
                     listEl.innerHTML = html;
@@ -954,10 +690,10 @@
 
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261002_5) -->
-  <script type="module" src="/js/navigation.js?v=261023_1"></script>
-  <script type="module" src="/js/auth.js?v=261023_1"></script>
-  <script type="module" src="/js/community.js?v=261023_1"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261116_1) -->
+  <script type="module" src="/js/navigation.js?v=261116_1"></script>
+  <script type="module" src="/js/auth.js?v=261116_1"></script>
+  <script type="module" src="/js/community.js?v=261116_1"></script>
 </body>
 
 </html>

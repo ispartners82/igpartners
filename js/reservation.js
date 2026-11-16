@@ -1,14 +1,13 @@
-// Firebase App, DB 및 Auth 공통 모듈 연동 (캐시 무효화 버전: v=261002_5)
-import { db, auth } from "./firebase-db.js?v=261002_5";
+// Firebase App, DB 및 Auth 공통 모듈 연동 (캐시 무효화 버전: v=261116_1)
+import { db, auth } from "./firebase-db.js?v=261116_1";
+import { createSolapiAuthHeader } from "./common-utils.js?v=261116_1";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // 15개국어 진료 예약 폼 번역 및 개인정보 수집 이용 안내문 전용 모듈 연동 (코드 경량화 및 모듈화 적용)
-import { i18n, privacyContents } from "./i18n-reservation.js?v=261002_5";
+import { i18n, privacyContents } from "./i18n-reservation.js?v=261116_1";
 
-document.addEventListener("DOMContentLoaded", () => {
-
-
+function initReservationPage() {
   // 솔라피(Solapi) API 연동에 필요한 키 정의 및 설정 상수
   // 평생 무료 서버 규칙을 준수하면서 Secret Key를 안전하게 보호하기 위한 프록시 옵션 (Cloudflare Workers 연동용)
   const SOLAPI_PROXY_URL = ""; // 예: "https://igpartners-alimtalk.workers.dev/send"
@@ -18,38 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // 카카오 검수 승인 완료된 신규 알림톡 템플릿 ID (예약희망시간 포함)
   const SOLAPI_TEMPLATE_ID = "KA01TP260917074840400ff0zrEUDfKQ";
   const SOLAPI_SENDER_NUMBER = "01028196392";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 01012345678)
-
-  // 새로운 예약 신청 알림톡을 실시간으로 전달받을 관리자 휴대폰 번호 목록 (DB 연동으로 변경됨에 따라 하드코딩 상수는 제거 처리)
-
-  // 솔라피 API 호출 시 사용할 HMAC-SHA256 인증 헤더 생성 함수 (Web Crypto API 활용)
-  const createSolapiAuthHeader = async (apiKey, apiSecret) => {
-    const date = new Date().toISOString();
-    const salt = Math.random().toString(36).substring(2, 15);
-
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(apiSecret);
-    const messageData = encoder.encode(date + salt);
-
-    // HMAC SHA-256 서명 생성
-    const cryptoKey = await window.crypto.subtle.importKey(
-      "raw",
-      keyData,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-
-    const signatureBuffer = await window.crypto.subtle.sign(
-      "HMAC",
-      cryptoKey,
-      messageData
-    );
-
-    const hashArray = Array.from(new Uint8Array(signatureBuffer));
-    const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-    return `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`;
-  };
 
   // 솔라피 API를 호출하여 등록된 관리자 휴대폰으로 10가지 예약 정보 알림톡을 다중 전송하는 비동기 함수
   const sendSolapiAlimtalk = async (lang, name, clinicName, gender, visaType, dob, reservationDate, reservationTime, symptoms, address, phone) => {
@@ -150,13 +117,16 @@ document.addEventListener("DOMContentLoaded", () => {
         messages: messages
       };
 
-      // 솔라피 다중 메시지 전송 API 엔드포인트 호출
-      const response = await fetch("https://api.solapi.com/messages/v4/send-many", {
+      // Cloudflare Workers 프록시 URL이 설정된 경우 프록시로 전달하고, 미설정 시 기존 직접 호출 경로 유지
+      const endpointUrl = SOLAPI_PROXY_URL ? SOLAPI_PROXY_URL : "https://api.solapi.com/messages/v4/send-many";
+      const reqHeaders = { "Content-Type": "application/json" };
+      if (!SOLAPI_PROXY_URL) {
+        reqHeaders["Authorization"] = authHeader;
+      }
+
+      const response = await fetch(endpointUrl, {
         method: "POST",
-        headers: {
-          "Authorization": authHeader,
-          "Content-Type": "application/json"
-        },
+        headers: reqHeaders,
         body: JSON.stringify(requestBody)
       });
 
@@ -243,7 +213,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (genderPlaceholder) genderPlaceholder.textContent = dict.genderPlaceholder;
   if (genderMale) genderMale.textContent = dict.genderMale;
   if (genderFemale) genderFemale.textContent = dict.genderFemale;
-  // 예약희망시간 드롭다운 기본 안내 문구 다국어 바인딩
+  // 예약희망시간 드롭다운 기본 안내 문구 다국어 바인딩 및 30분 간격 48개 시간대 동적 생성
+  const inputTimeEl = document.getElementById("input-time");
+  if (inputTimeEl && inputTimeEl.options.length <= 1) {
+    for (let h = 0; h < 24; h++) {
+      const hh = String(h).padStart(2, "0");
+      for (const mm of ["00", "30"]) {
+        const opt = document.createElement("option");
+        opt.value = `${hh}:${mm}`;
+        opt.textContent = `${hh}:${mm}`;
+        inputTimeEl.appendChild(opt);
+      }
+    }
+  }
   const timePlaceholder = document.getElementById("time-placeholder");
   if (timePlaceholder) timePlaceholder.textContent = dict.timePlaceholder;
 
@@ -456,4 +438,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
-});
+}
+
+// DOM 로드 상태에 따른 안전한 초기화 실행
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initReservationPage);
+} else {
+  initReservationPage();
+}

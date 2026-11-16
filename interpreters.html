@@ -37,8 +37,8 @@
   <link rel="icon" type="image/png" href="/img/logo.png?v=260918_5">
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261002_5) -->
-  <link rel="stylesheet" href="css/style.css?v=261020_3">
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261116_1) -->
+  <link rel="stylesheet" href="css/style.css?v=261116_1">
 </head>
 
 <body class="home-page">
@@ -101,42 +101,6 @@
             <button id="btn-logout" class="btn-nav-logout">로그아웃</button>
           </div>
           <button id="btn-login" class="btn-nav-login" style="display: none;">로그인</button>
-          <script>
-            /* HTML 파싱 즉시(0ms) 세션 캐시를 확인하여 비로그인 깜빡임을 원천 차단하고 로그인 상태는 즉시 노출함 */
-            (function () {
-              try {
-                var c = sessionStorage.getItem("auth_user_cache");
-                var authUser = document.getElementById("auth-user");
-                var btnLogin = document.getElementById("btn-login");
-                if (c) {
-                  if (authUser) authUser.style.display = "flex";
-                  var u = JSON.parse(c);
-                  var nameEl = document.getElementById("user-name");
-                  var photoEl = document.getElementById("user-photo");
-                  if (nameEl && u.displayName) nameEl.textContent = u.displayName;
-                  if (photoEl && u.photoURL) photoEl.src = u.photoURL;
-
-                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
-                  if (p) {
-                    var perm = JSON.parse(p);
-                    if (perm && perm.permissions) {
-                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
-                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
-                      var adm = document.getElementById("btn-admin-dashboard");
-                      if (adm) adm.style.display = isAdm ? "inline-block" : "none";
-                      var st = document.getElementById("btn-stats-dashboard");
-                      if (st) st.style.display = isSt ? "inline-block" : "none";
-                    }
-                  }
-                } else {
-                  if (btnLogin) {
-                    btnLogin.style.display = "block";
-                    btnLogin.disabled = false;
-                  }
-                }
-              } catch (e) { }
-            })();
-          </script>
         </div>
 
         <!-- 모바일 상단 2단 가로 탭 바 (시안 A: 글자 버튼 - 순서: 홈, 커뮤니티, 진료예약, 전문통역, 제공서비스, 협력업체, 회사소개) -->
@@ -155,30 +119,6 @@
           <a href="/stats.html" id="quick-btn-stats-dashboard" class="quick-icon-btn" style="display: none;"
             title="예약통계">📊 예약통계</a>
           <button id="quick-btn-login" class="quick-icon-btn" title="로그인">로그인</button>
-          <script>
-            (function () {
-              try {
-                var c = sessionStorage.getItem("auth_user_cache");
-                if (c) {
-                  var u = JSON.parse(c);
-                  document.getElementById("quick-btn-login").style.display = "none";
-                  document.getElementById("quick-btn-my-reservations").style.display = "inline-flex";
-                  var p = sessionStorage.getItem("admin_permissions_" + u.uid);
-                  if (p) {
-                    var perm = JSON.parse(p);
-                    if (perm && perm.permissions) {
-                      var isAdm = !!(perm.role === "super_admin" || perm.permissions.isAdmin);
-                      var isSt = !!(perm.role === "super_admin" || perm.permissions.hasStats);
-                      var qAdm = document.getElementById("quick-btn-admin-dashboard");
-                      if (qAdm) qAdm.style.display = isAdm ? "inline-flex" : "none";
-                      var qSt = document.getElementById("quick-btn-stats-dashboard");
-                      if (qSt) qSt.style.display = isSt ? "inline-flex" : "none";
-                    }
-                  }
-                }
-              } catch (e) { }
-            })();
-          </script>
         </div>
 
         <!-- 모바일 햄버거 토글 버튼 -->
@@ -189,6 +129,8 @@
         </button>
       </div>
     </nav>
+    <!-- 공통 헤더 인증 캐시 즉시 반영 스크립트 -->
+    <script src="/js/header-init.js?v=261116_1"></script>
   </header>
 
   <!-- 전문통역 메인 뷰 컨테이너 - 화면 정중앙 배치를 위해 일반 full-width 컨테이너로 선언 -->
@@ -253,10 +195,10 @@
   <!-- 공통 푸터 -->
   <footer id="global-footer" class="global-footer"></footer>
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261002_5) -->
-  <script type="module" src="/js/navigation.js?v=261020_3"></script>
-  <script type="module" src="/js/auth.js?v=261020_3"></script>
-  <script type="module" src="/js/interpreters.js?v=261020_3"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261116_1) -->
+  <script type="module" src="/js/navigation.js?v=261116_1"></script>
+  <script type="module" src="/js/auth.js?v=261116_1"></script>
+  <script type="module" src="/js/interpreters.js?v=261116_1"></script>
 </body>
 
 </html>

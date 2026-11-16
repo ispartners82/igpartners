@@ -1,8 +1,8 @@
-// Firebase App, Auth 및 Analytics 로드 (공통 DB 모듈 실행 - 캐시 버전: v=260930_7)
-import { app, auth, analytics } from "./firebase-db.js?v=260930_7";
+// Firebase App, Auth 및 Analytics 로드 (공통 DB 모듈 실행 - 캐시 버전: v=261116_1)
+import { app, auth, analytics } from "./firebase-db.js?v=261116_1";
 
-// 네비게이션 모듈에서 정의된 15개국어 공통 기준 데이터(Single Source of Truth) 임포트
-import { LANG_LIST } from "./navigation.js?v=260930_7";
+// 15개국어 공통 기준 데이터(Single Source of Truth) 임포트
+import { LANG_LIST } from "./lang-config.js?v=261116_1";
 
 console.log("Firebase App initialized successfully via common module.");
 

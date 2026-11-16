@@ -1,9 +1,10 @@
-import { db } from "./firebase-db.js?v=261112_4";
+import { db, auth } from "./firebase-db.js?v=261116_1";
+import { escapeHtml, sanitizeUrl } from "./common-utils.js?v=261116_1";
 // 성능 최적화: 병원 목록은 관리자가 수정할 때만 변경되므로 실시간 리스너(onSnapshot) 대신
 // getDocs 일회성 조회를 사용하여 불필요한 Firestore 연결 유지와 비용을 제거합니다.
 import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // 비어 있는 8개국어(일본어, 중국어, 태국어, 라오스어, 네팔어, 인도네시아어, 스리랑카어, 방글라데시어) 병원 번역 보강 헬퍼 모듈 임포트
-import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261112_4";
+import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261116_1";
 
 /**
  * UI 정적 문자열 및 오류 알림을 관리하기 위한 다국어(I18n) 사전 정의
@@ -237,7 +238,7 @@ const i18n = {
   }
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+function initClinicPage() {
   const container = document.getElementById("clinic-list-container");
   if (!container) return;
 
@@ -248,30 +249,42 @@ document.addEventListener("DOMContentLoaded", () => {
   // 2. 화면 내 고정 UI 텍스트 언어팩 매핑 주입
   const pageTitle = document.getElementById("clinic-page-title");
   const pageSubtitle = document.getElementById("clinic-page-subtitle");
-  const textChangeLang = document.getElementById("text-change-lang"); // 신규 추가: 언어변경 텍스트 태그 캐싱
+  const textChangeLang = document.getElementById("text-change-lang");
 
   if (pageTitle) pageTitle.textContent = dict.pageTitle;
   if (pageSubtitle) pageSubtitle.textContent = dict.pageSubtitle;
-  if (textChangeLang) textChangeLang.textContent = dict.changeLang; // 언어 설정에 맞는 텍스트 주입
+  if (textChangeLang) textChangeLang.textContent = dict.changeLang;
 
-  // 로그인 안내 모달 텍스트 치환
+  // 로그인 안내 모달 텍스트 치환 (HTML 태그가 포함된 한국어 제목을 위해 innerHTML 적용)
   const modalTitle = document.getElementById("modal-title-text");
   const modalDescMain = document.getElementById("modal-desc-main");
   const modalDescSub = document.getElementById("modal-desc-sub");
   const modalClose = document.getElementById("btn-close-login-modal");
   const modalTrigger = document.getElementById("btn-trigger-login");
-  if (modalTitle) modalTitle.textContent = dict.modalTitle;
+  if (modalTitle) modalTitle.innerHTML = dict.modalTitle;
   if (modalDescMain) modalDescMain.innerHTML = dict.modalDescMain;
   if (modalDescSub) modalDescSub.innerHTML = dict.modalDescSub;
   if (modalClose) modalClose.textContent = dict.modalClose;
   if (modalTrigger) modalTrigger.textContent = dict.modalTrigger;
+
+  // 병원 카드 선택 버튼 클릭을 안전하게 처리하기 위한 이벤트 위임 바인딩
+  if (container.dataset.clinicSelectBound !== "true") {
+    container.dataset.clinicSelectBound = "true";
+    container.addEventListener("click", (e) => {
+      const btn = e.target.closest(".clinic-select-btn[data-eng-name]");
+      if (!btn) return;
+      const engName = btn.getAttribute("data-eng-name") || "";
+      const localName = btn.getAttribute("data-local-name") || "";
+      window.selectClinic(engName, localName);
+    });
+  }
 
   // 병원 카드 목록 DOM 생성 및 렌더링 전담 함수
   function renderClinicsList(clinicsData, targetContainer, lang, dictionary) {
     targetContainer.innerHTML = "";
 
     if (!clinicsData || clinicsData.length === 0) {
-      targetContainer.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${dictionary.empty}</div>`;
+      targetContainer.innerHTML = `<div class="table-empty" style="grid-column: span 3; text-align: center; padding: 3rem; color: #9ca3af;">${escapeHtml(dictionary.empty)}</div>`;
       return;
     }
 
@@ -279,42 +292,48 @@ document.addEventListener("DOMContentLoaded", () => {
       // 비어 있는 8개국어(ja, zh, th, lo, ne, id, si, bn) 필드가 있을 경우 사전 번역본으로 즉시 보강
       enrichClinicWithMissing8Langs(clinic);
 
-      // 언어에 맞는 병원 필드 동적 매핑 (다국어 전용 필드가 없으면 하위 호환을 위해 기본값 fallback)
+      // 언어에 맞는 병원 필드 동적 매핑 및 XSS 방지 이스케이프 처리
       const clinicName = clinic[`name_${lang}`] || clinic.name || "";
       const clinicDesc = clinic[`desc_${lang}`] || clinic.desc || "";
       const clinicAddress = clinic[`address_${lang}`] || clinic.address || "";
+
+      const safeName = escapeHtml(clinicName);
+      const safeDesc = escapeHtml(clinicDesc);
+      const safeAddress = escapeHtml(clinicAddress);
+      const safeImg = escapeHtml(sanitizeUrl(clinic.image, "/img/clinic_1_dermatology.png"));
 
       // 진료과목 배지 HTML 구성 (다국어 진료과목 배열이 비어 있으면 기본 한국어 진료과목으로 폴백)
       const deptsForLang = (Array.isArray(clinic[`depts_${lang}`]) && clinic[`depts_${lang}`].length > 0)
         ? clinic[`depts_${lang}`]
         : (clinic.depts || []);
       const deptBadges = deptsForLang
-        .map(dept => `<span class="dept-badge">${dept}</span>`)
+        .map(dept => `<span class="dept-badge">${escapeHtml(dept)}</span>`)
         .join("");
 
       const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinicAddress)}`;
+      const engIdentifier = clinic.englishName || clinic.name || "";
 
       const card = document.createElement("article");
       card.className = "clinic-card";
       card.innerHTML = `
         <div class="clinic-img-wrapper">
-          <img class="clinic-img" src="${clinic.image || '/img/clinic_1_dermatology.png'}" alt="${clinicName}" onerror="this.src='/img/clinic_1_dermatology.png'">
+          <img class="clinic-img" src="${safeImg}" alt="${safeName}" onerror="this.src='/img/clinic_1_dermatology.png'">
         </div>
         <div class="clinic-content">
-          <h2 class="clinic-title">${clinicName}</h2>
+          <h2 class="clinic-title">${safeName}</h2>
           <div class="clinic-depts">
             ${deptBadges}
           </div>
-          <p class="clinic-desc">${clinicDesc}</p>
+          <p class="clinic-desc">${safeDesc}</p>
           <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="clinic-address-link" style="text-decoration: none; color: inherit; display: block; margin-top: auto;">
             <div class="clinic-address">
               <svg class="address-icon" viewBox="0 0 24 24" width="14" height="14">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
-              <span style="display:inline-block; margin-left: 4px;">${clinicAddress}</span>
+              <span style="display:inline-block; margin-left: 4px;">${safeAddress}</span>
             </div>
           </a>
-          <button class="clinic-select-btn" onclick="selectClinic('${clinic.englishName || clinic.name}', '${clinicName.replace(/'/g, "\\'")}')">${dictionary.selectBtn}</button>
+          <button type="button" class="clinic-select-btn" data-eng-name="${escapeHtml(engIdentifier)}" data-local-name="${safeName}">${escapeHtml(dictionary.selectBtn)}</button>
         </div>
       `;
       targetContainer.appendChild(card);
@@ -379,7 +398,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   })();
-});
+}
+
+// DOM 로드 상태에 따른 안전한 초기화 실행 (정적 로드 및 지연 로드 대응)
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initClinicPage);
+} else {
+  initClinicPage();
+}
 
 /**
  * 전역 병원 선택 핸들러 (로그인 검증 및 세션 바인딩)
@@ -390,7 +416,8 @@ window.selectClinic = function(clinicEnglishName, clinicLocalizedName) {
   const currentLang = localStorage.getItem("selected_lang") || "vi";
   const dict = i18n[currentLang] || i18n.vi;
 
-  if (!window.isLoggedIn) {
+  const isUserAuthenticated = window.isLoggedIn || (auth && auth.currentUser) || sessionStorage.getItem("auth_user_cache");
+  if (!isUserAuthenticated) {
     if (typeof window.showLoginModal === "function") {
       window.showLoginModal();
     } else {

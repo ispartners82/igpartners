@@ -2,140 +2,212 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 사용자의 회원 등급을 가져오는 헬퍼 함수
+    // 현재 요청 사용자의 회원 등급(role)을 조회하는 헬퍼 함수
     function getUserRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
+    // 현재 요청 사용자의 등급 문서(roles/{role})에 특정 권한 플래그가 켜져 있는지 확인하는 헬퍼 함수
+    function hasRolePermission(flag) {
+      let role = getUserRole();
+      return exists(/databases/$(database)/documents/roles/$(role)) &&
+             get(/databases/$(database)/documents/roles/$(role)).data[flag] == true;
+    }
+
+    // 관리자 등급군 여부 판별 헬퍼 함수
+    function isAdminGroup() {
+      return getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
+    }
+
     // users 컬렉션 규칙
     match /users/{userId} {
-      // 읽기(read) 규칙: 회원가입 시 아이디/이메일 중복 체크 및 프로필 조회가 가능하도록 전체 읽기 허용
+      // 아이디 로그인 시 인증 전 loginId -> email 매핑 조회를 위해 읽기 허용
       allow read: if true;
-      
-      // 생성(create) 규칙: 로그인된 본인 계정 데이터 생성 허용
-      allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // 삭제(delete) 규칙: 회원 계정 DB 영구 삭제는 최고 관리자(super_admin)만 수행 허용
+
+      // 회원가입 시 본인 UID 문서만 생성 가능하며, 일반 회원('user') 권한만 부여 허용
+      // (최고관리자 초기 계정은 지정된 공식 이메일인 경우에만 예외 허용하여 권한 상승 원천 차단)
+      allow create: if request.auth != null &&
+        request.auth.uid == userId &&
+        request.resource.data.uid == userId &&
+        (
+          request.resource.data.role == "user" ||
+          (request.auth.token.email == "ispartners82@gmail.com" && request.resource.data.role == "super_admin")
+        );
+
+      // 회원 계정 DB 영구 삭제는 최고 관리자(super_admin)만 허용
       allow delete: if request.auth != null && getUserRole() == "super_admin";
-      
+
       // 수정(update) 규칙:
-      // 1. 본인 프로필 정보 수정 허용
-      // 2. 최고 관리자(super_admin)는 등급 변경을 포함한 모든 필드 수정 허용
-      // 3. 관리자 등급군(admin, admin_user)은 등급(role) 임의 변경을 제외한 일반 회원 정보(국가/선호언어 등) 수정 허용
+      // 1. 본인 프로필 수정 시 등급(role) 및 식별자(uid) 변경은 엄격히 차단
+      // 2. 최고 관리자(super_admin)는 등급 변경 포함 모든 필드 수정 허용
+      // 3. 관리자(admin, admin_user)는 등급(role)과 uid 변경을 제외한 회원 정보 수정 허용
       allow update: if request.auth != null && (
-        request.auth.uid == userId || 
+        (
+          request.auth.uid == userId &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid'])
+        ) ||
         getUserRole() == "super_admin" ||
         (
           getUserRole() in ["admin", "admin_user"] &&
-          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid'])
         )
       );
     }
 
     // reservations 컬렉션 규칙
     match /reservations/{reservationId} {
-      // 예약 생성은 본인 uid가 맞아야 가능
-      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
-      
-      // 예약 조회는 본인 소유이거나, 관리자 권한이 있는 경우 가능
+      // 예약 생성은 본인 uid와 초기 대기 상태('pending')인 경우만 허용
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.status == "pending";
+
+      // 예약 조회는 본인 소유이거나 예약 관리/통계 권한이 있는 관리자군만 허용
       allow read: if request.auth != null && (
-        resource.data.uid == request.auth.uid || 
-        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"]
-      );
-      
-      // 예약 수정은 본인 소유 예약(알림톡 상태 후속 기록용)이거나 관리자 권한이 있는 경우 허용
-      allow update: if request.auth != null && (
         resource.data.uid == request.auth.uid ||
-        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"]
+        isAdminGroup() ||
+        hasRolePermission('hasReservations') ||
+        hasRolePermission('hasStats')
       );
-      
+
+      // 예약 수정:
+      // 1. 관리자군 및 예약 관리 권한 보유자는 모든 수정 허용
+      // 2. 본인 소유 예약은 대기(pending) -> 취소(cancelled) 전환 또는 알림톡 발송 결과 기록만 허용
+      allow update: if request.auth != null && (
+        isAdminGroup() ||
+        hasRolePermission('hasReservations') ||
+        (
+          resource.data.uid == request.auth.uid && (
+            (
+              resource.data.status == "pending" &&
+              request.resource.data.status == "cancelled" &&
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            ) ||
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['alimtalkStatus', 'alimtalkError'])
+          )
+        )
+      );
+
       // 예약 삭제는 관리자 권한이 있는 경우만 허용
-      allow delete: if request.auth != null && 
-        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
+      allow delete: if request.auth != null && (
+        isAdminGroup() ||
+        hasRolePermission('hasReservations')
+      );
     }
 
     // clinics 컬렉션 규칙
     match /clinics/{clinicId} {
-      allow read: if true; // 누구나 조회 가능
-      allow write: if request.auth != null && 
-        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
+      allow read: if true;
+      allow write: if request.auth != null && (
+        isAdminGroup() ||
+        hasRolePermission('hasClinics')
+      );
     }
 
     // roles 컬렉션 규칙
     match /roles/{roleId} {
-      allow read: if request.auth != null; // 로그인한 회원 누구나 등급 정보 조회 가능
-      allow write: if request.auth != null && getUserRole() == "super_admin"; // 최고 관리자만 생성/수정/삭제 가능
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && getUserRole() == "super_admin";
     }
 
     // ads (광고 배너) 컬렉션 규칙
     match /ads/{adId} {
-      // 읽기(read) 규칙: 홈페이지 첫 화면에서 누구나(로그인하지 않은 방문자도) 광고판을 볼 수 있도록 전체 공개합니다
       allow read: if true;
-      // 쓰기(write) 규칙: 로그인된 상태이며, 지정된 관리자 등급군에 속해 있어야 등록/수정/삭제가 가능하도록 보호합니다
-      allow write: if request.auth != null && 
-        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
+      allow write: if request.auth != null && (
+        isAdminGroup() ||
+        hasRolePermission('hasAds')
+      );
     }
 
-    // interpreters (전문 통역사) 컬렉션 보안 규칙 - 홈페이지 방문자 전체 읽기 허용, 관리자 등급 쓰기 허용
+    // interpreters (전문 통역사) 컬렉션 규칙
     match /interpreters/{interpreterId} {
-      // 읽기(read) 규칙: 전문 통역 페이지(interpreters.html)에서 누구나 통역사 목록을 조회할 수 있도록 허용
       allow read: if true;
-      // 쓰기(write) 규칙: 로그인된 관리자 등급군에게만 등록, 수정, 삭제 허용
-      allow write: if request.auth != null && 
-        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
+      allow write: if request.auth != null && (
+        isAdminGroup() ||
+        hasRolePermission('hasInterpreters')
+      );
     }
 
-    // partners (협력업체) 컬렉션 보안 규칙 - 홈페이지 방문자 전체 읽기 허용, 관리자 등급만 등록/수정/삭제 허용
+    // partners (협력업체) 컬렉션 규칙
     match /partners/{partnerId} {
-      // 읽기(read) 규칙: 협력업체 페이지(partners.html)에서 누구나 협력업체 목록을 조회할 수 있도록 허용
       allow read: if true;
-      // 쓰기(write) 규칙: 로그인된 관리자 등급군에게만 등록, 수정, 삭제 허용
-      allow write: if request.auth != null && 
-        getUserRole() in ["admin", "super_admin", "admin_user", "top_manager", "res_manager"];
+      allow write: if request.auth != null && (
+        isAdminGroup() ||
+        hasRolePermission('hasPartners')
+      );
     }
 
-    // settings/community_categories (커뮤니티 카테고리 및 열람 권한 설정) 보안 규칙 - 비로그인 방문자도 카테고리 목록과 열람 권한을 조회할 수 있도록 전체 읽기 허용
+    // settings/community_categories (커뮤니티 카테고리 및 열람 권한 설정)
+    // 비로그인 방문자도 카테고리 목록 조회가 가능해야 하므로 읽기는 전체 허용, 쓰기는 관리자 및 커뮤니티 설정 권한자만 허용
     match /settings/community_categories {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null && (
+        getUserRole() in ["admin", "super_admin", "admin_user"] ||
+        hasRolePermission('hasCommunitySettings')
+      );
     }
 
-    // settings/sms_templates (관리자 문자발송 빠른 문구 양식 설정) 보안 규칙 - 로그인한 관리자가 양식을 조회, 추가, 편집, 삭제할 수 있도록 허용
+    // settings/sms_templates (관리자 문자발송 빠른 문구 양식 설정)
+    // 관리자 및 문자발송 권한 보유자만 조회·편집 허용
     match /settings/sms_templates {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read, write: if request.auth != null && (
+        getUserRole() in ["admin", "super_admin", "admin_user"] ||
+        hasRolePermission('hasSms')
+      );
     }
 
-    // settings (알림톡 수신 설정 등 일반 설정) 컬렉션 보안 규칙 - 예약 폼에서 관리자 번호 조회를 위해 로그인 유저에게 읽기 허용, 최고 관리자만 수정 가능
+    // settings (알림톡 수신 설정 등 일반 설정)
     match /settings/{settingId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && getUserRole() == "super_admin";
     }
 
-    // community_posts (커뮤니티 게시판 및 하위 comments 댓글 서브컬렉션) 보안 규칙 - 누구나 열람 가능, 작성은 로그인 회원, 수정/삭제는 작성자 본인 및 관리자 전용
+    // community_posts (커뮤니티 게시판 및 하위 comments 댓글 서브컬렉션)
     match /community_posts/{postId} {
-      allow read: if true; // 커뮤니티 게시글 전체 읽기 허용
-      allow create: if request.auth != null; // 게시글 작성은 로그인된 회원만 허용 (일일 쓰기 한도 및 악성 봇 방어)
-      allow update, delete: if request.auth != null && (
-        resource.data.authorUid == request.auth.uid || 
+      allow read: if true;
+      // 게시글 생성 시 작성자 UID 사칭 방지를 위해 본인 UID 일치 검증
+      allow create: if request.auth != null &&
+        request.resource.data.authorUid == request.auth.uid;
+
+      // 게시글 수정:
+      // 1. 작성자 본인 및 관리자군은 본문 수정 허용 (작성자 UID 변조는 차단)
+      // 2. 일반 로그인 회원은 조회수(views) 또는 댓글수(commentCount) 카운터 갱신만 허용
+      allow update: if request.auth != null && (
+        (
+          (
+            resource.data.authorUid == request.auth.uid ||
+            getUserRole() in ["admin", "super_admin", "admin_user"]
+          ) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['authorUid'])
+        ) ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']) ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])
+      );
+
+      allow delete: if request.auth != null && (
+        resource.data.authorUid == request.auth.uid ||
         getUserRole() in ["admin", "super_admin", "admin_user"]
       );
 
-      // 하위 comments 댓글 서브컬렉션 보안 규칙
+      // 하위 comments 댓글 서브컬렉션 규칙
       match /comments/{commentId} {
         allow read: if true;
-        allow create: if request.auth != null;
+        allow create: if request.auth != null &&
+          request.resource.data.authorUid == request.auth.uid;
         allow update, delete: if request.auth != null && (
-          resource.data.authorUid == request.auth.uid || 
+          resource.data.authorUid == request.auth.uid ||
           getUserRole() in ["admin", "super_admin", "admin_user"]
         );
       }
     }
 
-    // deleted_community_posts (삭제 게시글 백업 보관소) 보안 규칙 - 로그인 회원 백업 생성 허용, 조회/삭제는 관리자 전용
+    // deleted_community_posts (삭제 게시글 백업 보관소)
     match /deleted_community_posts/{postId} {
-      allow create: if request.auth != null;
-      allow read, delete: if request.auth != null && 
+      allow create: if request.auth != null && (
+        request.resource.data.authorUid == request.auth.uid ||
+        request.resource.data.deletedBy == request.auth.uid ||
+        getUserRole() in ["admin", "super_admin", "admin_user"]
+      );
+      allow read, delete: if request.auth != null &&
         getUserRole() in ["admin", "super_admin", "admin_user"];
     }
   }

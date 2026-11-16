@@ -9,7 +9,8 @@
  * ==============================================================================
  */
 
-import { db } from "/js/firebase-db.js?v=261002_5";
+import { db } from "/js/firebase-db.js?v=261116_1";
+import { escapeHtml, sanitizeUrl } from "/js/common-utils.js?v=261116_1";
 import {
   collection,
   onSnapshot,
@@ -46,12 +47,15 @@ function renderPartnerCards(container, list) {
     const title = escapeHtml(item.title || "협력업체");
     const subtitle = escapeHtml(item.subtitle || "");
     const tag = escapeHtml(item.tag || "Partner");
-    const imageUrl = item.imageUrl || "/img/logo.png";
+    const imageUrl = escapeHtml(sanitizeUrl(item.imageUrl, "/img/logo.png"));
     const linkUrl = item.linkUrl ? item.linkUrl.trim() : "";
 
-    const hasLink = linkUrl && (linkUrl.startsWith("http://") || linkUrl.startsWith("https://"));
-    const clickAttr = hasLink ? `onclick="window.open('${escapeHtml(linkUrl)}', '_blank', 'noopener,noreferrer')"` : "";
-    const cursorStyle = hasLink ? 'cursor: pointer;' : '';
+    const safeLinkUrl = (linkUrl && (linkUrl.startsWith("http://") || linkUrl.startsWith("https://")))
+      ? sanitizeUrl(linkUrl, "")
+      : "";
+    const hasLink = Boolean(safeLinkUrl);
+    const linkAttr = hasLink ? `data-link="${escapeHtml(safeLinkUrl)}"` : "";
+    const cursorStyle = hasLink ? "cursor: pointer;" : "";
 
     // 웹사이트 링크 유무에 따라 공식 사이트 방문 칩 또는 공식 제휴사 인증 뱃지를 표시하여 우측 하단 공백 완벽 해소
     const bottomInfoHtml = hasLink
@@ -59,7 +63,7 @@ function renderPartnerCards(container, list) {
       : `<div class="partner-bottom-row"><span class="partner-verified-badge">🤝 IGPartners 공식 제휴사</span></div>`;
 
     html += `
-      <div class="partner-card" ${clickAttr} style="${cursorStyle}" title="${hasLink ? '클릭 시 공식 웹사이트로 이동합니다' : ''}">
+      <div class="partner-card" ${linkAttr} style="${cursorStyle}" title="${hasLink ? '클릭 시 공식 웹사이트로 이동합니다' : ''}">
         <div class="partner-logo-box">
           <img src="${imageUrl}" alt="${title}" loading="lazy" onerror="this.src='/img/logo.png';">
         </div>
@@ -74,6 +78,19 @@ function renderPartnerCards(container, list) {
   });
 
   container.innerHTML = html;
+
+  // 인라인 onclick 문자열 조합 대신 안전한 이벤트 위임 방식으로 외부 사이트 이동 처리
+  if (container.dataset.partnerClickBound !== "true") {
+    container.dataset.partnerClickBound = "true";
+    container.addEventListener("click", (e) => {
+      const card = e.target.closest(".partner-card[data-link]");
+      if (!card) return;
+      const targetUrl = sanitizeUrl(card.getAttribute("data-link"), "");
+      if (targetUrl) {
+        window.open(targetUrl, "_blank", "noopener,noreferrer");
+      }
+    });
+  }
 }
 
 /**
@@ -85,9 +102,11 @@ function initPartnersList() {
 
   // ── [1단계: Stale] 로컬 캐시가 존재하면 DB 조회 지연 없이 0.01초 만에 즉시 렌더링 ──
   let cachedData = null;
+  let rawCacheStr = "";
   try {
     const rawCache = localStorage.getItem(CACHE_KEY);
     if (rawCache) {
+      rawCacheStr = rawCache;
       cachedData = JSON.parse(rawCache);
       if (Array.isArray(cachedData) && cachedData.length > 0) {
         renderPartnerCards(gridEl, cachedData);
@@ -117,6 +136,7 @@ function initPartnersList() {
       if (snapshot.empty) {
         localStorage.removeItem(CACHE_KEY);
         cachedData = null;
+        rawCacheStr = "";
         renderPartnerCards(gridEl, []);
         return;
       }
@@ -129,18 +149,17 @@ function initPartnersList() {
         freshList.push({ id: doc.id, ...data });
       });
 
-      // ── [3단계: Update] 데이터 비교 후 변경 사항이 발생했거나 첫 로드인 경우 화면 즉시 갱신 및 캐시 최신화 ──
+      // ── [3단계: Update] 원본 캐시 문자열과 직접 비교해 불필요한 재직렬화 없이 즉시 갱신 여부 판별 ──
       const freshDataStr = JSON.stringify(freshList);
-      const cachedDataStr = JSON.stringify(cachedData || []);
 
-      if (freshDataStr !== cachedDataStr) {
+      if (freshDataStr !== rawCacheStr) {
         console.log("🔄 SWR] 협력업체 데이터 변경 감지(추가/수정/삭제/순서). UI 및 로컬 캐시를 즉시 갱신합니다.");
         renderPartnerCards(gridEl, freshList);
         localStorage.setItem(CACHE_KEY, freshDataStr);
-        cachedData = freshList; // 다음 비교를 위한 메모리 참조 갱신
+        cachedData = freshList;
+        rawCacheStr = freshDataStr;
       } else {
         console.log("✅ SWR] 협력업체 로컬 캐시가 서버의 최신 데이터와 완벽하게 일치합니다.");
-        localStorage.setItem(CACHE_KEY, freshDataStr);
       }
     }, (error) => {
       console.error("협력업체 실시간 목록 수신 오류]", error);
@@ -166,21 +185,6 @@ function initPartnersList() {
   } catch (err) {
     console.error("협력업체 초기화 실패]", err);
   }
-}
-
-/**
- * XSS 공격 방지를 위한 HTML 특수문자 이스케이프 유틸리티
- * @param {string} str 대상 문자열
- * @returns {string} 이스케이프된 안전한 문자열
- */
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 // DOM 로드 상태에 따른 안전한 초기화 실행 (정적 로드 및 SPA 지연 로드 완전 대응)

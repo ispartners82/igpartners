@@ -5,7 +5,8 @@
  * DB가 비어있는 경우 사이트 정돈감을 위해 8개의 고화질 웰니스 샘플 광고를 자동 백업(Fallback) 노출합니다.
  */
 
-import { db } from "/js/firebase-db.js?v=260930_7";
+import { db } from "/js/firebase-db.js?v=261116_1";
+import { escapeHtml, sanitizeUrl } from "/js/common-utils.js?v=261116_1";
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // 통합 광고 배너 로컬 캐시 키 정의 (SWR 캐시 엔진용)
@@ -121,12 +122,18 @@ function renderAds(list) {
     card.className = "ad-card";
     card.setAttribute("data-ad-index", index);
 
-    // 슬라이드에 노출될 이미지들의 HTML 조각 생성 (첫 번째 이미지만 active 클래스 부여)
+    // 슬라이드에 노출될 이미지들의 HTML 조각 생성 (XSS 및 비정상 스킴 URL 차단을 위해 sanitizeUrl·escapeHtml 적용)
     let slidesHtml = "";
+    const safeTag = escapeHtml(ad.tag || "");
+    const safeTitle = escapeHtml(ad.title || "");
+    const safeDesc = escapeHtml(ad.desc || "");
+
     if (ad.images && ad.images.length > 0) {
       ad.images.forEach((imgUrl, i) => {
+        const safeImgUrl = sanitizeUrl(imgUrl, "");
+        if (!safeImgUrl) return;
         slidesHtml += `
-          <img class="ad-slide ${i === 0 ? 'active' : ''}" src="${imgUrl}" alt="${ad.tag || '광고'} 슬라이드 이미지 ${i + 1}">
+          <img class="ad-slide ${i === 0 ? 'active' : ''}" src="${escapeHtml(safeImgUrl)}" alt="${safeTag || '광고'} 슬라이드 이미지 ${i + 1}">
         `;
       });
     }
@@ -136,9 +143,9 @@ function renderAds(list) {
         ${slidesHtml}
       </div>
       <div class="ad-info">
-        <span class="ad-tag">${ad.tag || ""}</span>
-        <h3 class="ad-title">${ad.title || ""}</h3>
-        <p class="ad-desc">${ad.desc || ""}</p>
+        <span class="ad-tag">${safeTag}</span>
+        <h3 class="ad-title">${safeTitle}</h3>
+        <p class="ad-desc">${safeDesc}</p>
       </div>
     `;
 
@@ -183,9 +190,11 @@ async function initPage() {
 
   // ── [1단계: Stale] 로컬 캐시가 있으면 0.01초 만에 즉시 렌더링 ──
   let cachedData = null;
+  let rawCacheStr = "";
   try {
     const rawCache = localStorage.getItem(CACHE_KEY);
     if (rawCache) {
+      rawCacheStr = rawCache;
       cachedData = JSON.parse(rawCache);
       if (Array.isArray(cachedData) && cachedData.length > 0) {
         renderAds(cachedData);
@@ -222,17 +231,15 @@ async function initPage() {
       });
     }
 
-    // ── [3단계: Update] 데이터 비교 후 변경 사항이 있으면 최신 데이터로 화면 갱신 ──
+    // ── [3단계: Update] 기존 캐시 문자열과 직접 비교하여 불필요한 재직렬화 없이 갱신 여부 판별 ──
     const freshDataStr = JSON.stringify(freshAds);
-    const cachedDataStr = JSON.stringify(cachedData || []);
 
-    if (freshDataStr !== cachedDataStr) {
+    if (freshDataStr !== rawCacheStr) {
       console.log("🔄 [SWR] Fresh ads detected from Firestore. Updating UI and Cache.");
       renderAds(freshAds);
       localStorage.setItem(CACHE_KEY, freshDataStr);
     } else {
       console.log("✅ [SWR] Local Cache is already up-to-date with Firestore.");
-      localStorage.setItem(CACHE_KEY, freshDataStr);
     }
   } catch (error) {
     console.error("❌ [SWR] Firestore ads background fetch error:", error);

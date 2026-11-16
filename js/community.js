@@ -5,40 +5,17 @@
  * =========================================================================
  */
 
-import { auth, db } from "/js/firebase-db.js?v=261002_5";
+import { auth, db } from "./firebase-db.js?v=261116_1";
+import { escapeHtml, sanitizeUrl, sanitizeRichHtml, compressImageFile } from "./common-utils.js?v=261116_1";
+import { DEFAULT_AVAILABLE_ROLES } from "./lang-config.js?v=261116_1";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, limit, orderBy, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// Firestore SDK 전역 객체 바인딩
-window.db = db;
-window.collection = collection;
-window.query = query;
-window.limit = limit;
-window.addDoc = addDoc;
-window.doc = doc;
-window.getDoc = getDoc;
-window.setDoc = setDoc;
-window.updateDoc = updateDoc;
-window.deleteDoc = deleteDoc;
-window.serverTimestamp = serverTimestamp;
-window.increment = increment;
-
-// 기본 9대 회원 등급 목록 정의 - Firestore roles 컬렉션과 동적 동기화 지원
-const DEFAULT_AVAILABLE_ROLES = [
-  { key: "super_admin", label: "최고 관리자" },
-  { key: "admin", label: "일반 관리자" },
-  { key: "admin_user", label: "관리자" },
-  { key: "top_manager", label: "최고 매니저" },
-  { key: "res_manager", label: "예약 매니저" },
-  { key: "partner", label: "제휴 병원" },
-  { key: "vip", label: "VIP 회원" },
-  { key: "general", label: "일반" },
-  { key: "user", label: "일반 회원" }
-];
-let availableRoles = [...DEFAULT_AVAILABLE_ROLES];
+// 기본 회원 등급 목록은 공통 설정 모듈(lang-config.js)에서 가져오고 Firestore roles 컬렉션과 동기화
+let availableRoles = DEFAULT_AVAILABLE_ROLES.map(r => ({ ...r }));
 
 // 전체 등급 및 관리자 등급 키 헬퍼 배열
-const ALL_ROLE_KEYS = DEFAULT_AVAILABLE_ROLES.map(r => r.key);
+const ALL_ROLE_KEYS = availableRoles.map(r => r.key);
 const ADMIN_ROLE_KEYS = ["super_admin", "admin", "admin_user"];
 
 // 기본 6대 커뮤니티 카테고리 정의 - readPermission(열람 권한), writeRoles(글쓰기 허용 등급 배열), description(주의 및 설명)
@@ -112,7 +89,7 @@ function insertImageAtCursor(imgDataUrl, fileName) {
   imgWrap.style.userSelect = "none";
   imgWrap.innerHTML = `
     <div style="position: relative; display: inline-block; max-width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0, 243, 255, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: rgba(10, 15, 30, 0.95);">
-      <img src="${imgDataUrl}" style="max-width: 100%; max-height: 600px; object-fit: contain; display: block;" alt="${escapeHtml(fileName)}">
+      <img src="${escapeHtml(sanitizeUrl(imgDataUrl, ''))}" style="max-width: 100%; max-height: 600px; object-fit: contain; display: block;" alt="${escapeHtml(fileName)}">
       <button type="button" onclick="this.closest('.editor-inline-image-wrap').remove()" title="사진 삭제" style="position: absolute; top: 8px; right: 8px; background: rgba(239, 68, 68, 0.9); color: #ffffff; border: none; border-radius: 50%; width: 26px; height: 26px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">✕</button>
     </div>
   `;
@@ -145,12 +122,11 @@ function insertImageAtCursor(imgDataUrl, fileName) {
 window.insertImageAtCursor = insertImageAtCursor;
 
 /**
- * 이미지 자동 리사이징 & 고효율 압축 엔진 - File, Blob 및 DataURL 다형성 완벽 지원 (Promise 및 Callback 동시 호환)
+ * 이미지 자동 리사이징 & 고효율 압축 래퍼 - 공통 유틸리티(compressImageFile)에 위임하고 기존 Promise/Callback 호환성 유지
  */
 function compressImage(inputData, maxDimension = 900, quality = 0.72, callback = null) {
-  return new Promise((resolve) => {
-    // 콜백 함수와 Promise resolve를 동시에 안전하게 수행하는 래퍼 함수
-    const handleResolve = (result) => {
+  return compressImageFile(inputData, { maxDimension, quality, outputType: "image/jpeg" })
+    .then((result) => {
       if (typeof callback === "function") {
         try {
           callback(result);
@@ -158,56 +134,8 @@ function compressImage(inputData, maxDimension = 900, quality = 0.72, callback =
           console.warn("압축 콜백 실행 오류:", cbErr);
         }
       }
-      resolve(result);
-    };
-
-    // DataURL 문자열을 Image 객체로 로드하여 캔버스 리사이징 및 압축을 수행하는 내부 함수
-    const processDataUrl = (dataUrl) => {
-      if (!dataUrl) {
-        handleResolve("");
-        return;
-      }
-      const img = new Image();
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxDimension || height > maxDimension) {
-          if (width > height) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // JPEG 포맷 고품질 압축 데이터 URL 생성
-        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
-        handleResolve(compressedDataUrl);
-      };
-      img.onerror = () => handleResolve(dataUrl);
-      img.src = dataUrl;
-    };
-
-    // 입력 데이터 타입에 따라 적절한 파이프라인 분기 처리
-    if (typeof inputData === "string") {
-      processDataUrl(inputData);
-    } else if (inputData instanceof Blob) {
-      const reader = new FileReader();
-      reader.onload = (e) => processDataUrl(e.target.result);
-      reader.onerror = () => handleResolve("");
-      reader.readAsDataURL(inputData);
-    } else {
-      handleResolve("");
-    }
-  });
+      return result;
+    });
 }
 
 window.compressImage = compressImage;
@@ -772,13 +700,9 @@ function showCafeDetailSection(postIndex) {
   const userRole = (window.currentUserRole || "").toLowerCase();
   const allowedAdminRoles = ["super_admin", "admin", "admin_user"];
 
-  const isAuthor = (currentUid && post.authorUid && currentUid === post.authorUid) ||
-                   (currentUserName && post.authorName && currentUserName === post.authorName);
-  const isAllowedAdmin = allowedAdminRoles.includes(userRole) ||
-                         currentUserBadge.includes("관리자") ||
-                         currentUserBadge.includes("최고관리자") ||
-                         currentUserName === "최고관리자" ||
-                         currentUserName === "관리자";
+  // 작성자 및 관리자 판별은 표시 이름/배지가 아닌 실제 인증 UID와 권한 등급 키로만 검증하여 위변조 방지
+  const isAuthor = Boolean(currentUid && post.authorUid && currentUid === post.authorUid);
+  const isAllowedAdmin = allowedAdminRoles.includes(userRole);
 
   // 해당 게시글이 속한 카테고리의 글 열람 권한(readPermission) 동적 판별
   const targetBoard = post.board || "notice";
@@ -869,11 +793,14 @@ function showCafeDetailSection(postIndex) {
   if (post.photos && post.photos.length > 0) {
     inBodyPhotosHtml = `
       <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; align-items: center; width: 100%;">
-        ${post.photos.map(p => `
+        ${post.photos.map(p => {
+          const safePhotoSrc = escapeHtml(sanitizeUrl(p.dataUrl, ""));
+          return `
           <div style="width: 100%; max-width: 820px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0, 243, 255, 0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: rgba(10, 15, 30, 0.95); text-align: center;">
-            <img src="${p.dataUrl}" loading="lazy" decoding="async" style="width: 100%; max-height: 650px; object-fit: contain; display: block; cursor: zoom-in;" onclick="window.openImageLightbox('${p.dataUrl}')" title="클릭하여 원본 크게 보기" alt="${escapeHtml(p.name || '본문 이미지')}">
+            <img src="${safePhotoSrc}" loading="lazy" decoding="async" style="width: 100%; max-height: 650px; object-fit: contain; display: block; cursor: zoom-in;" data-lightbox-src="${safePhotoSrc}" title="클릭하여 원본 크게 보기" alt="${escapeHtml(p.name || '본문 이미지')}">
           </div>
-        `).join("")}
+        `;
+        }).join("")}
       </div>
     `;
   }
@@ -887,8 +814,8 @@ function showCafeDetailSection(postIndex) {
         </div>
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
           ${post.files.map(f => `
-            <a href="${f.dataUrl}" download="${f.name}" style="display: flex; align-items: center; justify-content: space-between; background: rgba(15,23,42,0.85); border: 1px solid rgba(192,132,252,0.3); padding: 0.65rem 1rem; border-radius: 10px; color: #38bdf8; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">
-              <span style="display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-file-arrow-down" style="color: #c084fc;"></i> ${escapeHtml(f.name)} (${f.size})</span>
+            <a href="${escapeHtml(sanitizeUrl(f.dataUrl, '#'))}" download="${escapeHtml(f.name || 'file')}" style="display: flex; align-items: center; justify-content: space-between; background: rgba(15,23,42,0.85); border: 1px solid rgba(192,132,252,0.3); padding: 0.65rem 1rem; border-radius: 10px; color: #38bdf8; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">
+              <span style="display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-file-arrow-down" style="color: #c084fc;"></i> ${escapeHtml(f.name)} (${escapeHtml(f.size)})</span>
               <span style="font-size: 0.8rem; background: rgba(192,132,252,0.15); border: 1px solid rgba(192,132,252,0.4); color: #c084fc; padding: 0.25rem 0.65rem; border-radius: 6px; font-weight: 600;">다운로드</span>
             </a>
           `).join("")}
@@ -910,7 +837,7 @@ function showCafeDetailSection(postIndex) {
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 243, 255, 0.2); padding-bottom: 0.85rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
       <div style="display: flex; align-items: center; gap: 0.65rem;">
         <span style="background: linear-gradient(135deg, rgba(0,243,255,0.2), rgba(0,102,255,0.2)); border: 1px solid rgba(0,243,255,0.4); color: #00f3ff; font-size: 0.82rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 20px;">
-          ${boardLabel}
+          ${escapeHtml(boardLabel)}
         </span>
         <span style="color: #f59e0b; font-size: 0.82rem; font-weight: 700; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 0.25rem 0.65rem; border-radius: 6px;">
           ${escapeHtml(post.prefix || "일반")}
@@ -942,14 +869,14 @@ function showCafeDetailSection(postIndex) {
           </div>
         </div>
         <div style="display: flex; gap: 1rem;">
-          <span><i class="fa-regular fa-clock"></i> ${post.date}</span>
-          <span><i class="fa-regular fa-eye"></i> 조회 ${post.views}</span>
+          <span><i class="fa-regular fa-clock"></i> ${escapeHtml(post.date)}</span>
+          <span><i class="fa-regular fa-eye"></i> 조회 ${escapeHtml(post.views)}</span>
         </div>
       </div>
     </div>
 
     <div style="background: rgba(10, 15, 30, 0.9); border: 1px solid rgba(0, 243, 255, 0.25); border-radius: 14px; padding: 1.5rem; color: #f1f5f9; font-size: 1rem; line-height: 1.8; word-break: break-word; min-height: 200px;">
-      ${post.contentHtml ? post.contentHtml : `${escapeHtml(post.content).replace(/\n/g, '<br>')}${inBodyPhotosHtml}`}
+      ${post.contentHtml ? sanitizeRichHtml(post.contentHtml) : `${escapeHtml(post.content).replace(/\n/g, '<br>')}${inBodyPhotosHtml}`}
       ${filesHtml}
       ${tagsHtml}
     </div>
@@ -991,6 +918,17 @@ function showCafeDetailSection(postIndex) {
       </div>
     </div>
   `;
+
+  // 본문 첨부 이미지 클릭 시 라이트박스 열기 이벤트 위임 (1회 등록)
+  if (!postDetailSection.dataset.lightboxDelegated) {
+    postDetailSection.dataset.lightboxDelegated = "1";
+    postDetailSection.addEventListener("click", (e) => {
+      const targetImg = e.target.closest("img[data-lightbox-src]");
+      if (targetImg) {
+        window.openImageLightbox(targetImg.getAttribute("data-lightbox-src"));
+      }
+    });
+  }
 
   // 상세 화면 진입 시 해당 게시글의 댓글 목록 및 작성 폼 비동기 로딩
   loadPostComments(post.id || "", postIndex);
@@ -1060,11 +998,7 @@ async function loadPostComments(postId, postIndex) {
   const currentUserBadge = sidebarRoleBadgeEl ? sidebarRoleBadgeEl.textContent.trim() : "";
   const userRole = (window.currentUserRole || "").toLowerCase();
   const allowedAdminRoles = ["super_admin", "admin", "admin_user"];
-  const isAllowedAdmin = allowedAdminRoles.includes(userRole) ||
-                         currentUserBadge.includes("관리자") ||
-                         currentUserBadge.includes("최고관리자") ||
-                         currentUserName === "최고관리자" ||
-                         currentUserName === "관리자";
+  const isAllowedAdmin = allowedAdminRoles.includes(userRole);
 
   let comments = [];
 
@@ -1152,20 +1086,23 @@ window.loadPostComments = loadPostComments;
  * 단일 댓글 / 대댓글 계층형 시각화 HTML 렌더링 헬퍼 함수]
  */
 function renderSingleCommentHtml(c, depth, postId, postIndex, currentUid, currentUserName, isAllowedAdmin, parentAuthor, THREAD_COLORS) {
-  const isCommentAuthor = (currentUid && c.authorUid && currentUid === c.authorUid) ||
-                          (currentUserName && c.authorName && currentUserName === c.authorName);
+  // 댓글 삭제 권한 역시 UID 기준으로만 확인하여 이름 중복 도용 방지
+  const isCommentAuthor = Boolean(currentUid && c.authorUid && currentUid === c.authorUid);
   const canDelete = isCommentAuthor || isAllowedAdmin;
 
   const roleBadge = c.authorRoleLabel ? `<span class="comment-role-badge">${escapeHtml(c.authorRoleLabel)}</span>` : (c.authorRole ? `<span class="comment-role-badge">${escapeHtml(c.authorRole)}</span>` : "");
   const postAuthorBadge = (window.combinedPosts && window.combinedPosts[postIndex] && window.combinedPosts[postIndex].authorName === c.authorName)
     ? `<span class="comment-role-badge author">작성자</span>` : "";
 
-  const avatar = c.authorPhoto || "https://lh3.googleusercontent.com/a/default-user=s96-c";
+  const defaultAvatar = "https://lh3.googleusercontent.com/a/default-user=s96-c";
+  const avatar = escapeHtml(sanitizeUrl(c.authorPhoto, defaultAvatar));
+  const safeCommentId = escapeHtml(c.id || "");
+  const safePostId = escapeHtml(postId || "");
 
   let deleteBtnHtml = "";
   if (canDelete) {
     deleteBtnHtml = `
-      <button type="button" class="btn-comment-action delete" onclick="window.deletePostComment('${postId}', ${postIndex}, '${c.id}')" title="댓글 삭제">
+      <button type="button" class="btn-comment-action delete" onclick="window.deletePostComment('${safePostId}', ${postIndex}, '${safeCommentId}')" title="댓글 삭제">
         <i class="fa-regular fa-trash-can"></i> 삭제
       </button>
     `;
@@ -1189,13 +1126,13 @@ function renderSingleCommentHtml(c, depth, postId, postIndex, currentUid, curren
 
   // 원댓글뿐만 아니라 모든 답글(대댓글)에도 '↪ 답글' 버튼을 노출하여 답글에 연속 답글 작성 지원
   const replyBtnHtml = `
-    <button type="button" class="btn-comment-action" onclick="window.toggleReplyForm('${c.id}', '${postId}', ${postIndex})" title="답글 달기">
+    <button type="button" class="btn-comment-action" onclick="window.toggleReplyForm('${safeCommentId}', '${safePostId}', ${postIndex})" title="답글 달기">
       <i class="fa-solid fa-reply" style="${isReply ? `color: ${threadColor};` : ''}"></i> 답글
     </button>
   `;
 
   return `
-    <div class="cafe-comment-item ${isReply ? 'is-reply' : ''}" id="comment-item-${c.id}" ${itemStyle}>
+    <div class="cafe-comment-item ${isReply ? 'is-reply' : ''}" id="comment-item-${safeCommentId}" ${itemStyle}>
       <div class="comment-top-row">
         <div class="comment-author-info">
           ${isReply ? `<span style="color: ${threadColor}; font-weight: 800; font-size: 0.95rem; margin-right: 0.25rem;">↳</span>` : ''}
@@ -1204,7 +1141,7 @@ function renderSingleCommentHtml(c, depth, postId, postIndex, currentUid, curren
           ${postAuthorBadge}
           ${roleBadge}
         </div>
-        <span class="comment-date">${c.dateStr || ''}</span>
+        <span class="comment-date">${escapeHtml(c.dateStr || '')}</span>
       </div>
       <div class="comment-content-body">${mentionBadgeHtml}${escapeHtml(c.content || '').replace(/\n/g, '<br>')}</div>
       <div class="comment-actions-bar">
@@ -1212,11 +1149,11 @@ function renderSingleCommentHtml(c, depth, postId, postIndex, currentUid, curren
         ${deleteBtnHtml}
       </div>
       <!-- 대댓글 작성 폼 컨테이너 (토글 방식으로 오픈) -->
-      <div class="cafe-reply-form-wrap" id="reply-form-wrap-${c.id}" style="display: none; margin-top: 0.75rem;">
-        <textarea id="reply-input-${c.id}" class="cafe-comment-textarea" placeholder="${isReply ? `@${c.authorName || '회원'}님에게 답글을 남겨보세요.` : '답글을 남겨보세요.'}" style="min-height: 60px;"></textarea>
+      <div class="cafe-reply-form-wrap" id="reply-form-wrap-${safeCommentId}" style="display: none; margin-top: 0.75rem;">
+        <textarea id="reply-input-${safeCommentId}" class="cafe-comment-textarea" placeholder="${isReply ? `@${escapeHtml(c.authorName || '회원')}님에게 답글을 남겨보세요.` : '답글을 남겨보세요.'}" style="min-height: 60px;"></textarea>
         <div class="cafe-comment-form-footer">
-          <button type="button" class="btn-comment-action" onclick="window.toggleReplyForm('${c.id}', '${postId}', ${postIndex})" style="color: #94a3b8;">취소</button>
-          <button type="button" class="btn-comment-submit" onclick="window.submitPostComment('${postId}', ${postIndex}, '${c.id}')" style="padding: 0.35rem 1rem; font-size: 0.82rem; background: ${isReply ? threadColor : '#00f3ff'}; color: #0a0f1e; border: none; font-weight: 700;">
+          <button type="button" class="btn-comment-action" onclick="window.toggleReplyForm('${safeCommentId}', '${safePostId}', ${postIndex})" style="color: #94a3b8;">취소</button>
+          <button type="button" class="btn-comment-submit" onclick="window.submitPostComment('${safePostId}', ${postIndex}, '${safeCommentId}')" style="padding: 0.35rem 1rem; font-size: 0.82rem; background: ${isReply ? threadColor : '#00f3ff'}; color: #0a0f1e; border: none; font-weight: 700;">
             답글 등록
           </button>
         </div>
@@ -1251,7 +1188,9 @@ function renderCommentForm(postId, postIndex) {
     return;
   }
 
-  const userAvatar = (auth.currentUser && auth.currentUser.photoURL) ? auth.currentUser.photoURL : "https://lh3.googleusercontent.com/a/default-user=s96-c";
+  const defaultAvatar = "https://lh3.googleusercontent.com/a/default-user=s96-c";
+  const userAvatar = escapeHtml(sanitizeUrl(auth.currentUser && auth.currentUser.photoURL, defaultAvatar));
+  const safePostId = escapeHtml(postId || "");
 
   formBox.innerHTML = `
     <div class="comment-form-author-line">
@@ -1262,7 +1201,7 @@ function renderCommentForm(postId, postIndex) {
     <textarea id="cafe-main-comment-input" class="cafe-comment-textarea" placeholder="댓글을 남겨보세요. 매너 있는 대화를 부탁드립니다."></textarea>
     <div class="cafe-comment-form-footer">
       <span style="font-size: 0.75rem; color: #64748b;"><i class="fa-regular fa-face-smile"></i> 건전한 소통 문화를 만들어가요</span>
-      <button type="button" class="btn-comment-submit" onclick="window.submitPostComment('${postId}', ${postIndex}, null)">
+      <button type="button" class="btn-comment-submit" onclick="window.submitPostComment('${safePostId}', ${postIndex}, null)">
         <i class="fa-solid fa-paper-plane"></i> 댓글 등록
       </button>
     </div>
@@ -1467,11 +1406,7 @@ function showCafeWriteSection() {
   const currentUserBadge = sidebarRoleBadgeEl ? sidebarRoleBadgeEl.textContent.trim() : "";
   const userRole = (window.currentUserRole || "").toLowerCase();
   const allowedAdminRoles = ["super_admin", "admin", "admin_user"];
-  const isAllowedAdmin = allowedAdminRoles.includes(userRole) ||
-                         currentUserBadge.includes("관리자") ||
-                         currentUserBadge.includes("최고관리자") ||
-                         currentUserName === "최고관리자" ||
-                         currentUserName === "관리자";
+  const isAllowedAdmin = allowedAdminRoles.includes(userRole);
 
   const isLoggedIn = Boolean(auth.currentUser || window.isLoggedIn || (currentUid && currentUserName && currentUserName !== "방문자님" && currentUserName !== "로그인 필요"));
 
@@ -1597,13 +1532,15 @@ window.showCafeListSection = showCafeListSection;
 window.showCafeCategoryManageSection = showCafeCategoryManageSection;
 
 window.openImageLightbox = function(src) {
+  const safeSrc = sanitizeUrl(src, "");
+  if (!safeSrc) return;
   const existing = document.getElementById("image-lightbox-modal");
   if (existing) existing.remove();
 
   const html = `
     <div id="image-lightbox-modal" onclick="this.remove()" style="display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; z-index: 100000; padding: 1.5rem; cursor: zoom-out;">
       <div style="position: relative; max-width: 95vw; max-height: 95vh; text-align: center;">
-        <img src="${src}" style="max-width: 95vw; max-height: 88vh; border-radius: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); border: 1px solid rgba(0,243,255,0.5); object-fit: contain;" alt="원본 이미지">
+        <img src="${escapeHtml(safeSrc)}" style="max-width: 95vw; max-height: 88vh; border-radius: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); border: 1px solid rgba(0,243,255,0.5); object-fit: contain;" alt="원본 이미지">
         <div style="color: #00f3ff; font-size: 0.95rem; font-weight: 700; margin-top: 0.75rem;"><i class="fa-solid fa-xmark"></i> 클릭하면 화면이 닫힙니다</div>
       </div>
     </div>
@@ -1638,14 +1575,14 @@ window.editPost = function(postIndex) {
 
   if (contentEditor) {
     if (post.contentHtml) {
-      contentEditor.innerHTML = post.contentHtml;
+      contentEditor.innerHTML = sanitizeRichHtml(post.contentHtml);
     } else {
       let editorHtml = escapeHtml(post.content || "").replace(/\n/g, "<br>");
       if (post.photos && post.photos.length > 0) {
         editorHtml += post.photos.map(p => `
           <div class="editor-inline-image-wrap" contenteditable="false" style="margin: 1.25rem 0; text-align: center; user-select: none;">
             <div style="position: relative; display: inline-block; max-width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 243, 255, 0.4); box-shadow: 0 8px 24px rgba(0,0,0,0.5); background: rgba(10, 15, 30, 0.9);">
-              <img src="${p.dataUrl}" style="max-width: 100%; max-height: 550px; object-fit: contain; display: block;" alt="${escapeHtml(p.name || '이미지')}">
+              <img src="${escapeHtml(sanitizeUrl(p.dataUrl, ''))}" style="max-width: 100%; max-height: 550px; object-fit: contain; display: block;" alt="${escapeHtml(p.name || '이미지')}">
             </div>
           </div>
           <p><br></p>
@@ -1686,6 +1623,8 @@ window.deletePost = async function(postIndex) {
       content: post.content || "",
       tags: post.tags || "",
       authorName: post.authorName || "",
+      authorUid: post.authorUid || "",
+      deletedBy: auth.currentUser ? auth.currentUser.uid : "",
       deletedAt: serverTimestamp()
     });
   } catch (e) {}
@@ -1897,7 +1836,7 @@ function renderPhotoPreviews() {
   }
   grid.innerHTML = window.attachedPhotos.map((photo, idx) => `
     <div style="position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0, 243, 255, 0.3); background: #0f172a;">
-      <img src="${photo.dataUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+      <img src="${escapeHtml(sanitizeUrl(photo.dataUrl, ''))}" style="width: 100%; height: 100%; object-fit: cover;">
       <button type="button" onclick="window.removeAttachedPhoto(${idx})" style="position: absolute; top: 2px; right: 2px; background: rgba(239,68,68,0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
     </div>
   `).join("");
@@ -1915,7 +1854,7 @@ function renderFilePreviews() {
       <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
         <i class="fa-solid fa-paperclip" style="color: #00f3ff;"></i>
         <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">${escapeHtml(file.name)}</span>
-        <span style="color: #64748b; font-size: 0.78rem;">(${file.size})</span>
+        <span style="color: #64748b; font-size: 0.78rem;">(${escapeHtml(file.size)})</span>
       </div>
       <button type="button" onclick="window.removeAttachedFile(${idx})" style="background: transparent; color: #ef4444; border: none; cursor: pointer; padding: 0 0.3rem;">✕</button>
     </div>
@@ -1935,18 +1874,8 @@ window.removeAttachedFile = function(idx) {
   renderFilePreviews();
 };
 
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 /* ==========================================================================
-   카테고리 관리 · 설정 에디터 마스터 비즈니스 로직]
+   카테고리 관리 · 설정 에디터 마스터 비즈니스 로직
    - Firestore settings/community_categories 문서 연동
    - HTML5 드래그 앤 드롭 순서 변경 및 세부 설정 폼 바인딩
    - 좌측 사이드바 메뉴 및 글쓰기 드롭다운 실시간 동적 렌더링
@@ -2063,11 +1992,14 @@ async function loadCommunityCategories() {
       }
     } else {
       currentCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-      // 성능 최적화: 백그라운드 1회 시딩
-      setDoc(catDocRef, {
-        categories: DEFAULT_CATEGORIES,
-        updatedAt: serverTimestamp()
-      }).catch(console.error);
+      // 비로그인·일반 사용자 요청으로 Firestore 쓰기가 거부되지 않도록 설정 권한자/관리자인 경우에만 초기 시딩 수행
+      const activeRole = (window.currentUserRole || "").toLowerCase();
+      if (auth.currentUser && (window.canCommunitySetting || ADMIN_ROLE_KEYS.includes(activeRole))) {
+        setDoc(catDocRef, {
+          categories: DEFAULT_CATEGORIES,
+          updatedAt: serverTimestamp()
+        }).catch(console.error);
+      }
     }
   } catch (e) {
     console.warn("[Category] 카테고리 로드 중 예외 발생:", e);
@@ -2110,13 +2042,15 @@ function renderSidebarMenu() {
     if (!cat.isPublic && !window.canCommunitySetting) {
       return;
     }
-    const countDisplay = cat.showCount !== false ? `<span class="cafe-menu-count" id="count-${cat.id}">0</span>` : "";
+    const safeCatId = escapeHtml(cat.id);
+    const safeCatIcon = escapeHtml(cat.icon || "📁");
+    const countDisplay = cat.showCount !== false ? `<span class="cafe-menu-count" id="count-${safeCatId}">0</span>` : "";
     const isActive = currentBoard === cat.id ? "active" : "";
     const privateBadge = !cat.isPublic ? `<span class="cat-item-private-badge">비공개</span>` : "";
 
     html += `
-      <li class="cafe-menu-item ${isActive}" data-board="${cat.id}">
-        <span>${cat.icon || '📁'} ${escapeHtml(cat.name)}${privateBadge}</span>
+      <li class="cafe-menu-item ${isActive}" data-board="${safeCatId}">
+        <span>${safeCatIcon} ${escapeHtml(cat.name)}${privateBadge}</span>
         ${countDisplay}
       </li>
     `;
@@ -2164,7 +2098,7 @@ function renderWriteBoardSelect() {
       return;
     }
 
-    html += `<option value="${cat.id}">${cat.icon || '📁'} ${escapeHtml(cat.name)}</option>`;
+    html += `<option value="${escapeHtml(cat.id)}">${escapeHtml(cat.icon || "📁")} ${escapeHtml(cat.name)}</option>`;
   });
 
   selectEl.innerHTML = html;
@@ -2480,7 +2414,7 @@ function bindCategoryDetailForm() {
       const isChecked = cat.writeRoles.includes(role.key) ? "checked" : "";
       rolesHtml += `
         <label class="cat-role-check-item">
-          <input type="checkbox" class="cat-role-perm-chk" value="${role.key}" ${isChecked} onchange="window.handleWriteRoleCheckboxChange(this)">
+          <input type="checkbox" class="cat-role-perm-chk" value="${escapeHtml(role.key)}" ${isChecked} onchange="window.handleWriteRoleCheckboxChange(this)">
           <span>${escapeHtml(role.label)}</span>
         </label>
       `;
