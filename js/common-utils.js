@@ -34,8 +34,8 @@ export function sanitizeUrl(url, fallback = "") {
   const isSafeHttp = normalized.startsWith("http://") || normalized.startsWith("https://");
   const isSafeRelative = trimmed.startsWith("/") || trimmed.startsWith("./") || trimmed.startsWith("../");
   const isSafeImageDataUrl = /^data:image\/(png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=]+$/i.test(normalized);
-  // 첨부파일 다운로드용 안전한 DataURL 허용 (HTML/SVG 스크립트 실행형 MIME 제외)
-  const isSafeFileDataUrl = /^data:(application\/(pdf|msword|vnd\.|zip|octet-stream)|text\/plain);base64,[a-z0-9+/=]+$/i.test(normalized);
+  // 첨부파일 다운로드용 안전한 DataURL 허용 (한컴오피스 .hwp/.hwpx, MS Office vnd.*, 압축/문서, 빈 MIME 포함, HTML/SVG 실행형 제외)
+  const isSafeFileDataUrl = /^data:(?:(?:application\/(?:pdf|msword|rtf|hwp|x-hwp|haansofthwp|x-hwpx|zip|x-zip-compressed|x-7z-compressed|x-rar-compressed|octet-stream|vnd\.[a-z0-9.+-]+)|text\/(?:plain|csv))(?:;charset=[a-z0-9-]+)?)?;base64,[a-z0-9+/=]+$/i.test(normalized);
 
   if (isSafeHttp || isSafeRelative || isSafeImageDataUrl || isSafeFileDataUrl) {
     return trimmed;
@@ -378,4 +378,20 @@ export async function createSolapiAuthHeader(apiKey, apiSecret) {
     .join("");
 
   return `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`;
+}
+
+/**
+ * 예약 통역요청 여부('네' / '아니오')를 테이블 셀용 배지 HTML로 변환하는 공용 헬퍼
+ * @param {string} val - 저장된 통역요청 값 ('네', '아니오' 등)
+ * @returns {string} 안전하게 이스케이프된 배지 HTML 또는 '-'
+ */
+export function formatInterpretationBadge(val) {
+  const raw = String(val || "").trim();
+  if (raw === "네") {
+    return `<span class="badge badge-interp-yes">네</span>`;
+  }
+  if (raw === "아니오") {
+    return `<span class="badge badge-interp-no">아니오</span>`;
+  }
+  return raw ? escapeHtml(raw) : "-";
 }

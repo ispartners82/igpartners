@@ -5,8 +5,8 @@
  * - 초기 데이터 부재 시 자동 시딩(Seed) 기능 내장
  */
 
-import { db, auth } from "/js/firebase-db.js?v=261116_1";
-import { escapeHtml, sanitizeUrl } from "/js/common-utils.js?v=261116_1";
+import { db, auth } from "/js/firebase-db.js?v=261120_4";
+import { escapeHtml, sanitizeUrl } from "/js/common-utils.js?v=261120_4";
 import { 
   collection, 
   getDocs, 

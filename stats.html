@@ -25,8 +25,8 @@
   <link rel="icon" type="image/png" href="/img/logo.png?v=260918_5">
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261116_1) -->
-  <link rel="stylesheet" href="/css/style.css?v=261116_1">
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261120_4) -->
+  <link rel="stylesheet" href="/css/style.css?v=261120_4">
   <!-- 데스크톱/모바일 반응형 필터 그리드 스타일 정의 -->
   <style>
     /* 기본적으로 모바일 1열 세로 레이아웃 */
@@ -138,22 +138,23 @@
         text-align: center !important; /* 가독성을 위한 중앙 정렬 */
       }
 
-      /* 15개 전체 컬럼에 대한 비율별 가로폭 정밀 재배치 (세로 모드 압축형, 합계 100%) */
-      .col-lang { width: 5.0% !important; }      /* 선택언어 */
-      .col-name { width: 6.5% !important; }      /* 이름 */
-      .col-clinic { width: 8.0% !important; }    /* 선택병원 */
-      .col-gender { width: 3.0% !important; }    /* 성별 */
-      .col-visa-type { width: 4.5% !important; }  /* 비자타입 */
-      .col-dob { width: 7.0% !important; }        /* 생년월일 */
-      .col-id { width: 9.0% !important; }         /* 신원정보 */
-      .col-visa-expiry { width: 7.0% !important; }/* 체류만료일 */
-      .col-phone { width: 8.0% !important; }      /* 연락처 */
-      .col-date { width: 9.0% !important; }       /* 예약시간 */
-      .col-res-date { width: 7.5% !important; }   /* 희망진료일 */
-      .col-address { width: 7.0% !important; }    /* 주소 */
-      .col-symptoms { width: 6.0% !important; }   /* 증상 */
-      .col-inflow { width: 5.5% !important; }     /* 유입경로 */
-      .col-status { width: 7.0% !important; }     /* 상태 */
+      /* 16개 전체 컬럼에 대한 비율별 가로폭 정밀 재배치 (세로 모드 압축형, 합계 100%) */
+      .col-lang { width: 5.0% !important; }           /* 선택언어 */
+      .col-name { width: 6.5% !important; }           /* 이름 */
+      .col-clinic { width: 7.5% !important; }         /* 선택병원 */
+      .col-gender { width: 3.0% !important; }         /* 성별 */
+      .col-visa-type { width: 4.5% !important; }      /* 비자타입 */
+      .col-dob { width: 6.5% !important; }            /* 생년월일 */
+      .col-id { width: 8.0% !important; }             /* 신원정보 */
+      .col-visa-expiry { width: 6.5% !important; }    /* 체류만료일 */
+      .col-phone { width: 7.5% !important; }          /* 연락처 */
+      .col-interpretation { width: 4.0% !important; } /* 통역요청 */
+      .col-date { width: 8.5% !important; }           /* 예약시간 */
+      .col-res-date { width: 7.5% !important; }       /* 희망진료일 */
+      .col-address { width: 6.5% !important; }        /* 주소 */
+      .col-symptoms { width: 6.0% !important; }       /* 증상 */
+      .col-inflow { width: 5.5% !important; }         /* 유입경로 */
+      .col-status { width: 7.0% !important; }         /* 상태 */
 
       /* 선택언어 뱃지 겹침 현상 해결: 셀 포지션 간섭 제거 및 뱃지 폰트/디스플레이 최적화 */
       .lang-badge {
@@ -420,7 +421,7 @@
       </div>
     </nav>
     <!-- 공통 헤더 인증 캐시 즉시 반영 스크립트 -->
-    <script src="/js/header-init.js?v=261116_1"></script>
+    <script src="/js/header-init.js?v=261120_4"></script>
   </header>
 
   <!-- SPA 동적 뷰 스위처 엔진이 이 영역을 감지하여 1:1 교체함으로써 헤더 파괴 및 튐현상을 100% 방지하는 본문 컨테이너 -->
@@ -590,6 +591,7 @@
               <th>신원정보</th>
               <th>체류만료일</th>
               <th>연락처</th>
+              <th>통역요청</th>
               <th>예약시간</th>
               <th>희망진료일</th>
               <th>주 소</th>
@@ -601,8 +603,8 @@
           </thead>
           <tbody id="stats-result-list">
             <tr>
-              <!-- 유입경로 컬럼 신설로 컬럼이 15개가 됨에 따라 colspan 15로 수정 -->
-              <td colspan="15" class="table-loading">조건을 선택한 후 [조회하기] 버튼을 눌러주세요.</td>
+              <!-- 통역요청 컬럼 신설로 컬럼이 16개가 됨에 따라 colspan 16으로 수정 -->
+              <td colspan="16" class="table-loading">조건을 선택한 후 [조회하기] 버튼을 눌러주세요.</td>
             </tr>
           </tbody>
         </table>
@@ -636,6 +638,7 @@
                 <th>신원정보</th>
                 <th>체류만료일</th>
                 <th>연락처</th>
+                <th>통역요청</th>
                 <th>접수시간</th>
                 <th>희망진료일</th>
                 <!-- 엑셀 미리보기 테이블 헤더 일치화를 위한 주소 및 증상 컬럼 추가 -->
@@ -659,10 +662,10 @@
     </div>
   </div>
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261116_1) -->
-  <script type="module" src="/js/navigation.js?v=261116_1"></script>
-  <script type="module" src="/js/stats.js?v=261116_1"></script>
-  <script type="module" src="/js/auth.js?v=261116_1"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261120_4) -->
+  <script type="module" src="/js/navigation.js?v=261120_4"></script>
+  <script type="module" src="/js/stats.js?v=261120_4"></script>
+  <script type="module" src="/js/auth.js?v=261120_4"></script>
 </body>
 
 </html>

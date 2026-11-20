@@ -1,4 +1,4 @@
-import { db, auth } from "./firebase-db.js?v=261116_1";
+import { db, auth } from "./firebase-db.js?v=261120_4";
 // 15개국어 및 권한 공통 기준 데이터 모듈 임포트
 import {
   LANG_LIST,
@@ -8,7 +8,7 @@ import {
   normalizeUserLangKey,
   DEFAULT_AVAILABLE_ROLES,
   buildRolePermissions
-} from "./lang-config.js?v=261116_1";
+} from "./lang-config.js?v=261120_4";
 // 공통 보안 이스케이프, 이미지 압축, 페이지네이션, 드래그 정렬, 솔라피 헤더 모듈 임포트
 import {
   escapeHtml,
@@ -17,10 +17,11 @@ import {
   formatFirestoreDate,
   renderPaginationControls,
   initTableDragReorder,
-  createSolapiAuthHeader
-} from "./common-utils.js?v=261116_1";
+  createSolapiAuthHeader,
+  formatInterpretationBadge
+} from "./common-utils.js?v=261120_4";
 // 비어 있는 8개국어(ja, zh, th, lo, ne, id, si, bn) 병원 번역 보강 헬퍼 모듈 임포트
-import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261116_1";
+import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261120_4";
 import { 
   collection, 
   query, 
@@ -64,6 +65,7 @@ const sendCustomerStatusLms = async (resData, statusType) => {
   const clinicName = resData.clinic || "-";
   const reservationDate = resData.reservationDate || "-";
   const reservationTime = resData.reservationTime || "-";
+  const interpretationRequest = resData.interpretationRequest || "-";
 
   let subject = "";
   let messageText = "";
@@ -79,6 +81,7 @@ IGPartners를 통해 신청하신 병원 진료 예약이 정상적으로 확정
 • 환자 성명: ${patientName}
 • 진료 병원: ${clinicName}
 • 예약 일시: ${reservationDate} ${reservationTime}
+• 통역 요청: ${interpretationRequest}
 
 ■ 내원 안내 사항
 • 원활한 진료 접수를 위해 예약 시간 10분 전까지 병원에 내원해 주시기 바랍니다.
@@ -97,6 +100,7 @@ http://pf.kakao.com/_YxoxjfX/chat`;
 • 환자 성명: ${patientName}
 • 진료 병원: ${clinicName}
 • 예약 일시: ${reservationDate} ${reservationTime}
+• 통역 요청: ${interpretationRequest}
 • 처리 상태: 예약 취소 완료
 
 ■ 안내 사항
@@ -311,9 +315,9 @@ function initPage() {
     }
 
     if (items.length === 0) {
-      // '희망진료시간' 컬럼이 추가되어 전체 컬럼 개수가 18개로 변경됨에 따라 빈 테이블 노출 시 colspan을 18로 수정
+      // '통역요청' 컬럼이 추가되어 전체 컬럼 개수가 19개로 변경됨에 따라 빈 테이블 노출 시 colspan을 19로 수정
       // 검색 또는 언어 필터 결과 행이 0건이더라도 상단 전체 통계는 0으로 초기화하지 않고 전체 수치를 그대로 유지합니다.
-      reservationList.innerHTML = `<tr><td colspan="18" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
+      reservationList.innerHTML = `<tr><td colspan="19" class="table-empty">현재 등록된 예약 내역이 없습니다.</td></tr>`;
       return;
     }
 
@@ -396,6 +400,9 @@ function initPage() {
         actionButtons += `<button class="btn-action delete" data-id="${docId}" data-action="delete">삭제</button>`;
       }
 
+      // 통역요청 배지 HTML 생성 ('네' / '아니오' 구분 표시, 기존 데이터는 '-')
+      const interpBadgeHtml = formatInterpretationBadge(data.interpretationRequest);
+
       // 테이블 렌더링 처리 (모든 사용자 입력 필드에 XSS 방지 이스케이프 적용)
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
@@ -407,6 +414,7 @@ function initPage() {
         <td class="col-id">${idInfoHTML}</td>
         <td class="col-visa-expiry text-accent">${escapeHtml(data.visaExpiry || "-")}</td>
         <td class="col-phone">${escapeHtml(data.phone || "-")}</td>
+        <td class="col-interpretation">${interpBadgeHtml}</td>
         <td class="col-date">${escapeHtml(dateStr)}</td>
         <td class="col-res-date font-bold text-accent">${escapeHtml(data.reservationDate || "-")}</td>
         <td class="col-res-time font-bold" style="color: #67e8f9;">${escapeHtml(data.reservationTime || "-")}</td>
@@ -433,7 +441,7 @@ function initPage() {
 
     return result.filter((item) => {
       const fields = [
-        item.name, item.phone, item.symptoms, item.clinic,
+        item.name, item.phone, item.interpretationRequest, item.symptoms, item.clinic,
         item.alienNo, item.passportNo, item.visaType,
         item.reservationTime, item.inflow, item.alimtalkStatus, item.alimtalkError
       ];
@@ -452,8 +460,8 @@ function initPage() {
     
     // 최초 로드 시에만 로딩 표시 및 로컬스토리지 즉시 반환 처리
     if (isFirstLoad) {
-      // '희망진료시간' 컬럼 추가로 전체 컬럼이 18개가 됨에 따라 로딩 표시 colspan을 18로 수정
-      reservationList.innerHTML = `<tr><td colspan="18" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
+      // '통역요청' 컬럼 추가로 전체 컬럼이 19개가 됨에 따라 로딩 표시 colspan을 19로 수정
+      reservationList.innerHTML = `<tr><td colspan="19" class="table-loading">데이터를 실시간 동기화 중입니다...</td></tr>`;
 
       // 1단계: Firestore 로드 전, 로컬스토리지 백업 데이터가 있다면 먼저 렌더링 (즉각적인 피드백 보장)
       let initialLocalItems = [];
@@ -986,8 +994,8 @@ function initPage() {
     }
 
     try {
-      // '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 권한 확인 로딩 표시 colspan을 16으로 수정
-      reservationList.innerHTML = `<tr><td colspan="18" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
+      // '통역요청' 컬럼 추가로 전체 컬럼이 19개가 됨에 따라 권한 확인 로딩 표시 colspan을 19로 수정
+      reservationList.innerHTML = `<tr><td colspan="19" class="table-loading">권한을 확인하는 중입니다...</td></tr>`;
       
       // 권한 검증 및 UI 갱신 함수 실행
       const permissions = await verifyAndApplyPermissions(user);
@@ -1034,8 +1042,8 @@ function initPage() {
             // 모든 항목이 비활성화 되어 있는 경우 아무것도 보이지 않게 처리
             hideAllTabsAndContents();
             if (reservationList) {
-              // '유입경로' 컬럼 추가로 전체 컬럼이 16개가 됨에 따라 접근 불가 메시지 표시 colspan을 16으로 수정
-              reservationList.innerHTML = `<tr><td colspan="18" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
+              // '통역요청' 컬럼 추가로 전체 컬럼이 19개가 됨에 따라 접근 불가 메시지 표시 colspan을 19로 수정
+              reservationList.innerHTML = `<tr><td colspan="19" class="table-empty">접근 가능한 관리 메뉴가 없습니다.</td></tr>`;
             }
           }
         }

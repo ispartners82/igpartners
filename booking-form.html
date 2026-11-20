@@ -22,7 +22,7 @@
   <link rel="apple-touch-icon" href="/img/logo.png?v=260918_5">
 
   <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (CSS 파일 버전: v=261002_5) -->
-  <link rel="stylesheet" href="/css/style.css?v=261116_1">
+  <link rel="stylesheet" href="/css/style.css?v=261120_4">
 </head>
 
 <body
@@ -108,7 +108,7 @@
       </div>
     </nav>
     <!-- 공통 헤더 인증 캐시 즉시 반영 스크립트 -->
-    <script src="/js/header-init.js?v=261116_1"></script>
+    <script src="/js/header-init.js?v=261120_4"></script>
   </header>
 
   <!-- 상단 네비게이션 바 고정 여백(100px) 확보를 위한 container 영역 -->
@@ -196,10 +196,19 @@
             <textarea id="input-symptoms" rows="4" required placeholder=""></textarea>
           </div>
           <!-- 유입경로는 예약폼에서 입력받지 않고 관리자 페이지에서 직접 기입하도록 정책이 변경됨에 따라 입력란 삭제 -->
-          <!-- 연락처 (전체 너비) -->
-          <div class="form-group full-width">
+          <!-- 연락처 (좌측 1열) 및 통역요청 (우측 1열) 2열 분할 배치 -->
+          <div class="form-group">
             <label for="input-phone" id="label-phone">연락처 <span class="required">*</span></label>
             <input type="tel" id="input-phone" required placeholder="예: 010-1234-5678">
+          </div>
+
+          <div class="form-group">
+            <label for="input-interpretation" id="label-interpretation">통역요청 <span class="required">*</span></label>
+            <select id="input-interpretation" required>
+              <option value="" disabled selected id="interpretation-placeholder">선택해 주세요</option>
+              <option value="네" id="interpretation-yes">네</option>
+              <option value="아니오" id="interpretation-no">아니오</option>
+            </select>
           </div>
 
         </div>
@@ -227,10 +236,10 @@
 
 
 
-  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261116_1) -->
-  <script type="module" src="/js/navigation.js?v=261116_1"></script>
-  <script type="module" src="/js/reservation.js?v=261116_1"></script>
-  <script type="module" src="/js/auth.js?v=261116_1"></script>
+  <!-- 브라우저 캐시 무효화를 위한 버전 관리 적용 (모듈 JS 파일 버전: v=261120_4) -->
+  <script type="module" src="/js/navigation.js?v=261120_4"></script>
+  <script type="module" src="/js/reservation.js?v=261120_4"></script>
+  <script type="module" src="/js/auth.js?v=261120_4"></script>
 
   <!-- 개인정보 처리방침 모달 팝업 (reservation.js에서 언어에 맞게 콘텐츠 주입) -->
   <div id="privacy-modal" class="modal-backdrop" style="display: none;">

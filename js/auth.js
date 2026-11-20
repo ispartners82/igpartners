@@ -1,8 +1,9 @@
-import { auth, db } from "./firebase-db.js?v=261116_1";
+import { auth, db } from "./firebase-db.js?v=261120_4";
 import {
   buildCountryLangSelectOptionsHtml,
   buildRolePermissions
-} from "./lang-config.js?v=261116_1";
+} from "./lang-config.js?v=261120_4";
+import { escapeHtml } from "./common-utils.js?v=261120_4";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -13,7 +14,8 @@ import {
   updateProfile,
   updatePassword,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -61,6 +63,67 @@ function initAuthModule() {
               </div>
               <button type="submit" class="auth-submit-btn" id="btn-submit-login">로그인 (Sign In)</button>
             </form>
+
+            <!-- 로그인 보조 메뉴: 아이디 찾기 및 비밀번호 찾기 -->
+            <div class="auth-helper-links">
+              <button type="button" class="auth-helper-btn" id="btn-open-find-id">아이디 찾기 (Find ID)</button>
+              <span class="auth-helper-divider" aria-hidden="true">|</span>
+              <button type="button" class="auth-helper-btn" id="btn-open-find-pwd">비밀번호 찾기 (Reset Password)</button>
+            </div>
+          </div>
+
+          <!-- 아이디 찾기 영역 -->
+          <div id="auth-section-find-id" style="display: none;">
+            <div class="auth-subpanel-header">
+              <h3 class="auth-subpanel-title">🔍 아이디 찾기 <span class="auth-subpanel-sub">(Find ID)</span></h3>
+              <button type="button" class="auth-back-btn" id="btn-back-login-from-find-id">&larr; 로그인으로 돌아가기</button>
+            </div>
+            <p class="auth-subpanel-desc">가입 시 등록하신 <strong>이름</strong>과 <strong>이메일 또는 연락처</strong>를 입력하시면 아이디를 확인하실 수 있습니다.</p>
+            <form id="form-auth-find-id" autocomplete="off">
+              <div class="auth-form-group" style="margin-bottom: 1rem;">
+                <label for="find-id-name">이름 (성명) / Full Name <span class="req">*</span></label>
+                <input type="text" id="find-id-name" required placeholder="가입 시 입력한 이름 (예: 홍길동)" autocomplete="off">
+              </div>
+              <div class="auth-form-group" style="margin-bottom: 1.25rem;">
+                <label for="find-id-contact">이메일 또는 연락처 (Email or Phone) <span class="req">*</span></label>
+                <input type="text" id="find-id-contact" required placeholder="예: user@gmail.com 또는 010-1234-5678" autocomplete="off">
+              </div>
+              <button type="submit" class="auth-submit-btn" id="btn-submit-find-id">아이디 찾기 (Find ID)</button>
+            </form>
+            <div id="find-id-result" class="auth-result-box" style="display: none;"></div>
+          </div>
+
+          <!-- 비밀번호 찾기 (재설정 메일 발송) 영역 -->
+          <div id="auth-section-find-pwd" style="display: none;">
+            <div class="auth-subpanel-header">
+              <h3 class="auth-subpanel-title">🔑 비밀번호 찾기 <span class="auth-subpanel-sub">(Reset Password)</span></h3>
+              <button type="button" class="auth-back-btn" id="btn-back-login-from-find-pwd">&larr; 로그인으로 돌아가기</button>
+            </div>
+            <p class="auth-subpanel-desc">가입 시 등록하신 <strong>아이디(또는 이메일)</strong>와 <strong>이름</strong>을 입력하시면 비밀번호 재설정 메일을 보내드립니다.</p>
+            <form id="form-auth-find-pwd" autocomplete="off">
+              <div class="auth-form-group" style="margin-bottom: 1rem;">
+                <label for="find-pwd-account">아이디 또는 이메일 (ID or Email) <span class="req">*</span></label>
+                <input type="text" id="find-pwd-account" required placeholder="아이디 또는 이메일 주소를 입력해 주세요" autocomplete="off">
+              </div>
+              <div class="auth-form-group" style="margin-bottom: 1.15rem;">
+                <label for="find-pwd-name">이름 (성명) / Full Name <span class="req">*</span></label>
+                <input type="text" id="find-pwd-name" required placeholder="가입 시 입력한 이름 (예: 홍길동)" autocomplete="off">
+              </div>
+
+              <!-- 메일 미수신 또는 오기입 시 공식 카카오톡 1:1 문의 안내 및 버튼 -->
+              <div class="auth-kakao-help-box">
+                <p class="auth-kakao-help-text">가입시 정확한 메일을 입력하지 않았거나 재설정 메일 발송이 되지 않으면 카카오톡으로 문의주세요</p>
+                <a href="http://pf.kakao.com/_YxoxjfX/chat" target="_blank" rel="noopener noreferrer" class="auth-kakao-btn">
+                  <svg class="kakao-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3C6.47715 3 2 6.47715 2 10.7647C2 13.468 3.75475 15.8361 6.42551 17.2023C6.23075 17.8967 5.53982 20.3705 5.48512 20.6698C5.41438 21.0568 5.72753 21.0505 5.92209 20.9225C6.18241 20.7513 10.0249 18.1723 11.2721 17.3292C11.5126 17.3501 11.7547 17.3614 12 17.3614C17.5228 17.3614 22 13.8842 22 9.59666C22 5.30911 17.5228 3 12 3Z" fill="#191919" />
+                  </svg>
+                  <span>카톡문의</span>
+                </a>
+              </div>
+
+              <button type="submit" class="auth-submit-btn" id="btn-submit-find-pwd" style="margin-top: 1rem;">재설정 메일 발송 (Send Reset Email)</button>
+            </form>
+            <div id="find-pwd-result" class="auth-result-box" style="display: none;"></div>
           </div>
 
           <!-- 회원가입 폼 영역 (12개 입력 항목) -->
@@ -280,7 +343,7 @@ function initAuthModule() {
   }
 
   /**
-   * 모달 내부 탭 스위처 및 닫기 이벤트 핸들러 바인딩
+   * 모달 내부 탭 스위처, 아이디/비밀번호 찾기 전환 및 닫기 이벤트 핸들러 바인딩
    */
   function bindAuthModalEvents() {
     const modal = document.getElementById("auth-modal");
@@ -289,8 +352,16 @@ function initAuthModule() {
     const tabSignup = document.getElementById("tab-btn-signup");
     const secLogin = document.getElementById("auth-section-login");
     const secSignup = document.getElementById("auth-section-signup");
+    const secFindId = document.getElementById("auth-section-find-id");
+    const secFindPwd = document.getElementById("auth-section-find-pwd");
     const formLogin = document.getElementById("form-auth-login");
     const formSignup = document.getElementById("form-auth-signup");
+    const formFindId = document.getElementById("form-auth-find-id");
+    const formFindPwd = document.getElementById("form-auth-find-pwd");
+    const btnOpenFindId = document.getElementById("btn-open-find-id");
+    const btnOpenFindPwd = document.getElementById("btn-open-find-pwd");
+    const btnBackFromFindId = document.getElementById("btn-back-login-from-find-id");
+    const btnBackFromFindPwd = document.getElementById("btn-back-login-from-find-pwd");
     const selectLang = document.getElementById("signup-country-lang");
 
     if (btnClose) {
@@ -311,6 +382,48 @@ function initAuthModule() {
         }
       });
     }
+
+    // 아이디 찾기 / 비밀번호 찾기 입력값 및 결과 박스 초기화 함수
+    function resetRecoveryForms() {
+      if (formFindId) formFindId.reset();
+      if (formFindPwd) formFindPwd.reset();
+      const findIdResult = document.getElementById("find-id-result");
+      const findPwdResult = document.getElementById("find-pwd-result");
+      if (findIdResult) {
+        findIdResult.style.display = "none";
+        findIdResult.classList.remove("error");
+        findIdResult.innerHTML = "";
+      }
+      if (findPwdResult) {
+        findPwdResult.style.display = "none";
+        findPwdResult.classList.remove("error");
+        findPwdResult.innerHTML = "";
+      }
+    }
+    window.resetRecoveryForms = resetRecoveryForms;
+
+    // 로그인 / 회원가입 / 아이디 찾기 / 비밀번호 찾기 화면 전환 통합 헬퍼
+    function switchAuthSection(mode) {
+      if (secLogin) secLogin.style.display = mode === "login" ? "block" : "none";
+      if (secSignup) secSignup.style.display = mode === "signup" ? "block" : "none";
+      if (secFindId) secFindId.style.display = mode === "find-id" ? "block" : "none";
+      if (secFindPwd) secFindPwd.style.display = mode === "find-pwd" ? "block" : "none";
+
+      if (tabLogin && tabSignup) {
+        if (mode === "signup") {
+          tabSignup.classList.add("active");
+          tabLogin.classList.remove("active");
+        } else {
+          tabLogin.classList.add("active");
+          tabSignup.classList.remove("active");
+        }
+      }
+
+      if (mode === "find-id" || mode === "find-pwd") {
+        resetRecoveryForms();
+      }
+    }
+    window.switchAuthSection = switchAuthSection;
 
     // 회원가입 폼 보안 초기화 함수 - 브라우저 자동완성 오작동 및 이전 잔여 계정 데이터 완전 소거
     function resetSignupForm() {
@@ -341,20 +454,28 @@ function initAuthModule() {
     // 탭 클릭 이벤트
     if (tabLogin && tabSignup) {
       tabLogin.addEventListener("click", () => {
-        tabLogin.classList.add("active");
-        tabSignup.classList.remove("active");
-        secLogin.style.display = "block";
-        secSignup.style.display = "none";
+        switchAuthSection("login");
       });
 
       tabSignup.addEventListener("click", () => {
-        tabSignup.classList.add("active");
-        tabLogin.classList.remove("active");
-        secSignup.style.display = "block";
-        secLogin.style.display = "none";
+        switchAuthSection("signup");
         // 회원가입 탭 클릭 시 이전 로그인 자격증명이 노출되지 않도록 강제 리셋
         resetSignupForm();
       });
+    }
+
+    // 아이디 찾기 / 비밀번호 찾기 진입 및 로그인 복귀 버튼 이벤트
+    if (btnOpenFindId) {
+      btnOpenFindId.addEventListener("click", () => switchAuthSection("find-id"));
+    }
+    if (btnOpenFindPwd) {
+      btnOpenFindPwd.addEventListener("click", () => switchAuthSection("find-pwd"));
+    }
+    if (btnBackFromFindId) {
+      btnBackFromFindId.addEventListener("click", () => switchAuthSection("login"));
+    }
+    if (btnBackFromFindPwd) {
+      btnBackFromFindPwd.addEventListener("click", () => switchAuthSection("login"));
     }
 
     // 로그인 폼 제출 이벤트
@@ -365,6 +486,14 @@ function initAuthModule() {
     // 회원가입 폼 제출 이벤트
     if (formSignup) {
       formSignup.addEventListener("submit", handleSignUpSubmit);
+    }
+
+    // 아이디 찾기 및 비밀번호 찾기 폼 제출 이벤트
+    if (formFindId) {
+      formFindId.addEventListener("submit", handleFindIdSubmit);
+    }
+    if (formFindPwd) {
+      formFindPwd.addEventListener("submit", handleFindPasswordSubmit);
     }
   }
 
@@ -382,6 +511,9 @@ function initAuthModule() {
       // 모달 오픈 시 폼 잔여 데이터 깨끗이 비우기
       if (typeof window.resetSignupForm === "function") {
         window.resetSignupForm();
+      }
+      if (typeof window.resetRecoveryForms === "function") {
+        window.resetRecoveryForms();
       }
       modal.style.display = "flex";
       document.body.classList.add("modal-open");
@@ -403,9 +535,12 @@ function initAuthModule() {
     if (modal) {
       modal.style.display = "none";
       document.body.classList.remove("modal-open");
-      // 모달 닫기 시 잔여 비밀번호 입력값 소거
+      // 모달 닫기 시 잔여 비밀번호 및 찾기 입력값 소거
       if (typeof window.resetSignupForm === "function") {
         window.resetSignupForm();
+      }
+      if (typeof window.resetRecoveryForms === "function") {
+        window.resetRecoveryForms();
       }
     }
   }
@@ -929,6 +1064,268 @@ function initAuthModule() {
       if (btnSubmit) {
         btnSubmit.disabled = false;
         btnSubmit.textContent = "로그인";
+      }
+    }
+  }
+
+  /**
+   * 문자열 비교용 이름 정규화 헬퍼 (앞뒤 공백 제거 및 연속 공백 단일화, 소문자 변환)
+   * @param {string} val - 원본 이름 문자열
+   * @returns {string} 정규화된 문자열
+   */
+  function normalizeCompareName(val) {
+    return String(val || "").trim().replace(/\s+/g, " ").toLowerCase();
+  }
+
+  /**
+   * 개인정보 보호를 위해 이메일 주소를 일부 마스킹 처리하는 헬퍼
+   * @param {string} email - 원본 이메일 주소
+   * @returns {string} 마스킹된 이메일 문자열 (예: im***@gmail.com)
+   */
+  function maskEmailAddress(email) {
+    const raw = String(email || "").trim();
+    const atIndex = raw.indexOf("@");
+    if (atIndex <= 0) return raw;
+
+    const localPart = raw.slice(0, atIndex);
+    const domainPart = raw.slice(atIndex);
+    const visibleLen = localPart.length <= 2 ? 1 : Math.min(3, localPart.length - 1);
+    return localPart.slice(0, visibleLen) + "***" + domainPart;
+  }
+
+  /**
+   * 아이디 찾기 / 비밀번호 찾기 결과 박스에 안내 메시지를 안전하게 렌더링하는 헬퍼
+   * @param {string} elementId - 대상 결과 박스 요소 ID
+   * @param {string} htmlContent - 표시할 HTML (동적 값은 escapeHtml 적용 필수)
+   * @param {boolean} [isError=false] - 오류/실패 스타일 적용 여부
+   */
+  function renderRecoveryResult(elementId, htmlContent, isError = false) {
+    const box = document.getElementById(elementId);
+    if (!box) return;
+    box.classList.toggle("error", Boolean(isError));
+    box.innerHTML = htmlContent;
+    box.style.display = "block";
+  }
+
+  /**
+   * 아이디 찾기 폼 제출 처리 핸들러
+   * - Firestore users 컬렉션에서 이름과 이메일 또는 연락처 일치 여부를 조회해 가입된 아이디를 안내합니다.
+   */
+  async function handleFindIdSubmit(e) {
+    e.preventDefault();
+    const btnSubmit = document.getElementById("btn-submit-find-id");
+    const nameInput = (document.getElementById("find-id-name")?.value || "").trim();
+    const contactInput = (document.getElementById("find-id-contact")?.value || "").trim();
+
+    if (!nameInput || !contactInput) {
+      renderRecoveryResult("find-id-result", "이름과 이메일 또는 연락처를 모두 입력해 주세요.", true);
+      return;
+    }
+
+    const normalizedName = normalizeCompareName(nameInput);
+    const isEmailInput = contactInput.includes("@");
+    const digitsInput = contactInput.replace(/\D/g, "");
+
+    if (!isEmailInput && digitsInput.length < 7) {
+      renderRecoveryResult("find-id-result", "올바른 이메일 주소 또는 연락처(숫자 7자리 이상)를 입력해 주세요.", true);
+      return;
+    }
+
+    try {
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "조회 중...";
+      }
+
+      const usersRef = collection(db, "users");
+      const matchedDocs = [];
+      const seenDocIds = new Set();
+
+      // Firestore 무료 요금제(Spark) 보호를 위해 limit(10) 범위 내에서만 조건부 조회 수행
+      const collectMatches = (snap) => {
+        snap.forEach((docSnap) => {
+          if (seenDocIds.has(docSnap.id)) return;
+          seenDocIds.add(docSnap.id);
+          const data = docSnap.data();
+          if (normalizeCompareName(data.name) !== normalizedName) return;
+
+          if (isEmailInput) {
+            if (String(data.email || "").trim().toLowerCase() === contactInput.toLowerCase()) {
+              matchedDocs.push(data);
+            }
+          } else {
+            const docDigits = String(data.phone || "").replace(/\D/g, "");
+            if (docDigits && docDigits === digitsInput) {
+              matchedDocs.push(data);
+            }
+          }
+        });
+      };
+
+      // 1차: 이름 기준 소량 조회 (연락처 하이픈 유무나 이메일 대소문자 차이까지 한 번에 흡수)
+      const nameQuerySnap = await getDocs(query(usersRef, where("name", "==", nameInput), limit(10)));
+      collectMatches(nameQuerySnap);
+
+      // 2차: 이름 표기 공백 차이 등이 있을 경우를 대비해 이메일/연락처 필드로 보완 조회
+      if (matchedDocs.length === 0) {
+        if (isEmailInput) {
+          const emailSnap = await getDocs(query(usersRef, where("email", "==", contactInput), limit(5)));
+          collectMatches(emailSnap);
+          if (matchedDocs.length === 0 && contactInput !== contactInput.toLowerCase()) {
+            const lowerEmailSnap = await getDocs(query(usersRef, where("email", "==", contactInput.toLowerCase()), limit(5)));
+            collectMatches(lowerEmailSnap);
+          }
+        } else {
+          const phoneSnap = await getDocs(query(usersRef, where("phone", "==", contactInput), limit(5)));
+          collectMatches(phoneSnap);
+        }
+      }
+
+      if (matchedDocs.length === 0) {
+        renderRecoveryResult(
+          "find-id-result",
+          "입력하신 정보와 일치하는 회원 계정을 찾을 수 없습니다.<br>이름과 이메일(또는 연락처)을 다시 확인해 주세요.",
+          true
+        );
+        return;
+      }
+
+      const targetUser = matchedDocs[0];
+      const foundLoginId = targetUser.loginId || targetUser.email || "";
+
+      renderRecoveryResult(
+        "find-id-result",
+        `
+          <div class="auth-result-title">✅ 회원님의 아이디를 찾았습니다.</div>
+          <div class="auth-result-value">${escapeHtml(foundLoginId)}</div>
+          <p class="auth-result-note">가입일: ${escapeHtml(targetUser.createdAt ? String(targetUser.createdAt).slice(0, 10) : "-")}</p>
+          <button type="button" class="auth-result-action-btn" id="btn-use-found-id">이 아이디로 로그인하기</button>
+        `,
+        false
+      );
+
+      const btnUseId = document.getElementById("btn-use-found-id");
+      if (btnUseId) {
+        btnUseId.addEventListener("click", () => {
+          if (typeof window.switchAuthSection === "function") {
+            window.switchAuthSection("login");
+          }
+          const loginAccountEl = document.getElementById("login-input-account");
+          const loginPwdEl = document.getElementById("login-input-password");
+          if (loginAccountEl) loginAccountEl.value = foundLoginId;
+          if (loginPwdEl) loginPwdEl.focus();
+        });
+      }
+    } catch (err) {
+      console.error("[auth] 아이디 찾기 조회 실패:", err);
+      renderRecoveryResult(
+        "find-id-result",
+        "아이디 조회 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        true
+      );
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "아이디 찾기 (Find ID)";
+      }
+    }
+  }
+
+  /**
+   * 비밀번호 찾기(재설정 메일 발송) 폼 제출 처리 핸들러
+   * - 아이디 또는 이메일과 이름을 검증한 뒤 Firebase Auth 공식 무료 sendPasswordResetEmail을 호출합니다.
+   */
+  async function handleFindPasswordSubmit(e) {
+    e.preventDefault();
+    const btnSubmit = document.getElementById("btn-submit-find-pwd");
+    const accountInput = (document.getElementById("find-pwd-account")?.value || "").trim();
+    const nameInput = (document.getElementById("find-pwd-name")?.value || "").trim();
+
+    if (!accountInput || !nameInput) {
+      renderRecoveryResult("find-pwd-result", "아이디(또는 이메일)와 이름을 모두 입력해 주세요.", true);
+      return;
+    }
+
+    const normalizedName = normalizeCompareName(nameInput);
+
+    try {
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "확인 및 발송 중...";
+      }
+
+      const usersRef = collection(db, "users");
+      let targetUser = null;
+
+      if (!accountInput.includes("@")) {
+        // 아이디로 조회 후 이름 일치 여부 검증
+        const q = query(usersRef, where("loginId", "==", accountInput), limit(1));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const data = snap.docs[0].data();
+          if (normalizeCompareName(data.name) === normalizedName) {
+            targetUser = data;
+          }
+        }
+      } else {
+        // 이메일로 조회 후 이름 일치 여부 검증 (대소문자 차이 고려)
+        const snapExact = await getDocs(query(usersRef, where("email", "==", accountInput), limit(5)));
+        snapExact.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (!targetUser && normalizeCompareName(data.name) === normalizedName) {
+            targetUser = data;
+          }
+        });
+
+        if (!targetUser && accountInput !== accountInput.toLowerCase()) {
+          const snapLower = await getDocs(query(usersRef, where("email", "==", accountInput.toLowerCase()), limit(5)));
+          snapLower.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (!targetUser && normalizeCompareName(data.name) === normalizedName) {
+              targetUser = data;
+            }
+          });
+        }
+      }
+
+      if (!targetUser || !targetUser.email) {
+        renderRecoveryResult(
+          "find-pwd-result",
+          "입력하신 아이디(이메일) 및 이름과 일치하는 계정을 찾을 수 없습니다.<br>가입 정보를 다시 확인해 주세요.",
+          true
+        );
+        return;
+      }
+
+      // Firebase Auth 비밀번호 재설정 메일을 한국어로 발송
+      auth.languageCode = "ko";
+      await sendPasswordResetEmail(auth, targetUser.email);
+
+      const maskedEmail = maskEmailAddress(targetUser.email);
+      renderRecoveryResult(
+        "find-pwd-result",
+        `
+          <div class="auth-result-title">📧 비밀번호 재설정 메일을 발송했습니다.</div>
+          <div class="auth-result-value">${escapeHtml(maskedEmail)}</div>
+          <p class="auth-result-note">메일에 포함된 재설정 링크를 클릭하여 새 비밀번호를 설정해 주세요.<br>(메일이 보이지 않을 경우 스팸 메일함도 함께 확인해 주세요.)</p>
+        `,
+        false
+      );
+    } catch (err) {
+      console.error("[auth] 비밀번호 재설정 메일 발송 실패:", err);
+      let errMsg = "비밀번호 재설정 메일 발송 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+      if (err.code === "auth/user-not-found") {
+        errMsg = "Firebase 인증 시스템에 등록된 이메일 계정을 찾을 수 없습니다.";
+      } else if (err.code === "auth/invalid-email") {
+        errMsg = "등록된 이메일 형식이 올바르지 않습니다. 관리자에게 문의해 주세요.";
+      } else if (err.code === "auth/too-many-requests") {
+        errMsg = "요청 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+      }
+      renderRecoveryResult("find-pwd-result", errMsg, true);
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "재설정 메일 발송 (Send Reset Email)";
       }
     }
   }

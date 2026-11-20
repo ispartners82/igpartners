@@ -1,10 +1,10 @@
-import { db, auth } from "./firebase-db.js?v=261116_1";
-import { escapeHtml, sanitizeUrl } from "./common-utils.js?v=261116_1";
+import { db, auth } from "./firebase-db.js?v=261120_4";
+import { escapeHtml, sanitizeUrl } from "./common-utils.js?v=261120_4";
 // 성능 최적화: 병원 목록은 관리자가 수정할 때만 변경되므로 실시간 리스너(onSnapshot) 대신
 // getDocs 일회성 조회를 사용하여 불필요한 Firestore 연결 유지와 비용을 제거합니다.
 import { collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // 비어 있는 8개국어(일본어, 중국어, 태국어, 라오스어, 네팔어, 인도네시아어, 스리랑카어, 방글라데시어) 병원 번역 보강 헬퍼 모듈 임포트
-import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261116_1";
+import { enrichClinicWithMissing8Langs } from "./clinic-translations-8langs.js?v=261120_4";
 
 /**
  * UI 정적 문자열 및 오류 알림을 관리하기 위한 다국어(I18n) 사전 정의

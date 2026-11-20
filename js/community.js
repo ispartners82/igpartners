@@ -5,9 +5,9 @@
  * =========================================================================
  */
 
-import { auth, db } from "./firebase-db.js?v=261116_1";
-import { escapeHtml, sanitizeUrl, sanitizeRichHtml, compressImageFile } from "./common-utils.js?v=261116_1";
-import { DEFAULT_AVAILABLE_ROLES } from "./lang-config.js?v=261116_1";
+import { auth, db } from "./firebase-db.js?v=261120_4";
+import { escapeHtml, sanitizeUrl, sanitizeRichHtml, compressImageFile } from "./common-utils.js?v=261120_4";
+import { DEFAULT_AVAILABLE_ROLES } from "./lang-config.js?v=261120_4";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, limit, orderBy, addDoc, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -813,8 +813,8 @@ function showCafeDetailSection(postIndex) {
           <i class="fa-solid fa-paperclip"></i> 첨부 파일 (${post.files.length})
         </div>
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          ${post.files.map(f => `
-            <a href="${escapeHtml(sanitizeUrl(f.dataUrl, '#'))}" download="${escapeHtml(f.name || 'file')}" style="display: flex; align-items: center; justify-content: space-between; background: rgba(15,23,42,0.85); border: 1px solid rgba(192,132,252,0.3); padding: 0.65rem 1rem; border-radius: 10px; color: #38bdf8; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">
+          ${post.files.map((f, idx) => `
+            <a href="${escapeHtml(sanitizeUrl(f.dataUrl, '#'))}" download="${escapeHtml(f.name || 'file')}" data-file-idx="${idx}" class="btn-community-file-download" style="display: flex; align-items: center; justify-content: space-between; background: rgba(15,23,42,0.85); border: 1px solid rgba(192,132,252,0.3); padding: 0.65rem 1rem; border-radius: 10px; color: #38bdf8; text-decoration: none; font-size: 0.9rem; transition: all 0.2s;">
               <span style="display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-file-arrow-down" style="color: #c084fc;"></i> ${escapeHtml(f.name)} (${escapeHtml(f.size)})</span>
               <span style="font-size: 0.8rem; background: rgba(192,132,252,0.15); border: 1px solid rgba(192,132,252,0.4); color: #c084fc; padding: 0.25rem 0.65rem; border-radius: 6px; font-weight: 600;">다운로드</span>
             </a>
@@ -919,13 +919,38 @@ function showCafeDetailSection(postIndex) {
     </div>
   `;
 
-  // 본문 첨부 이미지 클릭 시 라이트박스 열기 이벤트 위임 (1회 등록)
+  // 현재 상세 보기 중인 게시글 인덱스를 DOM 속성에 저장하여 위임 핸들러에서 최신 첨부파일을 참조하도록 유지
+  postDetailSection.dataset.currentPostIndex = String(postIndex);
+
+  // 본문 첨부 이미지 라이트박스 및 첨부파일 Blob 다운로드 클릭 이벤트 위임 (1회 등록)
   if (!postDetailSection.dataset.lightboxDelegated) {
     postDetailSection.dataset.lightboxDelegated = "1";
     postDetailSection.addEventListener("click", (e) => {
       const targetImg = e.target.closest("img[data-lightbox-src]");
       if (targetImg) {
         window.openImageLightbox(targetImg.getAttribute("data-lightbox-src"));
+        return;
+      }
+
+      const fileLink = e.target.closest("a.btn-community-file-download[data-file-idx]");
+      if (fileLink) {
+        const activePostIdx = Number(postDetailSection.dataset.currentPostIndex);
+        const activePost = window.combinedPosts ? window.combinedPosts[activePostIdx] : null;
+        const fileIdx = Number(fileLink.getAttribute("data-file-idx"));
+        const targetFile = activePost && Array.isArray(activePost.files) ? activePost.files[fileIdx] : null;
+        const safeUrl = targetFile ? sanitizeUrl(targetFile.dataUrl, "") : "";
+
+        if (!safeUrl) {
+          e.preventDefault();
+          alert("다운로드할 수 있는 파일 데이터가 없거나 지원되지 않는 형식입니다.");
+          return;
+        }
+
+        // DataURL 첨부파일은 브라우저 길이 제한 및 빈 MIME/특수문자 파일명 문제를 막기 위해 Blob으로 변환해 다운로드 실행
+        if (safeUrl.startsWith("data:")) {
+          e.preventDefault();
+          triggerDataUrlDownload(safeUrl, (targetFile && targetFile.name) || "download");
+        }
       }
     });
   }
@@ -1811,8 +1836,9 @@ function initEventHandlers() {
 
   const fileInput = document.getElementById("write-file-input");
   if (fileInput) {
-    fileInput.addEventListener("change", (e) => {
-      const files = Array.from(e.target.files);
+    // HTML 인라인 onchange와 중복 실행되지 않도록 단일 handleFileSelect 핸들러로 통합 바인딩
+    window.handleFileSelect = (e) => {
+      const files = e && e.target && e.target.files ? Array.from(e.target.files) : [];
       files.forEach(file => {
         const reader = new FileReader();
         reader.onload = (evt) => {
@@ -1822,8 +1848,55 @@ function initEventHandlers() {
         };
         reader.readAsDataURL(file);
       });
-      fileInput.value = "";
-    });
+      if (e && e.target) e.target.value = "";
+    };
+    fileInput.onchange = (e) => {
+      window.handleFileSelect(e);
+    };
+  }
+}
+
+/**
+ * 안전성이 검증된 DataURL을 Blob 객체로 디코딩하여 파일 다운로드를 실행하는 헬퍼 함수
+ * @param {string} dataUrl - Base64 인코딩된 안전한 DataURL 문자열
+ * @param {string} fileName - 저장할 원본 파일명
+ */
+function triggerDataUrlDownload(dataUrl, fileName) {
+  try {
+    const base64Marker = ";base64,";
+    const markerIdx = dataUrl.indexOf(base64Marker);
+    if (markerIdx === -1) {
+      throw new Error("유효한 Base64 DataURL 형식이 아닙니다.");
+    }
+
+    // 헤더에서 MIME 타입 추출 (빈 MIME인 경우 일반 바이너리 스트림으로 대체)
+    const header = dataUrl.slice(5, markerIdx);
+    const mimePart = header.split(";")[0].trim();
+    const mimeType = mimePart || "application/octet-stream";
+
+    const base64Data = dataUrl.slice(markerIdx + base64Marker.length).replace(/\s+/g, "");
+    const binaryStr = atob(base64Data);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+
+    const blob = new Blob([bytes], { type: mimeType });
+    const blobUrl = URL.createObjectURL(blob);
+
+    const tempLink = document.createElement("a");
+    tempLink.href = blobUrl;
+    tempLink.download = fileName || "download";
+    tempLink.style.display = "none";
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    document.body.removeChild(tempLink);
+
+    // 다운로드 트리거 완료 후 메모리 누수 방지를 위해 Object URL 해제
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  } catch (err) {
+    console.error("[Community] 첨부파일 Blob 다운로드 변환 실패:", err);
+    alert("파일 다운로드 처리 중 오류가 발생했습니다.");
   }
 }
 

@@ -1,7 +1,7 @@
 /**
  * 15개 국어 공통 기준 데이터는 lang-config.js에서 단일 관리하며 하위 호환을 위해 재export합니다.
  */
-import { LANG_LIST } from "./lang-config.js?v=261116_1";
+import { LANG_LIST } from "./lang-config.js?v=261120_4";
 export { LANG_LIST };
 
 // 비모듈 일반 스크립트에서도 전역적으로 접근할 수 있도록 window 객체에 바인딩

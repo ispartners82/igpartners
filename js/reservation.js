@@ -1,11 +1,11 @@
-// Firebase App, DB 및 Auth 공통 모듈 연동 (캐시 무효화 버전: v=261116_1)
-import { db, auth } from "./firebase-db.js?v=261116_1";
-import { createSolapiAuthHeader } from "./common-utils.js?v=261116_1";
+// Firebase App, DB 및 Auth 공통 모듈 연동 (캐시 무효화 버전: v=261120_4)
+import { db, auth } from "./firebase-db.js?v=261120_4";
+import { createSolapiAuthHeader } from "./common-utils.js?v=261120_4";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // 15개국어 진료 예약 폼 번역 및 개인정보 수집 이용 안내문 전용 모듈 연동 (코드 경량화 및 모듈화 적용)
-import { i18n, privacyContents } from "./i18n-reservation.js?v=261116_1";
+import { i18n, privacyContents } from "./i18n-reservation.js?v=261120_4";
 
 function initReservationPage() {
   // 솔라피(Solapi) API 연동에 필요한 키 정의 및 설정 상수
@@ -14,12 +14,14 @@ function initReservationPage() {
   const SOLAPI_API_KEY = "NCS6QTA1RKWBG0P5";         // 솔라피에서 발급받은 API Key
   const SOLAPI_API_SECRET = "YO0S9SMY2XTAKI3ZRH93X7FB4UC0BIGS";   // 솔라피에서 발급받은 API Secret Key
   const SOLAPI_PF_ID = "KA01PF260722073645289pLAZp0cKRLD"; // 솔라피 콘솔에서 발급받은 카카오톡 채널 고유 연동 프로필 ID (pfId)
-  // 카카오 검수 승인 완료된 신규 알림톡 템플릿 ID (예약희망시간 포함)
+  // 기존 승인 완료된 알림톡 템플릿 ID (신규 템플릿 검수 완료 전까지 기본 유지하여 발송 오류 방지)
+  const LEGACY_SOLAPI_TEMPLATE_ID = "KA01TP260917074840400ff0zrEUDfKQ";
+  // 신규 알림톡 템플릿(통역요청 포함) 검수 승인 후 발급된 ID로 교체하면 통역요청 항목이 자동 활성화됩니다.
   const SOLAPI_TEMPLATE_ID = "KA01TP260917074840400ff0zrEUDfKQ";
   const SOLAPI_SENDER_NUMBER = "01028196392";   // 솔라피에 등록 및 발송 등록된 발신번호 (예: 01012345678)
 
-  // 솔라피 API를 호출하여 등록된 관리자 휴대폰으로 10가지 예약 정보 알림톡을 다중 전송하는 비동기 함수
-  const sendSolapiAlimtalk = async (lang, name, clinicName, gender, visaType, dob, reservationDate, reservationTime, symptoms, address, phone) => {
+  // 솔라피 API를 호출하여 등록된 관리자 휴대폰으로 예약 정보 알림톡을 다중 전송하는 비동기 함수
+  const sendSolapiAlimtalk = async (lang, name, clinicName, gender, visaType, dob, reservationDate, reservationTime, symptoms, address, phone, interpretationRequest) => {
     // API 연동용 인증키 유효성 사전 검사
     if (SOLAPI_API_KEY === "YOUR_SOLAPI_API_KEY" || SOLAPI_API_SECRET === "YOUR_SOLAPI_API_SECRET") {
       console.warn("솔라피 API Key 또는 Secret이 설정되지 않았습니다. 실서비스 연동을 위해 키를 입력해 주세요.");
@@ -66,9 +68,12 @@ function initReservationPage() {
       // API 인증 헤더 생성
       const authHeader = await createSolapiAuthHeader(SOLAPI_API_KEY, SOLAPI_API_SECRET);
 
+      // 신규 템플릿 ID로 교체된 경우에만 검수 문구(• 통역요청: #{통역요청})를 본문 및 변수에 포함하여 템플릿 불일치 오류 방지
+      const includeInterpretationInAlimtalk = Boolean(SOLAPI_TEMPLATE_ID && SOLAPI_TEMPLATE_ID !== LEGACY_SOLAPI_TEMPLATE_ID);
+
       // 각 예약 변수가 실제 데이터값으로 치환된 최종 발송용 텍스트 본문 생성 (줄바꿈 호환성을 위해 명시적 \n 결합 구조 사용)
       // 솔라피 승인 템플릿 문구와 100% 일치하도록 '병원' 단어 포함 본문 생성
-      const messageText = "[새로운 병원 진료 예약 접수 알림]\n" +
+      let messageText = "[새로운 병원 진료 예약 접수 알림]\n" +
         "• 예약언어: " + lang + "\n" + // 템플릿 검증 일치를 위해 '선택언어' -> '예약언어'로 단어 지정
         "• 환자이름: " + name + "\n" +
         "• 신청병원: " + clinicName + "\n" +
@@ -80,6 +85,28 @@ function initReservationPage() {
         "• 증상: " + symptoms + "\n" + // 템플릿 검증 통과를 위해 symptoms의 임의 가공(...) 처리를 완전히 배제]
         "• 주소: " + address + "\n" +
         "• 연락처: " + phone;
+
+      if (includeInterpretationInAlimtalk) {
+        messageText += "\n• 통역요청: " + (interpretationRequest || "-");
+      }
+
+      // 템플릿 치환 변수 맵 구성 (신규 템플릿 적용 시 #{통역요청} 자동 추가)
+      const templateVariables = {
+        "#{선택언어}": lang,
+        "#{이름}": name,
+        "#{선택병원}": clinicName,
+        "#{성별}": gender,
+        "#{비자타입}": visaType,
+        "#{생년월일}": dob,
+        "#{예약희망일}": reservationDate,
+        "#{예약희망시간}": reservationTime || "-",
+        "#{증상}": symptoms, // variables 치환 시에도 증상 값 원본을 그대로 전송]
+        "#{주소}": address,
+        "#{연락처}": phone
+      };
+      if (includeInterpretationInAlimtalk) {
+        templateVariables["#{통역요청}"] = interpretationRequest || "-";
+      }
 
       // 설정된 모든 관리자 연락처별로 전송할 메시지 객체 배열을 생성
       const messages = adminPhones.map(adminPhone => {
@@ -94,20 +121,7 @@ function initReservationPage() {
           kakaoOptions: {
             pfId: SOLAPI_PF_ID,
             templateId: SOLAPI_TEMPLATE_ID,
-            // 관리자용 승인 알림톡 템플릿에 맞추어 10가지 예약 상세 필드를 변수로 매핑
-            variables: {
-              "#{선택언어}": lang,
-              "#{이름}": name,
-              "#{선택병원}": clinicName,
-              "#{성별}": gender,
-              "#{비자타입}": visaType,
-              "#{생년월일}": dob,
-              "#{예약희망일}": reservationDate,
-              "#{예약희망시간}": reservationTime || "-",
-              "#{증상}": symptoms, // variables 치환 시에도 증상 값 원본을 그대로 전송]
-              "#{주소}": address,
-              "#{연락처}": phone
-            }
+            variables: templateVariables
           }
         };
       });
@@ -205,6 +219,15 @@ function initReservationPage() {
   mapTextAndPlaceholder("label-address", dict.labelAddress, dict.placeholderAddress);
   mapTextAndPlaceholder("label-symptoms", dict.labelSymptoms, dict.placeholderSymptoms);
   mapTextAndPlaceholder("label-phone", dict.labelPhone, dict.placeholderPhone);
+  mapTextAndPlaceholder("label-interpretation", dict.labelInterpretation);
+
+  // 통역요청 드롭다운 옵션 다국어 번역 주입 (값은 DB 표준화를 위해 '네'/'아니오'로 유지)
+  const interpPlaceholder = document.getElementById("interpretation-placeholder");
+  const interpYes = document.getElementById("interpretation-yes");
+  const interpNo = document.getElementById("interpretation-no");
+  if (interpPlaceholder) interpPlaceholder.textContent = dict.interpretationPlaceholder || "선택해 주세요";
+  if (interpYes) interpYes.textContent = dict.interpretationYes || "네";
+  if (interpNo) interpNo.textContent = dict.interpretationNo || "아니오";
 
   // 성별 드롭다운 옵션 번역 주입
   const genderPlaceholder = document.getElementById("gender-placeholder");
@@ -348,6 +371,7 @@ function initReservationPage() {
     const address = document.getElementById("input-address").value.trim();
     const symptoms = document.getElementById("input-symptoms").value.trim();
     const phone = document.getElementById("input-phone").value.trim();
+    const interpretationRequest = document.getElementById("input-interpretation") ? document.getElementById("input-interpretation").value : "";
     const isAgreed = document.getElementById("agreement-check").checked;
 
     if (!isAgreed) {
@@ -374,7 +398,8 @@ function initReservationPage() {
         reservationTime, // 예약희망시간
         symptoms,    // 증상
         address,     // 주소
-        phone        // 연락처
+        phone,       // 연락처
+        interpretationRequest // 통역요청 여부 ('네' / '아니오')
       );
 
       // Firestore에 예약 데이터 저장 - alimtalkStatus 및 alimtalkError를 문서 최초 생성 시 원자적(Atomic)으로 저장하여 단일 트랜잭션 기록 완료
@@ -394,6 +419,7 @@ function initReservationPage() {
         // 유입경로는 초기 비어있으며 관리자 페이지에서 입력 및 관리됨
         inflow: "",
         phone: phone,
+        interpretationRequest: interpretationRequest || "",
         lang: currentLang, // 예약 진행 언어셋
         status: "pending",
         alimtalkStatus: alimtalkResult ? alimtalkResult.status : "fail",

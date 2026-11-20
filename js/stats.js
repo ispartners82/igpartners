@@ -1,6 +1,6 @@
-import { auth, db } from "/js/firebase-db.js?v=261116_1";
-import { escapeHtml } from "/js/common-utils.js?v=261116_1";
-import { LANG_LIST, LANG_SHORT_LABELS, LANG_PLAIN_NAMES } from "/js/lang-config.js?v=261116_1";
+import { auth, db } from "/js/firebase-db.js?v=261120_4";
+import { escapeHtml, formatInterpretationBadge } from "/js/common-utils.js?v=261120_4";
+import { LANG_LIST, LANG_SHORT_LABELS, LANG_PLAIN_NAMES } from "/js/lang-config.js?v=261120_4";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -309,8 +309,8 @@ function initPage() {
     // 전체 예약 내역을 빠짐없이 조회하여 정확한 통계 및 과거 예약 병원 목록을 산출합니다.
     const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
     
-    // 유입경로 컬럼 추가에 따른 colspan을 15로 수정
-    statsResultList.innerHTML = `<tr><td colspan="15" class="table-loading">실시간 데이터를 동기화하는 중입니다...</td></tr>`;
+    // 통역요청 컬럼 추가에 따른 colspan을 16으로 수정
+    statsResultList.innerHTML = `<tr><td colspan="16" class="table-loading">실시간 데이터를 동기화하는 중입니다...</td></tr>`;
 
     // 로컬스토리지 백업 데이터 선 로딩
     try {
@@ -366,8 +366,8 @@ function initPage() {
   // =========================================================================
   function applyFiltersAndRender(items) {
     if (!items || items.length === 0) {
-      // 유입경로 컬럼 추가에 따른 colspan을 15로 수정
-      statsResultList.innerHTML = `<tr><td colspan="15" class="table-empty">조회할 데이터가 존재하지 않습니다.</td></tr>`;
+      // 통역요청 컬럼 추가에 따른 colspan을 16으로 수정
+      statsResultList.innerHTML = `<tr><td colspan="16" class="table-empty">조회할 데이터가 존재하지 않습니다.</td></tr>`;
       updateStatsCounters(0, 0, 0, 0);
       currentFilteredReservations = [];
       return;
@@ -478,8 +478,8 @@ function initPage() {
     let cancelled = 0;
 
     if (items.length === 0) {
-      // 유입경로 컬럼 추가에 따른 colspan을 15로 수정
-      statsResultList.innerHTML = `<tr><td colspan="15" class="table-empty">조회 조건에 만족하는 예약 내역이 없습니다.</td></tr>`;
+      // 통역요청 컬럼 추가에 따른 colspan을 16으로 수정
+      statsResultList.innerHTML = `<tr><td colspan="16" class="table-empty">조회 조건에 만족하는 예약 내역이 없습니다.</td></tr>`;
       updateStatsCounters(0, 0, 0, 0);
       return;
     }
@@ -521,6 +521,9 @@ function initPage() {
       const safeAddress = escapeHtml(data.address || "");
       const safeSymptoms = escapeHtml(data.symptoms || "");
 
+      // 통역요청 배지 HTML 생성 ('네' / '아니오' / '-')
+      const interpBadgeHtml = formatInterpretationBadge(data.interpretationRequest);
+
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
         <td class="col-name font-bold">${escapeHtml(data.name) || "-"}</td>
@@ -531,6 +534,7 @@ function initPage() {
         <td class="col-id" style="font-size:0.8rem; line-height:1.2;">${idInfoText}</td>
         <td class="col-visa-expiry text-accent">${escapeHtml(data.visaExpiry) || "-"}</td>
         <td class="col-phone">${escapeHtml(data.phone) || "-"}</td>
+        <td class="col-interpretation">${interpBadgeHtml}</td>
         <td class="col-date">${escapeHtml(regDateStr)}</td>
         <td class="col-res-date font-bold text-accent">${escapeHtml(data.reservationDate) || "-"}${data.reservationTime ? ` ${escapeHtml(data.reservationTime)}` : ""}</td>
         <td class="col-address" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${safeAddress}">${safeAddress || "-"}</td>
@@ -688,6 +692,7 @@ function initPage() {
         <td style="font-size: 0.8rem;">${idInfoText}</td>
         <td>${escapeHtml(data.visaExpiry) || "-"}</td>
         <td>${escapeHtml(data.phone) || "-"}</td>
+        <td>${escapeHtml(data.interpretationRequest) || "-"}</td>
         <td>${escapeHtml(regDateStr)}</td>
         <td>${escapeHtml(data.reservationDate) || "-"}${data.reservationTime ? ` ${escapeHtml(data.reservationTime)}` : ""}</td>
         <!-- 엑셀 미리보기 테이블 컬럼 일치화를 위한 주소 및 증상 td 셀 추가 -->
@@ -777,10 +782,10 @@ function initPage() {
       }
 
       // 5) 테이블 헤더 정의 (6행)
-      // 엑셀 파일 내의 컬럼 헤더 목록에 유입경로 추가
+      // 엑셀 파일 내의 컬럼 헤더 목록에 연락처 오른쪽으로 통역요청 추가 (총 16개 컬럼)
       const headers = [
         "선택언어", "이 름", "선택 병원", "성 별", "비자타입", 
-        "생년월일", "신원정보 (외국인등록번호/여권)", "체류만료일", "연락처", 
+        "생년월일", "신원정보 (외국인등록번호/여권)", "체류만료일", "연락처", "통역요청",
         "접수시간", "희망진료일", "주 소", "증 상", "유입경로", "상 태"
       ];
       
@@ -838,7 +843,7 @@ function initPage() {
         }
 
         // 값들 배열에 배치
-        // 엑셀 파일 내부 행 데이터에 유입경로(inflow) 연동 추가
+        // 엑셀 파일 내부 행 데이터에 연락처 오른쪽으로 통역요청(interpretationRequest) 연동 추가
         const rowValues = [
           LANG_PLAIN_NAMES[item.lang] || item.lang || "-",
           item.name || "-",
@@ -849,6 +854,7 @@ function initPage() {
           idInfoText,
           item.visaExpiry || "-",
           item.phone || "-",
+          item.interpretationRequest || "-",
           regDateStr,
           (item.reservationDate || "-") + (item.reservationTime ? ` ${item.reservationTime}` : ""), // 예약희망일 및 시간 결합
           item.address || "-",
@@ -873,17 +879,17 @@ function initPage() {
 
           // 데이터 정렬 정밀 세팅
           // 텍스트 길이나 컬럼 특성에 맞춰 정렬
-          // 유입경로 추가에 따라 상태 열 인덱스가 14에서 15로 확장되어 가운데 정렬 목록 수정
-          if ([1, 4, 5, 6, 8, 9, 10, 11, 15].includes(cIdx + 1)) {
-            // 언어, 성별, 비자, 생일, 만료일, 연락처, 접수일, 진료희망일, 상태는 가운데 정렬
+          // 통역요청 컬럼(10번째) 추가에 따라 상태 열 인덱스가 15에서 16으로 확장되어 가운데 정렬 목록 수정
+          if ([1, 4, 5, 6, 8, 9, 10, 11, 12, 16].includes(cIdx + 1)) {
+            // 언어, 성별, 비자, 생일, 만료일, 연락처, 통역요청, 접수일, 진료희망일, 상태는 가운데 정렬
             cell.alignment = { vertical: "middle", horizontal: "center" };
           } else {
             // 이름, 병원명, 신원정보, 주소, 증상, 유입경로는 왼쪽 정렬 및 텍스트 래핑 허용
             cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
           }
 
-          // 유입경로 추가에 따라 상태 열(15번째 컬럼) 고유 배경 하이라이트 맵핑 수정
-          if (cIdx + 1 === 15) {
+          // 통역요청 추가에 따라 상태 열(16번째 컬럼) 고유 배경 하이라이트 맵핑 수정
+          if (cIdx + 1 === 16) {
             cell.fill = {
               type: "pattern",
               pattern: "solid",

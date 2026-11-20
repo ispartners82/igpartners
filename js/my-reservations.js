@@ -1,6 +1,6 @@
-import { db, auth } from "./firebase-db.js?v=261116_1";
-import { escapeHtml, formatFirestoreDate } from "./common-utils.js?v=261116_1";
-import { LANG_LABELS } from "./lang-config.js?v=261116_1";
+import { db, auth } from "./firebase-db.js?v=261120_4";
+import { escapeHtml, formatFirestoreDate, formatInterpretationBadge } from "./common-utils.js?v=261120_4";
+import { LANG_LABELS } from "./lang-config.js?v=261120_4";
 import { 
   collection, 
   query, 
@@ -44,7 +44,7 @@ function initPage() {
     let cancelledCount = 0;
 
     if (currentRenderedItems.length === 0) {
-      reservationList.innerHTML = `<tr><td colspan="15" class="table-empty">신청하신 예약 내역이 없습니다.</td></tr>`;
+      reservationList.innerHTML = `<tr><td colspan="16" class="table-empty">신청하신 예약 내역이 없습니다.</td></tr>`;
       updateStats(0, 0, 0, 0);
       return;
     }
@@ -99,6 +99,9 @@ function initPage() {
         actionButtons = `<small style="color:#ef4444;">취소됨</small>`;
       }
 
+      // 통역요청 여부 배지 생성 ('네' / '아니오' / '-')
+      const interpBadgeHtml = formatInterpretationBadge(data.interpretationRequest);
+
       // 테이블 행 내부 HTML 조립 (모든 사용자 입력 필드 XSS 이스케이프 적용)
       tr.innerHTML = `
         <td class="col-lang"><span class="lang-badge">${displayLang}</span></td>
@@ -110,6 +113,7 @@ function initPage() {
         <td class="col-id">${idInfoHTML}</td>
         <td class="col-visa-expiry text-accent">${escapeHtml(data.visaExpiry) || "-"}</td>
         <td class="col-phone">${escapeHtml(data.phone) || "-"}</td>
+        <td class="col-interpretation">${interpBadgeHtml}</td>
         <td class="col-date">${escapeHtml(dateStr)}</td>
         <td class="col-res-date font-bold text-accent">${escapeHtml(data.reservationDate) || "-"}${data.reservationTime ? ` ${escapeHtml(data.reservationTime)}` : ""}</td>
         <td class="col-address">${escapeHtml(data.address) || "-"}</td>
@@ -132,7 +136,7 @@ function initPage() {
 
     // 인덱스 생성 오류를 방지하기 위해 query 정렬(orderBy)을 제외하고, where로 본인 데이터만 쿼리합니다.
     const q = query(collection(db, "reservations"), where("uid", "==", user.uid));
-    reservationList.innerHTML = `<tr><td colspan="15" class="table-loading">예약 내역을 실시간으로 가져오는 중입니다...</td></tr>`;
+    reservationList.innerHTML = `<tr><td colspan="16" class="table-loading">예약 내역을 실시간으로 가져오는 중입니다...</td></tr>`;
 
     // 1단계: 로컬스토리지 백업 데이터 선제 렌더링
     let initialLocalItems = [];
